@@ -156,16 +156,13 @@ peer: <base64>
 
 ## About Me
 
-I work as an EdgeAI engineer at Sony Semiconductor Solutions, developing embedded AI camera systems using NuttX-based boards — primarily SPRESENSE and ESP32. My work spans hardware bring-up, RTOS configuration, lwIP networking, and cloud integration at the edge.
-
-Being able to establish a secure, bidirectional connection to a NuttX device remotely — for firmware updates, diagnostics, or command execution — is something I have needed in my own work. This project directly addresses that gap.
+I work as an EdgeAI engineer at Sony Semiconductor Solutions, where I use NuttX from the application side — primarily with SPRESENSE and ESP32-based edge AI camera systems. Being able to securely access NuttX boards remotely for debugging and maintenance is something I have wanted myself, so this project aligns naturally with my daily work.
 
 **Relevant experience:**
 
-- NuttX and FreeRTOS: daily use for embedded system development
-- lwIP networking: TCP/UDP socket programming on NuttX and ESP-IDF
+- NuttX: daily use with SPRESENSE and ESP32
 - Embedded C: cross-compilation with `arm-none-eabi-gcc`, POSIX API on RTOS
-- Docker + QEMU: already set up a working `qemu-armv7a:nsh` development environment for this project
+- Docker + QEMU: set up a working `qemu-armv7a:nsh` development environment for this project (see repository)
 - Certifications: GCP, AWS, TensorFlow Developer, Information Security Specialist (Japan)
 
 GitHub: [https://github.com/wwlapaki310](https://github.com/wwlapaki310)
