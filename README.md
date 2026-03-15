@@ -52,6 +52,20 @@ WireGuard's small footprint and simple key model make it particularly well-suite
 
 ---
 
+## Reference Implementations
+
+Two existing projects are used as references, each serving a different role.
+
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip) — the code base to port**
+
+This is the actual code being brought into NuttX. It implements WireGuard as a lwIP netif and isolates all OS-specific behavior behind a four-function platform abstraction (`wireguard-platform.h`). The WireGuard protocol logic (`wireguard.c`) and cryptographic primitives (`crypto/`) require no OS dependencies and can be used as-is. The porting work is focused on implementing `wireguard-platform.h` for NuttX and removing platform-specific code from `wireguardif.c`.
+
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) — a prior port to study**
+
+This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is also an embedded RTOS with lwIP, the changes made in this ESP32 port — replacing FreeRTOS primitives, adapting logging, removing platform-specific headers — serve as a concrete reference for what needs to change when porting wireguard-lwip to a new target.
+
+---
+
 ## Project Timeline
 
 ### Phase 1 — Build System Integration (Weeks 1–2)
