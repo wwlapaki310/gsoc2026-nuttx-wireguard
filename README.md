@@ -66,6 +66,44 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 ---
 
+## Development Environment
+
+Development proceeds in three stages, ordered by iteration speed:
+
+```
+SIM  (sim:nsh / sim:net)  ★★★★★  runs as a Linux process on the host
+QEMU (qemu-armv7a)        ★★★    emulated CPU, closer to real RTOS behavior
+HW   (ESP32-S3)           ★      real hardware, final validation
+```
+
+```
+           Docker
+              |
+              v
+           build
+              |
+        nuttx image
+              |
+     +---------+---------+
+     |                   |
+     v                   v
+   SIM               QEMU
+ (Linux process)   (virtual CPU)
+     |                   |
+     v                   v
+ feature dev        RTOS behavior
+     |
+     v
+   HW (ESP32-S3)
+     |
+     v
+ final validation
+```
+
+SIM (`sim:nsh`, `sim:net`) runs NuttX as a Linux process on the host machine. It shares the host network stack and requires no emulated CPU, making the build-run-test cycle fastest. QEMU introduces an emulated ARM CPU and a virtual network interface (virtio-net), which is necessary to verify RTOS scheduling and interrupt behavior. Real hardware is used only for final validation.
+
+---
+
 ## Project Timeline
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
@@ -76,8 +114,6 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 
 **Goal:** Build the understanding and environment needed before writing any NuttX-specific code.
 
-All development through Phase 4 is done on QEMU rather than real hardware, to keep the iteration cycle fast and hardware-independent. Real hardware testing is deferred to Phase 5.
-
 **Already completed (pre-application):**
 - Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` in this repository)
 - Read through wireguard-lwip and WireGuard-ESP32-Arduino source code to understand the porting scope
@@ -85,32 +121,47 @@ All development through Phase 4 is done on QEMU rather than real hardware, to ke
 **To complete during community bonding:**
 - Identify all OS-specific API calls in wireguard-lwip that need to be replaced for NuttX (threads, mutexes, time, random)
 - Study the ESP32 port as a diff: understand exactly what changed from wireguard-lwip to make it run on FreeRTOS + ESP-IDF, then map each change to its NuttX equivalent
-- Set up a build and test workflow: wireguard source inside `apps/netutils/wireguard/`, compiled and linked into a NuttX image on QEMU, so that changes can be tested iteratively
+- Set up `sim:net` as the primary development environment for feature work
 
-**Deliverable:** A documented list of APIs to replace and a working build loop on QEMU.
+**Deliverable:** A documented list of APIs to replace and a working build loop on SIM.
 
 ---
 
-### Phase 1 — Development Environment Setup (Weeks 1–2)
+### Phase 1 — Build System Integration on SIM (Weeks 1–2)
 
-**Goal:** Establish a development loop where wireguard-lwip source is integrated into NuttX's build system and can be compiled, linked, and run on QEMU iteratively.
+**Environment:** `sim:nsh`
 
-wireguard-lwip provides only `.c`/`.h` source files and has no standalone build system. It is designed to be incorporated into the target platform's existing build system. NuttX uses a combination of CMake, Kconfig, and make; a source directory under `apps/netutils/wireguard/` is only recognized by the build system when accompanied by `CMakeLists.txt` (or `Make.defs`) and a `Kconfig` file. Writing these integration files is the primary task of this phase.
+**Goal:** Add wireguard-lwip to NuttX's build system and confirm NuttX still boots without errors.
 
-The porting challenge in this project is fundamentally about OS API differences — NuttX provides a different set of primitives than FreeRTOS or Linux. The architecture of the target hardware is a separate concern handled by the toolchain and NuttX itself. wireguard-lwip's core logic (`wireguard.c`, `crypto/`) is written in portable C with no OS or ISA dependencies and requires no changes.
+wireguard-lwip provides only `.c`/`.h` source files and has no standalone build system — it is designed to be incorporated into the target platform's existing build system. NuttX uses CMake + Kconfig + make; a source directory under `apps/netutils/wireguard/` is only recognized by the build system when accompanied by `CMakeLists.txt` (or `Make.defs`) and a `Kconfig` file.
+
+The porting challenge in this project is fundamentally about OS API differences. wireguard-lwip's core logic (`wireguard.c`, `crypto/`) is written in portable C with no OS or ISA dependencies and requires no changes. OS-specific adaptation is handled in Phase 2 via `wireguard-platform.h`.
+
+The goal of this phase is simply:
+
+```
+CONFIG_WIREGUARD=y
+  make
+    -> build success
+    -> boot success (nsh> reached, no crash)
+```
 
 - Place wireguard-lwip sources under `apps/netutils/wireguard/`
-- Write `CMakeLists.txt` and `Make.defs` following NuttX conventions (referencing existing `apps/netutils/` components as models)
+- Write `CMakeLists.txt` and `Make.defs` following NuttX conventions
 - Add `Kconfig` entry: `CONFIG_NET_WIREGUARD`
-- Confirm the NuttX image with wireguard included boots to `nsh>` on QEMU
+- Confirm NuttX boots to `nsh>` on SIM without crashing
 
-**Deliverable:** A NuttX image that includes wireguard-lwip, boots on QEMU, and reaches `nsh>` without errors.
+**Deliverable:** `CONFIG_WIREGUARD=y` build succeeds and NuttX reaches `nsh>` without errors.
 
 ---
 
-### Phase 2 — NuttX Platform Layer (Weeks 3–4)
+### Phase 2 — NuttX Platform Layer and lwIP Integration on SIM (Weeks 3–6)
 
-**Goal:** Implement `wireguard-platform.h` — the platform abstraction that wireguard-lwip requires every port to provide.
+**Environment:** `sim:net`
+
+**Goal:** Implement the platform abstraction layer and register WireGuard as a lwIP netif, verified on `sim:net`.
+
+**Platform layer (`wireguard-platform.h`):**
 
 | Function | Purpose | NuttX implementation |
 |----------|---------|---------------------|
@@ -122,29 +173,23 @@ The porting challenge in this project is fundamentally about OS API differences 
 - Create `nuttx-platform.c` with the four platform functions
 - Replace ESP-specific logging (`ESP_LOGI` etc.) with `syslog()`
 - Remove ESP-specific headers (`esp_netif.h`, `tcpip_adapter.h`)
-
-**Deliverable:** `wireguardif_init()` runs on QEMU without crashing.
-
----
-
-### Phase 3 — lwIP netif Registration (Weeks 5–6)
-
-**Goal:** Register WireGuard as a virtual NIC in NuttX's lwIP stack so that `wg0` appears in `ifconfig`.
-
-- Call `wireguardif_init()` during NuttX startup
+- Call `wireguardif_init()` during NuttX startup and register `wg0` via `netif_add()`
 - Configure WireGuard parameters (private key, listen port) via Kconfig
-- Verify `netif_add()` succeeds
 
-**Deliverable:** `nsh> ifconfig` shows `wg0`.
+**Deliverable:** `nsh> ifconfig` shows `wg0` on `sim:net`.
 
 ---
 
-### Phase 4 — Handshake and Tunnel on QEMU (Weeks 7–9) ★ Midterm
+### Phase 3 — Handshake and Tunnel on QEMU (Weeks 7–9) ★ Midterm
 
-**Goal:** Complete a WireGuard handshake with a Linux peer and pass traffic through the encrypted tunnel, on QEMU.
+**Environment:** `qemu-armv7a`
 
+**Goal:** Verify RTOS behavior under real scheduling conditions and complete a WireGuard handshake with a Linux peer.
+
+SIM shares the host Linux scheduler. QEMU introduces an emulated ARM CPU with NuttX's own scheduler, which is necessary to confirm that timer behavior, task priorities, and interrupt handling work correctly with WireGuard's periodic tasks (keepalive, handshake expiry).
+
+- Port the working `sim:net` configuration to `qemu-armv7a`
 - Generate key pairs on both NuttX (QEMU) and Linux sides
-- Configure peer public key and endpoint in NuttX via Kconfig
 - Verify Noise protocol handshake over UDP port 51820
 - Test end-to-end: `nsh> ping 10.0.0.1`
 
@@ -162,9 +207,11 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 5 — NSH Command, Kconfig, and Real Hardware (Weeks 10–11)
+### Phase 4 — NSH Command, Kconfig, and Real Hardware (Weeks 10–11)
 
-**Goal:** Add a `wg` shell command to NSH, and verify the implementation runs on real hardware (ESP32-S3).
+**Environment:** ESP32-S3
+
+**Goal:** Add a `wg` shell command to NSH and validate the implementation on real hardware.
 
 **NSH command:**
 - Implement `wg show` and `wg setconf` as NSH built-in commands
@@ -183,7 +230,7 @@ peer: <base64>
 
 **Real hardware test (ESP32-S3):**
 
-QEMU uses virtio-net to connect to lwIP. ESP32-S3 uses a Wi-Fi driver. The network stack path is different, so real hardware testing is necessary to validate the netif integration with a physical interface.
+QEMU uses virtio-net to connect to lwIP. ESP32-S3 uses a Wi-Fi driver instead. Testing on real hardware validates the netif integration with an actual physical network interface.
 
 - Flash NuttX + WireGuard image to ESP32-S3
 - Connect to Wi-Fi and verify `wg0` comes up alongside `wlan0`
@@ -195,7 +242,7 @@ QEMU uses virtio-net to connect to lwIP. ESP32-S3 uses a Wi-Fi driver. The netwo
 
 ---
 
-### Phase 6 — Upstream PR (Week 12)
+### Phase 5 — Upstream PR (Week 12)
 
 **Goal:** Submit a pull request to `apache/nuttx-apps`.
 

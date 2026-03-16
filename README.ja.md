@@ -66,6 +66,45 @@ wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェク�
 
 ---
 
+## 開発環境
+
+開発はイテレーション速度の順に3段階で進める。
+
+```
+SIM  (sim:nsh / sim:net)  ★★★★★  Linux プロセスとして実行
+      -> 最速のビルド・テストループ
+QEMU (qemu-armv7a)        ★★★    仮想 CPU、RTOS 挙動の確認
+HW   (ESP32-S3)           ★      実機、最終検証
+```
+
+```
+           Docker
+              |
+              v
+           build
+              |
+        nuttx image
+              |
+     +---------+---------+
+     |                   |
+     v                   v
+   SIM               QEMU
+ (Linux プロセス)   (仮想 CPU)
+     |                   |
+     v                   v
+ 機能開発          RTOS 挙動確認
+     |
+     v
+   HW (ESP32-S3)
+     |
+     v
+ 実機検証
+```
+
+SIM（`sim:nsh`・`sim:net`）は NuttX をホスト上の Linux プロセスとして実行する。ホストのネットワークスタックを共有し、仮想 CPU を必要としないためビルド・テストループが最も速い。QEMU は ARM CPU をエミュレートし、NuttX 自身のスケジューラで動作するため、タイマー・タスク実行・割り込みなど RTOS 挙動の確認に必要。実機は最終検証のみで使用する。
+
+---
+
 ## 開発タイムライン
 
 > **注:** このタイムラインは検討中であり、メンターとの議論を経て変更される可能性がある。
@@ -76,8 +115,6 @@ wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェク�
 
 **目標:** NuttX 固有のコードを書き始める前に、必要な理解と環境を整える。
 
-Phase 4 まではすべて QEMU 上で進める。実機テストは Phase 5 まで持ち越す。イテレーションを速く回すため、実機に依存しない環境で開発する。
-
 **応募前に完了済み:**
 - Docker + QEMU 開発環境の構築（NuttX `qemu-armv7a:nsh`・ネットワーク有効化済み）（本リポジトリの `Dockerfile` 参照）
 - wireguard-lwip と WireGuard-ESP32-Arduino のソースコードを読み、移植スコープを把握
@@ -85,32 +122,47 @@ Phase 4 まではすべて QEMU 上で進める。実機テストは Phase 5 ま
 **コミュニティボンディング期間中に完了予定:**
 - wireguard-lwip 内で NuttX 向けに置き換えが必要な OS 固有 API をすべて洗い出す（スレッド・mutex・時刻・乱数）
 - ESP32 移植を diff として読む: wireguard-lwip から FreeRTOS + ESP-IDF で動かすために何を変えたかを把握し、各変更を NuttX の対応 API にマッピングする
-- ビルド＆テストループを整備: `apps/netutils/wireguard/` 内の wireguard ソースを NuttX イメージに組み込み、QEMU 上で変更を繰り返しテストできる仕組みを作る
+- `sim:net` を機能開発の主要環境として整備する
 
-**成果物:** 置き換えが必要な API の一覧ドキュメントと、QEMU 上で動作するビルドループ。
+**成果物:** 置き換えが必要な API の一覧ドキュメントと、SIM 上で動作するビルドループ。
 
 ---
 
-### Phase 1 — 開発環境整備（第1〜2週）
+### Phase 1 — SIM 上でのビルドシステム統合（第1〜2週）
 
-**目標:** wireguard-lwip のソースを NuttX のビルドシステムに組み込み、コンパイル・リンク・QEMU 実行まで一通り動く開発ループを確立する。
+**環境:** `sim:nsh`
 
-wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、独自のビルドシステムを持たない。各ターゲットプラットフォームのビルドシステムに組み込むことを前提とした設計になっている。NuttX は CMake・Kconfig・make を組み合わせたビルドシステムを使用しており、`apps/netutils/wireguard/` 以下にソースを置くだけでは認識されない。`CMakeLists.txt`（または `Make.defs`）と `Kconfig` を自分で記述することがこのフェーズの主な作業となる。
+**目標:** wireguard-lwip を NuttX のビルドシステムに追加し、NuttX がエラーなく起動することを確認する。
 
-本プロジェクトの移植における本質的な課題は OS の API 差異（NuttX と FreeRTOS・Linux の違い）であり、ターゲットのハードウェアアーキテクチャは別の問題である。wireguard-lwip のコアロジック（`wireguard.c`・`crypto/`）はポータブルな C で書かれており OS・ISA 非依存のため変更不要。OS 依存部分の吸収は `wireguard-platform.h` の実装（Phase 2）で行う。
+wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、独自のビルドシステムを持たない。各ターゲットのビルドシステムに組み込むことを前提とした設計である。NuttX は CMake + Kconfig + make を組み合わせたビルドシステムを使用しており、`apps/netutils/wireguard/` 以下にソースを置くだけでは認識されない。`CMakeLists.txt`（または `Make.defs`）と `Kconfig` を自分で記述することがこのフェーズの主な作業である。
+
+本プロジェクトの移植における本質的な課題は OS の API 差異であり、wireguard-lwip のコアロジック（`wireguard.c`・`crypto/`）はポータブルな C で書かれており変更不要。OS 差異の吸収は `wireguard-platform.h` の実装（Phase 2）で行う。
+
+このフェーズのゴールは単純に：
+
+```
+CONFIG_WIREGUARD=y
+  make
+    -> ビルド成功
+    -> 起動成功（nsh> 到達、クラッシュなし）
+```
 
 - wireguard-lwip のソースを `apps/netutils/wireguard/` 以下に配置
-- NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述（既存の `apps/netutils/` 内コンポーネントを参考にする）
+- NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述
 - `Kconfig` エントリを追加: `CONFIG_NET_WIREGUARD`
-- wireguard を組み込んだ NuttX イメージが QEMU 上で `nsh>` まで起動することを確認
+- wireguard を含む NuttX が SIM 上で `nsh>` までクラッシュなく起動することを確認
 
-**成果物:** wireguard-lwip を含む NuttX イメージが QEMU 上でエラーなく `nsh>` に到達すること。
+**成果物:** `CONFIG_WIREGUARD=y` でビルドが成功し、NuttX が `nsh>` に到達すること。
 
 ---
 
-### Phase 2 — NuttX プラットフォーム層の実装（第3〜4週）
+### Phase 2 — SIM 上でのプラットフォーム層実装と lwIP 統合（第3〜6週）
 
-**目標:** `wireguard-platform.h` を実装する。wireguard-lwip が各移植先に要求するプラットフォーム抽象層。
+**環境:** `sim:net`
+
+**目標:** プラットフォーム抽象層を実装し、WireGuard を lwIP の netif として登録する。`sim:net` 上で `wg0` が `ifconfig` に表示されることを確認する。
+
+**プラットフォーム層（`wireguard-platform.h`）:**
 
 | 関数 | 用途 | NuttX での実装 |
 |------|------|---------------|
@@ -122,29 +174,23 @@ wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、
 - `nuttx-platform.c` を新規作成して4関数を実装
 - `wireguardif.c` 内の ESP 固有ログ（`ESP_LOGI` 等）を `syslog()` に置き換え
 - ESP 固有ヘッダ（`esp_netif.h`・`tcpip_adapter.h`）を削除
-
-**成果物:** QEMU 上で `wireguardif_init()` がクラッシュせずに動作すること。
-
----
-
-### Phase 3 — lwIP netif への登録（第5〜6週）
-
-**目標:** WireGuard を NuttX の lwIP スタックに仮想 NIC として登録し、`ifconfig` で `wg0` が表示されるようにする。
-
-- NuttX 起動時に `wireguardif_init()` を呼び出す
+- NuttX 起動時に `wireguardif_init()` を呼び出し、`netif_add()` で `wg0` を登録
 - WireGuard パラメータ（秘密鍵・待受ポート）を Kconfig で設定
-- `netif_add()` が成功することを確認
 
-**成果物:** `nsh> ifconfig` に `wg0` が表示されること。
+**成果物:** `sim:net` 上で `nsh> ifconfig` に `wg0` が表示されること。
 
 ---
 
-### Phase 4 — QEMU 上でのハンドシェイクとトンネル疎通（第7〜9週）★ Midterm
+### Phase 3 — QEMU 上でのハンドシェイクとトンネル疎通（第7〜9週）★ Midterm
 
-**目標:** Linux ピアと WireGuard ハンドシェイクを完了し、暗号化トンネルを通じてトラフィックを通す（QEMU 上）。
+**環境:** `qemu-armv7a`
 
+**目標:** RTOS のスケジューリング条件下での挙動を確認し、Linux ピアとの WireGuard ハンドシェイクを完了する。
+
+SIM はホストの Linux スケジューラを共有する。QEMU は ARM CPU をエミュレートし NuttX 自身のスケジューラで動作するため、WireGuard の周期タスク（keepalive・ハンドシェイク期限切れ）がタイマー・タスク優先度・割り込みと協調して動作するか確認するために必要。
+
+- `sim:net` で動作する構成を `qemu-armv7a` に移植
 - NuttX 側・Linux 側それぞれで鍵ペアを生成
-- ピアの公開鍵とエンドポイントを Kconfig で NuttX に設定
 - UDP ポート 51820 を使った Noise プロトコルのハンドシェイクを確認
 - エンドツーエンドの疎通確認: `nsh> ping 10.0.0.1`
 
@@ -162,9 +208,11 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 5 — NSH コマンド・Kconfig 統合・実機テスト（第10〜11週）
+### Phase 4 — NSH コマンド・Kconfig 統合・実機テスト（第10〜11週）
 
-**目標:** `wg` コマンドを NSH に追加し、ESP32-S3 実機での動作を確認する。
+**環境:** ESP32-S3
+
+**目標:** `wg` コマンドを NSH に追加し、実機で動作を検証する。
 
 **NSH コマンド:**
 - `wg show` と `wg setconf` を NSH ビルトインコマンドとして実装
@@ -183,7 +231,7 @@ peer: <base64>
 
 **実機テスト（ESP32-S3）:**
 
-QEMU は virtio-net ドライバ経由で lwIP に接続するが、ESP32-S3 は Wi-Fi ドライバ経由で lwIP に接続する。ネットワークスタックのパスが異なるため、実機での検証が必要。
+QEMU は virtio-net ドライバ経由で lwIP に接続するが、ESP32-S3 は Wi-Fi ドライバ経由で接続する。実際の物理 NIC を用いた netif 統合の検証に実機テストが必要。
 
 - ESP32-S3 に NuttX + WireGuard イメージを書き込む
 - Wi-Fi に接続し、`wlan0` と並んで `wg0` が起動することを確認
@@ -195,7 +243,7 @@ QEMU は virtio-net ドライバ経由で lwIP に接続するが、ESP32-S3 は
 
 ---
 
-### Phase 6 — upstream PR（第12週）
+### Phase 5 — upstream PR（第12週）
 
 **目標:** `apache/nuttx-apps` にプルリクエストを提出する。
 
