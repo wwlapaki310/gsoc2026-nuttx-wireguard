@@ -66,44 +66,6 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 ---
 
-## Development Environment
-
-Development proceeds in three stages, ordered by iteration speed:
-
-```
-SIM  (sim:nsh / sim:net)  ★★★★★  runs as a Linux process on the host
-QEMU (qemu-armv7a)        ★★★    emulated CPU, closer to real RTOS behavior
-HW   (ESP32-S3)           ★      real hardware, final validation
-```
-
-```
-           Docker
-              |
-              v
-           build
-              |
-        nuttx image
-              |
-     +---------+---------+
-     |                   |
-     v                   v
-   SIM               QEMU
- (Linux process)   (virtual CPU)
-     |                   |
-     v                   v
- feature dev        RTOS behavior
-     |
-     v
-   HW (ESP32-S3)
-     |
-     v
- final validation
-```
-
-SIM (`sim:nsh`, `sim:net`) runs NuttX as a Linux process on the host machine. It shares the host network stack and requires no emulated CPU, making the build-run-test cycle fastest. QEMU introduces an emulated ARM CPU and a virtual network interface (virtio-net), which is necessary to verify RTOS scheduling and interrupt behavior. Real hardware is used only for final validation.
-
----
-
 ## Project Timeline
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
@@ -115,7 +77,7 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 **Goal:** Build the understanding and environment needed before writing any NuttX-specific code.
 
 **Already completed (pre-application):**
-- Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` in this repository)
+- Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` and [docs/dev-environment.md](docs/dev-environment.md))
 - Read through wireguard-lwip and WireGuard-ESP32-Arduino source code to understand the porting scope
 
 **To complete during community bonding:**
@@ -129,7 +91,7 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 
 ### Phase 1 — Build System Integration on SIM (Weeks 1–2)
 
-**Environment:** `sim:nsh`
+**Environment:** `sim:nsh` (see [docs/dev-environment.md](docs/dev-environment.md))
 
 **Goal:** Add wireguard-lwip to NuttX's build system and confirm NuttX still boots without errors.
 
