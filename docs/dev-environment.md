@@ -1,5 +1,51 @@
 # Development Environment
 
+## Quick Start (Docker)
+
+All environments run inside a single Docker image. Build once, then choose the target at runtime.
+
+```bash
+# sim:nsh + NET — primary development environment
+docker build --target sim -t nuttx-wireguard:sim .
+docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
+
+# qemu-armv7a — RTOS verification environment
+docker build --target qemu -t nuttx-wireguard:qemu .
+docker run --rm -it nuttx-wireguard:qemu
+
+# Open a shell for development
+docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun --entrypoint bash nuttx-wireguard:sim
+```
+
+### Rebuilding inside the container
+
+```bash
+# sim:net
+cd /opt/nuttx
+make distclean
+./tools/configure.sh sim:net
+make -j$(nproc)
+./nuttx          # TUN/TAP requires running as root (default in container)
+
+# qemu-armv7a
+make distclean
+./tools/configure.sh qemu-armv7a:nsh
+make -j$(nproc)
+```
+
+### Kconfig changes
+
+```bash
+cd /opt/nuttx
+make menuconfig        # interactive
+# or:
+kconfig-tweak --enable CONFIG_SOME_OPTION
+make olddefconfig
+make -j$(nproc)
+```
+
+---
+
 This project uses three environments in order of iteration speed.
 
 | Environment | How it runs | Used for |

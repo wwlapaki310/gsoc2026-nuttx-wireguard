@@ -52,6 +52,24 @@ WireGuard のコンパクトな実装とシンプルな鍵モデルは、こう�
 
 ---
 
+## 開発環境
+
+Docker ベースの開発環境を用意しています。1回のビルドで `sim:net`（高速開発）と `qemu-armv7a`（RTOS検証）の両方のバイナリが生成されます。
+
+```bash
+# sim:nsh + NET — メイン開発環境（高速ビルド・実行）
+docker build --target sim -t nuttx-wireguard:sim .
+docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
+
+# qemu-armv7a — RTOS 動作検証
+docker build --target qemu -t nuttx-wireguard:qemu .
+docker run --rm -it nuttx-wireguard:qemu
+```
+
+詳細は [docs/dev-environment.md](docs/dev-environment.md) を参照。
+
+---
+
 ## 参照実装
 
 2つの既存プロジェクトを参照として使用する。それぞれ役割が異なる。

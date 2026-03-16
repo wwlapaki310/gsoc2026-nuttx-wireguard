@@ -52,6 +52,24 @@ WireGuard's small footprint and simple key model make it particularly well-suite
 
 ---
 
+## Development Environment
+
+This repository includes a Docker-based development environment with two build targets.
+
+```bash
+# sim:nsh + NET — primary development environment (fast iteration)
+docker build --target sim -t nuttx-wireguard:sim .
+docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
+
+# qemu-armv7a — RTOS verification
+docker build --target qemu -t nuttx-wireguard:qemu .
+docker run --rm -it nuttx-wireguard:qemu
+```
+
+See [docs/dev-environment.md](docs/dev-environment.md) for details.
+
+---
+
 ## Reference Implementations
 
 Two existing projects are used as references, each serving a different role.
