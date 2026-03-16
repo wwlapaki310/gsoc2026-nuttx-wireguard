@@ -70,6 +70,8 @@ wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェク�
 
 > **注:** このタイムラインは検討中であり、メンターとの議論を経て変更される可能性がある。
 
+GSoC 2026 のコーディング期間は2026年5月26日〜8月23日（12週間）。筆者は日本在住（JST / UTC+9）で、既存業務と並行して週約15時間のペースで作業する予定。
+
 ### Phase 0 — 準備（GSoC 開始前 / コミュニティボンディング期間）
 
 **目標:** NuttX 固有のコードを書き始める前に、必要な理解と環境を整える。
@@ -93,9 +95,15 @@ Phase 4 まではすべて QEMU 上で進める。実機テストは Phase 5 ま
 
 **目標:** wireguard-lwip のソースを NuttX のクロスコンパイルツールチェーンでコンパイルできる状態にする。
 
+wireguard-lwip は通常の Linux（x86）上で `gcc` を使ってコンパイルできるように書かれている。NuttX の ARM ターゲット向けには `arm-none-eabi-gcc`（クロスコンパイラ）を使う必要がある。これは「x86 の PC 上で動くが、出力するバイナリは ARM 用」というツールで、C 標準ライブラリも glibc ではなく newlib を使う。そのためヘッダファイルの場所や型定義が微妙に異なり、通常の Linux ビルドでは出ないコンパイルエラーが発生する。
+
+さらに NuttX は CMake + Kconfig + make のハイブリッドビルドシステムを持っており、`apps/netutils/wireguard/` 以下にソースを置いても、`CMakeLists.txt`・`Make.defs`・`Kconfig` といった設定ファイルがなければビルドシステムがそのディレクトリの存在自体を無視する。
+
+Phase 1 の完了条件は「コンパイルエラーがゼロになること」であり、リンクや実行は次フェーズ以降で扱う。
+
 - wireguard-lwip のソースを `apps/netutils/wireguard/` 以下に配置
 - NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述
-- `arm-none-eabi-gcc` のコンパイルエラーを解消（型定義の差異・属性など）
+- `arm-none-eabi-gcc` / newlib 環境でのコンパイルエラーを解消（型定義の差異・ヘッダ不足・属性など）
 - `Kconfig` エントリを追加: `CONFIG_NET_WIREGUARD`
 
 **成果物:** `sim:nsh` ビルドで wireguard 関連のビルドエラーがゼロになること。
