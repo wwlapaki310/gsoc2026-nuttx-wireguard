@@ -68,6 +68,25 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 ## Project Timeline
 
+> **Note:** This timeline is tentative and subject to change based on discussion with mentors.
+
+### Phase 0 — Preparation (Pre-GSoC / Community Bonding)
+
+**Goal:** Build the understanding and environment needed before writing any NuttX-specific code.
+
+**Already completed (pre-application):**
+- Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` in this repository)
+- Read through wireguard-lwip and WireGuard-ESP32-Arduino source code to understand the porting scope
+
+**To complete during community bonding:**
+- Identify all OS-specific API calls in wireguard-lwip that need to be replaced for NuttX (threads, mutexes, time, random)
+- Study the ESP32 port as a diff: understand exactly what changed from wireguard-lwip to make it run on FreeRTOS + ESP-IDF, then map each change to its NuttX equivalent
+- Set up a build and test workflow: wireguard source inside `apps/netutils/wireguard/`, compiled and linked into a NuttX image on QEMU, so that changes can be tested iteratively without real hardware
+
+**Deliverable:** A documented list of APIs to replace and a working build loop on QEMU.
+
+---
+
 ### Phase 1 — Build System Integration (Weeks 1–2)
 
 **Goal:** Get wireguard-lwip source files compiling under the NuttX cross-compilation toolchain.
