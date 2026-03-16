@@ -70,7 +70,7 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
 
-The GSoC 2026 coding period runs from May 26 to August 23, 2026 (12 weeks). The applicant is based in Japan (JST, UTC+9) and will be working part-time alongside existing commitments, at approximately 15 hours per week.
+The applicant is based in Japan (JST, UTC+9). The timeline allows flexibility for periods of reduced availability.
 
 ### Phase 0 — Preparation (Pre-GSoC / Community Bonding)
 
@@ -95,9 +95,9 @@ All development through Phase 4 is done on QEMU rather than real hardware, to ke
 
 **Goal:** Get wireguard-lwip source files compiling under the NuttX cross-compilation toolchain.
 
-wireguard-lwip was written to compile with a standard `gcc` on Linux (x86). NuttX for ARM targets requires `arm-none-eabi-gcc`, a cross-compiler that runs on x86 but produces ARM binaries. It uses newlib instead of glibc as its C standard library, which means some headers and type definitions differ, causing compiler errors that do not appear on a normal Linux build.
+wireguard-lwip provides only `.c`/`.h` source files with no standalone build system — it is designed to be incorporated into whatever build system the target platform uses. NuttX uses CMake + Kconfig + make; source files placed under `apps/netutils/wireguard/` are only recognized if `CMakeLists.txt` (or `Make.defs`) and `Kconfig` exist alongside them. Without these, the build system ignores the directory entirely.
 
-Beyond the compiler itself, NuttX has its own build system (CMake + Kconfig + make). Source files placed under `apps/netutils/wireguard/` are only recognized by the build system if the correct configuration files exist alongside them (`CMakeLists.txt` or `Make.defs`, and `Kconfig`). Without these, the build system ignores the directory entirely.
+Additionally, NuttX for ARM targets uses `arm-none-eabi-gcc` with newlib as the C standard library. Type definitions and headers can differ from a typical desktop Linux build environment, which may produce compiler errors that need to be resolved.
 
 Phase 1 is complete when the source compiles without errors — linking and runtime behavior are not yet required.
 
