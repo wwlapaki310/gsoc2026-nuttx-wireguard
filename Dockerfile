@@ -38,6 +38,7 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --enable CONFIG_NET_IPv4        && \
     kconfig-tweak --enable CONFIG_NET_UDP         && \
     kconfig-tweak --enable CONFIG_NET_TCP         && \
+    kconfig-tweak --enable CONFIG_SIM_NETDEV      && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
     kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
     kconfig-tweak --enable CONFIG_MBEDTLS         && \
