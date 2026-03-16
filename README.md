@@ -91,22 +91,20 @@ All development through Phase 4 is done on QEMU rather than real hardware, to ke
 
 ---
 
-### Phase 1 — Build System Integration (Weeks 1–2)
+### Phase 1 — Development Environment Setup (Weeks 1–2)
 
-**Goal:** Get wireguard-lwip source files compiling under the NuttX cross-compilation toolchain.
+**Goal:** Establish a development loop where wireguard-lwip source is integrated into NuttX's build system and can be compiled, linked, and run on QEMU iteratively.
 
-wireguard-lwip provides only `.c`/`.h` source files with no standalone build system — it is designed to be incorporated into whatever build system the target platform uses. NuttX uses CMake + Kconfig + make; source files placed under `apps/netutils/wireguard/` are only recognized if `CMakeLists.txt` (or `Make.defs`) and `Kconfig` exist alongside them. Without these, the build system ignores the directory entirely.
+wireguard-lwip provides only `.c`/`.h` source files and has no standalone build system. It is designed to be incorporated into the target platform's existing build system. NuttX uses a combination of CMake, Kconfig, and make; a source directory under `apps/netutils/wireguard/` is only recognized by the build system when accompanied by `CMakeLists.txt` (or `Make.defs`) and a `Kconfig` file. Writing these integration files is the primary task of this phase.
 
-Additionally, NuttX for ARM targets uses `arm-none-eabi-gcc` with newlib as the C standard library. Type definitions and headers can differ from a typical desktop Linux build environment, which may produce compiler errors that need to be resolved.
-
-Phase 1 is complete when the source compiles without errors — linking and runtime behavior are not yet required.
+The porting challenge in this project is fundamentally about OS API differences — NuttX provides a different set of primitives than FreeRTOS or Linux. The architecture of the target hardware is a separate concern handled by the toolchain and NuttX itself. wireguard-lwip's core logic (`wireguard.c`, `crypto/`) is written in portable C with no OS or ISA dependencies and requires no changes.
 
 - Place wireguard-lwip sources under `apps/netutils/wireguard/`
-- Write `CMakeLists.txt` and `Make.defs` following NuttX conventions
-- Resolve `arm-none-eabi-gcc` / newlib compiler errors (type definitions, missing headers, attributes, etc.)
+- Write `CMakeLists.txt` and `Make.defs` following NuttX conventions (referencing existing `apps/netutils/` components as models)
 - Add `Kconfig` entry: `CONFIG_NET_WIREGUARD`
+- Confirm the NuttX image with wireguard included boots to `nsh>` on QEMU
 
-**Deliverable:** Zero build errors when wireguard is included in a `sim:nsh` build.
+**Deliverable:** A NuttX image that includes wireguard-lwip, boots on QEMU, and reaches `nsh>` without errors.
 
 ---
 

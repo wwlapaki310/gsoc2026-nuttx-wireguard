@@ -70,7 +70,7 @@ wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェク�
 
 > **注:** このタイムラインは検討中であり、メンターとの議論を経て変更される可能性がある。
 
-筆者は日本在住（JST / UTC+9）。作業時間に余裕を持たせるため、タイムラインには作業できない期間への柔軟性を持たせてある。
+筆者は日本在住（JST / UTC+9）。8月8日〜15日は対応不可。
 
 ### Phase 0 — 準備（GSoC 開始前 / コミュニティボンディング期間）
 
@@ -91,22 +91,20 @@ Phase 4 まではすべて QEMU 上で進める。実機テストは Phase 5 ま
 
 ---
 
-### Phase 1 — ビルドシステム統合（第1〜2週）
+### Phase 1 — 開発環境整備（第1〜2週）
 
-**目標:** wireguard-lwip のソースを NuttX のクロスコンパイルツールチェーンでコンパイルできる状態にする。
+**目標:** wireguard-lwip のソースを NuttX のビルドシステムに組み込み、コンパイル・リンク・QEMU 実行まで一通り動く開発ループを確立する。
 
-wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、独自のビルドシステムを持たない。各ターゲットプラットフォームのビルドシステムに組み込むことを前提とした設計になっている。NuttX は CMake + Kconfig + make のハイブリッドビルドシステムを使用しており、`apps/netutils/wireguard/` 以下にソースを置いても `CMakeLists.txt`（または `Make.defs`）と `Kconfig` がなければビルドシステムがそのディレクトリを完全に無視する。
+wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、独自のビルドシステムを持たない。各ターゲットプラットフォームのビルドシステムに組み込むことを前提とした設計になっている。NuttX は CMake・Kconfig・make を組み合わせたビルドシステムを使用しており、`apps/netutils/wireguard/` 以下にソースを置くだけでは認識されない。`CMakeLists.txt`（または `Make.defs`）と `Kconfig` を自分で記述することがこのフェーズの主な作業となる。
 
-また、NuttX の ARM ターゲット向けビルドでは `arm-none-eabi-gcc` と newlib を使用する。型定義やヘッダが一般的なデスクトップ Linux ビルド環境と異なる場合があり、解消すべきコンパイルエラーが発生する可能性がある。
-
-Phase 1 の完了条件は「コンパイルエラーがゼロになること」であり、リンクや実行は次フェーズ以降で扱う。
+本プロジェクトの移植における本質的な課題は OS の API 差異（NuttX と FreeRTOS・Linux の違い）であり、ターゲットのハードウェアアーキテクチャは別の問題である。wireguard-lwip のコアロジック（`wireguard.c`・`crypto/`）はポータブルな C で書かれており OS・ISA 非依存のため変更不要。OS 依存部分の吸収は `wireguard-platform.h` の実装（Phase 2）で行う。
 
 - wireguard-lwip のソースを `apps/netutils/wireguard/` 以下に配置
-- NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述
-- `arm-none-eabi-gcc` / newlib 環境でのコンパイルエラーを解消（型定義の差異・ヘッダ不足・属性など）
+- NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述（既存の `apps/netutils/` 内コンポーネントを参考にする）
 - `Kconfig` エントリを追加: `CONFIG_NET_WIREGUARD`
+- wireguard を組み込んだ NuttX イメージが QEMU 上で `nsh>` まで起動することを確認
 
-**成果物:** `sim:nsh` ビルドで wireguard 関連のビルドエラーがゼロになること。
+**成果物:** wireguard-lwip を含む NuttX イメージが QEMU 上でエラーなく `nsh>` に到達すること。
 
 ---
 
