@@ -70,7 +70,7 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
 
-The applicant is based in Japan (JST, UTC+9). The timeline allows flexibility for periods of reduced availability.
+The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable from August 8 to August 15.
 
 ### Phase 0 — Preparation (Pre-GSoC / Community Bonding)
 
