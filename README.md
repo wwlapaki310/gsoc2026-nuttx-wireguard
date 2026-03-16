@@ -74,6 +74,8 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 **Goal:** Build the understanding and environment needed before writing any NuttX-specific code.
 
+All development through Phase 4 is done on QEMU rather than real hardware, to keep the iteration cycle fast and hardware-independent. Real hardware testing is deferred to Phase 5.
+
 **Already completed (pre-application):**
 - Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` in this repository)
 - Read through wireguard-lwip and WireGuard-ESP32-Arduino source code to understand the porting scope
@@ -81,7 +83,7 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 **To complete during community bonding:**
 - Identify all OS-specific API calls in wireguard-lwip that need to be replaced for NuttX (threads, mutexes, time, random)
 - Study the ESP32 port as a diff: understand exactly what changed from wireguard-lwip to make it run on FreeRTOS + ESP-IDF, then map each change to its NuttX equivalent
-- Set up a build and test workflow: wireguard source inside `apps/netutils/wireguard/`, compiled and linked into a NuttX image on QEMU, so that changes can be tested iteratively without real hardware
+- Set up a build and test workflow: wireguard source inside `apps/netutils/wireguard/`, compiled and linked into a NuttX image on QEMU, so that changes can be tested iteratively
 
 **Deliverable:** A documented list of APIs to replace and a working build loop on QEMU.
 
@@ -131,11 +133,11 @@ This project ports wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Since NuttX is 
 
 ---
 
-### Phase 4 — Handshake and Tunnel (Weeks 7–9) ★ Midterm
+### Phase 4 — Handshake and Tunnel on QEMU (Weeks 7–9) ★ Midterm
 
-**Goal:** Complete a WireGuard handshake with a Linux peer and pass traffic through the encrypted tunnel.
+**Goal:** Complete a WireGuard handshake with a Linux peer and pass traffic through the encrypted tunnel, on QEMU.
 
-- Generate key pairs on both NuttX and Linux sides
+- Generate key pairs on both NuttX (QEMU) and Linux sides
 - Configure peer public key and endpoint in NuttX via Kconfig
 - Verify Noise protocol handshake over UDP port 51820
 - Test end-to-end: `nsh> ping 10.0.0.1`
@@ -154,14 +156,14 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 5 — NSH Command and Kconfig Integration (Weeks 10–11)
+### Phase 5 — NSH Command, Kconfig, and Real Hardware (Weeks 10–11)
 
-**Goal:** Add a `wg` shell command to NSH for runtime status and configuration.
+**Goal:** Add a `wg` shell command to NSH, and verify the implementation runs on real hardware (ESP32-S3).
 
+**NSH command:**
 - Implement `wg show` and `wg setconf` as NSH built-in commands
 - Finalize Kconfig dependency chain: `NET_WIREGUARD` depends on `NET`, `NET_UDP`, `MBEDTLS`
 
-**Deliverable:**
 ```
 nsh> wg show
 interface: wg0
@@ -173,14 +175,25 @@ peer: <base64>
   transfer: 1.23 KiB received, 0.45 KiB sent
 ```
 
+**Real hardware test (ESP32-S3):**
+
+ESP32-S3 uses a different network stack path than QEMU (Wi-Fi driver → lwIP, rather than virtio-net → lwIP). Testing on real hardware validates that the netif integration works with an actual physical interface.
+
+- Flash NuttX + WireGuard image to ESP32-S3
+- Connect ESP32-S3 to Wi-Fi and verify `wg0` comes up alongside `wlan0`
+- Establish a WireGuard tunnel to a Linux peer over Wi-Fi
+- Verify `nsh> ping` through the tunnel
+- Measure Flash and RAM usage on actual hardware
+
+**Deliverable:** WireGuard tunnel working on ESP32-S3 over Wi-Fi.
+
 ---
 
-### Phase 6 — Hardware Test and Upstream PR (Week 12)
+### Phase 6 — Upstream PR (Week 12)
 
-**Goal:** Verify on real hardware and submit a pull request to `apache/nuttx-apps`.
+**Goal:** Submit a pull request to `apache/nuttx-apps`.
 
-- Test on ESP32-S3 (Wi-Fi netif + WireGuard netif coexistence)
-- Measure actual Flash and RAM usage
+- Sign Apache CLA
 - Submit PR to `apps/netutils/wireguard/` conforming to NuttX coding style
 
 **Deliverable:** PR open on `apache/nuttx-apps`.
