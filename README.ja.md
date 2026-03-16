@@ -52,7 +52,42 @@ WireGuard のコンパクトな実装とシンプルな鍵モデルは、こう�
 
 ---
 
+## 参照実装
+
+2つの既存プロジェクトを参照として使用する。それぞれ役割が異なる。
+
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip) — 移植元のコード本体**
+
+NuttX に持ち込む実際のコード。WireGuard を lwIP の netif として実装しており、OS 固有の処理はすべて4関数のプラットフォーム抽象層（`wireguard-platform.h`）に集約されている。WireGuard プロトコル本体（`wireguard.c`）と暗号実装（`crypto/`）は OS 依存がなくそのまま使用できる。移植作業の中心は `wireguard-platform.h` を NuttX 向けに実装することと、`wireguardif.c` からプラットフォーム固有のコードを取り除くことである。
+
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) — 移植の先例**
+
+wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェクト。NuttX も組み込み RTOS + lwIP という構成であるため、この ESP32 移植で行われた変更（FreeRTOS プリミティブの置き換え・ログ出力の変更・プラットフォーム固有ヘッダの削除）は、wireguard-lwip を新しいターゲットに移植する際に何を変える必要があるかを示す具体的な参照として使える。
+
+---
+
 ## 開発タイムライン
+
+> **注:** このタイムラインは検討中であり、メンターとの議論を経て変更される可能性がある。
+
+### Phase 0 — 準備（GSoC 開始前 / コミュニティボンディング期間）
+
+**目標:** NuttX 固有のコードを書き始める前に、必要な理解と環境を整える。
+
+Phase 4 まではすべて QEMU 上で進める。実機テストは Phase 5 まで持ち越す。イテレーションを速く回すため、実機に依存しない環境で開発する。
+
+**応募前に完了済み:**
+- Docker + QEMU 開発環境の構築（NuttX `qemu-armv7a:nsh`・ネットワーク有効化済み）（本リポジトリの `Dockerfile` 参照）
+- wireguard-lwip と WireGuard-ESP32-Arduino のソースコードを読み、移植スコープを把握
+
+**コミュニティボンディング期間中に完了予定:**
+- wireguard-lwip 内で NuttX 向けに置き換えが必要な OS 固有 API をすべて洗い出す（スレッド・mutex・時刻・乱数）
+- ESP32 移植を diff として読む: wireguard-lwip から FreeRTOS + ESP-IDF で動かすために何を変えたかを把握し、各変更を NuttX の対応 API にマッピングする
+- ビルド＆テストループを整備: `apps/netutils/wireguard/` 内の wireguard ソースを NuttX イメージに組み込み、QEMU 上で変更を繰り返しテストできる仕組みを作る
+
+**成果物:** 置き換えが必要な API の一覧ドキュメントと、QEMU 上で動作するビルドループ。
+
+---
 
 ### Phase 1 — ビルドシステム統合（第1〜2週）
 
@@ -98,9 +133,9 @@ WireGuard のコンパクトな実装とシンプルな鍵モデルは、こう�
 
 ---
 
-### Phase 4 — ハンドシェイクとトンネル疎通（第7〜9週）★ Midterm
+### Phase 4 — QEMU 上でのハンドシェイクとトンネル疎通（第7〜9週）★ Midterm
 
-**目標:** Linux ピアと WireGuard ハンドシェイクを完了し、暗号化トンネルを通じてトラフィックを通す。
+**目標:** Linux ピアと WireGuard ハンドシェイクを完了し、暗号化トンネルを通じてトラフィックを通す（QEMU 上）。
 
 - NuttX 側・Linux 側それぞれで鍵ペアを生成
 - ピアの公開鍵とエンドポイントを Kconfig で NuttX に設定
@@ -121,14 +156,14 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 5 — NSH コマンドと Kconfig 統合（第10〜11週）
+### Phase 5 — NSH コマンド・Kconfig 統合・実機テスト（第10〜11週）
 
-**目標:** 実行時のステータス確認と設定のために `wg` コマンドを NSH に追加する。
+**目標:** `wg` コマンドを NSH に追加し、ESP32-S3 実機での動作を確認する。
 
+**NSH コマンド:**
 - `wg show` と `wg setconf` を NSH ビルトインコマンドとして実装
 - Kconfig の依存関係を整備: `NET_WIREGUARD` は `NET`・`NET_UDP`・`MBEDTLS` に依存
 
-**成果物:**
 ```
 nsh> wg show
 interface: wg0
@@ -140,14 +175,25 @@ peer: <base64>
   transfer: 1.23 KiB received, 0.45 KiB sent
 ```
 
+**実機テスト（ESP32-S3）:**
+
+QEMU は virtio-net ドライバ経由で lwIP に接続するが、ESP32-S3 は Wi-Fi ドライバ経由で lwIP に接続する。ネットワークスタックのパスが異なるため、実機での検証が必要。
+
+- ESP32-S3 に NuttX + WireGuard イメージを書き込む
+- Wi-Fi に接続し、`wlan0` と並んで `wg0` が起動することを確認
+- Wi-Fi 経由で Linux ピアとの WireGuard トンネルを確立
+- トンネル越しに `nsh> ping` が通ることを確認
+- Flash・RAM の実測値を確認
+
+**成果物:** ESP32-S3 の Wi-Fi 経由で WireGuard トンネルが動作すること。
+
 ---
 
-### Phase 6 — 実機テストと upstream PR（第12週）
+### Phase 6 — upstream PR（第12週）
 
-**目標:** 実機で動作確認し、`apache/nuttx-apps` にプルリクエストを提出する。
+**目標:** `apache/nuttx-apps` にプルリクエストを提出する。
 
-- ESP32-S3 で動作確認（Wi-Fi netif と WireGuard netif の共存）
-- Flash・RAM の実測値を確認
+- Apache CLA に署名
 - NuttX コーディングスタイルに準拠した PR を `apps/netutils/wireguard/` に提出
 
 **成果物:** `apache/nuttx-apps` に PR がオープンされること。
