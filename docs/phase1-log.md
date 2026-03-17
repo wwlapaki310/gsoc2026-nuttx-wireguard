@@ -9,8 +9,15 @@ wireguard-lwip のソースを `apps/netutils/wireguard/` に配置し、`CONFIG
 ## 想定していたこと
 
 - wireguard-lwip は `.c`/`.h` ソースのみを提供しており、NuttX のビルドシステム（`CMakeLists.txt`・`Make.defs`・`Kconfig`・`Makefile`）を自分で書けば統合できる
-- NuttX は lwIP ベースのネットワークスタックを持つため、wireguard-lwip の `wireguardif.c` はほぼそのまま使える（[feasibility.md](feasibility.md) の想定）
-- `sim:net` という設定名で NuttX シミュレータのネットワーク環境が使える
+- wireguard-lwip のコードは以下の3層に分かれており、移植コストはそれぞれ異なる
+
+```
+wireguard.c + crypto/      OS非依存のプロトコル実装・暗号実装 → 変更不要
+wireguard-platform.h       OS固有の4関数（時刻・乱数・タイマー・負荷判定） → NuttX POSIX APIに置き換え
+wireguardif.c              lwIPとの接続層 → lwIP APIをNuttX APIに書き換え
+```
+
+- `wireguardif.c` は lwIP の `netif_add()`・`udp_new()` などを呼んでいるが、NuttX のネットワーク構造（`netdev_register()`・BSD socket）と対応関係があるため、**ロジックを再利用しながら API 呼び出し部分だけ置き換えられる**はず
 
 ---
 
@@ -38,29 +45,19 @@ Directory for sim:net does not exist.
 
 **原因:** `sim:net` という設定名は NuttX 12.7.0 に存在しない。
 
-**対応:** `sim:nsh` を使い、`kconfig-tweak` で `CONFIG_NET` 等を手動で有効化する方式に変更。
+**対応:** `sim:nsh` を使い、`kconfig-tweak` で `CONFIG_NET`・`CONFIG_SIM_NETDEV` 等を手動で有効化する方式に変更。
 
 ---
 
-#### エラー: `genromfs: command not found`
+#### エラー: `genromfs: command not found` / `xxd` / `zlib.h`
 
-**原因:** sim ターゲットは ROM ファイルシステムの生成に `genromfs` を使うが、Dockerfile に含まれていなかった。
-
-**対応:** `apt-get install genromfs` を追加。
-
----
-
-#### エラー: `xxd: command not found` / `zlib.h: No such file or directory`
-
-**原因:** sim ターゲットのビルドに必要なツール・ライブラリが不足。
-
-**対応:** `apt-get install xxd zlib1g-dev` を追加。
+**対応:** `apt-get install genromfs xxd zlib1g-dev` を追加。
 
 ---
 
 #### `ifconfig` で何も表示されない
 
-**原因:** `CONFIG_NET=y` だけでは TUN/TAP 仮想 NIC が作られない。sim 用ネットワークドライバを有効化する設定が必要。
+**原因:** `CONFIG_NET=y` だけでは TUN/TAP 仮想 NIC が作られない。
 
 **対応:** `CONFIG_SIM_NETDEV=y` を追加。これにより `eth0 (10.0.0.2)` が表示されるようになった。
 
@@ -68,7 +65,7 @@ Directory for sim:net does not exist.
 
 ### 2. Dockerfile のマルチステージ化
 
-sim と qemu の2ターゲットを1つの Dockerfile にまとめる構成（`--target sim` / `--target qemu`）に変更。wireguard-lwip のクローンと `apps/netutils/wireguard/` のセットアップは共通の `base` ステージで行う。
+sim と qemu の2ターゲットを1つの Dockerfile にまとめる構成（`--target sim` / `--target qemu`）に変更。
 
 ---
 
@@ -78,7 +75,6 @@ sim と qemu の2ターゲットを1つの Dockerfile にまとめる構成（`-
 
 ```
 make[3]: *** No rule to make target 'context'.  Stop.
-make[2]: *** [Makefile:53: /opt/apps/netutils/wireguard_context] Error 2
 ```
 
 **原因:** NuttX の make ベースビルドシステムは各アプリに `Makefile`（`context`・`depend`・`clean` ターゲットを持つ）が必要だが、作成していなかった。
@@ -87,7 +83,7 @@ make[2]: *** [Makefile:53: /opt/apps/netutils/wireguard_context] Error 2
 
 ---
 
-### 4. 最大の発見: NuttX は lwIP を使っていない
+### 4. lwip/netif.h が存在しない問題
 
 #### エラー: `lwip/netif.h: No such file or directory`
 
@@ -95,43 +91,53 @@ make[2]: *** [Makefile:53: /opt/apps/netutils/wireguard_context] Error 2
 ./wireguard.h:41:10: fatal error: lwip/netif.h: No such file or directory
 ```
 
-**原因の調査:**
+**背景:**
+
+NuttX のネットワークスタックは lwIP（lightweight IP）とは**別物**。lwIP は FreeRTOS + ESP-IDF などで広く使われる組み込み向け TCP/IP ライブラリだが、NuttX は uIP 由来の独自ネットワークスタックを持っており、`lwip/netif.h` のような lwIP のパブリックヘッダーはインクルードパスに存在しない。
 
 ```bash
-find /opt/nuttx/include -name 'netif.h'   # → 何もヒットしない
-find /opt/nuttx -name 'lwip' -type d      # → 何もヒットしない
+$ find /opt/nuttx -name "netif.h"
+（何も出てこない）
 ```
 
-**判明したこと:** NuttX 12.7.0 は upstream lwIP を使っていない。NuttX 独自のネットワークスタックを持っており、`lwip/netif.h`・`lwip/udp.h` などの lwIP ネイティブ API は公開ヘッダに存在しない。
+**ただし、上位の BSD socket API（`socket()`・`bind()` など）は NuttX でも同じ形で使える。**
 
-これは当初の想定（「NuttX の LwIP も同じ API を使っているためほぼそのまま使える」）が誤りであったことを意味する。
+**wireguard.c が `#include "lwip/netif.h"` を要求する理由:**
 
-**アーキテクチャへの影響:**
+`wireguard.c` は `struct wireguard_device` の中に `struct netif *netif` というフィールドを持っている。実際にはポインタとして保持するだけで、中身の実装には触れない。そのため完全な lwIP の定義は不要で、前方宣言だけあればコンパイルできる。
 
-| wireguard-lwip | NuttX での対応 |
-|----------------|---------------|
-| `lwip/netif.h` → `netif_add()` | `net/netdev/netdev.h` → `netdev_register()` |
-| `lwip/udp.h` → `udp_new/bind/recv` | BSD socket API (`sys/socket.h`) |
-| `lwip/pbuf.h` → `pbuf_alloc/free` | `nuttx/net/iob.h` → `iob_alloc/free` |
-| `lwip/timeouts.h` → `sys_timeout()` | `nuttx/wdog.h` → `wd_start()` |
+**対応:** `lwip/` という名前のディレクトリに最小限の互換シムヘッダーを自作して配置した。
 
-**対応:**
+```
+apps/netutils/wireguard/
+└── lwip/
+    ├── netif.h     ← struct netif の前方宣言のみ
+    ├── ip_addr.h   ← ip_addr_t などの最小型定義
+    ├── arch.h      ← u8_t, u16_t, u32_t などの型定義
+    └── udp.h       ← struct udp_pcb の前方宣言のみ
+```
 
-1. `wireguardif.c`（upstream lwIP API に依存）はビルドから除外
-2. `nuttx-wireguardif.c` を新規作成（Phase 2 で NuttX netdev API + BSD socket を使って実装）
-3. `wireguard.c` 本体が参照する lwIP の型定義（`ip_addr_t`, `u16_t`, `struct netif`, `struct udp_pcb`）は最小限の互換ヘッダーで提供
+これにより `wireguard.c` 本体を変更せずにコンパイルが通る。
 
 ---
 
-#### エラー: `lwip/ip_addr.h: No such file or directory`（互換ヘッダー内のパス問題）
+### 5. wireguardif.c の扱い方針
 
-```
-lwip/netif.h:11:10: fatal error: lwip/ip_addr.h: No such file or directory
-```
+`wireguardif.c` は lwIP の実装関数（`netif_add()`・`udp_new()`・`pbuf_alloc()`・`sys_timeout()` など）を直接呼んでいるため、そのままコンパイルすることはできない。
 
-**原因:** `lwip/netif.h` の中で `#include "lwip/ip_addr.h"` と書いていたが、`netif.h` 自体が `lwip/` ディレクトリ内にあるため、コンパイラは `lwip/lwip/ip_addr.h` を探してしまう（二重パス）。
+ただし、**プロトコルのロジック（パケットの暗号化・復号、ハンドシェイクの処理フロー）は全部そのまま再利用できる。** 置き換えが必要なのは以下の API 呼び出し部分のみ：
 
-**対応:** `lwip/netif.h` 内の include を `#include "ip_addr.h"` に修正（同ディレクトリ内の相対パス）。
+| wireguardif.c（lwIP） | NuttX 対応 |
+|----------------------|------------|
+| `struct netif` | `struct net_driver_s` |
+| `netif->output = fn` | `dev->d_ifup = fn` 相当 |
+| `ip_input(pbuf, netif)` | `devif_input(dev)` |
+| `netif_set_link_up()` | `netdev_carrier_on()` |
+| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
+| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
+| `sys_timeout()` | `wd_start()` |
+
+Phase 1 では `nuttx-wireguardif.c` をスタブとして作成し、ビルドを通した。Phase 2 で `wireguardif.c` のロジックを参照しながら NuttX API を使って実装する。
 
 ---
 
@@ -139,7 +145,7 @@ lwip/netif.h:11:10: fatal error: lwip/ip_addr.h: No such file or directory
 
 - `CONFIG_NET_WIREGUARD=y` でビルド成功
 - コンパイル対象: `wireguard.c`, `crypto/refc/*.c`, `nuttx-platform.c`（スタブ）, `nuttx-wireguardif.c`（スタブ）
-- `sim` イメージ起動 → `eth0 (10.0.0.2)` 確認済み
+- sim イメージ起動 → `eth0 (10.0.0.2)` 確認済み
 
 ```
 nsh> ifconfig
@@ -151,6 +157,7 @@ eth0    Link encap:Ethernet HWaddr 42:67:c6:69:73:51 at RUNNING mtu 1500
 
 ## Phase 2 への引き継ぎ事項
 
-- `wireguardif.c` は使わない。NuttX netdev API で `nuttx-wireguardif.c` を実装する
+- `wireguardif.c` のロジックを参照しながら `nuttx-wireguardif.c` を実装する
+  - プロトコル処理のフローはそのまま再利用
+  - lwIP API の呼び出し箇所だけ NuttX API に置き換える
 - `nuttx-platform.c` の4関数を本実装する（`clock_gettime`, `/dev/urandom`）
-- `wireguard_device` 構造体の `struct netif *` と `struct udp_pcb *` は Phase 2 で NuttX 側の型に対応させる

@@ -14,7 +14,7 @@
 
 WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s), while keeping the implementation small enough to run on microcontrollers.
 
-Apache NuttX is a POSIX-compliant RTOS widely used in embedded systems. However, NuttX currently has no VPN capability. This project implements WireGuard as a NuttX network device, enabling secure remote access to NuttX-based devices.
+Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface. However, NuttX currently has no VPN capability. This project implements WireGuard as a NuttX network device, enabling secure remote access to NuttX-based devices.
 
 ### Why This Matters
 
@@ -29,7 +29,7 @@ WireGuard's small footprint and simple key model make it particularly well-suite
 
 ### Architecture
 
-NuttX has its own network stack and does not use upstream lwIP APIs directly. WireGuard is implemented as a NuttX network device (`wg0`) using the NuttX netdev API and BSD socket API for UDP.
+WireGuard is implemented as a NuttX network device (`wg0`). The porting work is split into three layers:
 
 ```
 +-----------------------------------------------+
@@ -37,21 +37,19 @@ NuttX has its own network stack and does not use upstream lwIP APIs directly. Wi
 |                                               |
 |  Application / NSH                            |
 |           |                                   |
-|    NuttX Network Stack                        |
+|    NuttX Network Stack (BSD socket API)       |
 |       |              |                        |
 |  eth0 / wlan0       wg0  ← this project       |
 |  (physical NIC)  (WireGuard netdev)           |
 |                      |                        |
-|              +-------+--------+               |
-|              |                |               |
-|         wireguard.c      nuttx-platform.c     |
-|         + crypto/        (clock, urandom)     |
-|         (unchanged)                           |
-|              |                                |
-|        nuttx-wireguardif.c                    |
-|        (NuttX netdev API + BSD socket)        |
-|              |                                |
-|         UDP socket (port 51820)               |
+|         +------------+------------+           |
+|         |            |            |           |
+|   wireguard.c   wireguardif.c  nuttx-         |
+|   + crypto/     (logic reused) platform.c     |
+|   unchanged     lwIP API calls  (clock,       |
+|                 → NuttX API     urandom)      |
+|                      |                        |
+|              UDP socket (port 51820)          |
 +-----------------------------------------------+
               |
     Internet / LTE / satellite link
@@ -83,7 +81,15 @@ See [docs/dev-environment.md](docs/dev-environment.md) for details on each envir
 
 **[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)**
 
-The source of `wireguard.c` (WireGuard protocol core) and `crypto/` (ChaCha20, Curve25519, BLAKE2s). These files are written in portable C with no OS or lwIP dependencies and are used as-is. `wireguardif.c` from this repository is **not** used, because it depends on upstream lwIP APIs (`lwip/netif.h`, `lwip/udp.h`, etc.) that NuttX does not expose. The NuttX-specific integration layer is written from scratch as `nuttx-wireguardif.c`.
+The primary source for this port. The codebase has three layers with different porting costs:
+
+| File | Role | Porting cost |
+|------|------|--------------|
+| `wireguard.c` + `crypto/` | WireGuard protocol and crypto | None — portable C, used as-is |
+| `wireguard-platform.h` | OS-specific functions (clock, random, timer) | Low — replace with NuttX POSIX API |
+| `wireguardif.c` | Network integration layer (lwIP API calls) | Medium — reuse logic, replace lwIP API with NuttX netdev + BSD socket |
+
+NuttX has its own TCP/IP stack and does not use lwIP, so `wireguardif.c` cannot be compiled as-is. However, the protocol logic (packet encryption/decryption, handshake flow) is fully reusable. The lwIP API calls (`netif_add`, `udp_new`, `pbuf_alloc`, etc.) are replaced with their NuttX equivalents in `nuttx-wireguardif.c`.
 
 **[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino)**
 
@@ -115,14 +121,14 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 
 **Already completed (pre-application):**
 - Docker images for SIM and QEMU build targets are working (see `Dockerfile`)
-- SIM (`sim:nsh` + `CONFIG_NET=y` + `CONFIG_SIM_NETDEV=y`) boots to `nsh>` and `ifconfig` shows `eth0 (10.0.0.2)`
+- SIM boots to `nsh>` and `ifconfig` shows `eth0 (10.0.0.2)`
 - `qemu-armv7a` boots to `nsh>`
 - `wireguard-lwip` source integrated into `apps/netutils/wireguard/`; `CONFIG_NET_WIREGUARD=y` builds successfully
-- Confirmed that NuttX 12.7.0 does **not** expose upstream lwIP headers (`lwip/netif.h` etc.); `wireguardif.c` cannot be used as-is; `nuttx-wireguardif.c` must be written using NuttX netdev API and BSD socket API (see [docs/phase1-log.md](docs/phase1-log.md))
+- Identified that `wireguardif.c` cannot be compiled as-is (NuttX does not have lwIP headers); created minimal shim headers under `lwip/` and a stub `nuttx-wireguardif.c` to unblock the build (see [docs/phase1-log.md](docs/phase1-log.md))
 
 **To complete during community bonding:**
 - Map all lwIP API calls in `wireguardif.c` to their NuttX equivalents
-- Design the `nuttx-wireguardif.c` interface
+- Design the full `nuttx-wireguardif.c` implementation
 
 **Deliverable:** API mapping documented; `nuttx-wireguardif.c` design complete.
 
@@ -132,13 +138,13 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 
 **Environment:** SIM (`sim:nsh`)
 
+**Status: ✅ Completed (pre-GSoC)**
+
 **Goal:** `CONFIG_NET_WIREGUARD=y` builds successfully and NuttX boots to `nsh>` without errors.
 
 wireguard-lwip provides only `.c`/`.h` source files with no standalone build system. NuttX uses CMake + Kconfig + make; a directory under `apps/netutils/wireguard/` requires `CMakeLists.txt`, `Make.defs`, `Makefile`, and `Kconfig` to be recognized by the build system.
 
-The porting challenge is OS API differences. `wireguard.c` and `crypto/` are portable C and require no changes. The NuttX integration layer is the work of this project.
-
-**Status: ✅ Completed (pre-GSoC)**
+The porting challenge is OS API differences — not the protocol logic itself. `wireguard.c` and `crypto/` are portable C and require no changes.
 
 - `apps/netutils/wireguard/` directory with build files in place
 - `wireguard.c`, `crypto/`, `nuttx-platform.c` (stub), `nuttx-wireguardif.c` (stub) compile cleanly
@@ -165,16 +171,19 @@ This phase has two parts.
 | `wireguard_tai64n_now()` | TAI64N timestamp for replay prevention | `clock_gettime(CLOCK_REALTIME)` |
 | `wireguard_is_under_load()` | Cookie reply decision | `return false` |
 
-**Part B — Network device (`nuttx-wireguardif.c`):**
+**Part B — Network integration layer (`nuttx-wireguardif.c`):**
 
-NuttX does not expose upstream lwIP APIs. The integration layer is written from scratch using:
+The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are replaced with their NuttX equivalents:
 
-| wireguard-lwip (lwIP) | NuttX equivalent |
-|-----------------------|-----------------|
-| `netif_add()` | `netdev_register()` |
-| `lwip/udp.h` (udp_new, bind, recv) | BSD socket API (`sys/socket.h`) |
-| `lwip/pbuf.h` (pbuf_alloc, free) | `nuttx/net/iob.h` (iob_alloc, free) |
-| `lwip/timeouts.h` (sys_timeout) | `nuttx/wdog.h` (wd_start) |
+| wireguardif.c (lwIP) | nuttx-wireguardif.c (NuttX) |
+|----------------------|-----------------------------|
+| `struct netif` | `struct net_driver_s` |
+| `netif->output = fn` | `dev->d_ifup = fn` 相当 |
+| `ip_input(pbuf, netif)` | `devif_input(dev)` |
+| `netif_set_link_up()` | `netdev_carrier_on()` |
+| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
+| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
+| `sys_timeout()` | `wd_start()` |
 
 **Deliverable:** `nsh> ifconfig` shows `wg0` on SIM.
 
