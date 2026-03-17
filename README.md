@@ -57,7 +57,7 @@ WireGuard's small footprint and simple key model make it particularly well-suite
 This repository includes a Docker-based development environment with two build targets.
 
 ```bash
-# sim:nsh + NET — primary development environment (fast iteration)
+# sim:net — primary development environment (fast iteration)
 docker build --target sim -t nuttx-wireguard:sim .
 docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
 
@@ -66,7 +66,7 @@ docker build --target qemu -t nuttx-wireguard:qemu .
 docker run --rm -it nuttx-wireguard:qemu
 ```
 
-See [docs/dev-environment.md](docs/dev-environment.md) for details.
+See [docs/dev-environment.md](docs/dev-environment.md) for details on each environment.
 
 ---
 
@@ -95,21 +95,22 @@ The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable 
 **Goal:** Build the understanding and environment needed before writing any NuttX-specific code.
 
 **Already completed (pre-application):**
-- Set up a Docker + QEMU development environment running NuttX `qemu-armv7a:nsh` with networking enabled (see `Dockerfile` and [docs/dev-environment.md](docs/dev-environment.md))
+- Docker images for both `sim:net` and `qemu-armv7a` build targets are working (see `Dockerfile`)
+- `sim:net` boots to `nsh>` and `ifconfig` shows `eth0` with IP address
+- `qemu-armv7a` boots to `nsh>`
 - Read through wireguard-lwip and WireGuard-ESP32-Arduino source code to understand the porting scope
 
 **To complete during community bonding:**
 - Identify all OS-specific API calls in wireguard-lwip that need to be replaced for NuttX (threads, mutexes, time, random)
 - Study the ESP32 port as a diff: understand exactly what changed from wireguard-lwip to make it run on FreeRTOS + ESP-IDF, then map each change to its NuttX equivalent
-- Set up `sim:net` as the primary development environment for feature work
 
-**Deliverable:** A documented list of APIs to replace and a working build loop on SIM.
+**Deliverable:** A documented list of APIs to replace.
 
 ---
 
 ### Phase 1 — Build System Integration on SIM (Weeks 1–2)
 
-**Environment:** `sim:nsh` (see [docs/dev-environment.md](docs/dev-environment.md))
+**Environment:** `sim:nsh`
 
 **Goal:** Add wireguard-lwip to NuttX's build system and confirm NuttX still boots without errors.
 
@@ -117,21 +118,12 @@ wireguard-lwip provides only `.c`/`.h` source files and has no standalone build 
 
 The porting challenge in this project is fundamentally about OS API differences. wireguard-lwip's core logic (`wireguard.c`, `crypto/`) is written in portable C with no OS or ISA dependencies and requires no changes. OS-specific adaptation is handled in Phase 2 via `wireguard-platform.h`.
 
-The goal of this phase is simply:
-
-```
-CONFIG_WIREGUARD=y
-  make
-    -> build success
-    -> boot success (nsh> reached, no crash)
-```
-
 - Place wireguard-lwip sources under `apps/netutils/wireguard/`
 - Write `CMakeLists.txt` and `Make.defs` following NuttX conventions
 - Add `Kconfig` entry: `CONFIG_NET_WIREGUARD`
 - Confirm NuttX boots to `nsh>` on SIM without crashing
 
-**Deliverable:** `CONFIG_WIREGUARD=y` build succeeds and NuttX reaches `nsh>` without errors.
+**Deliverable:** `CONFIG_NET_WIREGUARD=y` build succeeds and NuttX reaches `nsh>` without errors.
 
 ---
 
