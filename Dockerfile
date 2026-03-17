@@ -26,6 +26,16 @@ RUN git clone --depth=1 --branch nuttx-12.7.0 https://github.com/apache/nuttx.gi
 # wireguard-lwip: LwIP netif ベースの WireGuard 実装 (ポーティング作業用)
 RUN git clone --depth=1 https://github.com/smartalock/wireguard-lwip.git /opt/wireguard-lwip
 
+# apps/netutils/wireguard/ を構成:
+#   - wireguard-lwip のソースをコピー
+#   - NuttX ポーティングファイル (Kconfig, Make.defs, CMakeLists.txt, nuttx-platform.c) をコピー
+#   - netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
+RUN mkdir -p /opt/apps/netutils/wireguard && \
+    cp -r /opt/wireguard-lwip/src/* /opt/apps/netutils/wireguard/
+COPY nuttx_port/apps/netutils/wireguard/ /opt/apps/netutils/wireguard/
+RUN cd /opt/apps/netutils && \
+    bash /opt/apps/tools/mkkconfig.sh -m "Network Utilities" -o Kconfig
+
 # =============================================================================
 # sim ステージ: sim:nsh + NET 有効化 (メイン開発環境)
 # ホスト Linux プロセスとして動作。TUN/TAP 経由でネットワーク接続。
@@ -43,6 +53,7 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
     kconfig-tweak --enable CONFIG_MBEDTLS         && \
     kconfig-tweak --enable CONFIG_DEV_RANDOM      && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     make olddefconfig 2>&1 | tail -5
 
 RUN make -j$(nproc)

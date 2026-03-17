@@ -1,0 +1,7 @@
+############################################################################
+# apps/netutils/wireguard/Make.defs
+############################################################################
+
+ifneq ($(CONFIG_NET_WIREGUARD),)
+CONFIGURED_APPS += $(APPDIR)/netutils/wireguard
+endif
