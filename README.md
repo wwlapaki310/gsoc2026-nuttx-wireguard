@@ -1,5 +1,7 @@
 # GSoC 2026 — WireGuard Port to Apache NuttX
 
+> **Discussion:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
+
 | | |
 |---|---|
 | **Organization** | [Apache Software Foundation](https://summerofcode.withgoogle.com/programs/2026/organizations/apache-software-foundation) |
