@@ -45,5 +45,7 @@ Beyond the code, I will share my personal growth story. Despite seven years of p
 
 # Link
 https://communityovercode.org/
+
 https://communityovercode.org/call-for-presentations/
+
 https://www.cvent.com/c/abstracts/ecaa843e-109e-4f2a-b359-3a442542e4ba
