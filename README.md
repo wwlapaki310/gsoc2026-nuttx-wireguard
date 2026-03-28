@@ -103,17 +103,20 @@ A prior port of wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Studied as a refer
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
 
-The applicant is based in Japan (JST, UTC+9). The applicant will be unavailable from August 8 to August 15.
+The applicant is based in Japan (JST, UTC+9). Available approximately **12 hours per week** (weekday evenings + weekends). Unavailable August 8–15.
+
+The coding period is planned to run through the end of September, targeting a presentation at [Community Over Code Glasgow](https://communityovercode.org/) (October 11–14, 2026).
 
 | Period | Dates | Phase |
 |--------|-------|-------|
 | Community Bonding | Apr 30 – May 25 | Phase 0 |
-| Coding Week 1–2 | May 26 – Jun 6 | Phase 1 |
-| Coding Week 3–6 | Jun 7 – Jul 4 | Phase 2 |
-| Coding Week 7–9 | Jul 7 – Jul 25 | Phase 3 ★ Midterm (~Jul 14) |
-| Coding Week 10–11 | Jul 28 – Aug 8 | Phase 4 |
+| Weeks 1–2 | May 26 – Jun 6 | Phase 1 ✅ |
+| Weeks 3–8 | Jun 7 – Jul 18 | Phase 2 |
+| Weeks 9–11 | Jul 21 – Aug 8 | Phase 3 ★ Midterm (~Jul 27) |
 | *(unavailable)* | Aug 8 – Aug 15 | — |
-| Coding Week 12 | Aug 17 – Aug 23 | Phase 5 |
+| Weeks 12–14 | Aug 17 – Sep 6 | Phase 4 |
+| Weeks 15–16 | Sep 8 – Sep 27 | Phase 5 |
+| Presentation | Oct 11–14 | Community Over Code Glasgow |
 
 ---
 
@@ -156,7 +159,7 @@ The porting challenge is OS API differences — not the protocol logic itself. `
 
 ---
 
-### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–6: Jun 7 – Jul 4)
+### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–8: Jun 7 – Jul 18)
 
 **Environment:** SIM (`sim:nsh` with `CONFIG_NET=y`, `CONFIG_SIM_NETDEV=y`)
 
@@ -180,7 +183,7 @@ The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are r
 | wireguardif.c (lwIP) | nuttx-wireguardif.c (NuttX) |
 |----------------------|-----------------------------|
 | `struct netif` | `struct net_driver_s` |
-| `netif->output = fn` | `dev->d_ifup = fn` 相当 |
+| `netif->output = fn` | `dev->d_ifup = fn` equiv. |
 | `ip_input(pbuf, netif)` | `devif_input(dev)` |
 | `netif_set_link_up()` | `netdev_carrier_on()` |
 | `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
@@ -191,7 +194,7 @@ The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are r
 
 ---
 
-### Phase 3 — Handshake and Tunnel on QEMU (Weeks 7–9: Jul 7 – Jul 25) ★ Midterm
+### Phase 3 — Handshake and Tunnel on QEMU (Weeks 9–11: Jul 21 – Aug 8) ★ Midterm
 
 **Environment:** `qemu-armv7a`
 
@@ -218,7 +221,7 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 4 — NSH Command and Real Hardware (Weeks 10–11: Jul 28 – Aug 8)
+### Phase 4 — NSH Command and Real Hardware (Weeks 12–14: Aug 17 – Sep 6)
 
 **Environment:** ESP32-S3
 
@@ -253,14 +256,21 @@ QEMU uses virtio-net; ESP32-S3 uses a Wi-Fi driver. Real hardware testing valida
 
 ---
 
-### Phase 5 — Upstream PR (Week 12: Aug 17 – Aug 23)
+### Phase 5 — Upstream PR (Weeks 15–16: Sep 8 – Sep 27)
 
 **Goal:** Submit a pull request to `apache/nuttx-apps`.
 
 - Sign Apache CLA
 - Submit PR to `apps/netutils/wireguard/` conforming to NuttX coding style
+- Address review feedback
 
 **Deliverable:** PR open on `apache/nuttx-apps`.
+
+---
+
+### Community Over Code Glasgow (Oct 11–14)
+
+Present the project at the [NuttX International Workshop](https://communityovercode.org/) co-located with Community Over Code Glasgow 2026.
 
 ---
 
