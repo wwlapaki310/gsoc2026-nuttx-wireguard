@@ -105,22 +105,20 @@ A prior port of wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Studied as a refer
 
 The applicant is based in Japan (JST, UTC+9). Available approximately **12 hours per week** (weekday evenings + weekends). Unavailable August 8–15.
 
-The coding period is planned to run through the end of September, targeting a presentation at [Community Over Code Glasgow](https://communityovercode.org/) (October 11–14, 2026).
-
 | Period | Dates | Phase |
 |--------|-------|-------|
-| Community Bonding | Apr 30 – May 25 | Phase 0 |
-| Weeks 1–2 | May 26 – Jun 6 | Phase 1 ✅ |
-| Weeks 3–8 | Jun 7 – Jul 18 | Phase 2 |
-| Weeks 9–11 | Jul 21 – Aug 8 | Phase 3 ★ Midterm (~Jul 27) |
+| Community Bonding | May 8 – Jun 1 | Phase 0 |
+| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ |
+| Weeks 3–6 | Jun 16 – Jul 11 | Phase 2 |
+| Weeks 7–9 | Jul 14 – Aug 1 | Phase 3 ★ Midterm (Jul 14–18) |
 | *(unavailable)* | Aug 8 – Aug 15 | — |
-| Weeks 12–14 | Aug 17 – Sep 6 | Phase 4 |
-| Weeks 15–16 | Sep 8 – Sep 27 | Phase 5 |
+| Weeks 10–12 | Aug 4–8, Aug 18–25 | Phase 4 |
+| Post-GSoC | Sep 1 – Sep 27 | Phase 5 |
 | Presentation | Oct 11–14 | Community Over Code Glasgow |
 
 ---
 
-### Phase 0 — Preparation (Community Bonding: Apr 30 – May 25)
+### Phase 0 — Preparation (Community Bonding: May 8 – Jun 1)
 
 **Goal:** Understand the codebase and establish the development environment before coding begins.
 
@@ -139,7 +137,7 @@ The coding period is planned to run through the end of September, targeting a pr
 
 ---
 
-### Phase 1 — Build System Integration (Weeks 1–2: May 26 – Jun 6)
+### Phase 1 — Build System Integration (Weeks 1–2: Jun 2 – Jun 13)
 
 **Environment:** SIM (`sim:nsh`)
 
@@ -159,7 +157,7 @@ The porting challenge is OS API differences — not the protocol logic itself. `
 
 ---
 
-### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–8: Jun 7 – Jul 18)
+### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–6: Jun 16 – Jul 11)
 
 **Environment:** SIM (`sim:nsh` with `CONFIG_NET=y`, `CONFIG_SIM_NETDEV=y`)
 
@@ -194,7 +192,7 @@ The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are r
 
 ---
 
-### Phase 3 — Handshake and Tunnel on QEMU (Weeks 9–11: Jul 21 – Aug 8) ★ Midterm
+### Phase 3 — Handshake and Tunnel on QEMU (Weeks 7–9: Jul 14 – Aug 1) ★ Midterm (Jul 14–18)
 
 **Environment:** `qemu-armv7a`
 
@@ -221,7 +219,7 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 4 — NSH Command and Real Hardware (Weeks 12–14: Aug 17 – Sep 6)
+### Phase 4 — NSH Command and Real Hardware (Weeks 10–12: Aug 4–8, Aug 18–25)
 
 **Environment:** ESP32-S3
 
@@ -256,7 +254,7 @@ QEMU uses virtio-net; ESP32-S3 uses a Wi-Fi driver. Real hardware testing valida
 
 ---
 
-### Phase 5 — Upstream PR (Weeks 15–16: Sep 8 – Sep 27)
+### Phase 5 — Upstream PR (Post-GSoC: Sep 1 – Sep 27)
 
 **Goal:** Submit a pull request to `apache/nuttx-apps`.
 
