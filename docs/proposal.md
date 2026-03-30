@@ -7,10 +7,11 @@
 | | |
 |---|---|
 | 👤 **Name** | Satoru Akita |
-| 📧 **Email** | wwlap24@gmail.com |
+| 📧 **Email** | wwlap24@gmail.com / Satoru.Akita@sony.com |
+| 💬 **Discord** | fox_aki310 |
 | 🐙 **GitHub** | [@wwlapaki310](https://github.com/wwlapaki310) |
 | 📁 **Proposal repo** | [wwlapaki310/gsoc2026-nuttx-wireguard](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard) |
-| 💬 **NuttX discussion** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
+| 🗨️ **NuttX discussion** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
 | 🌏 **Timezone** | JST (UTC+9), Japan |
 
 ---
@@ -216,4 +217,4 @@ The motivation for this project is direct: I have repeatedly run into the proble
 - NASA Space Apps Challenge 2020 Tokyo Winner
 - ICAN 2014 World 3rd Place
 
-**Communication:** I am reachable by email at wwlap24@gmail.com and active on the NuttX mailing list and the discussion thread at https://github.com/apache/nuttx/issues/18548. I commit to weekly progress updates to the mentor and will be available via email throughout the coding period.
+**Communication:** I am reachable by email at wwlap24@gmail.com / Satoru.Akita@sony.com, on Discord as fox_aki310, and active on the NuttX mailing list and the discussion thread at https://github.com/apache/nuttx/issues/18548. I commit to weekly progress updates to the mentor and will be available throughout the coding period.

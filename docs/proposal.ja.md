@@ -7,10 +7,11 @@
 | | |
 |---|---|
 | 👤 **氏名** | 秋田 悟 |
-| 📧 **メール** | wwlap24@gmail.com |
+| 📧 **メール** | wwlap24@gmail.com / Satoru.Akita@sony.com |
+| 💬 **Discord** | fox_aki310 |
 | 🐙 **GitHub** | [@wwlapaki310](https://github.com/wwlapaki310) |
 | 📁 **プロポーザルリポジトリ** | [wwlapaki310/gsoc2026-nuttx-wireguard](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard) |
-| 💬 **NuttX ディスカッション** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
+| 🗨️ **NuttX ディスカッション** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
 | 🌏 **タイムゾーン** | JST（UTC+9）、日本 |
 
 ---
@@ -216,4 +217,4 @@ Community Over Code Glasgow 2026 と併催される NuttX International Workshop
 - NASA Space Apps Challenge 2020 東京大会 優勝
 - ICAN 2014 世界第3位
 
-**連絡手段：** メール wwlap24@gmail.com にて連絡可能。NuttX メーリングリストおよびディスカッションスレッド（https://github.com/apache/nuttx/issues/18548）にも参加している。メンターへの週次進捗報告を行い、コーディング期間を通じてメールで随時連絡できる状態を維持する。
+**連絡手段：** メール wwlap24@gmail.com / Satoru.Akita@sony.com、Discord fox_aki310 にて連絡可能。NuttX メーリングリストおよびディスカッションスレッド（https://github.com/apache/nuttx/issues/18548）にも参加している。メンターへの週次進捗報告を行い、コーディング期間を通じて随時連絡できる状態を維持する。
