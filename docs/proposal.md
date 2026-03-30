@@ -4,12 +4,14 @@
 
 ## Name and Contact Information
 
-**Name:** Satoru Akita
-**Email:** wwlap24@gmail.com
-**GitHub:** https://github.com/wwlapaki310
-**Proposal repository:** https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard
-**NuttX discussion thread:** https://github.com/apache/nuttx/issues/18548
-**Timezone:** JST (UTC+9), Japan
+| | |
+|---|---|
+| 👤 **Name** | Satoru Akita |
+| 📧 **Email** | wwlap24@gmail.com |
+| 🐙 **GitHub** | [@wwlapaki310](https://github.com/wwlapaki310) |
+| 📁 **Proposal repo** | [wwlapaki310/gsoc2026-nuttx-wireguard](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard) |
+| 💬 **NuttX discussion** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
+| 🌏 **Timezone** | JST (UTC+9), Japan |
 
 ---
 

@@ -4,12 +4,14 @@
 
 ## 応募者情報
 
-**氏名:** 秋田 悟
-**メール:** wwlap24@gmail.com
-**GitHub:** https://github.com/wwlapaki310
-**プロポーザルリポジトリ:** https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard
-**NuttX ディスカッションスレッド:** https://github.com/apache/nuttx/issues/18548
-**タイムゾーン:** JST（UTC+9）、日本
+| | |
+|---|---|
+| 👤 **氏名** | 秋田 悟 |
+| 📧 **メール** | wwlap24@gmail.com |
+| 🐙 **GitHub** | [@wwlapaki310](https://github.com/wwlapaki310) |
+| 📁 **プロポーザルリポジトリ** | [wwlapaki310/gsoc2026-nuttx-wireguard](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard) |
+| 💬 **NuttX ディスカッション** | [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548) |
+| 🌏 **タイムゾーン** | JST（UTC+9）、日本 |
 
 ---
 
