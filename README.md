@@ -103,18 +103,22 @@ A prior port of wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Studied as a refer
 
 > **Note:** This timeline is tentative and subject to change based on discussion with mentors.
 
-The applicant is based in Japan (JST, UTC+9). Available approximately **12 hours per week** (weekday evenings + weekends). Unavailable August 8–15.
+The applicant is based in Japan (JST, UTC+9). Available approximately **15 hours per week** (weekday evenings + weekends). Unavailable August 8–15 (Obon holiday).
 
-| Period | Dates | Phase |
-|--------|-------|-------|
-| Community Bonding | May 8 – Jun 1 | Phase 0 |
-| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ |
-| Weeks 3–6 | Jun 16 – Jul 11 | Phase 2 |
-| Weeks 7–9 | Jul 14 – Aug 1 | Phase 3 ★ Midterm (Jul 14–18) |
-| *(unavailable)* | Aug 8 – Aug 15 | — |
-| Weeks 10–12 | Aug 4–8, Aug 18–25 | Phase 4 |
-| Post-GSoC | Sep 1 – Sep 27 | Phase 5 |
-| Presentation | Oct 11–14 | Community Over Code Glasgow |
+| Period | Dates | Phase | Hours |
+|--------|-------|-------|-------|
+| Community Bonding | May 8 – Jun 1 | Phase 0 | — |
+| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ | 30h |
+| Weeks 3–5 | Jun 16 – Jul 4 | Phase 2 | 45h |
+| **Buffer** | Jul 7 – Jul 11 | — | — |
+| Weeks 6–8 | Jul 14 – Aug 1 | Phase 3 ★ Midterm (Jul 14–18) | 45h |
+| Weeks 9–11 | Aug 4–8, Aug 18 – Sep 5 | Phase 4 | 45h |
+| *(Obon holiday)* | Aug 8 – Aug 15 | — | — |
+| *GSoC final submission* | Aug 25 | — | — |
+| Weeks 12–14 | Sep 8 – Sep 27 | Phase 5 | 45h |
+| **Conference** | Oct 11 – Oct 14 | ASF Conference @ Glasgow (CFP submitted) | — |
+
+**Total: ~210 hours** (Phase 1 completed pre-GSoC; post-Aug 25 work covers upstream PR and conference preparation)
 
 ---
 
@@ -157,7 +161,7 @@ The porting challenge is OS API differences — not the protocol logic itself. `
 
 ---
 
-### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–6: Jun 16 – Jul 11)
+### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–5: Jun 16 – Jul 4)
 
 **Environment:** SIM (`sim:nsh` with `CONFIG_NET=y`, `CONFIG_SIM_NETDEV=y`)
 
@@ -192,7 +196,7 @@ The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are r
 
 ---
 
-### Phase 3 — Handshake and Tunnel on QEMU (Weeks 7–9: Jul 14 – Aug 1) ★ Midterm (Jul 14–18)
+### Phase 3 — Handshake and Tunnel on QEMU (Weeks 6–8: Jul 14 – Aug 1) ★ Midterm (Jul 14–18)
 
 **Environment:** `qemu-armv7a`
 
@@ -219,7 +223,7 @@ nsh> ping 10.0.0.1
 
 ---
 
-### Phase 4 — NSH Command and Real Hardware (Weeks 10–12: Aug 4–8, Aug 18–25)
+### Phase 4 — NSH Command and Real Hardware (Weeks 9–11: Aug 4–8, Aug 18 – Sep 5)
 
 **Environment:** ESP32-S3
 
@@ -254,21 +258,23 @@ QEMU uses virtio-net; ESP32-S3 uses a Wi-Fi driver. Real hardware testing valida
 
 ---
 
-### Phase 5 — Upstream PR (Post-GSoC: Sep 1 – Sep 27)
+### Phase 5 — Upstream PR and Documentation (Weeks 12–14: Sep 8 – Sep 27)
 
-**Goal:** Submit a pull request to `apache/nuttx-apps`.
+**Goal:** Submit a pull request to `apache/nuttx-apps` and prepare conference presentation.
 
 - Sign Apache CLA
 - Submit PR to `apps/netutils/wireguard/` conforming to NuttX coding style
 - Address review feedback
+- Write final documentation and prepare slides for ASF Conference
 
-**Deliverable:** PR open on `apache/nuttx-apps`.
+**Deliverable:** PR open on `apache/nuttx-apps`; presentation slides ready.
 
 ---
 
-### Community Over Code Glasgow (Oct 11–14)
+### ASF Conference @ Glasgow (Oct 11–14)
 
-Present the project at the [NuttX International Workshop](https://communityovercode.org/) co-located with Community Over Code Glasgow 2026.
+Present the project results at the **NuttX International Workshop**, co-located with [Community Over Code Glasgow 2026](https://communityovercode.org/).
+CFP has been submitted.
 
 ---
 
