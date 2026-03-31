@@ -23,9 +23,11 @@ created: 3/31/2026
 
 ## 2. Project Overview
 
-Apache NuttX is a POSIX-compliant real-time operating system (RTOS) that supports microcontrollers from 8-bit to 64-bit. It has been adopted in a variety of embedded systems, including the PX4 flight control system (drones) and satellites using Sony SPRESENSE. However, NuttX currently has no VPN support, meaning there is no standard way to securely perform remote maintenance tasks such as firmware updates, configuration changes, or diagnostic data retrieval.
+Apache NuttX is a POSIX-compliant Real-Time Operating System (RTOS) designed for resource-constrained environments. It powers critical embedded systems ranging from PX4-based UAVs to nanosatellites utilizing Sony SPRESENSE, and is also employed in Edge AI cameras running on ESP32. As these devices are increasingly deployed in remote or untrusted networks, secure and encrypted tunnels for firmware updates, diagnostics, and remote maintenance have become a critical requirement. However, a significant gap exists in the current NuttX networking stack: the lack of a native, lightweight VPN capability.
 
-This project ports WireGuard — a modern, lightweight VPN developed for Linux — to NuttX, enabling secure remote access to NuttX-based devices. Since WireGuard was merged into the Linux kernel 5.6 (2020), it has been deployed in embedded environments including OpenWrt and ESP32. It establishes encrypted tunnels over UDP using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s) while maintaining a small implementation footprint suitable for microcontrollers. It is configured with a simple key pair and works with existing WireGuard clients out of the box.
+To address this, this GSoC 2026 project aims to port WireGuard to Apache NuttX. WireGuard is a modern, high-performance VPN that utilizes state-of-the-art cryptography — Curve25519, ChaCha20-Poly1305, and BLAKE2s — while maintaining a minimal codebase. Unlike traditional solutions, WireGuard is designed to be as simple to configure as SSH and highly efficient on microcontrollers, as proven by its successful deployment in OpenWrt and ESP32 environments since its integration into the Linux kernel 5.6 (2020).
+
+By bringing WireGuard to Apache NuttX, this project will empower developers to deploy secure-by-default, production-ready communication in embedded systems with minimal resource overhead, bridging the gap between existing RTOS capabilities and modern security standards.
 
 Contributions to the Apache NuttX community:
 
