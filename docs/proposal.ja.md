@@ -25,7 +25,7 @@ created: 3/30/2026
 
 WireGuard は Linux 向けに開発されたモダンで軽量な VPN プロトコルで、組み込み・IoT 分野への採用も広がっている。Curve25519・ChaCha20-Poly1305・BLAKE2s という最新の暗号方式を使い UDP 上で暗号化トンネルを確立しながら、マイコン上でも動作できる小さな実装サイズを維持している。
 
-Apache NuttX は POSIX 準拠の RTOS で、独自の TCP/IP スタックと BSD socket インターフェースを持つ。しかし NuttX には現時点で VPN 機能が存在しない。本プロジェクトでは WireGuard を NuttX のネットワークデバイス（`wg0`）として実装し、NuttX ベースのデバイスへの安全なリモートアクセスを実現する。
+Apache NuttX は POSIX 準拠の RTOS で、独自の TCP/IP スタックと BSD socket インターフェースを持つ。しかし NuttX には現時点で VPN 機能が存在しない。本プロジェクトでは WireGuard を NuttX に実装し、NuttX ベースのデバイスへの安全なリモートアクセスを実現する。
 
 ### Why This Matters
 
