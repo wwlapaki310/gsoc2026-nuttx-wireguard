@@ -1,8 +1,12 @@
 # WireGuard Port to Apache NuttX
+**(project: Apache Software Foundation)**
+
+**Satoru Akita**
+created: 3/31/2026
 
 ---
 
-## Name and Contact Information
+## 1. Applicant Information
 
 | | |
 |---|---|
@@ -17,205 +21,197 @@
 
 ---
 
-## Title
+## 2. Project Overview
 
-WireGuard Port to Apache NuttX
+Apache NuttX is a POSIX-compliant real-time operating system (RTOS) that supports microcontrollers from 8-bit to 64-bit. It has been adopted in a variety of embedded systems, including the PX4 flight control system (drones) and satellites using Sony SPRESENSE. However, NuttX currently has no VPN support, meaning there is no standard way to securely perform remote maintenance tasks such as firmware updates, configuration changes, or diagnostic data retrieval.
 
----
+This project ports WireGuard — a modern, lightweight VPN developed for Linux — to NuttX, enabling secure remote access to NuttX-based devices. Since WireGuard was merged into the Linux kernel 5.6 (2020), it has been deployed in embedded environments including OpenWrt and ESP32. It establishes encrypted tunnels over UDP using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s) while maintaining a small implementation footprint suitable for microcontrollers. It is configured with a simple key pair and works with existing WireGuard clients out of the box.
 
-## Synopsis
+Contributions to the Apache NuttX community:
 
-NuttX is used in satellites, edge AI cameras, robotics, and remote sensing systems — devices where secure remote access is critical but currently impossible. This project ports WireGuard to NuttX, implementing it as a native network device (`wg0`) so that any NuttX device can establish an encrypted VPN tunnel using standard WireGuard tooling on the peer side. The primary reference is wireguard-lwip (smartalock), whose portable protocol core is reused as-is, while the network integration layer is rewritten for NuttX's netdev API and BSD socket interface.
+- **Adds a missing capability.** This brings the first standard VPN solution to NuttX.
 
-I have already completed Phase 1 before the application deadline: the build system is integrated, Docker environments for SIM and QEMU are working, and the key architectural finding — that NuttX's TCP/IP stack is independent from lwIP, requiring a new `nuttx-wireguardif.c` — is documented. The remaining work fits clearly within the 175-hour scope.
+- **Available to all NuttX developers immediately.** The goal is to upstream the code to `apache/nuttx-apps`, so any NuttX developer can enable WireGuard with `CONFIG_NET_WIREGUARD=y` without doing their own porting work.
 
----
+- **Establishes a pattern for porting lwIP-based libraries to NuttX.** Many embedded environments (FreeRTOS, ESP-IDF) use lwIP as their networking library, and a large body of lwIP-based software exists — including Mongoose Web Server (embedded HTTP/WebSocket), libcoap (IoT CoAP), and Eclipse Paho Embedded MQTT. Since NuttX has its own network stack, there has been no clear path to run these on NuttX. This project demonstrates and documents the bridging approach, serving as a reference for future porters beyond WireGuard.
 
-## Benefits to Community
-
-NuttX runs in environments where physical access is impractical or impossible: small satellites, ocean buoys, edge AI cameras deployed in the field, unmanned infrastructure. Firmware updates, remote debugging, and secure device-to-device communication all require a VPN that is small enough to run on a microcontroller and simple enough to configure with a static key pair.
-
-WireGuard is the right answer for this. Its codebase is small, its cryptography is modern, and its key model is simple. It is already shipping on Linux devices at scale. Porting it to NuttX brings that same capability to the embedded RTOS world.
-
-For the Apache NuttX community specifically:
-
-- **A gap in the ecosystem is filled.** NuttX has no VPN support today. This adds a capability that many users have been working around manually.
-- **The implementation will be upstreamed.** The goal is a PR to `apache/nuttx-apps` that any NuttX user can enable with `CONFIG_NET_WIREGUARD=y`.
-- **The approach is a reference.** The `nuttx-wireguardif.c` integration layer demonstrates how to port a lwIP-based network component to NuttX's native netdev API, which will help future porting efforts.
-
-The project will be presented at the **NuttX International Workshop at Community Over Code Glasgow** (October 11-14, 2026). CFP has been submitted.
+The project results will be presented at the **NuttX International Workshop at Community Over Code Glasgow** (October 11–14, 2026). CFP has already been submitted.
 
 ---
 
-## Related Work
+## 3. Proposal Details
 
-**smartalock/wireguard-lwip** (https://github.com/smartalock/wireguard-lwip)
+| | |
+|---|---|
+| **Organization** | [Apache Software Foundation](https://summerofcode.withgoogle.com/programs/2026/organizations/apache-software-foundation) |
+| **Difficulty** | Major |
+| **Size** | ~175 hours (Medium) |
+| **Mentor** | Alan Carvalho de Assis (acassis@apache.org), dev@nuttx.apache.org |
 
-This is the primary reference and the source of the portable code used in this project. It implements WireGuard as a lwIP netif and isolates all OS-specific behavior behind four functions in `wireguard-platform.h`. The protocol core (`wireguard.c`) and cryptographic primitives (`crypto/`) are written in portable C with no OS or architecture dependencies.
+### 3.1 Reference Projects
 
-The key finding from Phase 1: NuttX does not use lwIP. NuttX has its own TCP/IP stack (uIP-derived, but largely an original design). This means `wireguardif.c` — the lwIP integration layer — cannot be compiled as-is on NuttX. The solution is `nuttx-wireguardif.c`, a new file that reuses the protocol logic from `wireguardif.c` while replacing the lwIP API calls with NuttX's netdev API and BSD socket API.
+Two existing projects are used as references, each serving a different role.
 
-**ciniml/WireGuard-ESP32-Arduino** (https://github.com/ciniml/WireGuard-ESP32-Arduino)
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip) — the source code to port**
 
-A prior port of wireguard-lwip to ESP32 running FreeRTOS + ESP-IDF. Since ESP-IDF uses lwIP, this port can use `wireguardif.c` more directly. It is used as a reference for the OS-specific platform layer (`wireguard-platform.h`) — specifically, the timer API, random number generation, and mutex patterns in an embedded RTOS.
+This is the actual code being brought into NuttX. It implements WireGuard as a lwIP netif (network interface). A netif is lwIP's abstraction for a virtual NIC — a network interface unit treated on equal footing with `eth0` or `wlan0`. By implementing WireGuard as a netif, it appears to the upper network stack as a regular NIC, and routing and packet forwarding work transparently.
 
-**How this project differs:**
+All OS-specific behavior is isolated behind a platform abstraction layer (`wireguard-platform.h`) consisting of four functions. The WireGuard protocol core (`wireguard.c`) and cryptographic primitives (`crypto/`) are written in portable C with no OS or architecture dependencies and can be used as-is. The porting work has two parts: implementing `wireguard-platform.h` for NuttX (replacing time, random, and timer APIs), and replacing the lwIP-specific API calls in `wireguardif.c` with NuttX equivalents (`struct netif` → `struct net_driver_s`, `pbuf_alloc()` → `iob_alloc()`, `udp_new()/bind()` → BSD `socket()/bind()`, etc.).
 
-NuttX's network stack is not lwIP, so the integration challenge is more fundamental than the ESP32 port. The contribution of this project is demonstrating and documenting how to connect a lwIP-based network component to NuttX's native netdev and socket API — a reusable pattern for the community beyond WireGuard itself.
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) — a prior port**
+
+A port of wireguard-lwip to ESP32 running FreeRTOS + ESP-IDF. Since ESP-IDF uses lwIP, this port can use `wireguardif.c` more directly. It is used as a reference for the OS-specific platform layer — specifically timer APIs, random number generation, and mutex patterns in an embedded RTOS.
+
+**How this project differs:** NuttX does not use lwIP. NuttX has its own TCP/IP stack, and lwIP public headers such as `lwip/netif.h` are not in the include path. This means `wireguardif.c` cannot be compiled on NuttX as-is. The contribution of this project is demonstrating and documenting how to connect a lwIP-based network component to NuttX's native netdev and socket API — a reusable pattern for the community.
 
 ---
 
-## Deliverables
+### 3.2 Task List
 
-### Already completed (pre-application)
+**Phase 0–1 (completed pre-application)**
+- Docker development environment with two build targets (`sim` with TUN/TAP networking and `qemu-armv7a`)
+- Build system files for `apps/netutils/wireguard/` (`CMakeLists.txt`, `Make.defs`, `Kconfig`)
+- Minimal lwIP compatibility shim headers so `wireguard.c` compiles without modification
+- Full API mapping: all lwIP calls in `wireguardif.c` mapped to NuttX equivalents
+- ✅ `CONFIG_NET_WIREGUARD=y` builds successfully; NuttX boots to `nsh>` on SIM
 
-- Docker-based development environment with two build targets: `sim` (NuttX running as a Linux process with TUN/TAP networking) and `qemu-armv7a`
-- `CONFIG_NET_WIREGUARD=y` builds without errors; NuttX boots to `nsh>` on SIM with `eth0` visible
-- Build system files for `apps/netutils/wireguard/`: `CMakeLists.txt`, `Make.defs`, `Makefile`, `Kconfig`
-- Minimal lwIP compatibility shim headers (`lwip/netif.h`, `lwip/udp.h`, etc.) so `wireguard.c` compiles without modification
-- Stub `nuttx-wireguardif.c` and `nuttx-platform.c` to unblock the build
-- API mapping: all lwIP calls in `wireguardif.c` mapped to their NuttX equivalents (documented in `docs/phase1-log.md`)
+**Phase 2 — NuttX Integration Layer on SIM (Jun 16 – Jul 4)**
+- `nuttx-platform.c`: implement four OS-specific functions using NuttX POSIX APIs (time, random, timer)
+- `nuttx-wireguardif.c`: replace lwIP APIs (`struct netif`, `pbuf`, `udp_*`) with NuttX `net_driver_s`, `iob`, and BSD sockets
+- ✅ `nsh> ifconfig` shows `wg0` alongside `eth0` on SIM
 
-### Phase 0 — Community Bonding (May 8 – Jun 1)
+**Phase 3 — Handshake and Tunnel on QEMU (Jul 14 – Aug 8)**
+- Port the working SIM configuration to `qemu-armv7a` (verify behavior under NuttX's own scheduler)
+- Establish WireGuard handshake with a Linux peer
+- ✅ `nsh> ping 10.0.0.1` succeeds; Linux-side `wg show` confirms handshake
 
-- Finalize the design of `nuttx-wireguardif.c` based on the API mapping
-- Confirm approach with mentor (Alan Carvalho de Assis)
+**Phase 4 — NSH Command and ESP32-S3 Hardware (Aug 18 – Sep 12)**
+- Implement `wg show` / `wg setconf` as NSH built-in commands
+- Establish WireGuard tunnel on ESP32-S3 hardware over Wi-Fi
+- ✅ End-to-end tunnel working on real hardware; Flash/RAM usage measured
 
-Deliverable: design document; mentor sign-off on approach.
-
-### Phase 1 — Build System Integration ✅ Completed
-
-Deliverable: `CONFIG_NET_WIREGUARD=y` build succeeds; NuttX reaches `nsh>`.
-
-### Phase 2 — NuttX Integration Layer on SIM (Jun 16 – Jul 4) [REQUIRED]
-
-Implement the two remaining files:
-
-**nuttx-platform.c** — four functions replacing OS-specific behavior:
-
-| Function | NuttX implementation |
-|----------|---------------------|
-| `wireguard_sys_now()` | `clock_gettime(CLOCK_MONOTONIC)` |
-| `wireguard_random_bytes()` | `read("/dev/urandom")` |
-| `wireguard_tai64n_now()` | `clock_gettime(CLOCK_REALTIME)` |
-| `wireguard_is_under_load()` | `return false` |
-
-**nuttx-wireguardif.c** — network integration layer:
-
-| lwIP (wireguardif.c) | NuttX (nuttx-wireguardif.c) |
-|----------------------|------------------------------|
-| `struct netif` | `struct net_driver_s` |
-| `netif_add()` | `netdev_register()` |
-| `ip_input(pbuf, netif)` | `devif_input(dev)` |
-| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
-| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
-| `sys_timeout()` | `wd_start()` |
-
-Deliverable: `nsh> ifconfig` shows `wg0` alongside `eth0` on SIM. [REQUIRED]
-
-### Buffer week (Jul 7 – Jul 11)
-
-Investigation and catch-up. No deliverable.
-
-### Phase 3 — Handshake and Tunnel on QEMU (Jul 14 – Aug 1) ★ Midterm [REQUIRED]
-
-Port the working SIM configuration to `qemu-armv7a`. QEMU introduces an emulated ARM CPU with NuttX's own scheduler, necessary to verify that WireGuard's timer-based operations (keepalive, handshake expiry) work correctly.
-
-- Generate key pairs on NuttX (QEMU) and Linux sides
-- Verify Noise protocol handshake over UDP port 51820
-- Test end-to-end traffic: `nsh> ping 10.0.0.1`
-
-Deliverable:
-```
-# Linux:
-$ sudo wg show
-peer: <NuttX public key>
-  latest handshake: 3 seconds ago
-
-# NuttX (QEMU):
-nsh> ping 10.0.0.1
-64 bytes from 10.0.0.1: icmp_seq=0 time=4 ms
-```
-
-### Phase 4 — NSH Command and Real Hardware (Aug 4 – Sep 5) [REQUIRED]
-
-**NSH wg command:**
-
-```
-nsh> wg show
-interface: wg0
-  public key: <base64>
-  listening port: 51820
-peer: <base64>
-  endpoint: 192.168.x.x:51820
-  latest handshake: 5 seconds ago
-  transfer: 1.23 KiB received, 0.45 KiB sent
-```
-
-- Implement `wg show` and `wg setconf` as NSH built-in commands
-- Finalize Kconfig dependency chain: `NET_WIREGUARD` depends on `NET`, `NET_UDP`, `MBEDTLS`
-
-**ESP32-S3 real hardware test:**
-
-QEMU uses virtio-net; ESP32-S3 uses a Wi-Fi driver. Real hardware validates the netdev integration with a physical interface and provides actual Flash and RAM measurements.
-
-Deliverable: WireGuard tunnel working on ESP32-S3 over Wi-Fi; Flash/RAM measurements recorded. [REQUIRED]
-
-### Phase 5 — Upstream PR and Documentation (Sep 8 – Sep 27) [REQUIRED]
-
+**Phase 5 — Upstream PR (Sep 15 – Sep 30)**
 - Sign Apache CLA
-- Submit PR to `apache/nuttx-apps` at `apps/netutils/wireguard/` conforming to NuttX coding style
-- Address review feedback
-- Write documentation
-
-Deliverable: PR open on `apache/nuttx-apps`. [REQUIRED]
-
-### ASF Conference @ Glasgow (Oct 11 – Oct 14)
-
-Present project results at the NuttX International Workshop, co-located with Community Over Code Glasgow 2026. CFP has been submitted.
+- Submit PR to `apps/netutils/wireguard/` in `apache/nuttx-apps`
+- ✅ PR open on `apache/nuttx-apps`
 
 ---
 
-## Timeline Summary
+### 3.3 Timeline
+
+As a full-time working professional, I plan to contribute approximately 12–15 hours per week with a 2-week buffer built into the schedule.
 
 | Period | Dates | Content |
 |--------|-------|---------|
-| Community Bonding | May 8 – Jun 1 | Phase 0: design finalization |
-| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ completed pre-GSoC |
-| Weeks 3–5 | Jun 16 – Jul 4 | Phase 2: NuttX integration layer |
-| Buffer | Jul 7 – Jul 11 | catch-up / investigation |
-| Weeks 6–8 | Jul 14 – Aug 1 | Phase 3: QEMU handshake ★ Midterm |
-| Weeks 9–11 | Aug 4–8, Aug 18 – Sep 5 | Phase 4: NSH command + ESP32-S3 |
-| (Obon holiday) | Aug 8 – Aug 15 | unavailable |
-| GSoC final submission | Aug 25 | — |
-| Weeks 12–14 | Sep 8 – Sep 27 | Phase 5: upstream PR |
-| Conference | Oct 11 – Oct 14 | ASF Conference @ Glasgow |
-
-Availability: approximately 15 hours per week (weekday evenings + weekends, JST).
+| Community Bonding | May 1 – May 24 | Phase 0: finalize API mapping, align approach with mentor |
+| Phase 1 | ✅ completed pre-application | Build system integration |
+| Weeks 1–5 | May 25 – Jun 27 | Phase 2: NuttX integration layer (SIM) |
+| Buffer | Jun 30 – Jul 4 | Catch-up / investigation |
+| ★ Midterm evaluation | Jul 6 – Jul 10 | Phase 2 deliverable: `wg0` visible in `ifconfig` |
+| Weeks 7–10 | Jul 14 – Aug 8 | Phase 3: QEMU handshake and tunnel |
+| (Obon holiday) | Aug 8 – Aug 15 | Unavailable |
+| Weeks 11–14 | Aug 18 – Sep 12 | Phase 4: NSH command + ESP32-S3 hardware |
+| Weeks 15–18 | Sep 15 – Sep 30 | Phase 5: upstream PR |
+| Conference prep | Oct 1 – Oct 10 | ASF Conference preparation |
+| Conference | Oct 11 – Oct 14 | ASF Conference @ Glasgow (CFP submitted) |
 
 ---
 
-## Biographical Information
+## 4. Communication
 
-I work as an Edge AI engineer at Sony Semiconductor Solutions. My day-to-day work involves the Sony IMX500 intelligent vision sensor and the SPRESENSE and ESP32-based camera systems that run on top of it. I use Apache NuttX from the application side on these platforms regularly.
+Timezone: UTC+9 (Japan Standard Time)
 
-The motivation for this project is direct: I have repeatedly run into the problem of needing to securely access a NuttX device in the field — for a firmware update, a configuration change, or to pull diagnostic data — and having no clean solution. WireGuard solves exactly this problem on Linux. I want it to work on NuttX too.
+### 4.1 Communication Preferences
+
+From my experience in remote and hybrid work, I am comfortable with asynchronous communication across time zones. At work I primarily use Microsoft Teams; outside of work I regularly use Discord, Slack, Google Meet, Zoom, and X (Twitter) depending on context. I am flexible with whatever tools the mentor and community prefer.
+
+For this project, my planned approach is:
+
+- **GitHub Issues / PR comments:** The primary venue for technical discussion and code review, kept open so the whole community can follow along.
+- **Discord:** Quick questions and synchronous check-ins. I would like to propose creating a dedicated Discord channel for mentor communication.
+- **Weekly progress reports:** Posted each week in the Discord channel or on GitHub, covering both progress and any technical blockers — shared early to prevent the project from stalling.
+
+| Channel | Purpose |
+|---------|---------|
+| 📧 Email (wwlap24@gmail.com) | Urgent contact and official notifications; reply within 24 hours |
+| 💬 Discord (fox_aki310) | Day-to-day communication, weekly sync, progress reports |
+| 🗨️ GitHub Issues / PRs | Technical discussion, code review, task tracking |
+| 📋 NuttX mailing list | Important community-wide updates and discussion |
+
+### 4.2 English Proficiency
+
+English is my second language, but text-based communication (chat, email, code review) is not a problem. I am working on improving my spoken English daily. I have given presentations in English at the SXSW hackathon and for my master's thesis defense. I also collaborated with the Sony Europa team (Lund, Sweden) to develop AITRIOS sample applications and publish them as OSS on GitHub.
+
+---
+
+## 5. About Me
+
+| | |
+|---|---|
+| 📄 **CV** | [Google Drive](https://drive.google.com/file/d/1WaaCUJOFb_DxdXQ1hG7ZQF_cu7Jbm_pr/view) |
+| 💼 **LinkedIn** | [satoru-akita-6070a4145](https://www.linkedin.com/in/satoru-akita-6070a4145/) |
+| 🏢 **Employer** | [Sony Semiconductor Solutions Corporation](https://www.sony-semicon.com/en/index.html) |
+| 🎓 **Education** | M.S. in Robotics, [Tohoku University](http://www.mems.mech.tohoku.ac.jp/index_e.html) |
+| 📝 **Blog** | [wwlapaki310.github.io](https://wwlapaki310.github.io/) |
+
+### 5.1 Motivation
+
+I work at Sony Semiconductor Solutions on two product areas where NuttX is deployed in production.
+
+**AITRIOS (Edge AI Camera Platform)**
+
+A platform centered around edge AI cameras combining the Sony IMX500 intelligent vision sensor with ESP32, which runs NuttX. These cameras are deployed in logistics warehouses, retail stores, and traffic monitoring systems — running in the field for extended periods.
+Reference: https://www.aitrios.sony-semicon.com/edge-ai-devices
+
+**SPRESENSE (Low-Power Microcontroller)**
+
+A compact, low-power microcontroller board developed by Sony, with adoption in mission-critical applications including satellites and ocean monitoring. The lunar transforming robot SORA-Q (launched 2023) uses SPRESENSE, and small satellite projects in partnership with JAXA (Japan Aerospace Exploration Agency) are ongoing.
+Reference: https://www.hackster.io/news/sora-q-the-sony-spresense-powered-transforming-robot-heads-moonward-if-spacex-can-fix-falcon-9-c81e490e78b1
+
+---
+
+Working on these projects, I have repeatedly run into the need to securely access a NuttX device in the field — firmware updates for cameras deployed in warehouses, remote debugging of satellites — all of which require secure communication that does not assume physical access. WireGuard solves this problem on Linux. That is the direct motivation for wanting to make it work on NuttX.
+
+As a daily NuttX user, I also want to make a concrete contribution to the open-source community. I have previously published AITRIOS sample applications as OSS, but contributing to an existing OSS project upstream will be a first for me. I want to build that experience and become an engineer who contributes to the global software ecosystem.
+
+### 5.2 Availability
+
+- **Hours:** ~12–15 hours per week (weekday evenings + weekends, JST)
+- **Unavailable:** August 8–15 (Obon holiday, Japan)
+- **Submission target:** End of September. Will aim for the August 25 standard deadline if ahead of schedule.
+- **Post-GSoC:** Will present at ASF Conference @ Glasgow.
+
+### 5.3 Background and Interests
+
+I regularly attend software conferences, help with community organizing, and participate in hackathons. I served as a staff organizer at Open Source Summit Japan, and took part in a robotics hackathon using the Unitree G1.
+
+![Open Source Summit Japan (organizer)](../assets/oss-summit-japan.jpg)
+![Unitree G1 Robot Hackathon](../assets/unitree-g1-hackathon.jpg)
+
+I grew up fascinated by space and spent my student years building rockets and autonomous robots — an interest that eventually led me to edge AI and spacecraft development with SPRESENSE and NuttX. Outside of tech, I enjoy marathon running, golf, travel, and history.
 
 **Technical skills relevant to this project:**
 
-- **Embedded C:** daily use of cross-compilation with `arm-none-eabi-gcc`, POSIX API on RTOS, direct register-level hardware work
-- **NuttX:** application-side development on SPRESENSE and ESP32; familiar with the build system (Kconfig, CMake, make), NSH, and the netdev/socket API
+- **Embedded C:** Daily use of `arm-none-eabi-gcc` cross-compilation, POSIX API on RTOS, register-level hardware work
+- **NuttX:** Application-side development on SPRESENSE and ESP32; familiar with the build system (Kconfig, CMake, make), NSH, and the netdev/socket API
 - **Networking:** TCP/IP stack fundamentals, BSD socket API, UDP, VPN concepts
-- **Docker + QEMU:** set up the working `sim` and `qemu-armv7a` development environments for this project from scratch
-- **C language proficiency:** comfortable reading and modifying low-level C code in embedded contexts; read through wireguard-lwip and wireguard-ESP32-Arduino codebases as part of proposal preparation
+- **Docker + QEMU:** Built the `sim` and `qemu-armv7a` development environments for this project from scratch
+- **C proficiency:** Comfortable reading and modifying low-level C in embedded contexts; read through wireguard-lwip and WireGuard-ESP32-Arduino codebases as part of proposal preparation
 
-**Certifications:** GCP Professional, AWS Certified, TensorFlow Developer Certificate, Information Security Specialist (Japan National Exam)
+**Certifications:** GCP Professional, AWS Certified, TensorFlow Developer Certificate, Information Security Specialist (IPA, Japan)
 
 **Selected achievements:**
-
 - SPAJAM 2024 Excellence Award (national hackathon finals, NHK broadcast)
 - Harvard BIOMD 2015 Grand Prize
 - NASA Space Apps Challenge 2020 Tokyo Winner
 - ICAN 2014 World 3rd Place
 
-**Communication:** I am reachable by email at wwlap24@gmail.com (main) / Satoru.Akita@sony.com (sub), on Discord as fox_aki310, and active on the NuttX mailing list and the discussion thread at https://github.com/apache/nuttx/issues/18548. I commit to weekly progress updates to the mentor and will be available throughout the coding period.
+### 5.4 About the Community Over Code Glasgow Submission
+
+I had the opportunity to speak with Jerpelea Alin through the Sony Group internal chat, and his encouragement helped me move forward with this application.
+
+As a planned venue for sharing the results of this project, I have submitted a CFP to the NuttX International Workshop at Community Over Code Glasgow (October 11–14, 2026).
+
+- CFP: [docs/proposal for ASF2026.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/proposal%20for%20ASF2026.md)
+
+I don't yet know whether it will be accepted, but I am looking forward to attending and meeting everyone in Glasgow.

@@ -2,7 +2,7 @@
 **(project: Apache Software Foundation)**
 
 **Satoru Akita**
-created: 3/30/2026
+created: 3/31/2026
 
 ---
 
@@ -10,7 +10,7 @@ created: 3/30/2026
 
 | | |
 |---|---|
-| 👤 **氏名** | 秋田 悟 |
+| 👤 **氏名** | 秋田 賢 |
 | 📧 **メール（main）** | wwlap24@gmail.com |
 | 📧 **メール（sub）** | Satoru.Akita@sony.com |
 | 💬 **Discord** | fox_aki310 |
@@ -23,21 +23,11 @@ created: 3/30/2026
 
 ## 2. プロジェクト概要
 
-### Apache NuttX とは
+Apache NuttX は POSIX 準拠のリアルタイム OS（RTOS）で、8ビットから64ビットまでのマイコンに対応する。PX4 飛行制御システム（ドローン）や Sony SPRESENSE を活用した人工衛星など、さまざまな組み込み機器での採用実績がある。しかし NuttX には現時点で VPN 機能が存在せず、ファームウェアの更新、設定変更、診断データの取得といった遠隔メンテナンスを安全に行う標準的な手段がなかった。
 
-Apache NuttX は POSIX 準拠のリアルタイム OS（RTOS）で、独自の TCP/IP スタックと BSD socket インターフェースを持つ。8ビットから64ビットまでのマイコンで動作し、人工衛星・産業機器・エッジ AI カメラ・海洋センサーなど、フィールドに長期間展開される組み込み機器に広く採用されている。
+本プロジェクトでは、WireGuardというLinux 向けに開発されたモダンで軽量な VPN  をNuttX に移植し、NuttX ベースのデバイスへの安全なリモートアクセスを実現する。
+WireGuard は Linux カーネル 5.6（2020年）に統合された後、OpenWrt や ESP32 など組み込み環境への展開も進んでいる。Curve25519・ChaCha20-Poly1305・BLAKE2s という最新の暗号方式を使い UDP 上で暗号化トンネルを確立しながら、マイコン上でも動作できる小さな実装サイズを維持している。シンプルな鍵ペアで設定でき、既存の WireGuard クライアントをそのまま利用できる。
 
-### 課題：NuttX デバイスへの安全なリモートアクセス手段がない
-
-NuttX を搭載したデバイスは物理的にアクセス困難な場所に設置されることが多い。しかし NuttX には現時点で VPN 機能が存在しない。このため、ファームウェアの更新、設定変更、診断データの取得といった遠隔メンテナンスを安全に行う標準的な手段がなく、ユーザーはそれぞれ独自に SSH トンネルや専用プロトコルを組み合わせる必要があった。
-
-### WireGuard
-
-WireGuard は Linux 向けに開発されたモダンで軽量な VPN プロトコルで、組み込み・IoT 分野への採用も広がっている。Curve25519・ChaCha20-Poly1305・BLAKE2s という最新の暗号方式を使い UDP 上で暗号化トンネルを確立しながら、マイコン上でも動作できる小さな実装サイズを維持している。シンプルな鍵ペアで設定でき、Linux 側には追加ツール不要で、既存の WireGuard クライアントをそのまま使える。
-
-### 本プロジェクト
-
-本プロジェクトでは WireGuard を NuttX に実装し、NuttX ベースのデバイスへの安全なリモートアクセスを実現する。
 
 Apache NuttX コミュニティへの貢献：
 
@@ -45,173 +35,134 @@ Apache NuttX コミュニティへの貢献：
 
 - **世界中の NuttX 開発者がすぐに使える状態で提供される。** 本プロジェクトのコードは Apache の公式リポジトリ（`apache/nuttx-apps`）への取り込みを目標とする。これにより、NuttX 開発者は自分でポーティング作業をすることなく、ビルド設定で WireGuard を有効化するだけで利用できるようになる。
 
-- **lwIP ベースのネットワークライブラリを NuttX に持ち込む道筋を示す。** FreeRTOS や ESP-IDF など多くの組み込み環境では lwIP というネットワークライブラリが広く使われており、lwIP 向けに書かれたネットワーク関連のソフトウェアが数多く存在する。NuttX は独自のネットワークスタックを持つため、これらをそのまま動かす方法がこれまでなかった。本プロジェクトでその橋渡しの手法を実証・文書化することで、WireGuard 以外の lwIP ベースのソフトウェアを NuttX に移植したい将来の開発者にとっての参考事例となる。
+- **lwIP ベースのネットワークライブラリを NuttX に持ち込む道筋を示す。** FreeRTOS や ESP-IDF など多くの組み込み環境では lwIP というネットワークライブラリが広く使われており、Mongoose Web Server（組み込み HTTP/WebSocket）・libcoap（IoT 向け CoAP）・Eclipse Paho Embedded MQTT など、lwIP 向けに書かれたネットワーク関連のソフトウェアが数多く存在する。NuttX は独自のネットワークスタックを持つため、これらをそのまま動かす方法がこれまでなかった。本プロジェクトでその橋渡しの手法を実証・文書化することで、WireGuard 以外の lwIP ベースのソフトウェアを NuttX に移植したい将来の開発者にとっての参考事例となる。
 
-プロジェクトの成果は **Community Over Code Glasgow の NuttX International Workshop**（2026年10月11〜14日）で発表する予定であり、CFP はすでに提出済みである。
-
----
-
-## 3. 提案内容
-
-### 3.1 先行事例
-
-**smartalock/wireguard-lwip** (https://github.com/smartalock/wireguard-lwip)
-
-本プロジェクトの主要な参照実装であり、ポータブルなコードの提供元でもある。WireGuard を lwIP の netif として実装しており、OS 固有の挙動を `wireguard-platform.h` の4つの関数の背後に隔離している。プロトコルコア（`wireguard.c`）と暗号プリミティブ（`crypto/`）は OS・アーキテクチャ非依存のポータブル C で書かれており、変更不要で利用できる。
-
-wireguard-lwip のコードは3層に分かれており、移植コストはそれぞれ異なる：
-
-| ファイル | 役割 | 移植コスト |
-|---------|------|-----------|
-| `wireguard.c` + `crypto/` | WireGuard プロトコル本体・暗号実装 | なし（OS 非依存、そのまま使用） |
-| `wireguard-platform.h` | OS 固有の4関数（時刻・乱数・タイマー・負荷判定） | 低（NuttX の POSIX API に置き換え） |
-| `wireguardif.c` | ネットワーク統合層（lwIP API 呼び出し） | 中（ロジックを再利用しつつ、lwIP API を NuttX API に置き換え） |
-
-**ciniml/WireGuard-ESP32-Arduino** (https://github.com/ciniml/WireGuard-ESP32-Arduino)
-
-FreeRTOS + ESP-IDF 上の ESP32 への wireguard-lwip の移植実装。ESP-IDF が lwIP を使用しているため、この移植では `wireguardif.c` をより直接的に利用できる。OS 固有のプラットフォーム層（`wireguard-platform.h`）——特にタイマー API、乱数生成、組み込み RTOS での mutex パターン——の参考として活用する。
-
-**本プロジェクトとの違い：**
-
-Phase 1 の調査で判明したとおり、NuttX は lwIP を使用していない。NuttX は uIP 由来ではあるが、現在はほぼ独自設計の TCP/IP スタックを持っており、`lwip/netif.h` のような lwIP のパブリックヘッダーはインクルードパスに存在しない。このため、`wireguardif.c` は NuttX 上でそのままコンパイルできない。本プロジェクトの貢献は、lwIP ベースのネットワークコンポーネントを NuttX のネイティブ netdev・socket API に接続する方法を実証し文書化する点にあり、WireGuard にとどまらずコミュニティ全体で再利用可能なパターンとなる。
+プロジェクトの成果は **Community Over Code Glasgow の NuttX International Workshop**（2026年10月11〜14日）で発表を目指す予定で、CFP はすでに提出済みである。
 
 ---
 
-### 3.2 取り組み内容と成果物
+## 3. 提案詳細
 
-**応募前に完了済みの作業（Phase 0 〜 Phase 1）：**
 
-- Docker ベースの開発環境（2つのビルドターゲット：TUN/TAP ネットワーク付きの `sim` と `qemu-armv7a`）
-- `CONFIG_NET_WIREGUARD=y` でエラーなくビルドが通り、SIM 上で NuttX が `nsh>` まで起動し `eth0` が確認できる状態
-- `apps/netutils/wireguard/` のビルドシステムファイル（`CMakeLists.txt`、`Make.defs`、`Makefile`、`Kconfig`）
+| | |
+|---|---|
+| **組織** | [Apache Software Foundation](https://summerofcode.withgoogle.com/programs/2026/organizations/apache-software-foundation) |
+| **難易度** | Major |
+| **規模** | 約175時間（Medium） |
+| **メンター** | Alan Carvalho de Assis (acassis@apache.org), dev@nuttx.apache.org |
+
+### 3.1 参考事例
+
+2つの既存プロジェクトを参照として使用する。それぞれ役割が異なる。
+
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip) — 移植元のコード本体**
+
+NuttX に持ち込む実際のコード。WireGuard を lwIP の netif（network interface）として実装している。netif とは lwIP における仮想 NIC の抽象であり、`eth0` や `wlan0` と同列に扱われるネットワークインターフェースの単位である。WireGuard を netif として実装することで、上位のネットワークスタックからは通常の NIC と同様に見え、ルーティングやパケット転送が透過的に機能する。
+
+OS 固有の処理はすべて4関数のプラットフォーム抽象層（`wireguard-platform.h`）に集約されており、WireGuard プロトコル本体（`wireguard.c`）と暗号実装（`crypto/`）は OS 依存がなくそのまま使用できる。移植作業の中心は2つである。1つは `wireguard-platform.h` の NuttX 向け実装（時刻・乱数・タイマー API の置き換え）。もう1つは `wireguardif.c` に含まれる lwIP 固有 API を NuttX の対応 API に置き換えること（`struct netif` → `struct net_driver_s`、`pbuf_alloc()` → `iob_alloc()`、`udp_new()/bind()` → BSD `socket()/bind()` など）。
+
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) — 移植の先例**
+
+wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェクト。NuttX も組み込み RTOS + lwIP という構成であるため、この ESP32 移植で行われた変更（FreeRTOS プリミティブの置き換え・ログ出力の変更・プラットフォーム固有ヘッダの削除）は、wireguard-lwip を新しいターゲットに移植する際に何を変える必要があるかを示す具体的な参照として使える。
+
+
+---
+
+### 3.2 タスク一覧
+
+**Phase 0〜1（応募前に完了済み）**
+- Docker 開発環境の構築（`sim` / `qemu-armv7a` の2ターゲット）
+- `apps/netutils/wireguard/` のビルドシステム整備（`CMakeLists.txt`・`Make.defs`・`Kconfig`）
 - `wireguard.c` を無修正でコンパイルするための最小限の lwIP 互換シムヘッダー
-- API マッピング：`wireguardif.c` 内の全 lwIP 呼び出しと NuttX 対応 API の対応表（`docs/phase1-log.md` に文書化済み）
+- `wireguardif.c` 内の全 lwIP 呼び出しと NuttX 対応 API のマッピング
+- ✅ `CONFIG_NET_WIREGUARD=y` でビルドが通り、SIM 上で `nsh>` に到達
 
-**Phase 2 — SIM 上での NuttX 統合層の実装（6月16日〜7月4日）【必須】**
+**Phase 2 — NuttX 統合層の実装（6月16日〜7月4日）**
+- `nuttx-platform.c`：時刻・乱数・タイマーの OS 固有4関数を NuttX POSIX API で実装
+- `nuttx-wireguardif.c`：lwIP 固有 API（`struct netif`・`pbuf`・`udp_*`）を NuttX の `net_driver_s`・`iob`・BSD socket に置き換え
+- ✅ SIM 上で `nsh> ifconfig` に `wg0` が表示される
 
-残る2ファイルを実装する。
+**Phase 3 — QEMU でのハンドシェイクと疎通確認（7月14日〜8月1日）★ 中間評価**
+- SIM 構成を `qemu-armv7a` に移植（NuttX 自身のスケジューラ上での動作確認）
+- Linux ピアとの WireGuard ハンドシェイク確立
+- ✅ `nsh> ping 10.0.0.1` が通り、Linux 側 `wg show` でハンドシェイクが確認できる
 
-*nuttx-platform.c* — OS 固有の挙動を置き換える4つの関数：
+**Phase 4 — NSH コマンドと ESP32-S3 実機検証（8月4日〜9月5日）**
+- `wg show` / `wg setconf` を NSH ビルトインコマンドとして実装
+- ESP32-S3 実機で Wi-Fi 経由の WireGuard トンネルを確立
+- ✅ 実機での疎通確認、Flash・RAM 使用量の実測値取得
 
-| 関数 | NuttX での実装 |
-|------|---------------|
-| `wireguard_sys_now()` | `clock_gettime(CLOCK_MONOTONIC)` |
-| `wireguard_random_bytes()` | `read("/dev/urandom")` |
-| `wireguard_tai64n_now()` | `clock_gettime(CLOCK_REALTIME)` |
-| `wireguard_is_under_load()` | `return false` |
-
-*nuttx-wireguardif.c* — ネットワーク統合層：
-
-| lwIP（wireguardif.c） | NuttX（nuttx-wireguardif.c） |
-|-----------------------|------------------------------|
-| `struct netif` | `struct net_driver_s` |
-| `netif_add()` | `netdev_register()` |
-| `ip_input(pbuf, netif)` | `devif_input(dev)` |
-| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
-| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
-| `sys_timeout()` | `wd_start()` |
-
-✅ 成果物：SIM 上で `nsh> ifconfig` に `eth0` と並んで `wg0` が表示される
-
-**Phase 3 — QEMU でのハンドシェイクとトンネル疎通（7月14日〜8月1日）★ 中間評価【必須】**
-
-SIM 構成を `qemu-armv7a` に移植し、Linux ピアとの WireGuard ハンドシェイクとエンドツーエンドの疎通を確認する。QEMU は NuttX 自身のスケジューラが動作するため、タイマーベースの動作（キープアライブ、ハンドシェイク期限切れ）の検証に必要。
-
-✅ 成果物：
-```
-# Linux 側:
-$ sudo wg show
-peer: <NuttX の公開鍵>
-  latest handshake: 3 seconds ago
-
-# NuttX（QEMU）側:
-nsh> ping 10.0.0.1
-64 bytes from 10.0.0.1: icmp_seq=0 time=4 ms
-```
-
-**Phase 4 — NSH コマンドと実機検証（8月4日〜9月5日）【必須】**
-
-NSH 組み込みコマンド `wg show` / `wg setconf` を実装し、ESP32-S3 実機での Wi-Fi 経由トンネル確立を検証する。
-
-✅ 成果物：ESP32-S3 上で Wi-Fi 経由の WireGuard トンネルが動作すること、Flash・RAM 使用量の実測値
-
-**Phase 5 — アップストリーム PR とドキュメント整備（9月8日〜27日）【必須】**
-
-Apache CLA に署名し、`apache/nuttx-apps` の `apps/netutils/wireguard/` に PR を提出。レビューフィードバックに対応しドキュメントを整備する。
-
-✅ 成果物：`apache/nuttx-apps` への PR オープン
+**Phase 5 — アップストリーム PR（9月8日〜27日）**
+- Apache CLA に署名
+- `apache/nuttx-apps` の `apps/netutils/wireguard/` に PR を提出
+- ✅ PR オープン
 
 ---
 
 ### 3.3 タイムライン
 
+フルタイム社会人であり、週12〜15時間、バッファ2週間を想定した取り組みをする予定。
+
 | 期間 | 日程 | 内容 |
 |------|------|------|
-| コミュニティボンディング | 5月8日〜6月1日 | Phase 0：API マッピング確定、メンターとの方針合意 |
-| 1〜2週目 | 6月2日〜13日 | Phase 1 ✅ 応募前に完了済み |
-| 3〜5週目 | 6月16日〜7月4日 | Phase 2：NuttX 統合層の実装（SIM） |
-| バッファ | 7月7日〜11日 | 調査・巻き返し |
-| 6〜8週目 | 7月14日〜8月1日 | Phase 3：QEMU ハンドシェイク ★ 中間評価 |
-| 9〜11週目 | 8月4〜8日、8月18日〜9月5日 | Phase 4：NSH コマンド + ESP32-S3 実機 |
-| （お盆休み） | 8月8日〜15日 | 不在 |
-| GSoC 最終提出 | 8月25日 | — |
-| 12〜14週目 | 9月8日〜27日 | Phase 5：アップストリーム PR |
+| コミュニティボンディング | 5月1日〜24日 | Phase 0：API マッピング確定、メンターとの方針合意 |
+| Phase 1 | ✅ 応募前に完了済み | ビルドシステム統合 |
+| 1〜5週目 | 5月25日〜6月27日 | Phase 2：NuttX 統合層の実装（SIM） |
+| バッファ | 6月30日〜7月4日 | 調整・巻き返し |
+| ★ 中間評価 | 7月6日〜10日 | Phase 2 成果物提出（`wg0` が `ifconfig` に表示） |
+| 7〜10週目 | 7月14日〜8月8日 | Phase 3：QEMU ハンドシェイクと疎通確認 |
+| （お盆休み） | 8月8日〜15日 | 休暇 |
+| 11〜14週目 | 8月18日〜9月12日 | Phase 4：NSH コマンド + ESP32-S3 実機 |
+| 15〜18週目 | 9月15日〜30日 | Phase 5：アップストリーム PR |
+| カンファレンス準備 | 10月1日〜10日 | ASF Conference 準備 |
 | カンファレンス | 10月11日〜14日 | ASF Conference @ Glasgow（CFP 提出済み） |
 
 ---
 
 ## 4. コミュニケーション
 
-### 4.1 連絡手段・方針
+Timezone: UTC+9 (Japan Standard Time) / 10:00 ~ 18:00
+
+### 4.1 コミュニケーション方針
+
+リモートおよびハイブリッドワークの経験から、タイムゾーンを跨いだ非同期コミュニケーションには慣れている。業務では Microsoft Teams をメインに使用し、個人活動では Discord・Slack・Google Meet・Zoom・X (Twitter) など多様なツールを状況に応じて使い分けているため、メンターやコミュニティが推奨する連絡手段があれば柔軟に対応可能である。
+
+本プロジェクトでは、以下の運用を基本方針とする。
+
+- **GitHub Issues / PR コメント：** 技術的な議論やコードレビューの主戦場とする。議論の過程をオープンに保ち、コミュニティ全体が参照できる形にする。
+- **Discord：** クイックな質疑応答や同期的なミーティングに使用する。メンターとのやり取りを円滑にするため、専用の Discord チャンネルを作成することを提案したい。
+- **週次進捗報告（Weekly Report）：** 専用の Discord チャンネルまたは GitHub 上で毎週の進捗を報告する。進捗だけでなく、技術的なブロッキングポイントを早期に共有することで、プロジェクトの停滞を防ぐ。
 
 | 手段 | 用途 |
 |------|------|
-| 📧 メール（wwlap24@gmail.com） | メインの連絡先。24時間以内に返信する。 |
-| 💬 Discord（fox_aki310） | 迅速なやり取りや進捗共有 |
-| 🗨️ GitHub Issue / PR コメント | 技術的な議論・コードレビュー |
-| 📋 NuttX メーリングリスト | コミュニティへの報告・議論 |
+| 📧 メール（wwlap24@gmail.com） | 緊急時の連絡および公式な通知用。24時間以内に返信する |
+| 💬 Discord（fox_aki310） | 日常的なコミュニケーション、週次の同期確認、進捗報告 |
+| 🗨️ GitHub Issues / PRs | 技術議論、コードレビュー、タスク管理 |
+| 📋 NuttX メーリングリスト | コミュニティ全体への重要なアップデート報告や議論 |
 
-週次で進捗報告をメンターに送る。問題が発生した場合は早めに共有し、ブロッカーを放置しない。
+
 
 ### 4.2 英語力
 
-業務では英語の技術文書を日常的に読み書きしており、メール・GitHub でのやり取りに支障はない。口頭コミュニケーション（ビデオ通話など）も対応可能。今回のプロポーザルおよびリポジトリの英語版ドキュメントは自身で作成した。
+- 英語は第二言語だが、テキストベースのコミュニケーション（チャット・メール・コードレビュー）は問題なく行える。スピーキングは日々向上中。
+- SXSW ハッカソンおよび修士論文発表で英語プレゼンの経験がある
+- Sony Europa（スウェーデン・Lund）のチームと協働して AITRIOS サンプルアプリケーションを開発し、OSS として GitHub に公開した経験はある。
 
 ---
 
 ## 5. 自己紹介
 
-### 5.1 技術経験
+| | |
+|---|---|
+| 📄 **CV** | [Google Drive](https://drive.google.com/file/d/1WaaCUJOFb_DxdXQ1hG7ZQF_cu7Jbm_pr/view) |
+| 💼 **LinkedIn** | [satoru-akita-6070a4145](https://www.linkedin.com/in/satoru-akita-6070a4145/) |
+| 🏢 **勤務先** | [ソニーセミコンダクタソリューションズ株式会社](https://www.sony-semicon.com/ja/index.html) |
+| 🎓 **学歴** | M.S. in Robotics, [東北大学](http://www.mems.mech.tohoku.ac.jp/index_e.html) |
+| 📝 **ブログ** | [wwlapaki310.github.io](https://wwlapaki310.github.io/) |
 
-ソニーセミコンダクタソリューションズにてエッジ AI エンジニアとして勤務している。日々の業務では Sony IMX500 インテリジェントビジョンセンサーと、その上で動作する SPRESENSE および ESP32 ベースのカメラシステムを扱っており、これらのプラットフォーム上で Apache NuttX をアプリケーション側から日常的に使用している。
+### 5.1 応募動機
 
-**本プロジェクトに関連する技術スキル：**
-
-- **組み込み C：** `arm-none-eabi-gcc` によるクロスコンパイル、RTOS 上での POSIX API、レジスタレベルのハードウェア操作を日常的に行っている
-- **NuttX：** SPRESENSE および ESP32 上でのアプリケーション開発の経験あり。ビルドシステム（Kconfig、CMake、make）、NSH、netdev・socket API に精通している
-- **ネットワーク：** TCP/IP スタックの基礎、BSD socket API、UDP、VPN の概念
-- **Docker + QEMU：** 本プロジェクトのために `sim` および `qemu-armv7a` の開発環境をゼロから構築した
-- **C 言語の実力：** 組み込み文脈での低レベル C コードの読み書きに慣れており、プロポーザル準備の一環として wireguard-lwip および WireGuard-ESP32-Arduino のコードベースを通読した
-
-**資格：** GCP Professional、AWS Certified、TensorFlow Developer Certificate、情報処理安全確保支援士（IPA）
-
-**主な実績：**
-
-- SPAJAM 2024 優秀賞（全国大会決勝、NHK 放映）
-- Harvard BIOMD 2015 グランプリ
-- NASA Space Apps Challenge 2020 東京大会 優勝
-- ICAN 2014 世界第3位
-
-### 5.2 稼働時間・可用性
-
-- **稼働時間：** 週約15時間（平日夜 + 週末、JST）
-- **不在期間：** 8月8日〜15日（お盆休み）
-- **最終提出：** 8月25日（GSoC 公式締め切り）に間に合うよう進める
-- **GSoC 期間後：** 9月末までアップストリーム PR のフォローを継続する
-
-### 5.3 応募動機
-
-申請者はソニーセミコンダクタソリューションズにて、NuttX が実際に使われている2つのプロダクト領域に携わっている。
+私はソニーセミコンダクタソリューションズにて、NuttX が実際に使われている2つのプロダクト領域に携わっている。
 
 **AITRIOS（エッジ AI カメラプラットフォーム）**
 
@@ -220,11 +171,43 @@ Sony IMX500 インテリジェントビジョンセンサーと ESP32 を組み�
 
 **SPRESENSE（低消費電力マイコン）**
 
-Sony が開発・展開する小型・低消費電力のマイコンボードで、人工衛星や海洋モニタリングなどのミッションクリティカルな用途での採用実績がある。代表例として、2023年に打ち上げられた月面変形探査ロボット SORA-Q は SPRESENSE を搭載しており、また JAXA（宇宙航空研究開発機構）との連携による小型人工衛星プロジェクトも進行中である。
+Sony が開発・展開する小型・低消費電力のマイコンボードで、人工衛星や海洋モニタリングなどのミッションクリティカルな用途での採用実績がある。代表例として、2023年に打ち上げられた月面変形探査ロボット SORA-Q は SPRESENSE を搭載しており、また JAXA（Japan Aerospace Exploration Agency）との連携による小型人工衛星プロジェクトも進行中である。
 参考：https://www.hackster.io/news/sora-q-the-sony-spresense-powered-transforming-robot-heads-moonward-if-spacex-can-fix-falcon-9-c81e490e78b1
 
 ---
 
 これらのプロジェクトに実際に携わる中で、遠隔地に設置された NuttX デバイスに安全にアクセスしたいという課題に何度も直面してきた。物流倉庫に設置されたカメラのファームウェア更新、衛星のリモートデバッグ——いずれも、物理的なアクセスを前提にしない安全な通信手段を必要とする。WireGuard は Linux 上でこの問題を解決している。それを NuttX 上でも動かしたいというのが、本プロジェクトへの直接の動機である。
 
-また、NuttX を毎日使うユーザーとして、コミュニティに具体的な機能貢献をしたいという気持ちもある。単に動くものを作るだけでなく、Apache の公式リポジトリへの取り込みを通じて、すべての NuttX ユーザーが使える形にすることを最終目標としている。
+また、NuttX を毎日使うユーザーとして、オープンソースコミュニティに具体的な機能貢献をしたいという気持ちもある。
+AITRIOSサンプルアプリをOSS公開したことはあるが、既存のOSSにコミットするのは初めての経験である。
+Apache の公式リポジトリへの取り込みを通じて、OSS貢献の経験を積み、世界のSWエコシステムを支えるエンジニアになりたい。
+
+
+### 5.2 稼働時間・可用性
+
+- **稼働時間：** 週約12~15時間（平日夜 + 週末）
+- **不在期間：** 8月8日〜15日（お盆休み）
+- **最終提出：** 9月末での提出を想定。余裕があれば、8月25日（GSoC 公式締め切り）に間に合うよう進める。
+- **GSoC 期間後：** ASF Conference @ Glasgowにて発表する。
+
+### 5.3 趣味・経験
+
+ソフトウェアカンファレンスへの参加・コミュニティ運営・ハッカソンを日常的に行っている。Open Source Summit Japan では運営スタッフとして携わり、Unitree G1 を使ったロボットハッカソンにも参加した。
+
+![Open Source Summit Japan 運営](../assets/oss-summit-japan.jpg)
+![Unitree G1 ロボットハッカソン](../assets/unitree-g1-hackathon.jpg)
+
+もともと宇宙が好きで、学生時代はロケットや自律ロボットの製作に取り組んでいた。それが SPRESENSE や NuttX を使ったエッジ AI・宇宙機開発への関心につながっている。そのほか、マラソン・ゴルフ・旅行・歴史が好き。
+
+### 5.4 Community Over Code Glasgow への応募について
+
+ソニーグループ内のチャットにて Jerpelea Alin さんと会話する機会があり、背中を押していただいて本応募を進めることができた。
+
+本プロジェクトの成果発表として、Community Over Code Glasgow（2026年10月11〜14日）の NuttX International Workshop に CFP を提出済みである。
+
+- CFP：[docs/proposal for ASF2026.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/proposal%20for%20ASF2026.md)
+
+採択されるかはまだわからないが、ぜひ Glasgow でお会いできることを楽しみにしている。
+
+
+
