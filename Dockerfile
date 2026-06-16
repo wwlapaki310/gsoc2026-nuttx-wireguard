@@ -28,7 +28,7 @@ RUN git clone --depth=1 https://github.com/smartalock/wireguard-lwip.git /opt/wi
 
 # apps/netutils/wireguard/ を構成:
 #   - wireguard-lwip のソースをコピー
-#   - NuttX ポーティングファイル (Kconfig, Make.defs, CMakeLists.txt, nuttx-platform.c) をコピー
+#   - NuttX ポーティングファイル (Kconfig, Make.defs, CMakeLists.txt 等) をコピー
 #   - netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
 RUN mkdir -p /opt/apps/netutils/wireguard && \
     cp -r /opt/wireguard-lwip/src/* /opt/apps/netutils/wireguard/
@@ -44,16 +44,17 @@ FROM base AS sim
 
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh sim:nsh && \
-    kconfig-tweak --enable CONFIG_NET             && \
-    kconfig-tweak --enable CONFIG_NET_IPv4        && \
-    kconfig-tweak --enable CONFIG_NET_UDP         && \
-    kconfig-tweak --enable CONFIG_NET_TCP         && \
-    kconfig-tweak --enable CONFIG_SIM_NETDEV      && \
+    kconfig-tweak --enable CONFIG_NET               && \
+    kconfig-tweak --enable CONFIG_NET_IPv4          && \
+    kconfig-tweak --enable CONFIG_NET_UDP           && \
+    kconfig-tweak --enable CONFIG_NET_TCP           && \
+    kconfig-tweak --enable CONFIG_SIM_NETDEV        && \
+    kconfig-tweak --enable CONFIG_NET_TUN           && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
-    kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
-    kconfig-tweak --enable CONFIG_MBEDTLS         && \
-    kconfig-tweak --enable CONFIG_DEV_RANDOM      && \
-    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --enable CONFIG_NETUTILS_PING     && \
+    kconfig-tweak --enable CONFIG_MBEDTLS           && \
+    kconfig-tweak --enable CONFIG_DEV_RANDOM        && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD     && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD_APP && \
     make olddefconfig 2>&1 | tail -5
 
@@ -71,23 +72,25 @@ CMD ["/usr/local/bin/docker-entrypoint.sh"]
 # =============================================================================
 # qemu ステージ: qemu-armv7a:nsh (RTOS 動作検証環境)
 # ARM Cortex-A7 エミュレーション。NuttX 自身のスケジューラで動作。
+# VirtIO-NET: 外部との通信。TUN: WireGuard 内側インターフェース。
 # =============================================================================
 FROM base AS qemu
 
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh qemu-armv7a:nsh && \
-    kconfig-tweak --enable CONFIG_NET             && \
-    kconfig-tweak --enable CONFIG_NET_IPv4        && \
-    kconfig-tweak --enable CONFIG_NET_UDP         && \
-    kconfig-tweak --enable CONFIG_NET_TCP         && \
-    kconfig-tweak --enable CONFIG_VIRTIO          && \
-    kconfig-tweak --enable CONFIG_VIRTIO_NET      && \
+    kconfig-tweak --enable CONFIG_NET               && \
+    kconfig-tweak --enable CONFIG_NET_IPv4          && \
+    kconfig-tweak --enable CONFIG_NET_UDP           && \
+    kconfig-tweak --enable CONFIG_NET_TCP           && \
+    kconfig-tweak --enable CONFIG_VIRTIO            && \
+    kconfig-tweak --enable CONFIG_VIRTIO_NET        && \
+    kconfig-tweak --enable CONFIG_NET_TUN           && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
-    kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
-    kconfig-tweak --enable CONFIG_NETDEV_LATEINIT && \
-    kconfig-tweak --enable CONFIG_MBEDTLS         && \
-    kconfig-tweak --enable CONFIG_DEV_RANDOM      && \
-    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --enable CONFIG_NETUTILS_PING     && \
+    kconfig-tweak --enable CONFIG_NETDEV_LATEINIT   && \
+    kconfig-tweak --enable CONFIG_MBEDTLS           && \
+    kconfig-tweak --enable CONFIG_DEV_RANDOM        && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD     && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD_APP && \
     make olddefconfig 2>&1 | tail -5
 

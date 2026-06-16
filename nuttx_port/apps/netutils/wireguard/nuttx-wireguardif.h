@@ -42,6 +42,9 @@
 
 #define WG_DEFAULT_PORT      51820
 #define WG_KEY_LEN           32     /* 256-bit keys */
+
+/* Must match WIREGUARD_MAX_PEERS in wireguard-platform.h */
+
 #define WG_MAX_PEERS         8
 
 /****************************************************************************
