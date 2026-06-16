@@ -8,6 +8,27 @@ config NET_WIREGUARD
 	default n
 	depends on NET && NET_UDP
 	---help---
-		Enable WireGuard VPN support for NuttX. Implements WireGuard as
-		an lwIP virtual network interface (wg0). Requires UDP and the
-		lwIP network stack.
+		Enable WireGuard VPN support for NuttX.
+		Implements WireGuard as a virtual network device (wg0) using
+		NuttX's BSD socket layer for the UDP tunnel and POSIX threads
+		for the receive loop.
+
+		Requires:
+		  CONFIG_NET_UDP=y        UDP socket support
+		  CONFIG_DEV_RANDOM=y     /dev/urandom for key generation
+		  CONFIG_PTHREAD_MUTEX=y  pthread mutex for rx thread
+
+if NET_WIREGUARD
+
+config NET_WIREGUARD_APP
+	bool "Enable 'wg' NSH command"
+	default y
+	---help---
+		Build the 'wg' NSH command for interface configuration:
+		  wg init <privkey> [<addr>/<prefix>] [port <port>]
+		  wg addpeer <pubkey> endpoint <ip> <port> allowedips <cidr>
+		  wg connect <peer_idx>
+		  wg status
+		  wg down
+
+endif # NET_WIREGUARD
