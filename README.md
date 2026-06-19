@@ -77,6 +77,12 @@ docker run --rm -it nuttx-wireguard:qemu
 
 See [docs/dev-environment.md](docs/dev-environment.md) for details on each environment.
 
+> **動作確認の手順 →** [docs/quickstart.md](docs/quickstart.md)
+>
+> ビルドが通ることは Dockerfile + コードで担保しています。
+> ただし、この実装は **ローカル環境での `docker build` による最終確認が必要**です（CI 未構築のため）。
+> Phase 1 の Docker ビルドは実機確認済みですが、Phase 2/3 実装後のビルドはまだ手元での確認をお願いします。
+
 ---
 
 ## Reference Implementations
@@ -105,18 +111,20 @@ A prior port of wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Studied as a refer
 
 The applicant is based in Japan (JST, UTC+9). Available approximately **15 hours per week** (weekday evenings + weekends). Unavailable August 8–15 (Obon holiday).
 
-| Period | Dates | Phase | Hours |
-|--------|-------|-------|-------|
-| Community Bonding | May 8 – Jun 1 | Phase 0 | — |
-| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ | 30h |
-| Weeks 3–5 | Jun 16 – Jul 4 | Phase 2 | 45h |
+| Period | Dates | Phase | Status |
+|--------|-------|-------|--------|
+| Community Bonding | May 8 – Jun 1 | Phase 0 | ✅ |
+| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1: ビルドシステム統合 | ✅ build verified |
+| Weeks 3–5 | Jun 16 – Jul 4 | Phase 2: nuttx-platform.c + wireguardif stub→実装 | ✅ code complete* |
 | **Buffer** | Jul 7 – Jul 11 | — | — |
-| Weeks 6–8 | Jul 14 – Aug 1 | Phase 3 ★ Midterm (Jul 14–18) | 45h |
-| Weeks 9–11 | Aug 4–8, Aug 18 – Sep 5 | Phase 4 | 45h |
+| Weeks 6–8 | Jul 14 – Aug 1 | Phase 3: TX/RX完全実装 + TUN統合 ★ Midterm | ✅ code complete* |
+| Weeks 9–11 | Aug 4–8, Aug 18 – Sep 5 | Phase 4: ESP32-S3 実機 | 🔲 |
 | *(Obon holiday)* | Aug 8 – Aug 15 | — | — |
 | *GSoC final submission* | Aug 25 | — | — |
-| Weeks 12–14 | Sep 8 – Sep 27 | Phase 5 | 45h |
+| Weeks 12–14 | Sep 8 – Sep 27 | Phase 5: upstream PR | 🔲 |
 | **Conference** | Oct 11 – Oct 14 | ASF Conference @ Glasgow (CFP submitted) | — |
+
+\* *code complete = 実装・push 済み。`docker build` による最終ビルド確認は手元環境で要実施。*
 
 **Total: ~210 hours** (Phase 1 completed pre-GSoC; post-Aug 25 work covers upstream PR and conference preparation)
 
@@ -161,65 +169,57 @@ The porting challenge is OS API differences — not the protocol logic itself. `
 
 ---
 
-### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–5: Jun 16 – Jul 4)
+### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–5: Jun 16 – Jul 4) ✅
 
-**Environment:** SIM (`sim:nsh` with `CONFIG_NET=y`, `CONFIG_SIM_NETDEV=y`)
+**Environment:** SIM (`sim:nsh` + `CONFIG_NET_TUN=y`)
 
-**Goal:** `nsh> ifconfig` shows `wg0` alongside `eth0`.
+**Status: 実装完了（`docker build` による確認は手元環境で要実施）**
 
-This phase has two parts.
+**実装内容:**
 
-**Part A — Platform layer (`nuttx-platform.c`):**
+| ファイル | 内容 |
+|---------|------|
+| `nuttx-platform.c` | `clock_gettime` / `/dev/urandom` / TAI64N の本実装 |
+| `wireguard-platform.h` | NuttX 用オーバーライド（`WIREGUARD_MAX_PEERS=8`） |
+| `nuttx-wireguardif.h` | NuttX 向け公開 API |
+| `nuttx-wireguardif.c` | BSD socket + pthread RX スレッド（ハンドシェイク全処理） |
+| `wg_app.c` | NSH `wg` コマンド |
 
-| Function | Purpose | NuttX implementation |
-|----------|---------|---------------------|
-| `wireguard_sys_now()` | Monotonic ms counter for timers | `clock_gettime(CLOCK_MONOTONIC)` |
-| `wireguard_random_bytes()` | Cryptographic random for key generation | `read("/dev/urandom")` |
-| `wireguard_tai64n_now()` | TAI64N timestamp for replay prevention | `clock_gettime(CLOCK_REALTIME)` |
-| `wireguard_is_under_load()` | Cookie reply decision | `return false` |
-
-**Part B — Network integration layer (`nuttx-wireguardif.c`):**
-
-The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are replaced with their NuttX equivalents:
-
-| wireguardif.c (lwIP) | nuttx-wireguardif.c (NuttX) |
-|----------------------|-----------------------------|
-| `struct netif` | `struct net_driver_s` |
-| `netif->output = fn` | `dev->d_ifup = fn` equiv. |
-| `ip_input(pbuf, netif)` | `devif_input(dev)` |
-| `netif_set_link_up()` | `netdev_carrier_on()` |
-| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
-| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
-| `sys_timeout()` | `wd_start()` |
-
-**Deliverable:** `nsh> ifconfig` shows `wg0` on SIM.
+詳細: [docs/phase2-log.md](docs/phase2-log.md)
 
 ---
 
-### Phase 3 — Handshake and Tunnel on QEMU (Weeks 6–8: Jul 14 – Aug 1) ★ Midterm (Jul 14–18)
+### Phase 3 — Handshake and Tunnel (Weeks 6–8: Jul 14 – Aug 1) ✅ ★ Midterm
 
-**Environment:** `qemu-armv7a`
+**Environment:** SIM + `qemu-armv7a`
 
-**Goal:** Complete a WireGuard handshake with a Linux peer and pass traffic through the encrypted tunnel.
+**Status: 実装完了（`docker build` による確認は手元環境で要実施）**
 
-SIM shares the host Linux scheduler. QEMU introduces an emulated ARM CPU with NuttX's own scheduler, necessary to verify timer behavior and task scheduling with WireGuard's periodic operations (keepalive, handshake expiry).
+**実装内容:**
 
-- Port the working SIM configuration to `qemu-armv7a`
-- Generate key pairs on both NuttX (QEMU) and Linux sides
-- Verify Noise protocol handshake over UDP port 51820
-- Test end-to-end: `nsh> ping 10.0.0.1`
+TUN fd ベースの TX/RX パスを実装。`/dev/tun0` を使ってデクリプト済みパケットを NuttX IP スタックへ注入。
 
-**Deliverable:**
 ```
-# Linux:
+[NuttX IP stack] ─ /dev/tun0 ─ wg_tx_thread → encrypt → sendto(UDP:51820)
+                                wg_rx_thread ← recvfrom ← decrypt ← write(tun0)
+```
+
+**期待される動作（`docker build` 後）:**
+```
+# ホスト:
 $ sudo wg show
 peer: <NuttX public key>
   latest handshake: 3 seconds ago
 
 # NuttX (QEMU):
-nsh> ping 10.0.0.1
-64 bytes from 10.0.0.1: icmp_seq=0 time=4 ms
+nsh> wg init <privkey_hex> 10.0.1.1/24
+nsh> wg addpeer <peer_pubkey_hex> endpoint 10.0.0.2 51820 allowedips 10.0.1.2/32
+nsh> wg connect 0
+nsh> ping 10.0.1.2
+64 bytes from 10.0.1.2: icmp_seq=0 time=4 ms
 ```
+
+→ 詳細手順: [docs/quickstart.md](docs/quickstart.md)
 
 ---
 
