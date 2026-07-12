@@ -12,6 +12,35 @@
 
 ---
 
+## Implementation Status
+
+The WireGuard port is **implemented and building** for all targets. The NuttX-side sources live in [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard/):
+
+- `nuttx-platform.c` — platform layer (monotonic clock, `/dev/urandom`, TAI64N)
+- `nuttx-wireguardif.c` — network layer: TUN device (`wg0`) + BSD UDP socket + daemon task, replacing the lwIP-only `wireguardif.c`
+- `wg_main.c` — NSH `wg` command (`genkey` / `pubkey` / `up` / `peer` / `status` / `down`)
+
+Verified targets (see [docs/build-and-run.md](docs/build-and-run.md) for build & run instructions):
+
+| Target | Config | Artifact | Status |
+|---|---|---|---|
+| sim | `sim:nsh` + NET | `nuttx` (host ELF) | ✅ **E2E verified**: handshake + encrypted ping vs QEMU node |
+| qemu | `qemu-armv7a:nsh` + virtio-net | `nuttx` | ✅ **E2E verified**: handshake + encrypted ping vs sim node |
+| ESP32 | `esp32-devkitc:wifi` | `nuttx.bin` | ✅ builds (`wg` linked in) |
+| SPRESENSE | `spresense:rndis` | `nuttx.spk` | ✅ builds (`wg` linked in) |
+
+End-to-end test (two NuttX nodes, no external WireGuard needed): the sim
+instance and a QEMU ARM instance establish a WireGuard tunnel with each
+other — handshake completes on both sides and `ping` flows encrypted
+through `wg0` (3/3 replies, ~20ms RTT). See docs/build-and-run.md §3.
+
+```bash
+# one-command build for any target
+scripts/build.sh sim|qemu|esp32|spresense
+```
+
+---
+
 ## Project Overview
 
 WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s), while keeping the implementation small enough to run on microcontrollers.

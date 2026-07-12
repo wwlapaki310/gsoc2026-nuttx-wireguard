@@ -4,10 +4,42 @@
 #
 
 config NET_WIREGUARD
-	bool "WireGuard VPN support"
+	tristate "WireGuard VPN support"
 	default n
-	depends on NET && NET_UDP
+	depends on NET && NET_UDP && NET_IPv4 && NET_TUN
+	depends on DEV_URANDOM || DEV_RANDOM
 	---help---
-		Enable WireGuard VPN support for NuttX. Implements WireGuard as
-		an lwIP virtual network interface (wg0). Requires UDP and the
-		lwIP network stack.
+		Enable WireGuard VPN support for NuttX.  Implements WireGuard as
+		a TUN based virtual network interface (wg0) with the encrypted
+		tunnel carried over a UDP socket.  Provides the "wg" command
+		for NSH.
+
+if NET_WIREGUARD
+
+config NET_WIREGUARD_PROGNAME
+	string "Program name"
+	default "wg"
+
+config NET_WIREGUARD_PRIORITY
+	int "wg command task priority"
+	default 100
+
+config NET_WIREGUARD_STACKSIZE
+	int "wg command stack size"
+	default 8192
+	---help---
+		The wg command performs Curve25519 operations (genkey/pubkey)
+		on its own stack; keep this at 8 KiB or more.
+
+config NET_WIREGUARD_DAEMON_PRIORITY
+	int "WireGuard daemon priority"
+	default 100
+
+config NET_WIREGUARD_DAEMON_STACKSIZE
+	int "WireGuard daemon stack size"
+	default 8192
+	---help---
+		Stack for the tunnel daemon thread which runs the handshake
+		crypto (Curve25519/ChaCha20-Poly1305/BLAKE2s).
+
+endif # NET_WIREGUARD

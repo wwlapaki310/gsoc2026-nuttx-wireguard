@@ -1,5 +1,10 @@
 # Development Environment
 
+> **Note:** this document is the proposal-era environment overview.
+> For the current, verified per-target build & run instructions
+> (sim / qemu / esp32 / spresense, native & Docker), see
+> **[build-and-run.md](build-and-run.md)**.
+
 ## Quick Start (Docker)
 
 All environments run inside a single Docker image. Build once, then choose the target at runtime.
