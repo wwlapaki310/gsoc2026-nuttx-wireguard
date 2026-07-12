@@ -57,6 +57,121 @@ CONFIG_NSH_LINELEN=160          # base64 鍵入力でコマンドが 80 桁を�
 
 ---
 
+# 0. 前提環境 (どこで実行するか)
+
+`scripts/build.sh` は **bash + Linux 用ツールチェーン前提**のスクリプト。
+Windows の PowerShell から直接は実行できない。選択肢は次の 2 つ:
+
+| 方法 | 向いている人 | 必要なもの |
+|---|---|---|
+| **A. WSL2 (Ubuntu 24.04)** | 繰り返しビルド・開発する人 (差分ビルドが速い) | WSL2 + Ubuntu-24.04 |
+| **B. Docker** | 環境を汚したくない人 / PowerShell だけで済ませたい人 | Docker Desktop (WSL2 バックエンド) |
+
+どちらも、**リポジトリを clone して 1 コマンド実行するだけ**で
+NuttX 本体 / apps / wireguard-lwip の取得から成果物生成まで自動で行う。
+
+## 0.1 A. WSL2 で実行する
+
+PowerShell (管理者) で WSL + Ubuntu 24.04 を導入 (導入済みならスキップ):
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+以降はすべて **WSL (Ubuntu) のシェル内**で実行する
+(ディスク空き ~10GB、初回ビルドは 5〜15 分/ターゲット):
+
+```bash
+# 1) 依存パッケージ (下の 1.1 と同じ)
+sudo apt update
+sudo apt install -y git make gcc g++ unzip kconfig-frontends \
+    gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi \
+    genromfs xxd python3-pip qemu-system-arm
+pip3 install --break-system-packages kconfiglib esptool
+
+# 2) リポジトリ取得
+git clone https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard.git
+cd gsoc2026-nuttx-wireguard
+
+# 3) ビルド (これだけ。ESP32 のみ 1.1 の Xtensa ツールチェーンが追加で必要)
+scripts/build.sh sim
+```
+
+- `sim` の成果物 (`~/nuttx-ws/out/sim/nuttx`) は **WSL 内でそのまま実行できる**
+- `qemu` も WSL 内の `qemu-system-arm` でそのまま動く
+- ESP32 / Spresense への**書き込み**は「0.3 Windows からの書き込み」参照
+
+## 0.2 B. Docker で実行する (PowerShell / WSL どちらでも同じコマンド)
+
+前提: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+をインストールし WSL2 バックエンドで起動しておく。
+以下は **PowerShell でも WSL でもコマンドは同一**:
+
+```powershell
+git clone https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard.git
+cd gsoc2026-nuttx-wireguard
+
+# ビルド (ターゲットごとにイメージを作る)
+docker build --target sim       -t nuttx-wg:sim .
+docker build --target qemu      -t nuttx-wg:qemu .
+docker build --target esp32     -t nuttx-wg:esp32 .
+docker build --target spresense -t nuttx-wg:spresense .
+
+# 実行 (sim: そのまま nsh> が起動する)
+docker run --rm -it nuttx-wg:sim
+
+# 実行 (qemu: QEMU が起動し UDP 51820 がホストに公開される)
+docker run --rm -it -p 51820:51820/udp nuttx-wg:qemu
+
+# 実機用: 成果物 (書き込みイメージ) をコンテナから取り出す
+docker create --name wg-tmp nuttx-wg:esp32
+docker cp wg-tmp:/opt/nuttx/nuttx.bin .
+docker rm wg-tmp
+
+docker create --name wg-tmp nuttx-wg:spresense
+docker cp wg-tmp:/opt/nuttx/nuttx.spk .
+docker rm wg-tmp
+```
+
+補足:
+- sim で TUN/TAP (ホストとのネットワーク接続) まで試す場合は
+  `docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wg:sim`
+  (Linux コンテナ内で完結する分には動くが、Windows ホスト側との
+  ブリッジは Docker Desktop では不可。対向テストは WSL2 の方が楽)
+- コンテナ内で設定を変えて再ビルドしたい場合:
+  `docker run --rm -it --entrypoint bash nuttx-wg:sim` → `cd /opt/nuttx && make menuconfig && make -j$(nproc)`
+
+## 0.3 Windows からの実機書き込み
+
+Docker Desktop は USB をコンテナに渡せないため、**書き込みはホスト側**で行う。
+
+**ESP32 (PowerShell で完結する方法):**
+
+```powershell
+pip install esptool
+# デバイスマネージャーで COM ポート番号を確認 (例: COM3)
+esptool --chip esp32 --port COM3 --baud 921600 write_flash 0x0 nuttx.bin
+```
+
+> NuttX 12.7 の ESP32 はデフォルトで **Simple Boot** 形式:
+> `nuttx.bin` 自体がブート可能イメージで、**0x0 に書くだけ**。
+> 別途ブートローダーやパーティションテーブルは不要。
+
+**Spresense (PowerShell):** `flash_writer.py` は Python スクリプトなので
+Windows でも動く:
+
+```powershell
+pip install pyserial
+git clone --depth=1 https://github.com/sonydevworld/spresense.git
+python spresense\sdk\tools\flash_writer.py -s -c COM4 -b 115200 -n nuttx.spk
+```
+
+**WSL2 から USB を使いたい場合**: [usbipd-win](https://github.com/dorssel/usbipd-win)
+で `usbipd bind` → `usbipd attach --wsl` すると WSL 内に /dev/ttyUSB0 が
+現れ、Linux 用手順 (2.4 / 2.5) がそのまま使える。
+
+---
+
 # 1. ビルド
 
 ## 1.1 ネイティブビルド (Ubuntu 24.04)
@@ -203,14 +318,17 @@ nsh> wg peer -P <対向公開鍵> -A 10.10.0.1/32 -e 10.0.2.2:51820 -K 25
 
 ## 2.4 ESP32 (ESP32-DevKitC)
 
-書き込み (要 esptool。ブートローダー等は初回のみ):
+書き込み (要 esptool)。NuttX 12.7 の ESP32 は Simple Boot 形式のため
+`nuttx.bin` を 0x0 に書くだけでよい (ブートローダー不要):
 
 ```bash
+# make から書く場合 (ポートは環境に合わせる)
 cd ~/nuttx-ws/nuttx
-# ブートローダー + パーティションテーブルの取得 (初回のみ)
-make bootloader
-# 書き込み (ポートは環境に合わせる)
 make flash ESPTOOL_PORT=/dev/ttyUSB0 ESPTOOL_BAUD=921600
+
+# esptool 直接の場合
+esptool --chip esp32 --port /dev/ttyUSB0 --baud 921600 \
+  write_flash 0x0 ~/nuttx-ws/out/esp32/nuttx.bin
 ```
 
 シリアルコンソール (115200bps) に接続して Wi-Fi 接続 → WireGuard:
