@@ -6,8 +6,93 @@
 config NET_WIREGUARD
 	bool "WireGuard VPN support"
 	default n
-	depends on NET && NET_UDP
+	depends on NET && NET_UDP && NET_TUN && NET_SOCKOPTS && ALLOW_BSD_COMPONENTS
 	---help---
-		Enable WireGuard VPN support for NuttX. Implements WireGuard as
-		an lwIP virtual network interface (wg0). Requires UDP and the
-		lwIP network stack.
+		Enable WireGuard VPN support for NuttX. Implements WireGuard as a
+		"wg0" network device backed by a UDP socket (see NET_LL_TUN).
+		Requires UDP and CONFIG_NET_TUN (for the NET_LL_TUN link type;
+		the /dev/tun character device itself is not used).
+
+		The vendored wireguard-lwip sources (wireguard.c, crypto/) are
+		BSD-3-Clause licensed, same as NET_TUN's tun.c, hence the
+		ALLOW_BSD_COMPONENTS dependency.
+
+if NET_WIREGUARD
+
+config NET_WIREGUARD_PROGNAME
+	string "Program name"
+	default "wg"
+	---help---
+		The name of the NSH builtin command that brings up wg0.
+
+config NET_WIREGUARD_PRIORITY
+	int "wg command task priority"
+	default 100
+
+config NET_WIREGUARD_STACKSIZE
+	int "wg command stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config NET_WIREGUARD_RX_STACKSIZE
+	int "WireGuard RX thread stack size"
+	default 3072
+	---help---
+		Stack size of the background thread that receives WireGuard UDP
+		packets and drives the handshake/keepalive timers.
+
+config NET_WIREGUARD_LISTEN_PORT
+	int "UDP listen port"
+	default 51820
+
+config NET_WIREGUARD_PRIVATE_KEY
+	string "Private key (base64)"
+	default ""
+	---help---
+		Base64-encoded Curve25519 private key for this device. Required -
+		wg0 will fail to come up if this is left empty.
+
+config NET_WIREGUARD_LOCAL_IPADDR
+	string "wg0 tunnel IPv4 address"
+	default "10.10.0.2"
+	---help---
+		Deliberately a different subnet from the sim/qemu sample boards'
+		own default eth0 address (10.0.0.2), so wg0 doesn't collide with
+		it when both are brought up in the same development image.
+
+config NET_WIREGUARD_LOCAL_NETMASK
+	string "wg0 tunnel IPv4 netmask"
+	default "255.255.255.0"
+
+config NET_WIREGUARD_PEER_PUBLIC_KEY
+	string "Peer public key (base64)"
+	default ""
+	---help---
+		Base64-encoded Curve25519 public key of the single WireGuard peer
+		to configure at boot. Leave empty to bring wg0 up with no peers
+		(useful for build/bring-up testing before a peer is available).
+
+config NET_WIREGUARD_PEER_ENDPOINT_IP
+	string "Peer endpoint IPv4 address"
+	default ""
+	---help---
+		If set, wg0 actively initiates a handshake to this address:port
+		once the interface is up. If left empty, this device only responds
+		to handshakes initiated by the peer.
+
+config NET_WIREGUARD_PEER_ENDPOINT_PORT
+	int "Peer endpoint UDP port"
+	default 51820
+
+config NET_WIREGUARD_PEER_ALLOWED_IP
+	string "Peer allowed IPv4 address"
+	default "10.10.0.1"
+
+config NET_WIREGUARD_PEER_ALLOWED_MASK
+	string "Peer allowed IPv4 netmask"
+	default "255.255.255.255"
+
+config NET_WIREGUARD_PEER_KEEPALIVE
+	int "Peer persistent keepalive (seconds, 0 to disable)"
+	default 25
+
+endif # NET_WIREGUARD

@@ -12,6 +12,7 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
     python3 python3-pip python3-pyelftools \
     iproute2 iputils-ping \
     genromfs \
+    patch \
     xxd zlib1g-dev \
     curl vim unzip \
   && rm -rf /var/lib/apt/lists/*
@@ -52,11 +53,28 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
     kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
     kconfig-tweak --enable CONFIG_MBEDTLS         && \
-    kconfig-tweak --enable CONFIG_DEV_RANDOM      && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     make olddefconfig 2>&1 | tail -5
 
-RUN make -j$(nproc)
+# NOTE: CONFIG_NET_TUN (needed for the NET_LL_TUN link type wg0 registers
+# as) depends on CONFIG_ALLOW_BSD_COMPONENTS - both tun.c and the vendored
+# wireguard-lwip sources are BSD-3-Clause licensed. Without it, olddefconfig
+# silently drops CONFIG_NET_TUN and, transitively, CONFIG_NET_WIREGUARD.
+#
+# NOTE: CONFIG_DEV_RANDOM (a hardware TRNG /dev/random) does not work on
+# sim: it depends on ARCH_HAVE_RNG, which the sim architecture does not
+# select, so enabling it here would be silently dropped by olddefconfig.
+# wireguard_random_bytes() needs /dev/urandom, which CONFIG_DEV_URANDOM
+# provides via a software PRNG (xorshift128) with no such dependency.
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
 RUN ls -lh /opt/nuttx/nuttx
 
 COPY docker/docker-entrypoint-sim.sh /usr/local/bin/docker-entrypoint.sh
@@ -78,14 +96,28 @@ RUN ./tools/configure.sh qemu-armv7a:nsh && \
     kconfig-tweak --enable CONFIG_NET             && \
     kconfig-tweak --enable CONFIG_NET_IPv4        && \
     kconfig-tweak --enable CONFIG_NET_UDP         && \
-    kconfig-tweak --enable CONFIG_VIRTIO          && \
-    kconfig-tweak --enable CONFIG_VIRTIO_NET      && \
+    kconfig-tweak --set-val CONFIG_NET_LL_GUARDSIZE 32 && \
+    kconfig-tweak --enable CONFIG_DRIVERS_VIRTIO  && \
+    kconfig-tweak --enable CONFIG_DRIVERS_VIRTIO_MMIO && \
+    kconfig-tweak --enable CONFIG_DRIVERS_VIRTIO_NET && \
+    kconfig-tweak --enable CONFIG_DEVICE_TREE     && \
+    kconfig-tweak --enable CONFIG_LIBC_FDT        && \
+    kconfig-tweak --enable CONFIG_DEV_SIMPLE_ADDRENV && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
     kconfig-tweak --enable CONFIG_NETUTILS_PING   && \
     kconfig-tweak --enable CONFIG_NETDEV_LATEINIT && \
+    kconfig-tweak --enable CONFIG_MBEDTLS         && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     make olddefconfig 2>&1 | tail -5
 
-RUN make -j$(nproc)
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
 RUN ls -lh /opt/nuttx/nuttx
 
 COPY docker/docker-entrypoint-qemu.sh /usr/local/bin/docker-entrypoint.sh

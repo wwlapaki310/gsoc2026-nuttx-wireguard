@@ -161,3 +161,5 @@ eth0    Link encap:Ethernet HWaddr 42:67:c6:69:73:51 at RUNNING mtu 1500
   - プロトコル処理のフローはそのまま再利用
   - lwIP API の呼び出し箇所だけ NuttX API に置き換える
 - `nuttx-platform.c` の4関数を本実装する（`clock_gettime`, `/dev/urandom`）
+
+→ 実施内容と詰まった点は [phase2-log.md](phase2-log.md) を参照。

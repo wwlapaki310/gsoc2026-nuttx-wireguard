@@ -17,7 +17,6 @@ exec qemu-system-arm \
   -M virt \
   -cpu cortex-a7 \
   -nographic \
-  -bios none \
   -kernel "$KERNEL" \
-  -net nic,model=virtio \
-  -net user,hostfwd=udp::51820-:51820
+  -netdev user,id=n0,hostfwd=udp::51820-:51820 \
+  -device virtio-net-device,netdev=n0

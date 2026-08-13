@@ -19,4 +19,17 @@ if(CONFIG_NET_WIREGUARD)
             nuttx-wireguardif.c)
 
   target_include_directories(apps PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+
+  # "wg" NSH builtin - brings wg0 up from Kconfig settings.
+  nuttx_add_application(
+    NAME
+    ${CONFIG_NET_WIREGUARD_PROGNAME}
+    PRIORITY
+    ${CONFIG_NET_WIREGUARD_PRIORITY}
+    STACKSIZE
+    ${CONFIG_NET_WIREGUARD_STACKSIZE}
+    SRCS
+    wg_main.c
+    INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_LIST_DIR})
 endif()
