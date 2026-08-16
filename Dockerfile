@@ -127,3 +127,141 @@ RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
 WORKDIR /workspace
 EXPOSE 51820/udp
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
+
+# =============================================================================
+# esp32 ステージ: esp32-devkitc:wifinsh (実機ビルド用、ESP32-WROOM-32)
+# Xtensa LX6。書き込みは Windows ホスト側の esptool から行う想定
+# (Docker Desktop on Windows は USB シリアルに直接アクセスできないため、
+#  `docker cp` で nuttx.bin を取り出してホストで esptool を実行する)。
+# 詳細・実機での書き込み結果は docs/hardware-verification.md を参照。
+# =============================================================================
+FROM base AS esp32
+
+RUN apt-get update -q && apt-get install -y --no-install-recommends xz-utils \
+  && rm -rf /var/lib/apt/lists/*
+
+# Xtensa ESP32 用ツールチェイン (NuttX 公式 CI が参照している prebuilt バイナリ)
+RUN mkdir -p /opt/xtensa-esp32-elf && \
+    curl -s -L "https://github.com/espressif/crosstool-NG/releases/download/esp-12.2.0_20230208/xtensa-esp32-elf-12.2.0_20230208-x86_64-linux-gnu.tar.xz" \
+    | tar -C /opt/xtensa-esp32-elf --strip-components 1 -xJ
+ENV PATH="/opt/xtensa-esp32-elf/bin:${PATH}"
+
+# esptool (Python) は NuttX 自身のビルド末尾 "MKIMAGE: ESP32 binary" ステップ
+# (ELF -> nuttx.bin 変換) に必要。実機書き込み自体はホスト側で行うため使わない。
+RUN pip3 install --break-system-packages esptool
+
+WORKDIR /opt/nuttx
+RUN ./tools/configure.sh esp32-devkitc:wifinsh && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_ARCH && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    make olddefconfig 2>&1 | tail -5
+
+# NOTE: esp32-devkitc:wifinsh はデフォルトでプレースホルダーの Wi-Fi 認証情報
+# (CONFIG_NETINIT_WAPI_SSID/PASSPHRASE = "YOUR_ROUTER_NAME"/"YOUR_ROUTER_PASSWORD")
+# と空の CONFIG_NET_WIREGUARD_PRIVATE_KEY を持つ。実際に使うにはビルド前に
+# kconfig-tweak --set-str で両方とも実際の値に上書きする必要がある。
+#
+# NOTE: CONFIG_DEV_URANDOM_ARCH は ESP32 の実ハードウェア RNG を使う
+# (sim で使ったソフトウェア PRNG の XORSHIFT128 とは異なる。docs/phase2-log.md 参照)。
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
+RUN ls -lh /opt/nuttx/nuttx.bin
+
+WORKDIR /workspace
+
+# =============================================================================
+# esp32s3 ステージ: esp32s3-devkit:wifi (実機ビルド用、ESP32-S3)
+# Xtensa LX7。無印 ESP32 と異なりチップにネイティブ USB を内蔵しており、
+# CP210x のような外付け USB シリアル変換チップ・自動リセット回路に依存しない
+# (docs/phase4-log.md で無印 ESP32 の書き込みに使ったのと同じ問題を避けられる
+#  可能性が高い、という見立て)。書き込み手順は esp32 ステージと同様、
+# Windows ホスト側の esptool から行う。
+# =============================================================================
+FROM base AS esp32s3
+
+RUN apt-get update -q && apt-get install -y --no-install-recommends xz-utils \
+  && rm -rf /var/lib/apt/lists/*
+
+# Xtensa ESP32-S3 用ツールチェイン (NuttX 公式 CI が参照している prebuilt バイナリ)
+RUN mkdir -p /opt/xtensa-esp32s3-elf && \
+    curl -s -L "https://github.com/espressif/crosstool-NG/releases/download/esp-12.2.0_20230208/xtensa-esp32s3-elf-12.2.0_20230208-x86_64-linux-gnu.tar.xz" \
+    | tar -C /opt/xtensa-esp32s3-elf --strip-components 1 -xJ
+ENV PATH="/opt/xtensa-esp32s3-elf/bin:${PATH}"
+
+RUN pip3 install --break-system-packages esptool
+
+# デモ用 uIP webserver のページを差し替え (docs/phase4-log.md の
+# 「トンネル越し telnet で見つかった TCP 特有バグ」節の実演で使用)
+COPY docker/webserver-demo/header.html docker/webserver-demo/index.shtml \
+     /opt/apps/examples/webserver/httpd-fs/
+
+WORKDIR /opt/nuttx
+RUN ./tools/configure.sh esp32s3-devkit:wifi && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_ARCH && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --enable CONFIG_NETUTILS_WEBSERVER && \
+    kconfig-tweak --enable CONFIG_EXAMPLES_WEBSERVER && \
+    make olddefconfig 2>&1 | tail -5
+
+# NOTE: esp32s3-devkit:wifi もプレースホルダーの Wi-Fi 認証情報・空の
+# WireGuard 秘密鍵を持つ。実際に使うにはビルド前に kconfig-tweak --set-str
+# で上書きする(esp32 ステージと同じ、docs/hardware-verification.md 参照)。
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
+RUN ls -lh /opt/nuttx/nuttx.bin
+
+WORKDIR /workspace
+
+# =============================================================================
+# spresense ステージ: spresense:nsh (実機ビルド用、Sony Spresense メインボード)
+# ARM Cortex-M4F。base で既に用意済みの arm-none-eabi-gcc をそのまま使う。
+# 書き込みには Sony 提供の flash_writer (NuttX リポジトリには同梱されておらず、
+# sonydevworld/spresense の sdk/tools/windows/flash_writer.exe を別途取得する
+# 必要がある) が要る。詳細は docs/hardware-verification.md を参照。
+# =============================================================================
+FROM base AS spresense
+
+WORKDIR /opt/nuttx
+RUN ./tools/configure.sh spresense:nsh && \
+    kconfig-tweak --enable CONFIG_NET             && \
+    kconfig-tweak --enable CONFIG_NET_IPv4        && \
+    kconfig-tweak --enable CONFIG_NET_UDP         && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
+    kconfig-tweak --enable CONFIG_SCHED_WORKQUEUE && \
+    kconfig-tweak --enable CONFIG_SCHED_HPWORK    && \
+    kconfig-tweak --enable CONFIG_SCHED_LPWORK    && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    make olddefconfig 2>&1 | tail -5
+
+# NOTE: spresense:nsh は最小構成の NSH config で、デフォルトではネットワーク
+# (CONFIG_NET) 自体が無効。CONFIG_SCHED_WORKQUEUE も無効 (sim/qemu では
+# デフォルトで有効だったため気づかなかった依存関係。drivers/net/tun.c が
+# 要求する。docs/phase2-log.md 参照) なので、両方を明示的に有効化している。
+#
+# Spresense にはWi-Fiが内蔵されていないため、このコンフィグは
+# 「CONFIG_NET_WIREGUARD がビルドできて wg0 を登録できる」ことの確認用であり、
+# 実際のネットワーク到達性は検証できない。Wi-Fi には別売りの GS2200M
+# 拡張モジュール (ボードコンフィグ "wifi") が必要でスコープ外。
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
+RUN ls -lh /opt/nuttx/nuttx.spk
+
+WORKDIR /workspace

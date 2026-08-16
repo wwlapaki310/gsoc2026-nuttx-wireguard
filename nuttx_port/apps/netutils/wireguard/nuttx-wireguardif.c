@@ -39,7 +39,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sched.h>
-#include <poll.h>
 #include <debug.h>
 
 #include <sys/socket.h>
@@ -64,7 +63,14 @@
  ****************************************************************************/
 
 #define WG_TXWORK           LPWORK
-#define WG_TIMER_MSECS      400
+
+/* wg_rx_task() poll interval. wg_run_timers() is expiry-timestamp driven
+ * (see wireguard_expired() checks throughout), so calling it more often
+ * than strictly necessary is harmless - this just bounds how quickly
+ * incoming UDP traffic gets noticed by psock_recvfrom().
+ */
+
+#define WG_RX_POLL_MSECS    50
 
 /* Largest plaintext IP packet we will handle. Must be >= WIREGUARDIF_MTU
  * (1420) plus a little slack; matches the usual NET_TUN_PKTSIZE default.
@@ -86,7 +92,20 @@ struct wg_netdev_s
   bool running;                 /* Background thread should keep running */
   bool registered;               /* wg_initialize() has already run */
 
-  int sock;                     /* UDP socket used as the "wire" */
+  /* UDP socket used as the "wire", held as a raw struct socket rather
+   * than a task file descriptor. sendto() on this socket happens from
+   * several different task contexts (wg_rx_task, and the LPWORK thread
+   * via wg_txavail_work() -> wg_txpoll()) that are not related to each
+   * other by parent/child task_create() inheritance, and a plain fd is
+   * only valid in the task (and its descendants) that owned it at
+   * socket() time - calling sendto() on it from an unrelated task such
+   * as the system LPWORK thread fails with EBADF. The psock_*() internal
+   * API operates on this struct directly, with no file descriptor table
+   * lookup at all, so it works uniformly from every context. See
+   * wg_rx_task()'s comment for more detail.
+   */
+
+  struct socket psock;
   int rxtask;                   /* PID of the wg_rx_task() background task */
   struct work_s txwork;         /* Deferred TX poll work */
 
@@ -222,6 +241,7 @@ static bool wg_encrypt_and_send(FAR struct wg_netdev_s *priv,
   size_t padded_len;
   size_t total_len;
   uint32_t now;
+  ssize_t ret_sendto;
   bool ok = false;
 
   /* We may not be able to use the current keypair if we haven't received
@@ -274,8 +294,9 @@ static bool wg_encrypt_and_send(FAR struct wg_netdev_s *priv,
   addr.sin_addr = peer->ip;
   addr.sin_port = htons(peer->port);
 
-  if (sendto(priv->sock, priv->cryptbuf, total_len, 0,
-             (FAR struct sockaddr *)&addr, sizeof(addr)) >= 0)
+  ret_sendto = psock_sendto(&priv->psock, priv->cryptbuf, total_len, 0,
+                             (FAR struct sockaddr *)&addr, sizeof(addr));
+  if (ret_sendto >= 0)
     {
       now = wireguard_sys_now();
       peer->last_tx = now;
@@ -328,8 +349,8 @@ static void wg_start_handshake(FAR struct wg_netdev_s *priv,
   addr.sin_addr = peer->ip;
   addr.sin_port = htons(peer->port);
 
-  sendto(priv->sock, &msg, sizeof(msg), 0,
-         (FAR struct sockaddr *)&addr, sizeof(addr));
+  psock_sendto(&priv->psock, &msg, sizeof(msg), 0,
+               (FAR struct sockaddr *)&addr, sizeof(addr));
 
   peer->send_handshake = false;
   peer->last_initiation_tx = wireguard_sys_now();
@@ -355,8 +376,8 @@ static void wg_send_handshake_response(FAR struct wg_netdev_s *priv,
   addr.sin_addr = peer->ip;
   addr.sin_port = htons(peer->port);
 
-  sendto(priv->sock, &packet, sizeof(packet), 0,
-         (FAR struct sockaddr *)&addr, sizeof(addr));
+  psock_sendto(&priv->psock, &packet, sizeof(packet), 0,
+               (FAR struct sockaddr *)&addr, sizeof(addr));
 }
 
 /****************************************************************************
@@ -719,17 +740,39 @@ static void wg_run_timers(FAR struct wg_netdev_s *priv)
  * Name: wg_rx_task
  *
  * Description:
- *   Background task: waits (with a timeout) for incoming WireGuard UDP
- *   traffic, and doubles as the periodic timer by running wg_run_timers()
- *   on every wakeup, whether it was due to data arriving or the timeout
- *   expiring.
+ *   Background task: waits (non-blocking, polled at WG_RX_POLL_MSECS) for
+ *   incoming WireGuard UDP traffic, and doubles as the periodic timer by
+ *   running wg_run_timers() on every wakeup.
  *
- *   This uses poll() rather than SO_RCVTIMEO to wait with a timeout:
- *   SO_RCVTIMEO is accepted by setsockopt() on this platform but is not
- *   actually honored by recvfrom() (confirmed empirically - recvfrom()
- *   blocks indefinitely regardless of the configured timeout), which
- *   would otherwise deadlock this thread forever on a quiet socket and
- *   prevent it from ever sending the first handshake initiation.
+ *   priv->psock is a raw struct socket (see its declaration), read and
+ *   written with the psock_*() internal API instead of the usual fd-based
+ *   socket()/recvfrom()/sendto()/poll(). This is required, not a style
+ *   choice: a NuttX file descriptor is only valid within the task (and
+ *   its descendants at task_create() time) that owned it when it was
+ *   created. wg_txpoll() - the TX side of this same socket - runs on the
+ *   system LPWORK thread (queued by wg_txavail(), itself called from
+ *   whichever task is doing an outgoing send(), e.g. a telnetd session
+ *   task), which is unrelated to wg_rx_task by any task_create() lineage.
+ *   sendto() on an fd from there fails with EBADF; this was diagnosed by
+ *   instrumenting the TX path and reproducing over a real WireGuard
+ *   tunnel: the handshake and any reply built synchronously inside
+ *   ipv4_input() (ICMP echo, SYN-ACK) went out fine because those run
+ *   inside wg_rx_task's own call stack, but every send queued
+ *   asynchronously through devif_poll()/wg_txavail() - i.e. all TCP
+ *   application data - silently failed with EBADF from the LPWORK
+ *   thread, while wg_show()'s counters made it look like nothing was
+ *   even attempted. struct socket has no such restriction: it is a plain
+ *   struct dereferenced by pointer, so psock_sendto() works identically
+ *   from any task.
+ *
+ *   poll() has the same fd-table restriction as recvfrom()/sendto(), so a
+ *   blocking wait with timeout isn't available here the usual way (and
+ *   SO_RCVTIMEO does not work on this platform - see git history). A
+ *   short non-blocking psock_recvfrom() poll loop is used instead;
+ *   wg_run_timers() is driven by explicit wireguard_expired() timestamp
+ *   checks internally, so calling it every WG_RX_POLL_MSECS instead of
+ *   waking up exactly on data arrival changes nothing but the polling
+ *   granularity.
  *
  *   This is a standalone task (task_create()), not a pthread of the "wg"
  *   NSH command: a pthread created and detached by "wg" was empirically
@@ -748,33 +791,23 @@ static int wg_rx_task(int argc, FAR char *argv[])
 
   while (priv->running)
     {
-      struct pollfd pfd;
-      int pret;
+      struct sockaddr_in from;
+      socklen_t fromlen = sizeof(from);
+      ssize_t n;
 
-      pfd.fd = priv->sock;
-      pfd.events = POLLIN;
-      pfd.revents = 0;
-
-      pret = poll(&pfd, 1, WG_TIMER_MSECS);
-      if (pret > 0 && (pfd.revents & POLLIN) != 0)
+      n = psock_recvfrom(&priv->psock, rxbuf, sizeof(rxbuf), MSG_DONTWAIT,
+                          (FAR struct sockaddr *)&from, &fromlen);
+      if (n > 0)
         {
-          struct sockaddr_in from;
-          socklen_t fromlen = sizeof(from);
-          ssize_t n;
-
-          n = recvfrom(priv->sock, rxbuf, sizeof(rxbuf), 0,
-                        (FAR struct sockaddr *)&from, &fromlen);
-          if (n > 0)
-            {
-              net_lock();
-              wg_process_udp_packet(priv, rxbuf, (size_t)n,
-                                     from.sin_addr.s_addr,
-                                     ntohs(from.sin_port));
-              net_unlock();
-            }
+          net_lock();
+          wg_process_udp_packet(priv, rxbuf, (size_t)n,
+                                 from.sin_addr.s_addr,
+                                 ntohs(from.sin_port));
+          net_unlock();
         }
 
       wg_run_timers(priv);
+      usleep(WG_RX_POLL_MSECS * 1000);
     }
 
   return 0;
@@ -1020,11 +1053,10 @@ int wg_initialize(void)
       return -EINVAL;
     }
 
-  priv->sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (priv->sock < 0)
+  ret = psock_socket(AF_INET, SOCK_DGRAM, 0, &priv->psock);
+  if (ret < 0)
     {
-      ret = -errno;
-      nerr("ERROR: socket() failed: %d\n", ret);
+      nerr("ERROR: psock_socket() failed: %d\n", ret);
       return ret;
     }
 
@@ -1033,11 +1065,12 @@ int wg_initialize(void)
   bindaddr.sin_addr.s_addr = INADDR_ANY;
   bindaddr.sin_port = htons(CONFIG_NET_WIREGUARD_LISTEN_PORT);
 
-  if (bind(priv->sock, (FAR struct sockaddr *)&bindaddr, sizeof(bindaddr)) < 0)
+  ret = psock_bind(&priv->psock, (FAR struct sockaddr *)&bindaddr,
+                    sizeof(bindaddr));
+  if (ret < 0)
     {
-      ret = -errno;
-      nerr("ERROR: bind() failed: %d\n", ret);
-      close(priv->sock);
+      nerr("ERROR: psock_bind() failed: %d\n", ret);
+      psock_close(&priv->psock);
       return ret;
     }
 
@@ -1053,7 +1086,7 @@ int wg_initialize(void)
   if (ret < 0)
     {
       nerr("ERROR: netdev_register failed: %d\n", ret);
-      close(priv->sock);
+      psock_close(&priv->psock);
       return ret;
     }
 
@@ -1066,7 +1099,7 @@ int wg_initialize(void)
       ret = -errno;
       nerr("ERROR: task_create failed: %d\n", ret);
       netdev_unregister(&priv->dev);
-      close(priv->sock);
+      psock_close(&priv->psock);
       return ret;
     }
 

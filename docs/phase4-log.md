@@ -1,0 +1,294 @@
+# Phase 4 開発ログ: 実機ビルド・書き込み・実ネットワーク検証
+
+## 目標
+
+実際に手元にある実機(ESP32-WROOM-32、ESP32-S3、Sony Spresense メインボード)で `CONFIG_NET_WIREGUARD=y` のビルドを通し、書き込み・起動・実ネットワーク越しの WireGuard 通信まで確認する。
+
+**結論を先に:** **ESP32-S3 で完全成功。** 実機を Wi-Fi 経由で実際のアクセスポイントに接続し、Windows 上の公式 WireGuard クライアントと実際にハンドシェイクを成立させ、トンネル越しの ping(0% packet loss)まで確認できた。さらに telnetd をトンネル越しに使おうとした際に見つかった「TCP のアプリケーションデータだけがトンネルを通らない」バグ(原因: LPWORK ワーカースレッドから `sendto()` する際にファイルディスクリプタがそのスレッドのタスクグループに属さず `EBADF` になっていた)を特定・修正し、トンネル越し telnet セッションでのコマンド実行まで実機で確認した(詳細は後述の節)。ESP32-WROOM-32・Spresense については、WireGuard を含む NuttX ビルド自体はコード変更なしで成功したが、実機への書き込み・起動確認はハードウェア側の問題(詳細後述)で完了できなかった。
+
+---
+
+## 環境準備
+
+### CP210x ドライバ
+
+ESP32-WROOM-32 ボードの USB シリアルチップ (Silicon Labs CP2102、VID_10C4/PID_EA60) が Windows に `Code 28: ドライバがインストールされていません` として認識され、COM ポートが割り当てられていなかった。Silicon Labs 公式サイトから CP210x Windows Driver をインストールして解決(`COM5` として認識)。
+
+### esptool / arduino-cli (Windows ホスト側)
+
+Docker Desktop (Windows) は USB シリアルデバイスに直接アクセスできないため、書き込みは Windows ホスト側で直接行う方式にした:
+
+- `pip install esptool`(Windows の Python 3.13 に直接インストール)
+- 後述のクロスチェック用に `arduino-cli`(winget 経由)+ ESP32 core も導入
+
+---
+
+## ESP32-S3 — 実機での完全成功
+
+翌日、ESP32-S3 搭載ボード(Freenove 製、16MB フラッシュ、PSRAM 8MB 内蔵、`ESP32-S3 (QFN56) revision v0.2`)が到着し、そのまま実機検証を完了させた。
+
+### チップ判定・接続 — ボタン操作不要で一発成功
+
+`esptool chip_id` を実行したところ、**特別なボタン操作(BOOT/EN)なしで、デフォルトの自動リセットのみで一発接続に成功した**。無印 ESP32-WROOM-32 で何十回も失敗した `Wrong boot mode detected` は一度も発生しなかった。実際にはこのボードも USB シリアルブリッジチップ(WCH 製 CH343、VID_1A86/PID_55D3)経由での接続だったが、ドライバも Windows に最初から入っており(手動インストール不要)、接続も安定していた。無印 ESP32 で踏んだ問題は、チップ世代の違いというよりは**個体・ボード側の自動リセット回路の問題だった可能性が高い**ことがここで裏付けられた。
+
+### ビルド・書き込み
+
+`Dockerfile` に追加していた `esp32s3` ステージ(前日に準備済み、`esp32s3-devkit:wifi` ボード + `xtensa-esp32s3-elf` ツールチェイン)でビルドし、そのまま書き込み。
+
+書き込みオフセットは無印 ESP32(`0x1000`)と異なり **`0x0000`**(コンテナ内で `make flash ESPTOOL_PORT=<fake> ESPTOOL_BINDIR=./` を実行して実際のコマンドを確認した):
+
+```bash
+python -m esptool -c esp32s3 -p COM7 -b 921600 write_flash -fs detect -fm dio -ff 40m 0x0000 nuttx.bin
+```
+
+一発で `Hash of data verified` が出て成功。シリアルコンソール(pyserial 経由、115200 baud)で `nsh>` プロンプトへの起動を確認。
+
+### `wg0` 起動確認(テスト鍵)
+
+テスト用の秘密鍵を `kconfig-tweak --set-str CONFIG_NET_WIREGUARD_PRIVATE_KEY` で設定してビルドし直し、再書き込み:
+
+```
+nsh> wg
+wg0 is up (listen port 51820)
+nsh> ifconfig
+wg0	Link encap:TUN at UP mtu 1500
+	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+```
+
+**このプロジェクトで初めて、実機シリコン上で `wg0` の起動を確認できた。**
+
+### 実 Wi-Fi + 実ピアでのハンドシェイク
+
+実際の家庭用 Wi-Fi(TP-Link ルーター)の SSID・パスフレーズを `CONFIG_NETINIT_WAPI_SSID`/`PASSPHRASE` に設定し、`CONFIG_NETINIT_DHCPC=y` を有効化。ピアには **Windows 上の公式 WireGuard クライアント**(`winget install WireGuard.WireGuard`)を使用した。Linux カーネル実装ではなく Windows 版公式クライアントとの相互運用性を確認する意味もあった。
+
+- Windows 側の鍵ペアは Docker 上の `wireguard-tools`(`wg genkey` / `wg pubkey`)で生成
+- Windows 側の `.conf` を作成し、WireGuard アプリの GUI で「ファイルからトンネルをインポート」→「アクティブ化」(`wireguard.exe /installtunnelservice` はサービスインストールに管理者権限が必要で、非対話的には実行できなかったため GUI 操作に切り替えた)
+- ESP32-S3 側は `CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP` に Windows 機の LAN IP(`192.168.0.216`)を設定し、ESP32-S3 側からハンドシェイクを開始する構成にした(Windows 側はエンドポイントを指定せず、着信パケットから自動学習させた)
+
+再ビルド・再書き込み後、`wlan0` が実際のルーターから **DHCP で本物の LAN アドレス(`192.168.0.152`)を取得**していることを確認。Windows 側でトンネルをアクティブ化した直後、ESP32-S3 側の `wg show` で:
+
+```
+peer: 5J5rgkz5RB0CB1hIZae5V3jQjisRjqOrry7Scca9YjE=
+  endpoint: 192.168.0.216:51820
+  latest handshake: 11 seconds ago
+  transfer: 336 B received, 240 B sent
+```
+
+**実際のハンドシェイクが成立。** Windows 側から `ping 10.10.0.2`(ESP32-S3 の WireGuard トンネルアドレス)を実行したところ:
+
+```
+Pinging 10.10.0.2 with 32 bytes of data:
+Reply from 10.10.0.2: bytes=32 time=11ms TTL=128
+Reply from 10.10.0.2: bytes=32 time=8ms TTL=128
+Reply from 10.10.0.2: bytes=32 time=11ms TTL=128
+Reply from 10.10.0.2: bytes=32 time=8ms TTL=128
+
+Ping statistics for 10.10.0.2:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+```
+
+**4/4 パケット、0% packet loss。** sim・QEMU の仮想ネットワーク環境で確認済みだった WireGuard の実装が、本物の実機・本物の Wi-Fi・本物の非 Linux ピア(Windows 公式クライアント)との組み合わせでも正しく相互運用できることを実証した。
+
+### Flash / RAM 使用量
+
+```
+nsh> free
+                 total       used       free    maxused    maxfree  nused  nfree
+      Umem:     291696      76072     215624      81448     210704    150      6
+```
+
+```
+$ xtensa-esp32s3-elf-size nuttx
+   text	   data	    bss	    dec	    hex	filename
+ 660310	  11868	 256060	 928238	  e29ee	nuttx
+```
+
+ヒープ(291,696 バイト)のうち使用 76,072 バイト・空き 215,624 バイトと十分な余裕がある。書き込みイメージ(`nuttx.bin`)は約 675KB(16MB フラッシュに対して十分小さい)。
+
+---
+
+## ESP32-WROOM-32
+
+### チップ判定
+
+`esptool chip_id` で自動判定: **ESP32-D0WDQ6 (revision v1.0)**、Wi-Fi/BT、デュアルコア。NuttX のボードコンフィグは `esp32-devkitc`(WROOM/WROVER 系の DevKitC 系ボードに対応)を使用。
+
+### Docker ビルド (Xtensa トレイン)
+
+`Dockerfile` に `esp32` ステージを追加。既存の `base` ステージ(NuttX/apps/wireguard コンポーネントのクローン・配置まで共通)の上に:
+
+1. Xtensa ESP32 用ツールチェイン(NuttX 公式 CI が参照している Espressif prebuilt: `xtensa-esp32-elf-12.2.0_20230208-x86_64-linux-gnu.tar.xz`)を展開
+2. `esptool`(Python)をインストール — NuttX 自身のビルド末尾 `MKIMAGE: ESP32 binary` ステップ(ELF → `nuttx.bin` 変換)に必要
+3. `./tools/configure.sh esp32-devkitc:wifinsh` + WireGuard 用の Kconfig(`ALLOW_BSD_COMPONENTS`・`NET_TUN`・`NET_TUN_PKTSIZE=1500`・`NET_SOCKOPTS`・`NET_WIREGUARD`・`DEV_URANDOM` + `DEV_URANDOM_ARCH`)
+
+**ビルドは一発で成功した。** `nuttx-platform.c`・`nuttx-wireguardif.c`・`wg_main.c` に一切のコード変更は不要だった(sim/qemu 向けに書いたコードがそのまま ESP32 実機ターゲットでもコンパイル・リンクできた)。
+
+### 書き込み試行
+
+`make flash` が実際に使うコマンドをコンテナ内で確認:
+
+```
+esptool -c esp32 -p <port> -b 921600 write_flash -fs detect -fm dio -ff 40m 0x1000 nuttx.bin
+```
+
+`nuttx.bin` を `docker cp` で Windows ホストに取り出し、`python -m esptool` で書き込みを試みたが、**毎回同じエラーで失敗**:
+
+```
+A fatal error occurred: Failed to connect to ESP32: Wrong boot mode detected (0x13)!
+The chip needs to be in download mode.
+```
+
+以下の方法をすべて試したが、結果は変わらなかった:
+
+- BOOT を押しながら EN を押して離す(複数のタイミングパターン)
+- BOOT を押したまま USB を抜き差し(コールドブート時に GPIO0 を Low にする方法)
+- BOOT を押しっぱなしにしたまま esptool を実行(離すタイミングの問題を排除)
+- コマンドを先に実行してから(接続待ちの間に)ボタン操作(チャット越しのタイムラグを排除)
+
+**クロスチェック:** `arduino-cli`(独立した別実装、デフォルトの自動リセットのみでボタン操作なし)でも `esp32:esp32:esp32` FQBN で Blink スケッチのコンパイル・書き込みを試したが、**全く同じ `Wrong boot mode detected (0x13)` で失敗**。
+
+2つの独立したツール・複数の操作方法すべてで同一の症状が出たことから、esptool の呼び出し方の問題ではなく、**ボード側のハードウェア(自動リセット回路または BOOT ボタン)の問題である可能性が高い**と判断し、これ以上のソフトウェア側の切り分けは行っていない。
+
+---
+
+## Sony Spresense (メインボード単体)
+
+### Docker ビルド (Cortex-M4F)
+
+Spresense (CXD5602, ARM Cortex-M4F) は既存の `arm-none-eabi-gcc`(qemu-armv7a 用に導入済み)がそのまま使えた。新規ツールチェインの追加は不要。
+
+`Dockerfile` に `spresense` ステージを追加。`./tools/configure.sh spresense:nsh` + WireGuard 用 Kconfig を設定したところ、2つの見落としがあった:
+
+1. `spresense:nsh` はデフォルトで **`CONFIG_NET` 自体が無効**(最小構成の NSH のみ)。`CONFIG_NET`・`CONFIG_NET_IPv4`・`CONFIG_NET_UDP`・`CONFIG_NET_SOCKOPTS` を明示的に有効化する必要があった。
+2. `CONFIG_SCHED_WORKQUEUE` も無効で、`drivers/net/tun.c` のビルドが `#error Work queue support is required` で失敗した(sim/qemu ではデフォルトで有効だったため Phase 2/3 では気づかなかった依存関係)。`CONFIG_SCHED_WORKQUEUE`・`CONFIG_SCHED_HPWORK`・`CONFIG_SCHED_LPWORK` を追加して解決。
+
+これらを追加した後、**ビルドは成功**し、NuttX の標準ビルドフロー内で `tools/cxd56/mkspk` が自動的に呼ばれて `nuttx.spk`(書き込み用パッケージ形式)が生成された。ここでもコンポーネント自体のコード変更は不要だった。
+
+### 書き込みツールの入手
+
+Spresense の書き込みには NuttX リポジトリに同梱されていない Sony 独自ツールが必要。`sonydevworld/spresense` リポジトリの `sdk/tools/windows/` から Windows 向けの実行ファイルを直接取得した:
+
+- `flash_writer.exe` — X-Modem 経由で `.spk` を書き込むツール
+- `xmodem_writer.exe`
+- `cxd5602cdc-usb-driver.zip` — USB CDC ドライバ(未インストールのまま作業を止めた)
+
+### 書き込み試行 — USB デバイスとして認識されない
+
+`nuttx.spk` を Windows ホストに取り出し、Spresense ボード(メインボード単体、拡張ボードなし)を接続したが、**Windows 上で一切 USB デバイスとして列挙されなかった**(`Get-PnpDevice`/`Win32_SerialPort` のどちらにも新しいデバイスが一切出現しない。「不明なデバイス」としてすら出ない)。
+
+切り分けのため以下を試したが、状況は変わらなかった:
+
+- USB ケーブルの交換(ただし同一ケーブルで ESP32 は正常にデータ通信できていたため、単純な「充電専用ケーブル」説は弱い)
+- PC 側の USB ポートの変更
+
+電源 LED(緑・青)は点灯しており電源自体は供給されているが、USB データ通信の列挙が一切発生しない状態。CDC ドライバのインストールは、そもそも列挙されない状態では試す意味がないため保留した。原因はハードウェア側(USB コネクタの半田不良、ボード自体の初期不良など)の可能性が高いが、未特定。
+
+---
+
+## トンネル越し telnet で見つかった TCP 特有バグの調査・修正
+
+ESP32-S3 実機でのハンドシェイク・ping 成功後、実用的なリモートアクセスのデモとして NuttX 標準の `telnetd`(NSH の `nsh_telnetstart` により起動時に自動起動済み)をトンネル越しに使えるか試したところ、**ICMP(ping)は正常なのに TCP(telnet)だけデータが一切届かない**という現象に遭遇した。
+
+### 症状の切り分け
+
+- `ping 10.10.0.2`(トンネル越し)は 0% packet loss で成功する
+- トンネル越しに `telnet 10.10.0.2` すると **TCP の 3-way ハンドシェイクは成立する**(`connected=True`)が、telnetd のバナー(`NuttShell (NSH) NuttX-12.7.0`)が **1バイトも届かない**
+- 同じテストスクリプトで **WireGuard を使わず同一 LAN 上で直接** `192.168.0.152:23` に telnet すると、バナー・コマンド応答とも正常に届く
+
+これにより「telnetd 自体やプレーンな TCP スタックの問題ではなく、`wg0` の実装のうち TCP のデータ送出パスにだけ影響するバグ」であることを切り分けた。
+
+### 原因調査: TX パスへのデバッグ計装
+
+`nuttx-wireguardif.c` の `wg_txavail()` / `wg_txavail_work()` / `wg_txpoll()` / `wg_encrypt_and_send()` に `ninfo()` でトレースを仕込み、`CONFIG_DEBUG_NET_INFO=y` を有効にした状態でシリアルコンソールをキャプチャしながら再現させたところ、決定的な行が見つかった:
+
+```
+[CPU1] wg_txpoll: WGDBG txpoll: d_len=72 d_iob=0x3fc96f8c
+[CPU1] wg_txpoll: WGDBG txpoll: proto=6 dest=01000a0a peer=0x3fc9a720
+[CPU1] wg_encrypt_and_send: WGDBG encrypt_and_send: sendto total_len=112 ret=-1 errno=9
+[CPU1] wg_txpoll: WGDBG txpoll: encrypt_and_send len=72 sent=0
+```
+
+`errno=9` = `EBADF`(不正なファイルディスクリプタ)。`sendto()` が呼ばれる場所ごとに成功・失敗が明確に分かれていた:
+
+- **成功する呼び出し**: `wg_rx_task()` 自身のコンテキストから行われるもの — 受信した UDP パケットの処理(ハンドシェイク応答、keepalive)、および `wg_inject_plaintext()` が `ipv4_input()` 呼び出し中に同期的に生成される即時応答(ICMP echo reply、TCP の SYN-ACK)を捕まえて送り返す経路
+- **失敗する呼び出し**(`errno=9`): `wg_txavail()` が `work_queue(LPWORK, wg_txavail_work, ...)` で非同期にスケジュールする `wg_txpoll()` 経由の送信 — つまり telnetd セッションタスクなど、**別タスクが `send()`/`write()` した TCP アプリケーションデータ**すべて
+
+ICMP echo reply と TCP の SYN-ACK は `wg_inject_plaintext()` が `ipv4_input()` 呼び出しのその場で同期的に構築・送信するため `wg_rx_task` 自身のコンテキストで完結する一方、telnetd がバナーを `write()` する処理は非同期にキューされ、システムの **LPWORK ワーカースレッド上で** `wg_txpoll()` → `wg_encrypt_and_send()` → `sendto()` が呼ばれる。これが症状(ハンドシェイクは通るのに TCP データだけ届かない)と完全に一致した。
+
+### 根本原因
+
+NuttX のファイルディスクリプタは **タスクグループごとにスコープされる**。`priv->sock`(`wg_initialize()` 内で `socket()` により作成)は、`wg_rx_task` が `task_create()` で生成される際に(生成元タスクから)継承されるため `wg_rx_task` 自身からは有効に使えるが、**LPWORK は起動時から存在する独立したシステムワーカータスクであり、`wg_rx_task` や「wg」NSH コマンドタスクとは `task_create()` の親子関係が一切ない**。そのため LPWORK のファイルディスクリプタテーブルには `priv->sock` の fd 番号に対応するエントリが存在せず、そこから `sendto(priv->sock, ...)` を呼ぶと `EBADF` になる。
+
+Phase 3 で見つかった「`SO_RCVTIMEO` が効かない」「detached pthread が生成元タスクの終了とともに死ぬ」というバグと合わせて、**fd(ファイルディスクリプタ)やタスクのライフタイムに関する前提が sim/QEMU では表面化しなかった NuttX 特有の落とし穴**という点で同系統の問題だった。
+
+### 修正: `psock_*()` 内部 API への切り替え
+
+NuttX には、ファイルディスクリプタテーブルを一切経由しない `struct socket` ベースの内部 API(`psock_socket()` / `psock_bind()` / `psock_sendto()` / `psock_recvfrom()` / `psock_close()`)が公開されている(`include/nuttx/net/net.h`)。`struct socket` は単なるメモリ上の構造体で、どのタスクからポインタ経由で触っても問題ない — セマフォと同じ扱いができる。
+
+`nuttx-wireguardif.c` を以下のように変更した:
+
+- `struct wg_netdev_s` の `int sock` を `struct socket psock` に変更
+- `wg_initialize()`: `socket()`/`bind()`/`close()` → `psock_socket()`/`psock_bind()`/`psock_close()`
+- `wg_encrypt_and_send()`・`wg_start_handshake()`・`wg_send_handshake_response()`: `sendto()` → `psock_sendto()`(`wg_txpoll()` 経由・LPWORK コンテキストも含め、呼び出し元に関わらず動作する)
+- `wg_rx_task()`: `poll()` + `recvfrom()` を、`psock_recvfrom(..., MSG_DONTWAIT, ...)` を `usleep(WG_RX_POLL_MSECS)`(50ms)間隔で回すループに変更(`poll()` も fd ベースで同じ制約を受けるため。`wg_run_timers()` はタイムスタンプの期限切れ判定で駆動されるので、呼び出し頻度を上げても副作用はない)
+
+### 実機での修正確認
+
+修正後の ESP32-S3 実機で、Windows 公式クライアントとのトンネル越し telnet セッションが完全に動作することを確認した:
+
+```
+Pinging 10.10.0.2 with 32 bytes of data:
+Reply from 10.10.0.2: bytes=32 time=63ms TTL=128
+Reply from 10.10.0.2: bytes=32 time=107ms TTL=128
+Reply from 10.10.0.2: bytes=32 time=91ms TTL=128
+Packets: Sent = 3, Received = 3, Lost = 0 (0% loss)
+
+==== telnet demo ====
+BANNER:
+
+NuttShell (NSH) NuttX-12.7.0
+nsh>
+---- uname -a ----
+NuttX  12.7.0 5d8cdeae-dirty Aug 16 2026 22:49:33 xtensa esp32s3-devkit
+nsh>
+---- uptime ----
+00:01:38 up  0:01, load average: 0.00, 0.00, 0.00
+nsh>
+---- free ----
+                 total       used       free    maxused    maxfree  nused  nfree
+      Umem:     291648      93168     198480      94440     198432    201      2
+nsh>
+```
+
+トンネル越しに TCP(telnet)でコマンドを送り、実際に NuttX 側で実行された結果(`uname -a`・`uptime`・`free`)が正しく返ってきている。ICMP だけでなく TCP を含む任意のアプリケーション通信がトンネル越しに動作することを実証できた。
+
+修正は `nuttx_port/apps/netutils/wireguard/nuttx-wireguardif.c` 側のみで、sim/QEMU の既存ビルドにも同じ修正が反映される(`docker build --target sim` で再ビルド・コンパイル成功を確認済み)。
+
+### デモ用 Web サーバー
+
+telnet でのコマンド実行に加え、NuttX 標準の uIP webserver(`apps/netutils/webserver` + `apps/examples/webserver`)もトンネル越しに動かせることを確認した。`esp32s3` ステージに `CONFIG_NETUTILS_WEBSERVER` / `CONFIG_EXAMPLES_WEBSERVER` を有効化し、デモ用にブランディングしたページ(`docker/webserver-demo/header.html` / `index.shtml`)を `apps/examples/webserver/httpd-fs/` に上書きコピーするようにした。
+
+```
+nsh> webserver &
+Starting webserver
+```
+
+以降、トンネルの反対側のブラウザから `http://10.10.0.2/`(ポート 80、`webserver` の既定ポート)でアクセスできる。ICMP・対話的 TCP(telnet)・HTTP という3種類の通信すべてがトンネル越しに動作することの実証になった。この一連の流れ(telnet ログイン→コマンド実行→`webserver &`→ブラウザアクセス)をデモ動画として収録した: [docs/phase4-summary.md](phase4-summary.md) を参照。
+
+---
+
+## 学んだこと・引き継ぎ事項
+
+### 良かった点
+
+- WireGuard コンポーネントのコードは **sim/qemu 向けに書いたものが ESP32・ESP32-S3・Spresense 実機ターゲットでも変更なしでビルドできる**ことを確認できた。プラットフォーム抽象化(`nuttx-platform.c`)と netdev 統合(`nuttx-wireguardif.c`)の設計がポータブルであることの実証になった
+- 各ターゲット固有の Kconfig ギャップ(ESP32: なし、Spresense: `CONFIG_NET`/`CONFIG_SCHED_WORKQUEUE` 未有効)を発見・解消し、`Dockerfile` の `esp32`/`esp32s3`/`spresense` ステージとして再現可能な形で残せた
+- **ESP32-S3 実機で実 Wi-Fi・実ピア(Windows 公式クライアント)との WireGuard ハンドシェイク・トンネル ping を確認**。sim・QEMU の仮想ネットワークだけでなく、本物のネットワーク環境・本物の異実装ピアとの相互運用性まで実証できた
+- 無印 ESP32-WROOM-32 のブートモード問題は、ESP32-S3(別個体・別ボード)では一切発生しなかった。チップ世代の違いというより個体/ボード側の問題だった可能性が高い
+
+### 未解決
+
+- ESP32-WROOM-32: 実機のブートモード切り替え(ハードウェア側の問題の疑い、上記の通り ESP32-S3 では再現しなかった)
+- Spresense: USB 列挙が発生しない(ハードウェア側の問題の疑い、CDC ドライバのテストは未実施)
+- 両方とも、次回は「別の PC で試す」「別のケーブル・電源で試す」など、より切り分けの効く環境で再挑戦する必要がある
+- ESP32-S3 側で長時間 keepalive・再接続・複数 peer など異常系の検証はまだ(sim/QEMU と同様、短時間の handshake + ping のみ確認済み)
