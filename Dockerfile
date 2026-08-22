@@ -205,7 +205,7 @@ WORKDIR /opt/nuttx
 RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
     kconfig-tweak --enable CONFIG_NET_TUN         && \
-    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1420 && \
     kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM_ARCH && \
@@ -213,6 +213,13 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_NETUTILS_WEBSERVER && \
     kconfig-tweak --enable CONFIG_EXAMPLES_WEBSERVER && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE: NET_TUN_PKTSIZE is wg0's MTU. 1420 (not the 1500 the sim/qemu
+# stages use) matches WIREGUARDIF_MTU in the vendored wireguard-lwip code
+# and is what the ESP32-S3 hardware testing actually ran with: a 1420 byte
+# plaintext encrypts to a 1452 byte UDP payload, which still fits in one
+# 1500 byte Ethernet frame. At 1500 every full-size packet would encrypt
+# into something that has to be IP-fragmented on the way out.
 
 # NOTE: esp32s3-devkit:wifi もプレースホルダーの Wi-Fi 認証情報・空の
 # WireGuard 秘密鍵を持つ。実際に使うにはビルド前に kconfig-tweak --set-str

@@ -35,10 +35,27 @@ config NET_WIREGUARD_STACKSIZE
 
 config NET_WIREGUARD_RX_STACKSIZE
 	int "WireGuard RX thread stack size"
-	default 3072
+	default 4096
 	---help---
 		Stack size of the background thread that receives WireGuard UDP
 		packets and drives the handshake/keepalive timers.
+
+		This thread decrypts each incoming packet and then calls
+		ipv4_input() on it directly, so the whole receive-side depth of
+		the network stack (and, for packets the stack answers straight
+		away such as ICMP echo and TCP ACKs, a ChaCha20-Poly1305
+		encryption of the reply on the way back out) runs on this stack
+		rather than on the caller's.
+
+		The default comes from measurement rather than guesswork: with
+		CONFIG_STACK_COLORATION enabled on an ESP32-S3 (IPv4 only, single
+		peer, wg0 MTU 1420), pushing ~1.2 MB of TCP through the tunnel
+		alongside a large-packet ping flood left a high water mark of
+		2896 bytes. 4096 keeps roughly 40% headroom on top of that.
+
+		Raise it if you enable IPv6, IP fragmentation, or a larger MTU,
+		or if you see stack overflows on an architecture with bigger
+		frames. CONFIG_STACK_COLORATION plus "ps" reports the real usage.
 
 config NET_WIREGUARD_LISTEN_PORT
 	int "UDP listen port"

@@ -1,0 +1,122 @@
+# コードレビューと今後の計画 (2026-08)
+
+ESP32-S3 実機検証・TCP バグ修正が一段落した時点で、`nuttx_port/apps/netutils/wireguard/` の実装全体を読み直し、upstream 提出・発表・実用性の3つの観点から棚卸ししたもの。
+
+---
+
+## 1. 現状の評価
+
+### 良い状態にあるもの
+
+- **プラットフォーム抽象化 (`nuttx-platform.c`)**: `wireguard-platform.h` の4関数のみ。sim / QEMU / Xtensa (ESP32・ESP32-S3) / ARM Cortex-M4F (Spresense) すべてで無変更で動作しており、移植性の設計は正しかった
+- **vendored コードの扱い**: `wireguard.c` / `crypto/` は upstream wireguard-lwip の BSD-3-Clause ヘッダを保持したまま未改変。`ALLOW_BSD_COMPONENTS` ゲートも含め、ライセンス面の設計判断は upstream の要求と合致している
+- **netdev 統合 (`nuttx-wireguardif.c`)**: `NET_LL_TUN` netdev として `wg0` を登録し、UDP ソケットを「配線」として使う設計。実機で ICMP・TCP(telnet・HTTP)すべての疎通を確認済み
+- **実機検証**: upstream の必須要件である「実機でのビルド・実行ログ」を ESP32-S3 で満たしている
+
+### 発見した課題
+
+以下は今回のレビューで新たに洗い出したもの。深刻度順。
+
+#### (A) RX タスクのスタックサイズが実測に基づいていない
+
+`CONFIG_NET_WIREGUARD_RX_STACKSIZE` のデフォルトは 3072。しかし `wg_rx_task` は `wg_inject_plaintext()` → `ipv4_input()` を自分のコンテキストで呼ぶため、**TCP パケットを処理する際に NuttX の TCP スタック全体の呼び出し深度がこのタスクのスタックに乗る**。
+
+ESP32-S3 での TCP バグ調査中、3072 のままクラッシュ(`EXCCAUSE=0x1c`)が発生したため 8192 に引き上げて回避したが、その後 EBADF が真因と判明したため、**3072 が本当に不足していたのかは未検証のまま**。さらに 8192 という値も Dockerfile に永続化されておらず、コンテナ破棄とともに失われた。
+
+→ `CONFIG_STACK_COLORATION` を有効にして実機で実測し、根拠のあるデフォルト値を Kconfig に設定する。
+
+**【実測結果 2026-08-22】** ESP32-S3 実機で計測した:
+
+| 状態 | `wg_rx` スタック消費 |
+|---|---|
+| `wg0` 起動直後(トラフィックなし) | 2,864 B |
+| TCP 約 1.2 MB + 大サイズ ping フラッド後 | **2,896 B** |
+| 上記を別ビルド(スタック 4096)で再現 | **2,896 B**(71.4%) |
+
+- 2回の独立した計測で **ピークが 2,896 B ちょうどで一致**しており、再現性のある値
+- **旧デフォルト 3072 では余裕がわずか 176 バイト (94.3% 使用)** — 実質的に不足していた。クラッシュの直接原因は EBADF だったが、スタックも同時に危険域にあった
+- 新デフォルトを **4096** に変更(実測比 約 40% の余裕)。8192 は過剰
+
+計測手順・根拠は `Kconfig` の `NET_WIREGUARD_RX_STACKSIZE` の help に記載し、ユーザーが自環境で再測定できるようにした。
+
+#### (B) 転送バイト数カウンタの非対称性
+
+```c
+/* RX: 暗号文長 (認証タグ込み) を加算 */
+priv->peer_rx_bytes[...] += data_len;
+
+/* TX: 平文長を加算 */
+priv->peer_tx_bytes[...] += plaintext_len;
+```
+
+送受信で数えている対象が違うため、`wg show` の `transfer:` 表示が本家 `wg(8)` と比較できない。本家はワイヤ上のバイト数(暗号文)を数えるので、TX 側を暗号文長に揃えるのが正しい。
+
+#### (C) RX タスクが 50ms 間隔でポーリングし続ける
+
+EBADF 修正の際、fd ベースの `poll()` が使えなくなったため `psock_recvfrom(MSG_DONTWAIT)` + `usleep(50ms)` のポーリングループにした。動作は正しいが、**アイドル時も毎秒 20 回 CPU を起こす**。バッテリー駆動の IoT デバイスでは無視できない。
+
+`psock_poll(psock, &fds, true)` + セマフォ待ちで本来のブロッキング待機に戻せるはずで、将来的にはそうすべき。ただし実装コストと引き換えなので、優先度は (A)(B) より低い。
+
+#### (D) 実行時設定ができない (UX 上の最大の弱点)
+
+秘密鍵・ピア公開鍵・エンドポイントがすべて Kconfig の固定値で、**変更するたびにリビルド + 書き込みが必要**。実際、実機デモの準備でこれが最も時間を食った。加えて:
+
+- 秘密鍵が `.config` とビルド成果物に焼き込まれる(`defconfig` をコミットすると鍵が漏れる)
+- `wg0` の起動が手動 (`wg` コマンド) で、再起動のたびに打ち直しが必要
+
+本家 `wg setconf` 相当のランタイム設定と、netinit 連携による自動起動が理想。ただしこれは新規機能追加として相応のサイズがあり、upstream PR も別立てになる。
+
+#### (E) upstream スタイル準拠
+
+ファイルヘッダに ASF ライセンスブロックがなく、関数コメントも `Input Parameters:` / `Returned Value:` が揃っていない箇所がある。`tools/checkpatch.sh` / `nxstyle` を通していない。upstream 提出の機械的な前提条件。
+
+#### (F) 停止・再設定手段がない
+
+`priv->running` を false にする経路がなく、`wg` は一度上げたら落とせない(`wg_ifdown` は netdev を down にするだけで RX タスクは回り続ける)。`wg down` サブコマンドがあるべき。
+
+---
+
+## 2. 今後の計画
+
+優先度は「upstream 提出への距離」×「実装コスト」で判断した。
+
+### 第1段階: 実機で測れることを測る (今回着手)
+
+| 項目 | 内容 |
+|---|---|
+| (A) スタック実測 | `CONFIG_STACK_COLORATION` を有効化し、TCP トラフィックを流した状態で `wg_rx` の消費量を実測。根拠のある Kconfig デフォルトを設定 |
+| (B) カウンタ修正 | TX 側を暗号文長に統一 |
+| Dockerfile 永続化 | 実機検証で必要だった Kconfig(スタックサイズ・MTU)を `esp32s3` ステージに反映し、コンテナ破棄で失われないようにする |
+
+実機が手元にある今しかできない作業を優先する。
+
+### 第2段階: upstream 提出の前提を埋める
+
+| 項目 | 内容 |
+|---|---|
+| (E) スタイル準拠 | `checkpatch.sh` / `nxstyle` を通し、ASF テンプレートに合わせて4ファイルを整形 |
+| `LICENSE` 追記案 | wireguard-lwip の著作権表示を `apache/nuttx-apps/LICENSE` の Appendix パターンで追記する差分を用意 |
+| `Assisted-by:` 運用 | 以後のコミットに `Assisted-by: Claude:claude-sonnet-5` を付与(ASF の生成 AI ポリシー準拠) |
+
+詳細は [upstream-strategy.md](upstream-strategy.md) の §1・§4 を参照。
+
+### 第3段階: 実用性・堅牢性 (GSoC 本期間の中心)
+
+| 項目 | 内容 |
+|---|---|
+| (D) ランタイム設定 | `wg setconf` / `wg set` 相当。鍵をビルドに焼かない |
+| (F) `wg down` | 停止・再設定経路 |
+| netinit 連携 | 起動時自動立ち上げ |
+| (C) ポーリング解消 | `psock_poll()` ベースのブロッキング待機に戻す |
+| 複数ピア | 現状 vendored ヘッダの `WIREGUARD_MAX_PEERS` に依存。Kconfig 化 |
+| 異常系検証 | 長時間 keepalive・再接続・MTU 境界・rekey |
+
+### 第4段階: upstream PR
+
+[upstream-strategy.md](upstream-strategy.md) §3 の段階的 PR 戦略に従う。その前に dev@nuttx.apache.org でアーキテクチャの合意を取る。
+
+---
+
+## 3. 発表資料
+
+[presentation-script.md](presentation-script.md) に発表原稿をまとめた。技術的な山場は「ping は通るのに TCP だけ無言で死ぬ」バグの調査過程(`EBADF` / タスクグループとファイルディスクリプタのスコープ)。

@@ -301,8 +301,15 @@ static bool wg_encrypt_and_send(FAR struct wg_netdev_s *priv,
       now = wireguard_sys_now();
       peer->last_tx = now;
       keypair->last_tx = now;
+
+      /* Count the transport payload (ciphertext + auth tag), i.e. everything
+       * past the 16 byte transport header. This matches what the RX side
+       * adds to peer_rx_bytes in wg_process_data_message(), so the two
+       * halves of "wg show"'s transfer line measure the same thing.
+       */
+
       priv->peer_tx_bytes[wireguard_peer_index(&priv->wg, peer)] +=
-          plaintext_len;
+          total_len - 16;
       ok = true;
     }
 
