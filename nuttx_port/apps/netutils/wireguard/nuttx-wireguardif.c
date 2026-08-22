@@ -1,18 +1,36 @@
 /****************************************************************************
  * apps/netutils/wireguard/nuttx-wireguardif.c
  *
- * NuttX network interface layer for WireGuard.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+/* NuttX network interface layer for WireGuard.
  *
  * This file replaces wireguardif.c from upstream wireguard-lwip, which is
  * written against lwIP's netif/pbuf/udp_pcb APIs that do not exist in
  * NuttX. NuttX has its own network stack (net/), so "wg0" is implemented
  * here as a NET_LL_TUN netdev (see drivers/net/tun.c for the pattern this
- * follows) whose "wire" is a plain UDP socket instead of physical hardware:
+ * follows) whose "wire" is a plain UDP socket instead of physical
+ * hardware:
  *
  *   plaintext IP packet (from NuttX stack, via d_txavail/devif_poll)
- *     -> wireguard_encrypt_packet() -> sendto() on the UDP socket
+ *     -> wireguard_encrypt_packet() -> psock_sendto() on the UDP socket
  *
- *   UDP datagram (via a background recvfrom() thread)
+ *   UDP datagram (via a background psock_recvfrom() task)
  *     -> wireguard_decrypt_packet() -> injected back into the NuttX stack
  *        with ipv4_input()
  *
@@ -23,7 +41,7 @@
  * Only one wg netif ("wg0") is supported, matching the single-peer,
  * single-device limits already baked into wireguard-platform.h
  * (WIREGUARD_MAX_PEERS / WIREGUARD_MAX_SRC_IPS).
- ****************************************************************************/
+ */
 
 /****************************************************************************
  * Included Files
@@ -85,12 +103,12 @@
 
 struct wg_netdev_s
 {
-  struct net_driver_s dev;      /* Interface understood by the NuttX network */
+  struct net_driver_s dev;      /* Interface understood by the network */
   struct wireguard_device wg;   /* WireGuard protocol/device state */
 
   bool bifup;                   /* true: ifup false: ifdown */
   bool running;                 /* Background thread should keep running */
-  bool registered;               /* wg_initialize() has already run */
+  bool registered;              /* wg_initialize() has already run */
 
   /* UDP socket used as the "wire", held as a raw struct socket rather
    * than a task file descriptor. sendto() on this socket happens from
@@ -131,8 +149,8 @@ struct wg_netdev_s
  * Private Function Prototypes
  ****************************************************************************/
 
-static FAR struct wireguard_peer *wg_peer_for_dest(FAR struct wg_netdev_s *priv,
-                                                     in_addr_t dest);
+static FAR struct wireguard_peer *
+  wg_peer_for_dest(FAR struct wg_netdev_s *priv, in_addr_t dest);
 static bool wg_encrypt_and_send(FAR struct wg_netdev_s *priv,
                                  FAR struct wireguard_peer *peer,
                                  FAR const uint8_t *plaintext,
@@ -186,8 +204,8 @@ static struct wg_netdev_s g_wg;
  *
  ****************************************************************************/
 
-static FAR struct wireguard_peer *wg_peer_for_dest(FAR struct wg_netdev_s *priv,
-                                                     in_addr_t dest)
+static FAR struct wireguard_peer *
+  wg_peer_for_dest(FAR struct wg_netdev_s *priv, in_addr_t dest)
 {
   int x;
   int y;
@@ -495,7 +513,8 @@ static void wg_process_data_message(FAR struct wg_netdev_s *priv,
   src = &hdr->enc_packet[0];
 
   memset(priv->plainbuf, 0, sizeof(priv->plainbuf));
-  if (!wireguard_decrypt_packet(priv->plainbuf, src, data_len, nonce, keypair))
+  if (!wireguard_decrypt_packet(priv->plainbuf, src, data_len, nonce,
+                                 keypair))
     {
       return;
     }
@@ -591,8 +610,9 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
 
           if (len == sizeof(*msg) &&
               wireguard_check_mac1(&priv->wg, data,
-                                    sizeof(*msg) - (2 * WIREGUARD_COOKIE_LEN),
-                                    msg->mac1))
+                                   sizeof(*msg) -
+                                   (2 * WIREGUARD_COOKIE_LEN),
+                                   msg->mac1))
             {
               peer = wireguard_process_initiation_message(&priv->wg, msg);
               if (peer != NULL)
@@ -612,8 +632,9 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
 
           if (len == sizeof(*msg) &&
               wireguard_check_mac1(&priv->wg, data,
-                                    sizeof(*msg) - (2 * WIREGUARD_COOKIE_LEN),
-                                    msg->mac1))
+                                   sizeof(*msg) -
+                                   (2 * WIREGUARD_COOKIE_LEN),
+                                   msg->mac1))
             {
               peer = peer_lookup_by_handshake(&priv->wg, msg->receiver);
               if (peer != NULL &&
@@ -630,9 +651,11 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
         break;
 
       case MESSAGE_COOKIE_REPLY:
+
         /* Unreachable: peers never receive a cookie reply because we never
          * ask for one (wireguard_is_under_load() is always false).
          */
+
         break;
 
       case MESSAGE_TRANSPORT_DATA:
@@ -680,6 +703,7 @@ static void wg_run_timers(FAR struct wg_netdev_s *priv)
       FAR struct wireguard_peer *peer = &priv->wg.peers[x];
       bool can_send_initiation;
       bool should_initiate;
+      uint32_t rekey_at;
 
       if (!peer->valid)
         {
@@ -717,11 +741,13 @@ static void wg_run_timers(FAR struct wg_netdev_s *priv)
                              wireguard_expired(peer->last_initiation_tx,
                                                 REKEY_TIMEOUT);
 
+      rekey_at = REJECT_AFTER_TIME - peer->keepalive_interval;
+
       should_initiate = can_send_initiation &&
           (peer->send_handshake ||
            (peer->curr_keypair.valid && !peer->curr_keypair.initiator &&
             wireguard_expired(peer->curr_keypair.keypair_millis,
-                               REJECT_AFTER_TIME - peer->keepalive_interval)) ||
+                               rekey_at)) ||
            (!peer->curr_keypair.valid && peer->active));
 
       if (should_initiate)

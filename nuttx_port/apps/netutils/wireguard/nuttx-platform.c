@@ -1,8 +1,30 @@
 /****************************************************************************
  * apps/netutils/wireguard/nuttx-platform.c
  *
- * Platform abstraction layer for WireGuard on NuttX.
- * Implements wireguard-platform.h for the NuttX RTOS.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+/* Platform abstraction layer for WireGuard on NuttX. Implements the four
+ * functions declared in wireguard-platform.h, which is where the vendored
+ * wireguard-lwip sources isolate all of their OS dependencies.
+ */
+
+/****************************************************************************
+ * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
@@ -17,9 +39,30 @@
 #include "wireguard-platform.h"
 
 /****************************************************************************
- * wireguard_sys_now
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+/* TAI64 label of the Unix epoch, per https://cr.yp.to/libtai/tai64.html.
+ * WireGuard only requires this to be a strictly increasing value that both
+ * ends of the handshake agree on, not a leap-second-accurate TAI clock.
+ */
+
+#define WG_TAI64_UNIX_EPOCH  0x400000000000000aull
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: wireguard_sys_now
  *
- * Returns monotonic time in milliseconds.
+ * Description:
+ *   Return a monotonic millisecond timestamp. Used throughout the protocol
+ *   core for handshake and keep-alive expiry.
+ *
+ * Returned Value:
+ *   Milliseconds since an unspecified fixed point, wrapping at 2^32.
+ *
  ****************************************************************************/
 
 uint32_t wireguard_sys_now(void)
@@ -31,26 +74,36 @@ uint32_t wireguard_sys_now(void)
 }
 
 /****************************************************************************
- * wireguard_random_bytes
+ * Name: wireguard_random_bytes
  *
- * Fills buffer with cryptographically random bytes for key generation.
- * Requires /dev/urandom (CONFIG_DEV_URANDOM=y).
+ * Description:
+ *   Fill a buffer with cryptographically random bytes, used for ephemeral
+ *   key generation. Requires CONFIG_DEV_URANDOM.
+ *
+ *   If no entropy source is available the buffer is zeroed rather than left
+ *   holding whatever the caller's stack or heap contained: handing out
+ *   uninitialised memory as "random" key material would silently weaken
+ *   every handshake built on it.
+ *
+ * Input Parameters:
+ *   bytes - Buffer to fill
+ *   size  - Number of bytes to write
+ *
+ * Returned Value:
+ *   None
+ *
  ****************************************************************************/
 
-void wireguard_random_bytes(void *bytes, size_t size)
+void wireguard_random_bytes(FAR void *bytes, size_t size)
 {
-  int fd;
-  ssize_t nread;
+  FAR uint8_t *dst = (FAR uint8_t *)bytes;
   size_t total = 0;
-  uint8_t *dst = (uint8_t *)bytes;
+  ssize_t nread;
+  int fd;
 
   fd = open("/dev/urandom", O_RDONLY);
   if (fd < 0)
     {
-      /* No entropy source available - zero the buffer rather than handing
-       * out uninitialised stack/heap memory as "random" key material.
-       */
-
       memset(bytes, 0, size);
       return;
     }
@@ -71,13 +124,23 @@ void wireguard_random_bytes(void *bytes, size_t size)
 }
 
 /****************************************************************************
- * wireguard_tai64n_now
+ * Name: wireguard_tai64n_now
  *
- * Returns current time in TAI64N format (8-byte seconds + 4-byte nanoseconds)
- * for handshake replay attack prevention.
+ * Description:
+ *   Write the current time in TAI64N format (8 byte seconds followed by
+ *   4 byte nanoseconds, both big endian). The protocol core embeds this in
+ *   handshake initiation messages so that a peer can reject replayed
+ *   handshakes.
+ *
+ * Input Parameters:
+ *   output - 12 byte buffer to write the timestamp into
+ *
+ * Returned Value:
+ *   None
+ *
  ****************************************************************************/
 
-void wireguard_tai64n_now(uint8_t *output)
+void wireguard_tai64n_now(FAR uint8_t *output)
 {
   struct timespec ts;
   uint64_t seconds;
@@ -86,12 +149,7 @@ void wireguard_tai64n_now(uint8_t *output)
 
   clock_gettime(CLOCK_REALTIME, &ts);
 
-  /* TAI64 label = Unix seconds + 2^62, per https://cr.yp.to/libtai/tai64.html.
-   * WireGuard only needs this to be a strictly increasing value shared by
-   * the algorithm's replay check, not a real leap-second-aware TAI clock.
-   */
-
-  seconds = (uint64_t)ts.tv_sec + 0x400000000000000AULL;
+  seconds = (uint64_t)ts.tv_sec + WG_TAI64_UNIX_EPOCH;
   nanos = (uint32_t)ts.tv_nsec;
 
   for (i = 0; i < 8; i++)
@@ -106,10 +164,20 @@ void wireguard_tai64n_now(uint8_t *output)
 }
 
 /****************************************************************************
- * wireguard_is_under_load
+ * Name: wireguard_is_under_load
  *
- * Returns true if the system should send cookie replies instead of
- * processing handshake initiations. Always false for embedded targets.
+ * Description:
+ *   Report whether the device should answer handshake initiations with
+ *   cookie replies instead of processing them, as a DoS mitigation.
+ *
+ *   Always false here: the cookie mechanism exists to protect servers
+ *   fielding large volumes of handshakes, which is not the shape of a
+ *   single-peer embedded device. See the note in wg_process_udp_packet()
+ *   about the mac2/cookie path this makes unreachable.
+ *
+ * Returned Value:
+ *   Always false.
+ *
  ****************************************************************************/
 
 bool wireguard_is_under_load(void)
