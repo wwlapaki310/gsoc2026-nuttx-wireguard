@@ -130,6 +130,18 @@ Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
 
 sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物の Wi-Fi・本物の異実装ピア(Windows 公式クライアント)との相互運用性まで実証できた。詳細な手順・ログは [docs/phase4-log.md](docs/phase4-log.md)。
 
+### 実機での性能実績(ESP32-S3 / 実 Wi-Fi / Windows 公式クライアント)
+
+| 項目 | 実測値 |
+|---|---|
+| TCP スループット(トンネル越し) | 約 260 KiB/s |
+| 負荷時 ping RTT | 33〜68 ms |
+| 連続転送量(単一セッション) | 約 7 MB(クラッシュなし・転送中に rekey 成功) |
+| `wg_rx` タスクのスタック消費 | 2,960 B / 4,096 B (72.9%) |
+| ヒープ空き | 約 213 KB / 291 KB |
+
+計測方法と、ポーリング解消による約10倍の改善経緯は [docs/code-review-2026-08.md](docs/code-review-2026-08.md) を参照。
+
 ### トンネル越し telnet でのコマンド実行(TCP 特有バグ修正後)
 
 ping(ICMP)は動くのに telnetd(TCP)だけデータが一切届かないバグを発見・修正した(原因: LPWORK ワーカースレッドから `sendto()` する際に fd が `EBADF` になっていた。`psock_*()` 内部 API に切り替えて解決。詳細は [docs/phase4-log.md](docs/phase4-log.md) の該当節)。修正後、トンネル越しの telnet セッションでコマンドを実行し、結果が正しく返ってくることを確認した:
