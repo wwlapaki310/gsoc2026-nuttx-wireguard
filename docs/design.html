@@ -1,0 +1,1272 @@
+<title>wg0 on NuttX</title>
+
+<style>
+  :root {
+    --paper:   #f5f7f8;
+    --surface: #ffffff;
+    --sunk:    #eef1f3;
+    --ink:     #121a20;
+    --ink-2:   #56626d;
+    --ink-3:   #808c96;
+    --rule:    #d5dbe0;
+    --rule-2:  #e6eaed;
+    --wg:      #8c1a1f;
+    --nx:      #1b6c68;
+    --wg-fill: #f6e9ea;
+    --nx-fill: #e5f1f0;
+
+    --mono: ui-monospace, "SFMono-Regular", "SF Mono", Consolas,
+            "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", "Yu Gothic UI",
+            "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+
+    --frame: 1120px;
+    --col: 74ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0f1419;
+      --surface: #171e25;
+      --sunk:    #131a20;
+      --ink:     #e4e9ed;
+      --ink-2:   #9da9b3;
+      --ink-3:   #75818b;
+      --rule:    #29323b;
+      --rule-2:  #212930;
+      --wg:      #e47074;
+      --nx:      #4cb5ad;
+      --wg-fill: #2a1a1c;
+      --nx-fill: #14282a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:   #0f1419;
+    --surface: #171e25;
+    --sunk:    #131a20;
+    --ink:     #e4e9ed;
+    --ink-2:   #9da9b3;
+    --ink-3:   #75818b;
+    --rule:    #29323b;
+    --rule-2:  #212930;
+    --wg:      #e47074;
+    --nx:      #4cb5ad;
+    --wg-fill: #2a1a1c;
+    --nx-fill: #14282a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .frame {
+    max-width: var(--frame);
+    margin: 0 auto;
+    padding: 0 28px 120px;
+  }
+
+  .col { max-width: var(--col); }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 64px 0 28px;
+    margin-bottom: 56px;
+  }
+
+  .doc-id {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-bottom: 26px;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.2vw, 3.1rem);
+    line-height: 1.14;
+    letter-spacing: -0.022em;
+    font-weight: 700;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+
+  h1 .mono { font-family: var(--mono); letter-spacing: -0.04em; }
+
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-2);
+    max-width: 68ch;
+    margin: 0;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { margin-bottom: 84px; scroll-margin-top: 20px; }
+
+  .sec-no {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    color: var(--wg);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 1.62rem;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    font-weight: 700;
+    margin: 0 0 8px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: 1.06rem;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    margin: 40px 0 10px;
+  }
+
+  p { margin: 0 0 18px; }
+
+  a { color: var(--wg); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--nx); outline-offset: 3px; border-radius: 2px;
+  }
+
+  code, .m {
+    font-family: var(--mono);
+    font-size: 0.875em;
+    background: var(--sunk);
+    border: 1px solid var(--rule-2);
+    border-radius: 3px;
+    padding: 0.08em 0.34em;
+  }
+
+  strong { font-weight: 700; }
+
+  .lede {
+    font-size: 1.04rem;
+    color: var(--ink-2);
+    border-left: 2px solid var(--nx);
+    padding-left: 18px;
+    margin: 0 0 30px;
+  }
+
+  ul.plain { margin: 0 0 20px; padding-left: 1.15em; }
+  ul.plain li { margin-bottom: 9px; }
+
+  /* ---------- figure plates ---------- */
+
+  figure {
+    margin: 34px 0 40px;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .plate-bar {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--sunk);
+    border-bottom: 1px solid var(--rule);
+    padding: 9px 16px;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+  }
+
+  .plate-bar b { color: var(--wg); font-weight: 700; }
+
+  .plate-body { padding: 26px 20px 6px; overflow-x: auto; }
+
+  figure svg { display: block; width: 100%; min-width: 660px; height: auto; }
+
+  figcaption {
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    padding: 14px 20px 18px;
+    border-top: 1px solid var(--rule-2);
+    margin-top: 14px;
+  }
+
+  /* ---------- svg conventions ---------- */
+
+  svg text { font-family: var(--mono); font-size: 12.5px; fill: currentColor; }
+  svg .jp   { font-family: var(--sans); font-size: 12.5px; }
+  svg .sm   { font-size: 11px; }
+  svg .hd   { font-size: 11.5px; letter-spacing: 0.1em; }
+  svg .box  { fill: var(--surface); stroke: currentColor; stroke-width: 1.4; }
+  svg .soft { fill: var(--sunk); stroke: var(--rule); stroke-width: 1.2; }
+  svg .wgbox { fill: var(--wg-fill); stroke: var(--wg); stroke-width: 1.6; }
+  svg .nxbox { fill: var(--nx-fill); stroke: var(--nx); stroke-width: 1.6; }
+  svg .ln   { stroke: currentColor; stroke-width: 1.4; fill: none; }
+  svg .ln-w { stroke: var(--wg); stroke-width: 1.6; fill: none; }
+  svg .ln-n { stroke: var(--nx); stroke-width: 1.6; fill: none; }
+  svg .dash { stroke-dasharray: 5 4; }
+  svg .dim  { fill: var(--ink-3); }
+  svg .wgt  { fill: var(--wg); }
+  svg .nxt  { fill: var(--nx); }
+  svg .life { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 4 5; }
+
+  /* ---------- tables ---------- */
+
+  .scroll { overflow-x: auto; margin: 30px 0 34px; }
+
+  .tbl-bar {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 9px;
+  }
+  .tbl-bar b { color: var(--nx); font-weight: 700; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    font-size: 0.92rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--rule-2);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--sunk);
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+
+  td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.k { font-family: var(--mono); font-size: 0.86rem; white-space: nowrap; }
+  .ok  { color: var(--nx); font-weight: 700; }
+  .bad { color: var(--wg); font-weight: 700; }
+
+  /* ---------- callout ---------- */
+
+  .note {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--nx);
+    border-radius: 3px;
+    padding: 18px 22px;
+    margin: 30px 0;
+    font-size: 0.95rem;
+  }
+  .note.warn { border-left-color: var(--wg); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 7px;
+  }
+
+  /* ---------- stat strip ---------- */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    margin: 32px 0 36px;
+    overflow: hidden;
+  }
+  .stat { background: var(--surface); padding: 18px 16px; }
+  .stat .v {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    display: block;
+    line-height: 1.2;
+  }
+  .stat .l {
+    font-size: 0.78rem;
+    color: var(--ink-2);
+    display: block;
+    margin-top: 5px;
+    line-height: 1.45;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    font-size: 0.86rem;
+    color: var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="frame">
+
+  <header class="masthead">
+    <div class="doc-id">
+      <span>設計ドキュメント</span>
+      <span>Apache NuttX / netutils</span>
+      <span>rev. 2026-08-22</span>
+      <span>GSoC 2026</span>
+    </div>
+    <h1><span class="mono">wg0</span> — NuttX に WireGuard を通す</h1>
+    <p class="standfirst">
+      組み込み RTOS に、現代的な VPN を仮想ネットワークインターフェースとして実装する。
+      本書はその設計判断・データ経路・実測結果をまとめたもの。
+    </p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><span class="v">18.2 KB</span><span class="l">追加されるコード<br>(ROM, ESP32-S3)</span></div>
+    <div class="stat"><span class="v">4.1 KB</span><span class="l">追加される静的 RAM</span></div>
+    <div class="stat"><span class="v">260 KiB/s</span><span class="l">トンネル越し<br>TCP スループット</span></div>
+    <div class="stat"><span class="v">1,637 行</span><span class="l">新規実装<br>(残りは無改変で流用)</span></div>
+    <div class="stat"><span class="v">4 個</span><span class="l">OS 依存関数<br>(移植に必要な全て)</span></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <section id="why">
+    <span class="sec-no">01 — 動機</span>
+    <h2>「設置したあと、どうやって触るのか」</h2>
+
+    <div class="col">
+      <p class="lede">
+        組み込み機器の一番難しい問題は、作ることではなく、
+        現場に置いたあとで安全に触り続けることにある。
+      </p>
+
+      <p>
+        ファームウェアを更新したい。ログを回収したい。挙動がおかしいから中を見たい。
+        機器が手元にある間はシリアルケーブルで済むが、設置してしまえばネットワーク越しに触るしかない。
+        このとき現実に取られている手段は、大きく3つに分かれる。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 1</b><span>遠隔アクセスの3方式 — 何がネットワークに露出するか</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 470" role="img"
+             aria-label="グローバルIP直接公開、クラウド仲介、WireGuardトンネルの3方式を比較した図。直接公開は機器が全世界から到達可能になり、クラウド仲介はベンダー依存が生まれ、WireGuardは機器側から自前サーバへトンネルを張るため露出がない。">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink)"/>
+            </marker>
+            <marker id="ah-w" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--wg)"/>
+            </marker>
+            <marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--nx)"/>
+            </marker>
+          </defs>
+
+          <!-- row 1 -->
+          <text class="jp sm dim" x="6" y="84">方式 A</text>
+          <text class="jp sm" x="6" y="102">直接公開</text>
+          <rect class="wgbox" x="160" y="56" width="170" height="48" rx="2"/>
+          <text class="jp" x="245" y="85" text-anchor="middle">機器 (NuttX)</text>
+          <rect class="soft" x="690" y="56" width="170" height="48" rx="2"/>
+          <text class="jp" x="775" y="85" text-anchor="middle">運用者</text>
+          <line class="ln-w" x1="686" y1="80" x2="336" y2="80" marker-end="url(#ah-w)"/>
+          <text class="jp sm dim" x="511" y="72" text-anchor="middle">インターネット経由で直接</text>
+          <text class="jp sm wgt" x="160" y="130">グローバル IP とポートを晒す。全世界が攻撃者になりうる。</text>
+
+          <!-- row 2 -->
+          <text class="jp sm dim" x="6" y="224">方式 B</text>
+          <text class="jp sm" x="6" y="242">クラウド仲介</text>
+          <rect class="box" x="160" y="196" width="170" height="48" rx="2"/>
+          <text class="jp" x="245" y="225" text-anchor="middle">機器 (NuttX)</text>
+          <rect class="soft" x="425" y="196" width="170" height="48" rx="2"/>
+          <text class="jp" x="510" y="219" text-anchor="middle">ベンダー</text>
+          <text class="jp" x="510" y="236" text-anchor="middle">クラウド</text>
+          <rect class="soft" x="690" y="196" width="170" height="48" rx="2"/>
+          <text class="jp" x="775" y="225" text-anchor="middle">運用者</text>
+          <line class="ln" x1="334" y1="220" x2="419" y2="220" marker-end="url(#ah)"/>
+          <line class="ln" x1="686" y1="220" x2="601" y2="220" marker-end="url(#ah)"/>
+          <text class="jp sm wgt" x="160" y="270">露出は防げるが、可用性・コスト・データ主権がベンダーに従属する。</text>
+
+          <!-- row 3 -->
+          <text class="jp sm dim" x="6" y="364">方式 C</text>
+          <text class="jp sm nxt" x="6" y="382">VPN</text>
+          <rect class="nxbox" x="160" y="336" width="170" height="48" rx="2"/>
+          <text class="jp" x="245" y="365" text-anchor="middle">機器 (NuttX)</text>
+          <rect class="box" x="425" y="336" width="170" height="48" rx="2"/>
+          <text class="jp" x="510" y="359" text-anchor="middle">自前サーバ</text>
+          <text class="sm dim" x="510" y="376" text-anchor="middle">1 台でよい</text>
+          <rect class="soft" x="690" y="336" width="170" height="48" rx="2"/>
+          <text class="jp" x="775" y="365" text-anchor="middle">運用者</text>
+          <line class="ln-n" x1="334" y1="360" x2="419" y2="360" marker-end="url(#ah-n)"/>
+          <text class="jp sm nxt" x="376" y="352" text-anchor="middle">暗号化トンネル</text>
+          <line class="ln" x1="686" y1="360" x2="601" y2="360" marker-end="url(#ah)"/>
+          <text class="jp sm nxt" x="160" y="410">機器側から張るので、開放ポートもグローバル IP も不要。鍵を持つ者だけが到達する。</text>
+        </svg>
+      </div>
+      <figcaption>
+        方式 C だけが「露出を増やさず」「他人に依存せず」成立する。ただし従来の VPN は
+        組み込みに載る規模ではなかった — それが WireGuard で変わった。
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <p>
+        方式 C が理想なのは以前から明らかだった。問題は実装規模で、OpenVPN や IPsec は
+        数十万行あり、数百 KB の RAM しかないマイコンには載らない。
+        WireGuard はここを一段変えた。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 1</b> &nbsp; VPN 実装の規模比較</div>
+      <table>
+        <thead>
+          <tr><th>実装</th><th class="num">おおよその規模</th><th>暗号スイート</th><th>組み込み適性</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OpenVPN</td><td class="num">〜 数十万行</td>
+            <td>TLS ネゴシエーション(可変)</td><td class="bad">載らない</td>
+          </tr>
+          <tr>
+            <td>IPsec (strongSwan 等)</td><td class="num">〜 数十万行</td>
+            <td>IKE ネゴシエーション(可変)</td><td class="bad">載らない</td>
+          </tr>
+          <tr>
+            <td><strong>WireGuard</strong></td><td class="num">約 4,000 行</td>
+            <td>固定<br>Noise_IK / Curve25519 / ChaCha20-Poly1305 / BLAKE2s</td>
+            <td class="ok">載る</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>
+        小ささの源は「選ばせない」ことにある。暗号方式を固定してネゴシエーションを排したので、
+        状態機械が小さく、攻撃面も小さい。トランスポートは UDP 単一ポートのみ。
+        <strong>この設計思想が、そのまま組み込み適性になっている。</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="impact">
+    <span class="sec-no">02 — 何が広がるか</span>
+    <h2>トンネルが1本通ると、その上は自由になる</h2>
+
+    <div class="col">
+      <p class="lede">
+        wg0 が作るのは「安全な通信機能」ではなく、
+        <strong>安全な IP 経路</strong>そのもの。だから上に載るものを選ばない。
+      </p>
+
+      <p>
+        ここが VPN と「独自の暗号化プロトコルを作り込む」ことの決定的な差になる。
+        独自プロトコルは、その中で定義した操作しかできない。
+        一方トンネルは L3 で成立するので、<strong>既存のあらゆる TCP/UDP アプリケーションが、
+        一行も変更せずにそのまま安全になる。</strong>
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 2</b><span>wg0 の上で動くもの — 既存プロトコルが無改造で通る</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 290" role="img"
+             aria-label="wg0トンネルの上をtelnet、HTTP、MQTT、NFS、SSH、独自プロトコルなど任意のTCP/UDPアプリケーションがそのまま通過する図。">
+          <rect class="nxbox" x="60" y="112" width="900" height="66" rx="33"/>
+          <text class="nxt" x="110" y="150">wg0</text>
+          <text class="jp sm nxt" x="880" y="150" text-anchor="end">暗号化された IP 経路</text>
+
+          <g class="dim">
+            <line class="ln dash" x1="190" y1="145" x2="840" y2="145"/>
+          </g>
+
+          <g>
+            <rect class="soft" x="70"  y="40" width="132" height="44" rx="2"/>
+            <text class="jp" x="136" y="67" text-anchor="middle">NSH (telnet)</text>
+            <rect class="soft" x="222" y="40" width="132" height="44" rx="2"/>
+            <text x="288" y="67" text-anchor="middle">HTTP</text>
+            <rect class="soft" x="374" y="40" width="132" height="44" rx="2"/>
+            <text x="440" y="67" text-anchor="middle">MQTT</text>
+            <rect class="soft" x="526" y="40" width="132" height="44" rx="2"/>
+            <text x="592" y="67" text-anchor="middle">NFS / FTP</text>
+            <rect class="soft" x="678" y="40" width="132" height="44" rx="2"/>
+            <text x="744" y="67" text-anchor="middle">iperf</text>
+            <rect class="soft" x="830" y="40" width="132" height="44" rx="2"/>
+            <text class="jp" x="896" y="67" text-anchor="middle">自社プロトコル</text>
+          </g>
+
+          <g class="dim">
+            <line class="ln" x1="136" y1="88" x2="136" y2="108" marker-end="url(#ah)"/>
+            <line class="ln" x1="288" y1="88" x2="288" y2="108" marker-end="url(#ah)"/>
+            <line class="ln" x1="440" y1="88" x2="440" y2="108" marker-end="url(#ah)"/>
+            <line class="ln" x1="592" y1="88" x2="592" y2="108" marker-end="url(#ah)"/>
+            <line class="ln" x1="744" y1="88" x2="744" y2="108" marker-end="url(#ah)"/>
+            <line class="ln" x1="896" y1="88" x2="896" y2="108" marker-end="url(#ah)"/>
+          </g>
+
+          <text class="jp sm dim" x="510" y="222" text-anchor="middle">
+            アプリケーション側の変更は不要。「安全にする」ためのコードを各アプリに書く必要がない。
+          </text>
+          <text class="jp sm dim" x="510" y="252" text-anchor="middle">
+            NuttX の既存 netutils(telnetd・webserver・iperf …)がそのまま遠隔から使える。
+          </text>
+        </svg>
+      </div>
+      <figcaption>
+        実機検証では telnetd(対話シェル)・uIP webserver(HTTP)・iperf(TCP 負荷)の
+        3種類を、いずれも無改造でトンネル越しに動作させている。
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <h3>NuttX 側から見た意味</h3>
+      <p>
+        NuttX は POSIX 準拠で、対応アーキテクチャも広い。そこに VPN が入ると、
+        次のような運用が「特別な作り込みなし」で成立するようになる。
+      </p>
+      <ul class="plain">
+        <li><strong>NAT 配下の機器に到達できる</strong> — 機器側からトンネルを張るので、
+          設置先のルータ設定に手を入れる必要がない。工場・現場・顧客先で効く。</li>
+        <li><strong>機器単位の鍵と到達範囲</strong> — 公開鍵ごとに <code>allowed-ips</code> を割り当てるため、
+          「この機器はこのサブネットにしか触れない」を暗号レベルで強制できる。</li>
+        <li><strong>クラウド非依存</strong> — 必要なのは自前のサーバ1台。
+          ベンダーのサービス終了や課金体系の変更に運用が左右されない。</li>
+        <li><strong>ローミングに強い</strong> — WireGuard はエンドポイントを受信パケットから学習するため、
+          機器の IP が変わっても(モバイル回線・Wi-Fi 切替)セッションが継続する。</li>
+      </ul>
+
+      <div class="note">
+        <span class="tag">適用領域の例</span>
+        <p>
+          遠隔地のセンサーノード、産業機器の保守、エッジ AI カメラの映像・モデル更新、
+          移動体やロボットのテレメトリ — いずれも「設置後に安全に触り続ける」ことが
+          運用コストの大半を占める。NuttX が動く先すべてが対象になる。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="decision">
+    <span class="sec-no">03 — 設計判断</span>
+    <h2>どの層に実装するか</h2>
+
+    <div class="col">
+      <p class="lede">
+        移植元は lwIP 向けの実装。しかし NuttX は lwIP を使っていない。
+        ここが本移植の最初の、そして最大の設計判断になった。
+      </p>
+
+      <p>
+        ベースにしたのは
+        <a href="https://github.com/smartalock/wireguard-lwip">wireguard-lwip</a>(BSD-3-Clause)。
+        プロトコルと暗号のコアが OS 非依存に書かれており、
+        OS 依存はすべて <code>wireguard-platform.h</code> の4関数に隔離されている。
+        この構造のおかげで<strong>コアは1行も変えずに済んだ</strong>。
+      </p>
+
+      <p>
+        問題はネットワークインターフェース層だった。
+        NuttX は独自のネットワークスタックを持っており、
+        lwIP の <code>netif</code> / <code>pbuf</code> / <code>udp_pcb</code> は存在しない。
+        つまり <code>wireguardif.c</code> は<strong>流用できず、書き直すしかなかった</strong>。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 3</b><span>実装層の選択 — 何が流用でき、何を書き直したか</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 510" role="img"
+             aria-label="lwIP版とNuttX版のレイヤ構成を並べた比較図。プロトコルとcryptoのコアは共通で流用でき、ネットワークインターフェース層だけがlwIPのnetifからNuttXのNET_LL_TUN netdevに置き換わっている。">
+          <text class="hd dim" x="70" y="34">UPSTREAM — wireguard-lwip</text>
+          <text class="hd nxt" x="560" y="34">THIS PORT — NuttX</text>
+
+          <!-- left stack -->
+          <rect class="soft" x="70" y="56" width="380" height="52" rx="2"/>
+          <text class="jp" x="260" y="88" text-anchor="middle">アプリケーション</text>
+
+          <rect class="soft" x="70" y="122" width="380" height="52" rx="2"/>
+          <text x="260" y="147" text-anchor="middle">lwIP TCP/IP</text>
+          <text class="sm dim" x="260" y="164" text-anchor="middle">pbuf / netif / udp_pcb</text>
+
+          <rect class="wgbox" x="70" y="188" width="380" height="62" rx="2"/>
+          <text class="wgt" x="260" y="214" text-anchor="middle">wireguardif.c</text>
+          <text class="jp sm wgt" x="260" y="233" text-anchor="middle">lwIP netif として登録</text>
+
+          <rect class="nxbox" x="70" y="264" width="380" height="62" rx="2"/>
+          <text class="nxt" x="260" y="290" text-anchor="middle">wireguard.c + crypto/</text>
+          <text class="jp sm nxt" x="260" y="309" text-anchor="middle">プロトコル・暗号コア(OS 非依存)</text>
+
+          <rect class="soft" x="70" y="340" width="380" height="52" rx="2"/>
+          <text class="jp" x="260" y="372" text-anchor="middle">物理 NIC</text>
+
+          <!-- right stack -->
+          <rect class="soft" x="560" y="56" width="380" height="52" rx="2"/>
+          <text class="jp" x="750" y="88" text-anchor="middle">アプリケーション</text>
+
+          <rect class="soft" x="560" y="122" width="380" height="52" rx="2"/>
+          <text x="750" y="147" text-anchor="middle">NuttX net/</text>
+          <text class="sm dim" x="750" y="164" text-anchor="middle">iob / net_driver_s / psock</text>
+
+          <rect class="wgbox" x="560" y="188" width="380" height="62" rx="2"/>
+          <text class="wgt" x="750" y="214" text-anchor="middle">nuttx-wireguardif.c</text>
+          <text class="jp sm wgt" x="750" y="233" text-anchor="middle">NET_LL_TUN netdev として登録</text>
+
+          <rect class="nxbox" x="560" y="264" width="380" height="62" rx="2"/>
+          <text class="nxt" x="750" y="290" text-anchor="middle">wireguard.c + crypto/</text>
+          <text class="jp sm nxt" x="750" y="309" text-anchor="middle">無改変で流用</text>
+
+          <rect class="soft" x="560" y="340" width="380" height="52" rx="2"/>
+          <text class="jp" x="750" y="366" text-anchor="middle">UDP ソケット → wlan0</text>
+          <text class="sm dim" x="750" y="383" text-anchor="middle">&quot;wire&quot; = psock</text>
+
+          <!-- seam annotation -->
+          <line class="ln dash dim" x1="470" y1="219" x2="540" y2="219"/>
+          <text class="jp sm wgt" x="505" y="206" text-anchor="middle">書き直し</text>
+          <line class="ln-n dash" x1="470" y1="295" x2="540" y2="295"/>
+          <text class="jp sm nxt" x="505" y="282" text-anchor="middle">共通</text>
+
+          <text class="jp sm dim" x="70" y="428">
+            置き換わったのは1層だけ。プロトコル実装そのものには手を入れていない。
+          </text>
+          <text class="jp sm dim" x="70" y="452">
+            wg0 の「配線」は物理 NIC ではなく UDP ソケット — これが VPN が仮想 NIC である所以。
+          </text>
+          <text class="jp sm dim" x="70" y="476">
+            結果、暗号・鍵交換の正しさは upstream の実装に担保されたまま移植できた。
+          </text>
+        </svg>
+      </div>
+      <figcaption>
+        差し替えたのはネットワークインターフェース層のみ。プロトコル・暗号コアを無改変に保つことが、
+        相互運用性と監査可能性の両方を守る。
+      </figcaption>
+    </figure>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 2</b> &nbsp; lwIP と NuttX の対応関係 — 書き直しが必要だった理由</div>
+      <table>
+        <thead>
+          <tr><th>役割</th><th>lwIP</th><th>NuttX</th><th>流用可否</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>NIC 抽象</td><td class="k">struct netif</td><td class="k">struct net_driver_s</td><td class="bad">不可</td></tr>
+          <tr><td>パケットバッファ</td><td class="k">pbuf</td><td class="k">iob</td><td class="bad">不可</td></tr>
+          <tr><td>NIC 登録</td><td class="k">netif_add()</td><td class="k">netdev_register()</td><td class="bad">不可</td></tr>
+          <tr><td>UDP 送信</td><td class="k">udp_sendto()</td><td class="k">psock_sendto()</td><td class="bad">不可</td></tr>
+          <tr><td>受信注入</td><td class="k">netif-&gt;input()</td><td class="k">ipv4_input()</td><td class="bad">不可</td></tr>
+          <tr><td>タイマー</td><td class="k">sys_timeout()</td><td>専用タスク内で駆動</td><td class="bad">不可</td></tr>
+          <tr><td><strong>プロトコル・暗号</strong></td><td colspan="2">OS 非依存に書かれている</td><td class="ok">そのまま</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <h3>プラットフォーム層 — 移植に必要だった全て</h3>
+      <p>
+        OS 依存として実装が必要だったのは、次の4関数だけだった。
+        この隔離の質が、そのまま移植性として現れている
+        (sim / QEMU / Xtensa / ARM Cortex-M4F すべてで無変更)。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 3</b> &nbsp; <span class="k">wireguard-platform.h</span> の実装 (<span class="k">nuttx-platform.c</span> / 186 行)</div>
+      <table>
+        <thead>
+          <tr><th>関数</th><th>用途</th><th>NuttX 実装</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">wireguard_sys_now()</td><td>ハンドシェイク・keepalive の期限判定</td><td class="k">clock_gettime(CLOCK_MONOTONIC)</td></tr>
+          <tr><td class="k">wireguard_random_bytes()</td><td>一時鍵の生成</td><td class="k">/dev/urandom</td></tr>
+          <tr><td class="k">wireguard_tai64n_now()</td><td>ハンドシェイクのリプレイ防止</td><td class="k">clock_gettime(CLOCK_REALTIME)</td></tr>
+          <tr><td class="k">wireguard_is_under_load()</td><td>DoS 時の cookie 応答判定</td><td class="k">return false</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="tag">設計メモ — なぜ is_under_load は常に false か</span>
+      <p>
+        cookie 機構は、大量のハンドシェイクを捌くサーバを守るための仕組み。
+        単一ピアの組み込み機器はその形をしていないため、常に <code>false</code> を返している。
+        結果として upstream の mac2 / cookie 応答経路は到達不能になり、その分コードが減る。
+        <strong>載せないという判断も設計のうち。</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dataflow">
+    <span class="sec-no">04 — データ経路</span>
+    <h2>暗号化はどこで起きるか</h2>
+
+    <div class="col">
+      <p>
+        <code>wg0</code> は「配線が UDP ソケットになっている仮想 NIC」として振る舞う。
+        送信は NuttX スタックから渡されたパケットを暗号化して UDP で送り出し、
+        受信は UDP を復号してスタックに<strong>注入し直す</strong>。
+        この「注入し直す」点が、後述する実行コンテキストの問題に直結する。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 4</b><span>送信・受信パス — 平文と暗号文の境界</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 450" role="img"
+             aria-label="送信パスと受信パスのデータフロー図。送信はアプリからNuttXスタック、wg0、暗号化を経てUDP送信。受信はUDP受信から復号、ipv4_inputによるスタックへの再注入を経てアプリに届く。">
+          <!-- TX -->
+          <text class="hd wgt" x="14" y="46">TX — 送信</text>
+          <g>
+            <rect class="soft" x="14"  y="62" width="140" height="54" rx="2"/>
+            <text class="jp" x="84" y="94" text-anchor="middle">アプリ</text>
+
+            <rect class="soft" x="184" y="62" width="140" height="54" rx="2"/>
+            <text x="254" y="87" text-anchor="middle">NuttX net/</text>
+            <text class="jp sm dim" x="254" y="104" text-anchor="middle">TCP/IP 処理</text>
+
+            <rect class="nxbox" x="354" y="62" width="140" height="54" rx="2"/>
+            <text class="nxt" x="424" y="87" text-anchor="middle">wg0 netdev</text>
+            <text class="sm nxt" x="424" y="104" text-anchor="middle">wg_txpoll()</text>
+
+            <rect class="wgbox" x="524" y="62" width="140" height="54" rx="2"/>
+            <text class="jp wgt" x="594" y="87" text-anchor="middle">暗号化</text>
+            <text class="sm wgt" x="594" y="104" text-anchor="middle">ChaCha20-Poly1305</text>
+
+            <rect class="soft" x="694" y="62" width="140" height="54" rx="2"/>
+            <text x="764" y="87" text-anchor="middle">psock_sendto</text>
+            <text class="jp sm dim" x="764" y="104" text-anchor="middle">UDP ソケット</text>
+
+            <rect class="soft" x="864" y="62" width="140" height="54" rx="2"/>
+            <text class="jp" x="934" y="94" text-anchor="middle">wlan0 → 相手</text>
+          </g>
+          <g>
+            <line class="ln" x1="158" y1="89" x2="178" y2="89" marker-end="url(#ah)"/>
+            <line class="ln" x1="328" y1="89" x2="348" y2="89" marker-end="url(#ah)"/>
+            <line class="ln" x1="498" y1="89" x2="518" y2="89" marker-end="url(#ah)"/>
+            <line class="ln" x1="668" y1="89" x2="688" y2="89" marker-end="url(#ah)"/>
+            <line class="ln" x1="838" y1="89" x2="858" y2="89" marker-end="url(#ah)"/>
+          </g>
+          <text class="jp sm dim" x="14" y="146">平文 IP パケット</text>
+          <line class="ln dash dim" x1="14" y1="156" x2="510" y2="156"/>
+          <text class="jp sm dim" x="1006" y="146" text-anchor="end">暗号文 UDP データグラム</text>
+          <line class="ln dash dim" x1="530" y1="156" x2="1006" y2="156"/>
+
+          <!-- divider -->
+          <line class="ln dim" x1="14" y1="196" x2="1006" y2="196" stroke-width="1" stroke-dasharray="2 6"/>
+
+          <!-- RX -->
+          <text class="hd nxt" x="14" y="246">RX — 受信</text>
+          <g>
+            <rect class="soft" x="14"  y="262" width="140" height="54" rx="2"/>
+            <text class="jp" x="84" y="294" text-anchor="middle">相手 → wlan0</text>
+
+            <rect class="soft" x="184" y="262" width="140" height="54" rx="2"/>
+            <text x="254" y="287" text-anchor="middle">psock_recvfrom</text>
+            <text class="sm dim" x="254" y="304" text-anchor="middle">wg_rx task</text>
+
+            <rect class="wgbox" x="354" y="262" width="140" height="54" rx="2"/>
+            <text class="jp wgt" x="424" y="287" text-anchor="middle">復号・認証</text>
+            <text class="jp sm wgt" x="424" y="304" text-anchor="middle">リプレイ検査</text>
+
+            <rect class="nxbox" x="524" y="262" width="140" height="54" rx="2"/>
+            <text class="nxt" x="594" y="287" text-anchor="middle">ipv4_input()</text>
+            <text class="jp sm nxt" x="594" y="304" text-anchor="middle">スタックへ注入</text>
+
+            <rect class="soft" x="694" y="262" width="140" height="54" rx="2"/>
+            <text x="764" y="287" text-anchor="middle">NuttX net/</text>
+            <text class="jp sm dim" x="764" y="304" text-anchor="middle">TCP/IP 処理</text>
+
+            <rect class="soft" x="864" y="262" width="140" height="54" rx="2"/>
+            <text class="jp" x="934" y="294" text-anchor="middle">アプリ</text>
+          </g>
+          <g>
+            <line class="ln" x1="158" y1="289" x2="178" y2="289" marker-end="url(#ah)"/>
+            <line class="ln" x1="328" y1="289" x2="348" y2="289" marker-end="url(#ah)"/>
+            <line class="ln" x1="498" y1="289" x2="518" y2="289" marker-end="url(#ah)"/>
+            <line class="ln" x1="668" y1="289" x2="688" y2="289" marker-end="url(#ah)"/>
+            <line class="ln" x1="838" y1="289" x2="858" y2="289" marker-end="url(#ah)"/>
+          </g>
+
+          <path class="ln-w" d="M 594 322 L 594 358 L 424 358" marker-end="url(#ah-w)"/>
+          <text class="jp sm wgt" x="614" y="362">即時応答はその場で暗号化し折り返す</text>
+          <text class="jp sm dim" x="14" y="400">
+            ICMP echo reply や TCP ACK のように、注入した結果スタックが即座に返答を作る場合、
+          </text>
+          <text class="jp sm dim" x="14" y="422">
+            それを拾って暗号化し送り返すところまでが wg_rx タスク自身の仕事になる。
+          </text>
+        </svg>
+      </div>
+      <figcaption>
+        受信側で <code>ipv4_input()</code> を呼ぶのは <code>wg_rx</code> タスク自身。
+        つまり NuttX の TCP/IP 処理の深さが、まるごとこのタスクのスタックに乗る
+        (<a href="#verify">§07 の実測</a>はこれを裏付けている)。
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="context">
+    <span class="sec-no">05 — 実行コンテキスト</span>
+    <h2>設計の肝 — ソケットは誰のものか</h2>
+
+    <div class="col">
+      <p class="lede">
+        本移植で最も時間を要した問題は、暗号でもプロトコルでもなく、
+        <strong>「どのタスクからそのソケットが見えるか」</strong>だった。
+      </p>
+
+      <p>
+        症状はこうだった。実機で <code>ping</code> は 0% packet loss で通る。
+        しかし同じトンネルで telnet すると、TCP の 3-way ハンドシェイクは成立するのに、
+        <strong>telnetd のバナーが1バイトも届かない</strong>。
+        WireGuard を通さず同一 LAN で telnet すると正常に動く。
+      </p>
+
+      <p>
+        原因は、NuttX の<strong>ファイルディスクリプタがタスクグループ単位でスコープされる</strong>ことにあった。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 5</b><span>fd スコープと EBADF — なぜ ping は通り TCP は死んだか</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 540" role="img"
+             aria-label="3つのタスクコンテキストとファイルディスクリプタのスコープを示す図。wg_rxタスクはfdを持つが、LPWORKワーカースレッドは親子関係がないためfdテーブルに存在せずEBADFになる。struct socketをポインタで直接扱えば全コンテキストから利用できる。">
+          <!-- task groups -->
+          <rect class="nxbox" x="40" y="52" width="280" height="86" rx="2"/>
+          <text class="nxt" x="180" y="82" text-anchor="middle">wg_rx タスク</text>
+          <text class="jp sm nxt" x="180" y="102" text-anchor="middle">ソケットの生成元</text>
+          <text class="jp sm nxt" x="180" y="120" text-anchor="middle">受信・タイマー処理</text>
+
+          <rect class="wgbox" x="370" y="52" width="280" height="86" rx="2"/>
+          <text class="wgt" x="510" y="82" text-anchor="middle">LPWORK</text>
+          <text class="jp sm wgt" x="510" y="102" text-anchor="middle">システムワーカースレッド</text>
+          <text class="jp sm wgt" x="510" y="120" text-anchor="middle">起動時から存在・親子関係なし</text>
+
+          <rect class="soft" x="700" y="52" width="280" height="86" rx="2"/>
+          <text class="jp" x="840" y="82" text-anchor="middle">アプリタスク</text>
+          <text class="jp sm dim" x="840" y="102" text-anchor="middle">telnetd セッション等</text>
+          <text class="jp sm dim" x="840" y="120" text-anchor="middle">send() の呼び出し元</text>
+
+          <!-- fd tables -->
+          <rect class="soft" x="40" y="168" width="280" height="52" rx="2"/>
+          <text class="sm" x="180" y="190" text-anchor="middle">fd テーブル</text>
+          <text class="sm nxt" x="180" y="209" text-anchor="middle">fd 3 → socket ✓</text>
+
+          <rect class="soft" x="370" y="168" width="280" height="52" rx="2"/>
+          <text class="sm" x="510" y="190" text-anchor="middle">fd テーブル</text>
+          <text class="sm wgt" x="510" y="209" text-anchor="middle">fd 3 → 未登録 ✗</text>
+
+          <rect class="soft" x="700" y="168" width="280" height="52" rx="2"/>
+          <text class="sm" x="840" y="190" text-anchor="middle">fd テーブル</text>
+          <text class="sm dim" x="840" y="209" text-anchor="middle">(別グループ)</text>
+
+          <!-- old path -->
+          <text class="hd wgt" x="40" y="264">旧実装 — sendto(fd)</text>
+          <line class="ln-n" x1="180" y1="276" x2="180" y2="330" marker-end="url(#ah-n)"/>
+          <text class="jp sm nxt" x="190" y="306">成功</text>
+          <line class="ln-w dash" x1="510" y1="276" x2="510" y2="330" marker-end="url(#ah-w)"/>
+          <text class="wgt sm" x="520" y="300">EBADF (errno 9)</text>
+          <text class="jp sm wgt" x="520" y="318">TCP データが無言で消える</text>
+
+          <rect class="soft" x="40" y="336" width="940" height="46" rx="2"/>
+          <text class="jp sm dim" x="510" y="364" text-anchor="middle">
+            ICMP 応答・TCP SYN-ACK は wg_rx 内で同期的に作られる → 成功。非同期にキューされる TCP データは LPWORK 経由 → 失敗
+          </text>
+
+          <!-- new path -->
+          <text class="hd nxt" x="40" y="424">新実装 — psock_sendto(&amp;psock)</text>
+          <rect class="nxbox" x="40" y="440" width="940" height="60" rx="2"/>
+          <text class="nxt" x="510" y="466" text-anchor="middle">g_wg.psock — struct socket (ポインタで直接参照)</text>
+          <text class="jp sm nxt" x="510" y="486" text-anchor="middle">
+            fd テーブルを一切経由しない。どのタスクからでも同じように動く。
+          </text>
+          <line class="ln-n" x1="180" y1="404" x2="180" y2="436" marker-end="url(#ah-n)"/>
+          <line class="ln-n" x1="510" y1="404" x2="510" y2="436" marker-end="url(#ah-n)"/>
+          <line class="ln-n" x1="840" y1="404" x2="840" y2="436" marker-end="url(#ah-n)"/>
+        </svg>
+      </div>
+      <figcaption>
+        <code>ping</code> が通ることは経路が正しいことの証明にならない —
+        同期応答と非同期送信では通るコンテキストが違う。
+        この切り分けが最も価値のある発見だった。
+      </figcaption>
+    </figure>
+
+    <div class="note warn">
+      <span class="tag">設計上の制約 — 明示しておくべきこと</span>
+      <p>
+        <code>psock_*()</code> は NuttX の内部 API であり、
+        <code>net_lock()</code> / <code>netdev_register()</code> / <code>iob_*</code> と同様、
+        カーネル空間とリンクされることが前提になる。
+        したがって本実装は現状 <strong>FLAT ビルドを前提</strong>としている。
+        PROTECTED / KERNEL ビルドで動かすには別途の設計が必要で、
+        これは upstream 提出時に論点になりうる。
+      </p>
+    </div>
+
+    <div class="col">
+      <h3>同じ根を持つ3つの落とし穴</h3>
+      <p>
+        いずれも「POSIX 準拠だから Linux と同じだろう」という前提が崩れた箇所だった。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 4</b> &nbsp; 移植中に踏んだ OS 前提の齟齬</div>
+      <table>
+        <thead>
+          <tr><th>期待した挙動</th><th>実際</th><th>影響</th><th>対処</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="k">SO_RCVTIMEO</td>
+            <td><code>setsockopt</code> は成功を返すが <code>recvfrom</code> が永久にブロック</td>
+            <td>タイマーが回らず、最初のハンドシェイクすら送れない(鶏卵問題)</td>
+            <td class="k">poll() → psock_poll()</td>
+          </tr>
+          <tr>
+            <td>detach した pthread は生成元と独立に生きる</td>
+            <td>生成元タスク終了とともに動作停止(<code>ps</code> にも出ない)</td>
+            <td>受信スレッドが即座に消える</td>
+            <td class="k">task_create()</td>
+          </tr>
+          <tr>
+            <td>fd はプロセス内でどこからでも有効</td>
+            <td>タスクグループ単位でスコープされる</td>
+            <td>TCP データのみ <code>EBADF</code> で無言の消失</td>
+            <td class="k">psock_*()</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="handshake">
+    <span class="sec-no">06 — プロトコル</span>
+    <h2>ハンドシェイクと鍵の寿命</h2>
+
+    <div class="col">
+      <p>
+        暗号処理そのものは upstream の実装に委ねているが、
+        タイマー駆動(いつ再ハンドシェイクするか、いつ keepalive を送るか)は
+        移植側の責任範囲になる。<code>wg_rx</code> タスクが受信待ちのタイムアウトを利用して
+        この判定を回している。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 6</b><span>セッション確立から rekey まで</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 480" role="img"
+             aria-label="NuttX wg0とピア間のハンドシェイクシーケンス図。initiation、response、keepalive、transport data、そして時間経過またはメッセージ数超過によるrekeyまでを示す。">
+          <rect class="nxbox" x="140" y="30" width="220" height="46" rx="2"/>
+          <text class="nxt" x="250" y="59" text-anchor="middle">NuttX / wg0</text>
+          <rect class="soft" x="660" y="30" width="220" height="46" rx="2"/>
+          <text class="jp" x="770" y="59" text-anchor="middle">ピア(既存実装)</text>
+
+          <line class="life" x1="250" y1="80" x2="250" y2="440"/>
+          <line class="life" x1="770" y1="80" x2="770" y2="440"/>
+
+          <line class="ln-n" x1="250" y1="122" x2="764" y2="122" marker-end="url(#ah-n)"/>
+          <text class="sm nxt" x="507" y="112" text-anchor="middle">Handshake Initiation — 148 B</text>
+
+          <line class="ln" x1="770" y1="176" x2="256" y2="176" marker-end="url(#ah)"/>
+          <text class="sm" x="513" y="166" text-anchor="middle">Handshake Response — 92 B</text>
+
+          <rect class="soft" x="330" y="196" width="360" height="34" rx="2"/>
+          <text class="jp sm" x="510" y="218" text-anchor="middle">セッション鍵確立 — 以降 32 B ヘッダで転送</text>
+
+          <line class="ln-n" x1="250" y1="266" x2="764" y2="266" marker-end="url(#ah-n)"/>
+          <text class="sm nxt" x="507" y="256" text-anchor="middle">keepalive (payload 0)</text>
+
+          <line class="ln-n" x1="250" y1="312" x2="764" y2="312" marker-end="url(#ah-n)"/>
+          <line class="ln" x1="770" y1="336" x2="256" y2="336" marker-end="url(#ah)"/>
+          <text class="sm dim" x="507" y="302" text-anchor="middle">Transport Data — 双方向</text>
+
+          <rect class="wgbox" x="300" y="366" width="420" height="38" rx="2"/>
+          <text class="jp sm wgt" x="510" y="390" text-anchor="middle">
+            REKEY_AFTER_TIME 経過 / メッセージ数超過 → 再ハンドシェイク
+          </text>
+
+          <line class="ln-w dash" x1="250" y1="428" x2="764" y2="428" marker-end="url(#ah-w)"/>
+          <text class="sm wgt" x="507" y="420" text-anchor="middle">Handshake Initiation (rekey)</text>
+        </svg>
+      </div>
+      <figcaption>
+        rekey 経路は長らく未検証だったが、7 MB の連続転送中に実際に発生し、
+        セッションを切らずに完了することを実機で確認した。
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="verify">
+    <span class="sec-no">07 — 検証と実測</span>
+    <h2>どこまで確かめたか</h2>
+
+    <div class="col">
+      <p>
+        通信相手はすべて<strong>本物の WireGuard 実装</strong>を使った。
+        自作同士の通信では相互運用性の証明にならないため、
+        Linux カーネルの <code>wireguard</code> モジュールと、
+        Windows 公式クライアントを相手にしている。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 5</b> &nbsp; 検証マトリクス</div>
+      <table>
+        <thead>
+          <tr><th>環境</th><th>アーキテクチャ</th><th>ピア実装</th><th>確認内容</th><th>状態</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>sim</td><td>ホスト Linux プロセス</td><td>Linux カーネル</td>
+            <td>ハンドシェイク・ICMP 疎通</td><td class="ok">確認済</td>
+          </tr>
+          <tr>
+            <td>QEMU</td><td>ARM Cortex-A7</td><td>Linux カーネル</td>
+            <td>ハンドシェイク・ICMP 疎通</td><td class="ok">確認済</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-S3 実機</strong></td><td>Xtensa LX7</td><td>Windows 公式クライアント</td>
+            <td>実 Wi-Fi 経由・ICMP・TCP(telnet / HTTP / iperf)・rekey</td><td class="ok">確認済</td>
+          </tr>
+          <tr>
+            <td>ESP32-WROOM-32</td><td>Xtensa LX6</td><td>—</td>
+            <td>ビルドのみ(実機はブートモード不良)</td><td class="bad">未達</td>
+          </tr>
+          <tr>
+            <td>Spresense</td><td>ARM Cortex-M4F</td><td>—</td>
+            <td>ビルドのみ(実機は USB 未認識)</td><td class="bad">未達</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 6</b> &nbsp; メモリフットプリント — ESP32-S3 実測</div>
+      <table>
+        <thead>
+          <tr><th>構成要素</th><th class="num">ROM (text)</th><th class="num">静的 RAM (bss)</th><th>備考</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">wireguard.c</td><td class="num">6,168 B</td><td class="num">64 B</td><td>プロトコルコア(無改変)</td></tr>
+          <tr><td class="k">crypto/refc/*</td><td class="num">7,377 B</td><td class="num">0 B</td><td>ChaCha20-Poly1305 / BLAKE2s / X25519</td></tr>
+          <tr><td class="k">nuttx-wireguardif.c</td><td class="num">4,252 B</td><td class="num">4,168 B</td><td>netdev 統合(新規)</td></tr>
+          <tr><td class="k">wg_main.c</td><td class="num">527 B</td><td class="num">0 B</td><td>NSH コマンド(新規)</td></tr>
+          <tr><td class="k">nuttx-platform.c</td><td class="num">283 B</td><td class="num">0 B</td><td>OS 抽象4関数(新規)</td></tr>
+          <tr><td class="k">crypto.c</td><td class="num">68 B</td><td class="num">0 B</td><td>ディスパッチ</td></tr>
+          <tr>
+            <td><strong>合計</strong></td>
+            <td class="num"><strong>18,675 B</strong></td>
+            <td class="num"><strong>4,232 B</strong></td>
+            <td>別途 <code>wg_rx</code> スタック 4,096 B</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>
+        <strong>約 18 KB の ROM と約 4 KB の RAM。</strong>
+        これが「VPN が組み込みに載る」ことの具体的な意味になる。
+        比較として、この検証機のヒープは 291 KB あり、
+        <code>wg0</code> 稼働中でも 213 KB が空いている。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 7</b> &nbsp; 実測性能 — ESP32-S3 / 実 Wi-Fi / Windows 公式クライアント</div>
+      <table>
+        <thead>
+          <tr><th>項目</th><th class="num">修正前</th><th class="num">現在</th><th>備考</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>TCP スループット</td><td class="num">24 KiB/s</td>
+            <td class="num ok">260 KiB/s</td><td>受信待ちをブロッキング化</td>
+          </tr>
+          <tr>
+            <td>負荷時 ping RTT</td><td class="num">370 – 1146 ms</td>
+            <td class="num ok">33 – 68 ms</td><td>同上</td>
+          </tr>
+          <tr>
+            <td>連続転送量</td><td class="num">—</td>
+            <td class="num">約 7 MB</td><td>クラッシュなし・転送中に rekey 成功</td>
+          </tr>
+          <tr>
+            <td><code>wg_rx</code> スタック消費</td><td class="num">2,896 B</td>
+            <td class="num">2,960 B</td><td>割当 4,096 B に対し 72.9%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="tag">計測から出た設計変更</span>
+      <p>
+        受信タスクのスタックサイズは当初 3,072 B(根拠のない既定値)だった。
+        <code>CONFIG_STACK_COLORATION</code> で実測したところピークが 2,896 B、
+        つまり<strong>余裕は 176 バイトしかなかった</strong>。
+        既定値を 4,096 B に改め、計測方法を Kconfig の help に残している。
+        <code>ipv4_input()</code> を自タスクで呼ぶ設計(<a href="#dataflow">図 4</a>)の当然の帰結であり、
+        IPv6 や IP フラグメントを有効にする場合は再測定が要る。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="status">
+    <span class="sec-no">08 — 現状と今後</span>
+    <h2>残っている距離</h2>
+
+    <div class="col">
+      <p>
+        動作と相互運用性は実機で確認できた。残るのは主に「実用性」と「upstream 提出の作法」で、
+        技術的な未知よりも作業量の問題に移っている。
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 8</b> &nbsp; 課題一覧(優先順)</div>
+      <table>
+        <thead>
+          <tr><th>課題</th><th>内容</th><th>影響</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>設計合意</strong></td>
+            <td>dev@nuttx.apache.org でアーキテクチャを共有し、netdev 方式への合意を得る</td>
+            <td>コード完成後に方針が覆るリスクを先に潰す</td>
+          </tr>
+          <tr>
+            <td><strong>実行時設定</strong></td>
+            <td>鍵・ピアが Kconfig 固定。<code>wg setconf</code> 相当が未実装</td>
+            <td class="bad">鍵がビルド成果物に焼き込まれる。設定変更のたびに再ビルド</td>
+          </tr>
+          <tr>
+            <td>停止手段</td>
+            <td><code>wg down</code> がなく、一度上げると RX タスクが残る</td>
+            <td>リソースリーク</td>
+          </tr>
+          <tr>
+            <td>複数ピア</td>
+            <td>現状は単一ピア(vendored ヘッダの上限に依存)</td>
+            <td>用途が1対1に限られる</td>
+          </tr>
+          <tr>
+            <td>ビルドモード</td>
+            <td><code>psock_*()</code> 依存により FLAT ビルド前提</td>
+            <td>PROTECTED / KERNEL では別設計が要る</td>
+          </tr>
+          <tr>
+            <td>異常系検証</td>
+            <td>長時間 keepalive・再接続・MTU 境界</td>
+            <td>未検証</td>
+          </tr>
+          <tr>
+            <td>暗号の高速化</td>
+            <td>ソフトウェア実装のまま。ESP32-S3 の暗号アクセラレータ未使用</td>
+            <td>次のボトルネック候補</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>
+        なお <code>checkpatch.sh</code> によるスタイル準拠と実機ログ取得(upstream の必須要件)は
+        いずれも完了している。<code>LICENSE</code> への著作権表示追記案も用意済み。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="closing">
+    <span class="sec-no">09 — まとめ</span>
+    <h2>移植して分かったこと</h2>
+
+    <div class="col">
+      <ul class="plain">
+        <li><strong>隔離の質が移植性になる。</strong>
+          OS 依存が4関数に閉じていたおかげで、sim・QEMU・Xtensa・ARM Cortex-M4F すべてで
+          プラットフォーム層は無変更のまま動いた。</li>
+        <li><strong>相手を本物にする。</strong>
+          Linux カーネル実装と Windows 公式クライアントを相手にしたことで、
+          「動いた」が相互運用性の証明になった。</li>
+        <li><strong>POSIX 準拠は Linux 互換ではない。</strong>
+          <code>SO_RCVTIMEO</code>・detached pthread・fd スコープ —
+          3つの落とし穴はすべてこの思い込みから出た。</li>
+        <li><strong><code>ping</code> が通ることは、経路が正しいことの証明にならない。</strong>
+          同期応答と非同期送信では、通るコンテキストが違う。</li>
+        <li><strong>「たぶん影響は小さい」を実測すると、10 倍だったりする。</strong>
+          暫定のポーリング実装が、実はスループットを律速していた。</li>
+      </ul>
+
+      <p>
+        そして本題に戻ると — NuttX が VPN を持つということは、
+        <strong>組み込み機器が「設置したら終わり」でなくなる</strong>ということだった。
+        トンネルが1本通れば、その上で動くものは選ばない。
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Apache NuttX WireGuard port &nbsp;·&nbsp; GSoC 2026 &nbsp;·&nbsp;
+      実測はすべて ESP32-S3(Xtensa LX7 / 16 MB flash / 8 MB PSRAM)実機・実 Wi-Fi 環境による。
+    </p>
+  </footer>
+
+</div>
