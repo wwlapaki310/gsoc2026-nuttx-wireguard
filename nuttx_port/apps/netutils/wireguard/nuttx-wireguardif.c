@@ -57,6 +57,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sched.h>
+#include <poll.h>
 #include <debug.h>
 
 #include <sys/socket.h>
@@ -64,6 +65,8 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 
+#include <nuttx/clock.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/wqueue.h>
 #include <nuttx/mm/iob.h>
 #include <nuttx/net/net.h>
@@ -82,13 +85,13 @@
 
 #define WG_TXWORK           LPWORK
 
-/* wg_rx_task() poll interval. wg_run_timers() is expiry-timestamp driven
- * (see wireguard_expired() checks throughout), so calling it more often
- * than strictly necessary is harmless - this just bounds how quickly
- * incoming UDP traffic gets noticed by psock_recvfrom().
+/* How long wg_rx_task() blocks waiting for traffic before waking up to run
+ * the protocol timers anyway. Handshake and keep-alive deadlines are all
+ * expiry-timestamp driven (see the wireguard_expired() checks in
+ * wg_run_timers()), so this only bounds timer granularity, not accuracy.
  */
 
-#define WG_RX_POLL_MSECS    50
+#define WG_TIMER_MSECS      400
 
 /* Largest plaintext IP packet we will handle. Must be >= WIREGUARDIF_MTU
  * (1420) plus a little slack; matches the usual NET_TUN_PKTSIZE default.
@@ -770,12 +773,29 @@ static void wg_run_timers(FAR struct wg_netdev_s *priv)
 }
 
 /****************************************************************************
+ * Name: wg_poll_cb
+ *
+ * Description:
+ *   poll callback installed by wg_rx_task(). The network stack invokes it
+ *   when the UDP socket becomes readable; all it does is wake the task.
+ *
+ ****************************************************************************/
+
+static void wg_poll_cb(FAR struct pollfd *fds)
+{
+  FAR sem_t *sem = (FAR sem_t *)fds->arg;
+
+  nxsem_post(sem);
+}
+
+/****************************************************************************
  * Name: wg_rx_task
  *
  * Description:
- *   Background task: waits (non-blocking, polled at WG_RX_POLL_MSECS) for
- *   incoming WireGuard UDP traffic, and doubles as the periodic timer by
- *   running wg_run_timers() on every wakeup.
+ *   Background task: blocks waiting for incoming WireGuard UDP traffic and
+ *   doubles as the periodic timer, running wg_run_timers() on every wakeup
+ *   whether that came from data arriving or from the WG_TIMER_MSECS
+ *   timeout.
  *
  *   priv->psock is a raw struct socket (see its declaration), read and
  *   written with the psock_*() internal API instead of the usual fd-based
@@ -798,14 +818,15 @@ static void wg_run_timers(FAR struct wg_netdev_s *priv)
  *   struct dereferenced by pointer, so psock_sendto() works identically
  *   from any task.
  *
- *   poll() has the same fd-table restriction as recvfrom()/sendto(), so a
- *   blocking wait with timeout isn't available here the usual way (and
- *   SO_RCVTIMEO does not work on this platform - see git history). A
- *   short non-blocking psock_recvfrom() poll loop is used instead;
- *   wg_run_timers() is driven by explicit wireguard_expired() timestamp
- *   checks internally, so calling it every WG_RX_POLL_MSECS instead of
- *   waking up exactly on data arrival changes nothing but the polling
- *   granularity.
+ *   The wait itself is psock_poll() rather than poll(), for the same
+ *   reason: poll() takes descriptors and so carries the same fd-table
+ *   restriction. psock_poll() drives a caller-supplied struct pollfd
+ *   directly, so this task installs wg_poll_cb() on it and blocks on a
+ *   semaphore until either the socket becomes readable or the timeout
+ *   expires. (SO_RCVTIMEO would have been the obvious alternative but is
+ *   accepted-and-ignored on this platform - see git history.) There is no
+ *   lost-wakeup window around the teardown/setup pair: udp_pollsetup()
+ *   notifies immediately if the read-ahead queue is already non-empty.
  *
  *   This is a standalone task (task_create()), not a pthread of the "wg"
  *   NSH command: a pthread created and detached by "wg" was empirically
@@ -821,28 +842,63 @@ static int wg_rx_task(int argc, FAR char *argv[])
 {
   FAR struct wg_netdev_s *priv = &g_wg;
   uint8_t rxbuf[WG_MAX_PACKET];
+  struct pollfd fds;
+  sem_t waitsem;
+
+  nxsem_init(&waitsem, 0, 0);
 
   while (priv->running)
     {
       struct sockaddr_in from;
-      socklen_t fromlen = sizeof(from);
+      socklen_t fromlen;
       ssize_t n;
 
-      n = psock_recvfrom(&priv->psock, rxbuf, sizeof(rxbuf), MSG_DONTWAIT,
-                          (FAR struct sockaddr *)&from, &fromlen);
-      if (n > 0)
+      /* Block until the socket is readable or the timer interval expires */
+
+      memset(&fds, 0, sizeof(fds));
+      fds.events = POLLIN;
+      fds.arg    = &waitsem;
+      fds.cb     = wg_poll_cb;
+
+      if (psock_poll(&priv->psock, &fds, true) >= 0)
         {
+          nxsem_tickwait(&waitsem, MSEC2TICK(WG_TIMER_MSECS));
+          psock_poll(&priv->psock, &fds, false);
+        }
+
+      /* Drop any extra posts the callback made while we were awake, so the
+       * next iteration blocks properly instead of spinning through a
+       * backlog of stale wakeups.
+       */
+
+      while (nxsem_trywait(&waitsem) >= 0);
+
+      /* Drain everything queued, not just one datagram: a single wakeup can
+       * cover several packets that arrived close together.
+       */
+
+      for (; ; )
+        {
+          fromlen = sizeof(from);
+          n = psock_recvfrom(&priv->psock, rxbuf, sizeof(rxbuf),
+                             MSG_DONTWAIT, (FAR struct sockaddr *)&from,
+                             &fromlen);
+          if (n <= 0)
+            {
+              break;
+            }
+
           net_lock();
           wg_process_udp_packet(priv, rxbuf, (size_t)n,
-                                 from.sin_addr.s_addr,
-                                 ntohs(from.sin_port));
+                                from.sin_addr.s_addr,
+                                ntohs(from.sin_port));
           net_unlock();
         }
 
       wg_run_timers(priv);
-      usleep(WG_RX_POLL_MSECS * 1000);
     }
 
+  nxsem_destroy(&waitsem);
   return 0;
 }
 

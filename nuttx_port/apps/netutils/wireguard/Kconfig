@@ -49,9 +49,9 @@ config NET_WIREGUARD_RX_STACKSIZE
 
 		The default comes from measurement rather than guesswork: with
 		CONFIG_STACK_COLORATION enabled on an ESP32-S3 (IPv4 only, single
-		peer, wg0 MTU 1420), pushing ~1.2 MB of TCP through the tunnel
+		peer, wg0 MTU 1420), pushing ~7 MB of TCP through the tunnel
 		alongside a large-packet ping flood left a high water mark of
-		2896 bytes. 4096 keeps roughly 40% headroom on top of that.
+		2960 bytes. 4096 keeps roughly 38% headroom on top of that.
 
 		Raise it if you enable IPv6, IP fragmentation, or a larger MTU,
 		or if you see stack overflows on an architecture with bigger
