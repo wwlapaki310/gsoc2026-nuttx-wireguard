@@ -83,15 +83,18 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 
 ## 2. 現状コードの upstream 化ギャップまとめ
 
+最終更新: 2026-08-22。
+
 | 項目 | 現状 | 必要な対応 |
 |---|---|---|
-| ビルド方式 | Docker が `wireguard-lwip` を都度 `git clone` してコピーし、`nuttx_port/` を上書き | upstream PR には実ファイルとしてコミットされたソースが要る。vendored ファイルをリポジトリに実体として含める(仕組みは Phase 5 で整理) |
-| ファイルヘッダ/構造 | 簡易ヘッダ、`tun.c` を参考にした自己流コメント | ASF 標準テンプレートに合わせて全面的に整形。`checkpatch.sh` を通す |
-| 実機検証ログ | sim / QEMU のみ | ESP32-S3 実機ログが必須([hardware-verification.md](hardware-verification.md)) |
-| LICENSE/NOTICE | 未着手 | `apache/nuttx-apps/LICENSE` に wireguard-lwip の著作権表示を追記 |
-| コミット規約 | 未着手(このリポジトリはまだ GSoC 開発用) | `Assisted-by:` タグ運用をこのリポジトリの段階から習慣化しておく |
+| ビルド方式 | Docker が `wireguard-lwip` を都度 `git clone` してコピーし、`nuttx_port/` を上書き | ⛔ upstream PR には実ファイルとしてコミットされたソースが要る。vendored ファイルをリポジトリに実体として含める(仕組みは Phase 5 で整理) |
+| ファイルヘッダ/構造 | ✅ **完了**。4ファイルとも ASF ヘッダ + 標準セクション構成に整形し、`checkpatch.sh` をクリーンに通過(2026-08-22) | — |
+| 実機検証ログ | ✅ **完了**。ESP32-S3 実機で handshake / ping / TCP(telnet・HTTP)疎通を確認 | — |
+| LICENSE/NOTICE | 🔶 追記案を [license-appendix-draft.md](license-appendix-draft.md) に用意。実際の `LICENSE` への反映は未 | 提出時に最新の書式に合わせて反映。`wireguardif.c` / `crypto/cortex/` を vendored ツリーから外すか判断する |
+| コミット規約 | 🔶 `Assisted-by:` タグの運用を 2026-08-22 のコミットから開始 | 過去分は書き直さず、以後徹底 |
 | PR 粒度 | 全部入りで開発中 | フェーズ単位・機能単位に分割(§3) |
 | レビュー体制 | メンター1名想定 | dev@ での早期共有 + 独立レビュアーの確保 |
+| 実行時設定 | ⛔ 鍵・ピアが Kconfig 固定。鍵がビルド成果物に焼き込まれる | `wg setconf` 相当の実装([code-review-2026-08.md](code-review-2026-08.md) §1-D) |
 
 ---
 
@@ -124,8 +127,9 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 
 ## 4. 次にやること(優先順)
 
-1. **Assisted-by 運用の開始**: このリポジトリで今後コミットする際、コミットメッセージに `Assisted-by: Claude:claude-sonnet-5` を付ける習慣を今のうちに作る(upstream に出す段階で慌てて過去分を書き直さずに済む)
-2. **ESP32-S3 実機ログの取得**: [hardware-verification.md](hardware-verification.md) の手順を実施(§1.2 の必須要件)
-3. **`checkpatch.sh`/`nxstyle` によるスタイル整形**: 4つの新規ファイルをテンプレートに合わせて書き直す
-4. **`apache/nuttx-apps/LICENSE` 追記案の作成**: wireguard-lwip の著作権表示を Appendix パターンで追記する PR 断片を用意
-5. **dev@ メーリングリストでの早期共有**: PR #1 を出す前にアーキテクチャの概要を投げて反応を見る
+1. ~~**Assisted-by 運用の開始**~~ ✅ 2026-08-22 のコミットから適用開始
+2. ~~**ESP32-S3 実機ログの取得**~~ ✅ 完了([phase4-log.md](phase4-log.md))
+3. ~~**`checkpatch.sh`/`nxstyle` によるスタイル整形**~~ ✅ 完了(4ファイルともクリーン)
+4. ~~**`apache/nuttx-apps/LICENSE` 追記案の作成**~~ ✅ 下書き完了([license-appendix-draft.md](license-appendix-draft.md))
+5. **vendored ツリーの整理**: `wireguardif.c`(lwIP 版、未使用)と `crypto/cortex/`(未ビルド)を外すか判断し、Docker の `git clone` 方式から実ファイル同梱方式へ移行する
+6. **dev@ メーリングリストでの早期共有**: PR #1 を出す前にアーキテクチャの概要を投げて反応を見る。**次にやるべきはこれ** — コードの整形が済んだので、設計そのものへの合意取りに進める段階になった

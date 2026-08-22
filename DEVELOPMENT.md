@@ -203,6 +203,9 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun \
 | [docs/phase3-log.md](docs/phase3-log.md) | Phase 3(実ハンドシェイク検証)の作業ログ・見つかったバグと修正 |
 | [docs/phase4-log.md](docs/phase4-log.md) | Phase 4(ESP32-S3 実機での実ハンドシェイク成功、TCP バグの調査・修正、ESP32-WROOM-32 / Spresense 書き込み試行)の作業ログ |
 | [docs/phase4-summary.md](docs/phase4-summary.md) | Phase 4 の成果まとめ・デモ動画リンク |
+| [docs/code-review-2026-08.md](docs/code-review-2026-08.md) | コード全体のレビュー結果・課題の棚卸し・今後の計画 |
+| [docs/presentation-script.md](docs/presentation-script.md) | 発表原稿(スライド構成 + 話す内容 + 想定質問) |
+| [docs/license-appendix-draft.md](docs/license-appendix-draft.md) | upstream 提出用の `LICENSE` 追記案 |
 | [docs/hardware-verification.md](docs/hardware-verification.md) | 実機検証の手順書(ESP32-S3 は確認済み、ESP32-WROOM-32 / Spresense は書き込み以降未確認) |
 | [docs/upstream-strategy.md](docs/upstream-strategy.md) | apache/nuttx-apps へのマージ戦略 |
 
@@ -210,6 +213,10 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun \
 
 ## 次にやること(優先順)
 
-1. 長時間 keepalive、再接続、MTU 境界、複数 peer の追加検証(ESP32-S3 実機で)
-2. ESP32-WROOM-32・Spresense の実機書き込み問題の切り分け(別 PC・別ケーブル/電源での再挑戦。[docs/phase4-log.md](docs/phase4-log.md) 参照)
-3. upstream 提出に向けたコーディングスタイル整形・`LICENSE` 追記([docs/upstream-strategy.md](docs/upstream-strategy.md) の「次にやること」)
+全体像と根拠は [docs/code-review-2026-08.md](docs/code-review-2026-08.md) にまとめてある。
+
+1. **dev@nuttx.apache.org での設計共有** — スタイル整形と実機ログが揃い、upstream に出す前提が埋まったので、次は設計そのものへの合意取り(`wg0` を lwIP netif ではなく NuttX netdev として実装した判断について)
+2. **実行時設定 (`wg setconf` 相当)** — 鍵をビルドに焼き込まない。実用性・セキュリティ両面で最大の弱点
+3. vendored ツリーの整理(未使用の `wireguardif.c` / `crypto/cortex/` の扱いを決め、Docker の `git clone` 方式から実ファイル同梱へ)
+4. 長時間 keepalive、再接続、MTU 境界、複数 peer の追加検証(ESP32-S3 実機で)
+5. ESP32-WROOM-32・Spresense の実機書き込み問題の切り分け(別 PC・別ケーブル/電源での再挑戦。[docs/phase4-log.md](docs/phase4-log.md) 参照)

@@ -19,8 +19,9 @@ ifeq ($(CONFIG_NET_WIREGUARD),y)
   # NOTE: wireguardif.c (upstream lwIP API) is NOT used.
   # NuttX uses its own network stack. nuttx-wireguardif.c replaces it.
 
-  # "wg" NSH builtin - brings wg0 up from Kconfig settings (Phase 2 MVP;
-  # "wg show"/"wg setconf" are a later phase).
+  # "wg" NSH builtin - "wg [up]" brings wg0 up from the Kconfig settings,
+  # "wg show" prints status. Runtime reconfiguration ("wg set"/"wg setconf"
+  # in the upstream wg(8) tool) is not implemented yet.
   PROGNAME  = $(CONFIG_NET_WIREGUARD_PROGNAME)
   PRIORITY  = $(CONFIG_NET_WIREGUARD_PRIORITY)
   STACKSIZE = $(CONFIG_NET_WIREGUARD_STACKSIZE)
