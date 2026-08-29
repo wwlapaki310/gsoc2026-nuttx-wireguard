@@ -687,7 +687,7 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
  * Name: wg_run_timers
  *
  * Description:
- *   Periodic per-peer maintenance: keep-alives, rekeying, and peer/session
+ *   Periodic per-peer maintenance: keep-alive, rekeying, and peer/session
  *   expiry. Equivalent to wireguardif_tmr() in upstream wireguardif.c,
  *   but driven from the RX thread's receive timeout instead of a separate
  *   lwIP sys_timeout().
