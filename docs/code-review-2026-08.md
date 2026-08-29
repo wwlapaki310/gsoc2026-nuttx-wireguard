@@ -68,22 +68,63 @@ EBADF 修正の際、fd ベースの `poll()` が使えなくなったため `ps
 
 副産物として、7 MB の連続転送中に **rekey(再ハンドシェイク)が発生して成功**することも確認できた。これまで未検証だった経路。
 
-#### (D) 実行時設定ができない (UX 上の最大の弱点)
+#### (D) 実行時設定ができない (UX 上の最大の弱点) → ✅ 実装済み
 
-秘密鍵・ピア公開鍵・エンドポイントがすべて Kconfig の固定値で、**変更するたびにリビルド + 書き込みが必要**。実際、実機デモの準備でこれが最も時間を食った。加えて:
+秘密鍵・ピア公開鍵・エンドポイントがすべて Kconfig の固定値で、**変更するたびにリビルド + 書き込みが必要**だった。実際、実機デモの準備でこれが最も時間を食った。加えて:
 
 - 秘密鍵が `.config` とビルド成果物に焼き込まれる(`defconfig` をコミットすると鍵が漏れる)
-- `wg0` の起動が手動 (`wg` コマンド) で、再起動のたびに打ち直しが必要
+- `wg0` の起動が手動 (`wg` コマンド) で、再起動のたびに打ち直しが必要 → 起動時自動化は rcS で解決済み([hardware-verification.md](hardware-verification.md) のヘッドレス運用節)
 
-本家 `wg setconf` 相当のランタイム設定と、netinit 連携による自動起動が理想。ただしこれは新規機能追加として相応のサイズがあり、upstream PR も別立てになる。
+**【実装 2026-08-29】** 本家 `wg(8)` に寄せたサブコマンドを追加した:
+
+```
+wg genkey                    # デバイス上で秘密鍵を生成
+wg pubkey <private-key>      # 対応する公開鍵を導出
+wg set private-key <key>
+wg set peer <public-key> [endpoint <addr:port>]
+                            [allowed-ips <addr>/<prefix>]
+                            [persistent-keepalive <sec>]
+wg up / wg down / wg show
+```
+
+設計上のポイント:
+
+- **Kconfig は既定値として残る。** `wg set` で明示的に指定した項目だけが上書きされ、未指定の項目は `CONFIG_NET_WIREGUARD_*` を使う。既存の Kconfig 完結型ビルド(rcS 自動起動を含む)は挙動が変わらない
+- **ステージング領域は `struct wg_netdev_s` の外に置いた。** `wg_initialize()` がこの構造体を丸ごと `memset` するのと、`wg down` → `wg up` で設定が Kconfig に巻き戻ってはいけないため
+- **`wg set` は down 中のみ許可** (`-EBUSY`)。稼働中のピア差し替えは RX タスクとの競合を招くため、`down` → `set` → `up` の流れに限定した
+- **vendored コードは無改変を維持。** `wireguard_clamp_private_key()` / `wireguard_generate_public_key()` は `wireguard.c` の `static` 関数で外から呼べないため、clamp(RFC 7748 の仕様定数2行)と基点スカラー倍を `crypto.h` が公開する `wireguard_x25519()` を使って自前実装した
+
+実機検証(ESP32-S3):
+
+- `wg genkey` は毎回異なる鍵を返す(エントロピー源が機能している)
+- `wg pubkey <Kconfig の秘密鍵>` の出力が `wg show` の interface public key と**完全一致** — vendored 実装と独立に導出した結果が一致したので、導出が正しいことの裏付けになる
+- `wg down` で `wg0` が `ifconfig` から消え、再度 `wg down` は `-ENODEV`
+- `wg down` → `wg set peer ...` → `wg up` で**リビルドなしにトンネルを張り直し**、ハンドシェイク成立・ping 0% packet loss を確認
+
+**副産物として `CONFIG_NSH_LINELEN` の問題を発見した。** 既定値 64 に対し
+`wg set peer <44 文字の base64 鍵> endpoint ... allowed-ips ... persistent-keepalive ...`
+は約 134 文字あり、**行が途中で切られて残りが別コマンドとして解釈されていた**。
+160 に引き上げて解決(`Dockerfile` に永続化)。実行時設定を使うなら必須の設定。
+
+残っているのは「起動時に実行時設定を復元する」部分。現状 `wg set` の内容は RAM 上のみで、
+電源を切ると Kconfig の値に戻る。永続化するならファイルシステムか NVS への保存が要る。
 
 #### (E) upstream スタイル準拠
 
 ファイルヘッダに ASF ライセンスブロックがなく、関数コメントも `Input Parameters:` / `Returned Value:` が揃っていない箇所がある。`tools/checkpatch.sh` / `nxstyle` を通していない。upstream 提出の機械的な前提条件。
 
-#### (F) 停止・再設定手段がない
+#### (F) 停止・再設定手段がない → ✅ 実装済み
 
-`priv->running` を false にする経路がなく、`wg` は一度上げたら落とせない(`wg_ifdown` は netdev を down にするだけで RX タスクは回り続ける)。`wg down` サブコマンドがあるべき。
+`priv->running` を false にする経路がなく、`wg` は一度上げたら落とせなかった(`wg_ifdown` は netdev を down にするだけで RX タスクは回り続ける)。
+
+**【実装 2026-08-29】** `wg down` を追加。順序が重要で:
+
+1. `priv->running = false` で RX タスクにループ脱出を要求
+2. **タスクが `rxtask_done` を立てるのを待つ** — ソケットは稼働中の RX タスクが所有しており、待たずに `psock_close()` すると実行中の `psock_recvfrom()` の足元を崩す
+3. `work_cancel()` で積み残しの TX ワークを取り消し
+4. `netdev_unregister()` → `psock_close()`
+
+タイムアウト時は `-ETIMEDOUT` を返して `running` を戻し、**中途半端に壊れた状態にしない**。
 
 ---
 
@@ -113,14 +154,16 @@ EBADF 修正の際、fd ベースの `poll()` が使えなくなったため `ps
 
 ### 第3段階: 実用性・堅牢性 (GSoC 本期間の中心)
 
-| 項目 | 内容 |
+| 項目 | 状態 |
 |---|---|
-| (D) ランタイム設定 | `wg setconf` / `wg set` 相当。鍵をビルドに焼かない |
-| (F) `wg down` | 停止・再設定経路 |
-| netinit 連携 | 起動時自動立ち上げ |
-| (C) ポーリング解消 | `psock_poll()` ベースのブロッキング待機に戻す |
-| 複数ピア | 現状 vendored ヘッダの `WIREGUARD_MAX_PEERS` に依存。Kconfig 化 |
-| 異常系検証 | 長時間 keepalive・再接続・MTU 境界・rekey |
+| (D) ランタイム設定 | ✅ `wg genkey` / `pubkey` / `set` を実装 |
+| (F) `wg down` | ✅ 実装 |
+| netinit 連携 | ✅ rcS による起動時自動立ち上げ |
+| (C) ポーリング解消 | ✅ `psock_poll()` ベースのブロッキング待機 |
+| 設定の永続化 | ❌ `wg set` の内容は電源断で失われる(FS/NVS 保存が要る) |
+| 複数ピア | ❌ 現状 vendored ヘッダの `WIREGUARD_MAX_PEERS`(=1)に依存 |
+| 異常系検証 | ❌ 長時間 keepalive・再接続・MTU 境界 |
+| ビルドモード | ❌ `psock_*()` 依存で FLAT ビルド前提。PROTECTED/KERNEL は別設計 |
 
 ### 第4段階: upstream PR
 

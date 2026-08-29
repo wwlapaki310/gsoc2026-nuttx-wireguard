@@ -53,6 +53,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
@@ -100,6 +101,13 @@
 #define WG_MAX_PACKET       1500
 #define WG_CRYPT_BUFSIZE    (16 + WG_MAX_PACKET + WIREGUARD_AUTHTAG_LEN)
 
+/* How long wg_down() waits for wg_rx_task() to leave its loop. The task
+ * blocks for at most WG_TIMER_MSECS per iteration, so this only has to be
+ * comfortably longer than that.
+ */
+
+#define WG_DOWN_WAIT_MSECS  (4 * WG_TIMER_MSECS)
+
 /****************************************************************************
  * Private Types
  ****************************************************************************/
@@ -128,6 +136,7 @@ struct wg_netdev_s
 
   struct socket psock;
   int rxtask;                   /* PID of the wg_rx_task() background task */
+  bool rxtask_done;             /* wg_rx_task() has left its loop */
   struct work_s txwork;         /* Deferred TX poll work */
 
   /* Scratch buffers. All uses are serialised by the (recursive) network
@@ -146,6 +155,29 @@ struct wg_netdev_s
 
   uint64_t peer_rx_bytes[WIREGUARD_MAX_PEERS];
   uint64_t peer_tx_bytes[WIREGUARD_MAX_PEERS];
+};
+
+/* Configuration staged by "wg set" before "wg up".
+ *
+ * Kept separate from struct wg_netdev_s because wg_initialize() clears that
+ * structure wholesale, and because these values have to outlive a
+ * wg_down()/wg_initialize() cycle: taking the interface down and bringing it
+ * back up must not silently revert to the Kconfig settings.
+ *
+ * Every field is optional. An empty string (or keepalive < 0) means "not
+ * staged", and the corresponding CONFIG_NET_WIREGUARD_* value is used
+ * instead, so a purely Kconfig-driven build behaves exactly as before.
+ */
+
+struct wg_staged_s
+{
+  char private_key[WG_KEY_STRLEN];
+  char peer_public_key[WG_KEY_STRLEN];
+  char peer_endpoint_ip[INET_ADDRSTRLEN];
+  char peer_allowed_ip[INET_ADDRSTRLEN];
+  char peer_allowed_mask[INET_ADDRSTRLEN];
+  uint16_t peer_endpoint_port;
+  int peer_keepalive;
 };
 
 /****************************************************************************
@@ -193,9 +225,95 @@ static void wg_configure_address(FAR struct wg_netdev_s *priv);
 
 static struct wg_netdev_s g_wg;
 
+static struct wg_staged_s g_staged =
+{
+  .peer_keepalive = -1
+};
+
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+
+/****************************************************************************
+ * Name: wg_cfg_str
+ *
+ * Description:
+ *   Pick the staged value if one was set, otherwise the Kconfig default.
+ *
+ ****************************************************************************/
+
+static FAR const char *wg_cfg_str(FAR const char *staged,
+                                  FAR const char *kconfig)
+{
+  return staged[0] != '\0' ? staged : kconfig;
+}
+
+/****************************************************************************
+ * Name: wg_decode_key
+ *
+ * Description:
+ *   Decode a base64 Curve25519 key and verify it is the expected length.
+ *
+ * Returned Value:
+ *   0 (OK) on success, -EINVAL if the string is not a valid 32 byte key.
+ *
+ ****************************************************************************/
+
+static int wg_decode_key(FAR const char *b64, FAR uint8_t *out,
+                         size_t outlen)
+{
+  size_t len = outlen;
+
+  if (b64 == NULL || !wireguard_base64_decode(b64, out, &len) ||
+      len != outlen)
+    {
+      return -EINVAL;
+    }
+
+  return OK;
+}
+
+/****************************************************************************
+ * Name: wg_clamp_private_key
+ *
+ * Description:
+ *   Apply the Curve25519 clamping required by RFC 7748 section 5. This
+ *   duplicates wireguard_clamp_private_key() in the vendored wireguard.c,
+ *   which is static there; the two lines are a specification constant
+ *   rather than vendored logic, and copying them keeps that file unmodified.
+ *
+ ****************************************************************************/
+
+static void wg_clamp_private_key(FAR uint8_t *key)
+{
+  key[0]  &= 248;
+  key[31]  = (key[31] & 127) | 64;
+}
+
+/****************************************************************************
+ * Name: wg_derive_public_key
+ *
+ * Description:
+ *   Curve25519 scalar multiplication of the private key with the base point,
+ *   which is what turns a private key into its public key. Mirrors the
+ *   static wireguard_generate_public_key() in wireguard.c using the
+ *   wireguard_x25519() primitive that crypto.h exposes.
+ *
+ * Returned Value:
+ *   true on success.
+ *
+ ****************************************************************************/
+
+static bool wg_derive_public_key(FAR uint8_t *public_key,
+                                 FAR const uint8_t *private_key)
+{
+  static const uint8_t basepoint[WIREGUARD_PUBLIC_KEY_LEN] =
+  {
+    9
+  };
+
+  return wireguard_x25519(public_key, private_key, basepoint) == 0;
+}
 
 /****************************************************************************
  * Name: wg_peer_for_dest
@@ -899,6 +1017,10 @@ static int wg_rx_task(int argc, FAR char *argv[])
     }
 
   nxsem_destroy(&waitsem);
+
+  /* Tell wg_down() the socket is no longer in use and can be closed */
+
+  priv->rxtask_done = true;
   return 0;
 }
 
@@ -1009,30 +1131,31 @@ static int wg_ifdown(FAR struct net_driver_s *dev)
  * Name: wg_configure_peer
  *
  * Description:
- *   Set up the single Kconfig-provided peer, if a public key was given.
- *   This is a minimal stand-in for the "wg setconf" NSH command planned
- *   for a later phase.
+ *   Set up the single peer, taking each value from "wg set peer" if it was
+ *   staged and from Kconfig otherwise. Does nothing if no public key is
+ *   available from either source - wg0 still comes up, just with no peer,
+ *   which is the useful state for "wg genkey" then "wg set peer".
  *
  ****************************************************************************/
 
 static void wg_configure_peer(FAR struct wg_netdev_s *priv)
 {
   uint8_t public_key[WIREGUARD_PUBLIC_KEY_LEN];
-  size_t public_key_len = sizeof(public_key);
   FAR struct wireguard_peer *peer;
+  FAR const char *str;
   struct in_addr addr;
+  int keepalive;
 
-  if (strlen(CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY) == 0)
+  str = wg_cfg_str(g_staged.peer_public_key,
+                   CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY);
+  if (strlen(str) == 0)
     {
       return;
     }
 
-  if (!wireguard_base64_decode(CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY,
-                                public_key, &public_key_len) ||
-      public_key_len != WIREGUARD_PUBLIC_KEY_LEN)
+  if (wg_decode_key(str, public_key, sizeof(public_key)) < 0)
     {
-      nerr("ERROR: CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY is not a valid "
-           "base64 key\n");
+      nerr("ERROR: peer public key is not a valid base64 key\n");
       return;
     }
 
@@ -1049,25 +1172,34 @@ static void wg_configure_peer(FAR struct wg_netdev_s *priv)
       return;
     }
 
-  peer->keepalive_interval = CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
+  keepalive = g_staged.peer_keepalive >= 0 ?
+              g_staged.peer_keepalive : CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
+  peer->keepalive_interval = keepalive;
 
-  if (inet_pton(AF_INET, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP, &addr) == 1)
+  str = wg_cfg_str(g_staged.peer_allowed_ip,
+                   CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP);
+  if (inet_pton(AF_INET, str, &addr) == 1)
     {
       peer->allowed_source_ips[0].ip = addr;
     }
 
-  if (inet_pton(AF_INET, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK, &addr) == 1)
+  str = wg_cfg_str(g_staged.peer_allowed_mask,
+                   CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK);
+  if (inet_pton(AF_INET, str, &addr) == 1)
     {
       peer->allowed_source_ips[0].mask = addr;
     }
 
   peer->allowed_source_ips[0].valid = true;
 
-  if (strlen(CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP) > 0 &&
-      inet_pton(AF_INET, CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP, &addr) == 1)
+  str = wg_cfg_str(g_staged.peer_endpoint_ip,
+                   CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP);
+  if (strlen(str) > 0 && inet_pton(AF_INET, str, &addr) == 1)
     {
       peer->connect_ip = addr;
-      peer->connect_port = CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
+      peer->connect_port = g_staged.peer_endpoint_port != 0 ?
+                           g_staged.peer_endpoint_port :
+                           CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
       peer->ip = peer->connect_ip;
       peer->port = peer->connect_port;
     }
@@ -1107,9 +1239,9 @@ static void wg_configure_address(FAR struct wg_netdev_s *priv)
 int wg_initialize(void)
 {
   uint8_t private_key[WIREGUARD_PRIVATE_KEY_LEN];
-  size_t private_key_len = sizeof(private_key);
   struct sockaddr_in bindaddr;
   FAR struct wg_netdev_s *priv = &g_wg;
+  FAR const char *keystr;
   int ret;
 
   if (priv->registered)
@@ -1117,18 +1249,18 @@ int wg_initialize(void)
       return OK;
     }
 
-  if (strlen(CONFIG_NET_WIREGUARD_PRIVATE_KEY) == 0)
+  keystr = wg_cfg_str(g_staged.private_key,
+                      CONFIG_NET_WIREGUARD_PRIVATE_KEY);
+  if (strlen(keystr) == 0)
     {
-      nerr("ERROR: CONFIG_NET_WIREGUARD_PRIVATE_KEY is not set\n");
+      nerr("ERROR: no private key: set CONFIG_NET_WIREGUARD_PRIVATE_KEY or "
+           "run \"wg set private-key <key>\"\n");
       return -EINVAL;
     }
 
-  if (!wireguard_base64_decode(CONFIG_NET_WIREGUARD_PRIVATE_KEY, private_key,
-                                &private_key_len) ||
-      private_key_len != WIREGUARD_PRIVATE_KEY_LEN)
+  if (wg_decode_key(keystr, private_key, sizeof(private_key)) < 0)
     {
-      nerr("ERROR: CONFIG_NET_WIREGUARD_PRIVATE_KEY is not a valid base64 "
-           "key\n");
+      nerr("ERROR: private key is not a valid base64 key\n");
       return -EINVAL;
     }
 
@@ -1198,6 +1330,258 @@ int wg_initialize(void)
 
   priv->registered = true;
   return OK;
+}
+
+/****************************************************************************
+ * Name: wg_down
+ ****************************************************************************/
+
+int wg_down(void)
+{
+  FAR struct wg_netdev_s *priv = &g_wg;
+  int i;
+
+  if (!priv->registered)
+    {
+      return -ENODEV;
+    }
+
+  /* Ask wg_rx_task() to leave its loop. It re-checks priv->running once per
+   * iteration and blocks at most WG_TIMER_MSECS, so it notices promptly.
+   */
+
+  priv->running = false;
+
+  /* The task owns the socket while it is running: psock_close() here would
+   * pull it out from under an in-flight psock_recvfrom(). Wait for the task
+   * to confirm it is done before touching anything it uses.
+   */
+
+  for (i = 0; i < WG_DOWN_WAIT_MSECS / 10; i++)
+    {
+      if (priv->rxtask_done)
+        {
+          break;
+        }
+
+      usleep(10 * 1000);
+    }
+
+  if (!priv->rxtask_done)
+    {
+      nerr("ERROR: wg_rx did not stop; leaving wg0 up\n");
+      priv->running = true;
+      return -ETIMEDOUT;
+    }
+
+  /* A TX poll may still be queued on the work queue from the last packet */
+
+  work_cancel(WG_TXWORK, &priv->txwork);
+
+  netlib_ifdown("wg0");
+  netdev_unregister(&priv->dev);
+  psock_close(&priv->psock);
+
+  priv->registered = false;
+  return OK;
+}
+
+/****************************************************************************
+ * Name: wg_is_up
+ ****************************************************************************/
+
+bool wg_is_up(void)
+{
+  return g_wg.registered;
+}
+
+/****************************************************************************
+ * Name: wg_set_private_key
+ ****************************************************************************/
+
+int wg_set_private_key(FAR const char *b64)
+{
+  uint8_t key[WIREGUARD_PRIVATE_KEY_LEN];
+
+  if (g_wg.registered)
+    {
+      return -EBUSY;
+    }
+
+  if (wg_decode_key(b64, key, sizeof(key)) < 0)
+    {
+      return -EINVAL;
+    }
+
+  crypto_zero(key, sizeof(key));
+  strlcpy(g_staged.private_key, b64, sizeof(g_staged.private_key));
+  return OK;
+}
+
+/****************************************************************************
+ * Name: wg_set_peer
+ ****************************************************************************/
+
+int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
+                FAR const char *allowed, int keepalive)
+{
+  uint8_t key[WIREGUARD_PUBLIC_KEY_LEN];
+  char scratch[INET_ADDRSTRLEN + 8];
+  struct in_addr addr;
+  FAR char *sep;
+  int port;
+  int prefix;
+
+  if (g_wg.registered)
+    {
+      return -EBUSY;
+    }
+
+  if (wg_decode_key(pubkey_b64, key, sizeof(key)) < 0)
+    {
+      return -EINVAL;
+    }
+
+  /* "address:port" */
+
+  if (endpoint != NULL)
+    {
+      strlcpy(scratch, endpoint, sizeof(scratch));
+      sep = strrchr(scratch, ':');
+      if (sep == NULL)
+        {
+          return -EINVAL;
+        }
+
+      *sep = '\0';
+      port = atoi(sep + 1);
+      if (port <= 0 || port > 65535 ||
+          inet_pton(AF_INET, scratch, &addr) != 1)
+        {
+          return -EINVAL;
+        }
+
+      strlcpy(g_staged.peer_endpoint_ip, scratch,
+              sizeof(g_staged.peer_endpoint_ip));
+      g_staged.peer_endpoint_port = (uint16_t)port;
+    }
+
+  /* "address/prefix", or a bare address meaning /32 */
+
+  if (allowed != NULL)
+    {
+      strlcpy(scratch, allowed, sizeof(scratch));
+      sep = strchr(scratch, '/');
+      prefix = 32;
+      if (sep != NULL)
+        {
+          *sep = '\0';
+          prefix = atoi(sep + 1);
+          if (prefix < 0 || prefix > 32)
+            {
+              return -EINVAL;
+            }
+        }
+
+      if (inet_pton(AF_INET, scratch, &addr) != 1)
+        {
+          return -EINVAL;
+        }
+
+      strlcpy(g_staged.peer_allowed_ip, scratch,
+              sizeof(g_staged.peer_allowed_ip));
+
+      addr.s_addr = prefix == 0 ? 0 :
+                    htonl(0xffffffffu << (32 - prefix));
+      if (inet_ntop(AF_INET, &addr, g_staged.peer_allowed_mask,
+                    sizeof(g_staged.peer_allowed_mask)) == NULL)
+        {
+          return -EINVAL;
+        }
+    }
+
+  if (keepalive >= 0)
+    {
+      g_staged.peer_keepalive = keepalive;
+    }
+
+  strlcpy(g_staged.peer_public_key, pubkey_b64,
+          sizeof(g_staged.peer_public_key));
+  return OK;
+}
+
+/****************************************************************************
+ * Name: wg_genkey
+ ****************************************************************************/
+
+int wg_genkey(FAR char *out, size_t outlen)
+{
+  uint8_t key[WIREGUARD_PRIVATE_KEY_LEN];
+  size_t len = outlen - 1;
+  int ret = OK;
+
+  if (outlen < WG_KEY_STRLEN)
+    {
+      return -EINVAL;
+    }
+
+  wireguard_random_bytes(key, sizeof(key));
+
+  /* Clamp exactly as wireguard_device_init() does, so the key printed here
+   * is the key that ends up in use rather than one silently altered later.
+   */
+
+  wg_clamp_private_key(key);
+
+  if (!wireguard_base64_encode(key, sizeof(key), out, &len))
+    {
+      ret = -EINVAL;
+    }
+  else
+    {
+      out[len] = '\0';
+    }
+
+  crypto_zero(key, sizeof(key));
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wg_pubkey
+ ****************************************************************************/
+
+int wg_pubkey(FAR const char *priv_b64, FAR char *out, size_t outlen)
+{
+  uint8_t priv[WIREGUARD_PRIVATE_KEY_LEN];
+  uint8_t pub[WIREGUARD_PUBLIC_KEY_LEN];
+  size_t len = outlen - 1;
+  int ret = OK;
+
+  if (outlen < WG_KEY_STRLEN)
+    {
+      return -EINVAL;
+    }
+
+  if (wg_decode_key(priv_b64, priv, sizeof(priv)) < 0)
+    {
+      return -EINVAL;
+    }
+
+  if (!wg_derive_public_key(pub, priv))
+    {
+      ret = -EINVAL;
+    }
+  else if (!wireguard_base64_encode(pub, sizeof(pub), out, &len))
+    {
+      ret = -EINVAL;
+    }
+  else
+    {
+      out[len] = '\0';
+    }
+
+  crypto_zero(priv, sizeof(priv));
+  return ret;
 }
 
 /****************************************************************************

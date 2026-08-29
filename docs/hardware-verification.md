@@ -1,4 +1,4 @@
-# 実機検証手順(ESP32-S3 / ESP32-WROOM-32 / Sony Spresense)
+# 実機検証手順(ESP32-S3 / Raspberry Pi Pico 2 W / ESP32-WROOM-32 / Sony Spresense)
 
 ## 現在のステータス
 
@@ -8,12 +8,14 @@
 
 ESP32-WROOM-32・Spresense は `CONFIG_NET_WIREGUARD=y` でのビルド自体はコード変更なしで成功するが、実機への書き込み・起動確認はハードウェア側の問題(ESP32: ブートモードに入らない、Spresense: USB デバイスとして列挙されない)で完了できていない。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
+Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0 では RP2350/Pico 2 系のボード定義が存在しないため、そのままではビルド対象にできない。Apache NuttX master では `raspberrypi-pico-2` ボードとして USB NSH の起動が確認でき、さらに本リポジトリの WireGuard 実装を移植して `wg` builtin と `wg0` TUN インターフェースの起動まで確認した。ただし、公式 Raspberry Pi Pico 2 W 向けの Wi-Fi bringup は未整備のため、現時点で確認できたのは USB シリアル経由のローカル実行までで、Wi-Fi 経由の WireGuard ハンドシェイクは未確認。
+
 ---
 
 ## スコープについて
 
 - **Raspberry Pi Pico / Pico 2 (無印)**: ネットワーク機能を持たないため対象外
-- **Raspberry Pi Pico W / Pico 2 W**: オンボード Wi-Fi チップ **CYW43439 用のドライバが NuttX に存在しない**(`drivers/wireless/` を nuttx-12.7.0〜13.0.0/master まで確認したが cc1101・gs2200m・nrf24l01・spirit・ieee80211/802154・bluetooth はあるが cyw43xxx 系は無し)。ボード自体(GPIO・LED 等)は NuttX でサポートされている(`raspberrypi-pico-w`。ただし RP2350/Pico 2 系のサポートは nuttx-12.8.0 以降で、本プロジェクトが固定している 12.7.0 には無い)が、**Wi-Fi 経由の WireGuard 通信は現状不可能**(新規ドライバ実装が必要で、本プロジェクトのスコープ外)。有線 Ethernet アダプタ(enc28j60 等)経由であれば原理上は可能
+- **Raspberry Pi Pico W / Pico 2 W**: Pico W(RP2040) と Pico 2 W(RP2350) はどちらもオンボード Wi-Fi チップとして CYW43439 を使う。NuttX master には CYW43439 系ドライバと RP2350 ボード定義が入っているが、本リポジトリが固定している NuttX 12.7.0 には Pico 2 W をそのまま使うためのボード定義が無い。また、公式 Raspberry Pi Pico 2 W ボードとしての Wi-Fi bringup は未整備のため、**現時点で確認できたのは USB シリアル経由の NuttX 起動と `wg0` 起動まで**。Wi-Fi 経由の WireGuard 通信には、公式 Pico 2 W 向けの CYW43439 bringup を追加する作業が必要
 - **Sony Spresense**: 当初はプロポーザル上「著者の業務経験」として触れているのみでロードマップ外だったが、実機を保有しているため試験的に対応した。**Spresense 本体には Wi-Fi が内蔵されていない**ため、Wi-Fi 経由の WireGuard 通信には別売りの GS2200M 拡張モジュール(NuttX のボードコンフィグ `wifi`)が必要。今回はビルド・起動確認のみを目標にしている(ネットワーク到達性の検証は対象外)
 - **ESP32-S3**: プロポーザル上の当初の実機ターゲット。**実機検証完了**(下記参照)
 
@@ -130,6 +132,141 @@ USB を挿し直さないと復旧できなくなる)。
 
 ---
 
+## Raspberry Pi Pico 2 W(USB NSH / `wg0` 起動確認済み)
+
+### 現在確認できている範囲
+
+今回確認できたのは、Pico 2 W を NuttX の `raspberrypi-pico-2` ボードとして起動し、USB シリアル上の NSH から WireGuard の `wg` builtin を実行して `wg0` を上げるところまで。
+
+```
+nsh> wg
+wg0 is up (listen port 51820)
+
+nsh> wg show
+interface: wg0
+  public key: qdgJgJ/SgN/WO82puRp0zCPsaWamZjSdALMq+86Ap1w=
+  listening port: 51820
+
+nsh> ifconfig
+wg0	Link encap:TUN at UP mtu 1420
+	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+
+nsh> uname -a
+NuttX  0.0.0 5d2ed54d-dirty Aug 29 2026 11:16:29 arm raspberrypi-pico-2
+```
+
+これは `wg0` の netdev 登録、WireGuard 鍵の読み込み、TUN インターフェース起動が Pico 2 W 上でも成立することの確認である。一方で、公式 Pico 2 W ボードの Wi-Fi bringup はまだ整っていないため、ESP32-S3 のような「実 Wi-Fi + 実ピアとのハンドシェイク + ping」までは未確認。
+
+### 前提条件
+
+- Raspberry Pi Pico 2 W
+- USB ケーブル(データ通信対応のもの)
+- Windows ホストで確認
+- Apache NuttX master / apps master
+  - 本リポジトリの Dockerfile が固定している NuttX 12.7.0 には RP2350/Pico 2 系の `raspberrypi-pico-2` ボードが無い
+  - 今回は upstream master の `boards/arm/rp23xx/raspberrypi-pico-2:usbnsh` をベースにした
+- Pico SDK / picotool
+  - UF2 生成時に `PICO_SDK_PATH` が必要
+
+### ビルド方針
+
+現時点では本リポジトリの `Dockerfile` に Pico 2 W 用ステージは無い。確認時は、NuttX master と apps master を別途用意し、本リポジトリの `nuttx_port/apps/netutils/wireguard/` を `apps/netutils/wireguard/` にコピーしてビルドした。
+
+ベースは USB NSH:
+
+```bash
+./tools/configure.sh raspberrypi-pico-2:usbnsh
+```
+
+追加で有効化した主な Kconfig:
+
+```text
+CONFIG_NET=y
+CONFIG_NET_IPv4=y
+CONFIG_NET_UDP=y
+CONFIG_NET_TCP=y
+CONFIG_NET_TUN=y
+CONFIG_NET_TUN_PKTSIZE=1420
+CONFIG_NET_SOCKOPTS=y
+CONFIG_SCHED_WORKQUEUE=y
+CONFIG_SCHED_LPWORK=y
+CONFIG_DEV_URANDOM=y
+CONFIG_DEV_URANDOM_XORSHIFT128=y
+CONFIG_NET_WIREGUARD=y
+CONFIG_NET_WIREGUARD_PRIVATE_KEY="<base64 private key>"
+```
+
+秘密鍵が空、または不正な値だと `wg` が `-22` (`EINVAL`) で失敗する。実機確認では最初にここで詰まり、有効な WireGuard 秘密鍵を入れ直したファームで `wg0 is up` まで進んだ。
+
+### ビルド時の注意点
+
+`raspberrypi-pico-2:usbnsh` はネットワーク機能を持たない構成なので、そのまま `CONFIG_NET=y` を有効にすると board 側の `arm_netinitialize()` が不足してリンクに失敗する。今回の `wg0` 起動確認では、Wi-Fi bringup ではなく TUN インターフェース単体の確認を目的としていたため、暫定的に no-op の `arm_netinitialize()` を追加してビルドした。
+
+これは検証用の一時対応であり、公式の Pico 2 W 対応としては正しくない。Wi-Fi 経由の WireGuard 疎通を目指す場合は、`arm_netinitialize()` で CYW43439 を初期化し、`wlan0` を NuttX netdev として登録する board bringup が必要になる。
+
+### UF2 の書き込み
+
+ビルド成果物は `nuttx.uf2`。Windows では Pico 2 W を BOOTSEL モードで接続し、マスストレージとして見えたドライブへ UF2 をコピーする。
+
+手順:
+
+1. USB を抜く
+2. BOOTSEL ボタンを押しっぱなしにする
+3. 押したまま USB を挿す
+4. Windows に `RP2350` ドライブが出たら BOOTSEL を離す
+5. `nuttx.uf2` を `RP2350` ドライブへコピーする
+
+PowerShell での確認例:
+
+```powershell
+Get-Volume | Where-Object { $_.FileSystemLabel -in @('RP2350','RPI-RP2') }
+Copy-Item -LiteralPath .\pico2w-wireguard-validkey.uf2 -Destination D:\ -Force
+```
+
+コピーが完了すると Pico 2 W は自動的に再起動し、USB シリアルデバイスとして再列挙される。今回の環境では `USB シリアル デバイス (COM8)` として見えた。
+
+### USB シリアルでの確認
+
+シリアル条件は 115200 bps。Windows では COM 番号を環境に合わせる。
+
+PowerShell から pyserial で簡易確認する例:
+
+```powershell
+python -c "import serial, time; s=serial.Serial('COM8',115200,timeout=1); s.write(b'\r\n'); time.sleep(1); print(s.read(4096).decode(errors='replace')); s.close()"
+```
+
+NSH が起きたら、以下を実行する。
+
+```
+nsh> help
+nsh> wg
+nsh> wg show
+nsh> ifconfig
+nsh> uname -a
+nsh> free
+```
+
+期待する最小結果:
+
+- `help` の Builtin Apps に `wg` が出る
+- `wg` が `wg0 is up (listen port 51820)` を返す
+- `wg show` に interface と public key が出る
+- `ifconfig` に `wg0` が出る
+
+### まだできていないこと
+
+- Pico 2 W のオンボード Wi-Fi (`CYW43439`) を使った `wlan0` 起動
+- Windows / Linux 側 WireGuard ピアとの実ハンドシェイク
+- トンネル越し ping / telnet / HTTP
+- 本リポジトリの `Dockerfile` への正式な `pico2w` ビルドステージ追加
+
+Pico 2 W で ESP32-S3 と同等の実通信を行うには、次のどちらかが必要になる。
+
+- 公式 Pico 2 W 向けに CYW43439 Wi-Fi bringup を追加する
+- 既に CYW43439 を使う別 RP2350 ボード設定を起点に、公式 Pico 2 W のピン配置・電源制御・ファームロード差分を吸収する
+
+---
+
 ## ESP32-WROOM-32
 
 ### 前提条件
@@ -222,4 +359,4 @@ flash_writer.exe -c COM5 -d nuttx.spk
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
 - `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(デフォルト 3072)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
 - ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる
-- Raspberry Pi Pico W / Pico 2 W は NuttX に CYW43439 用ドライバが無いため Wi-Fi が使えない(上記スコープ節参照)。本プロジェクトで対応するなら新規ドライバ実装が必要で、別スコープの作業になる
+- Raspberry Pi Pico 2 W は USB シリアル経由での NuttX 起動と `wg0` 起動まで確認済み。ただし、公式 Pico 2 W 向け Wi-Fi bringup が未整備のため、Wi-Fi 経由の WireGuard 実通信は未確認(上記 Pico 2 W 節参照)

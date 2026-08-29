@@ -232,12 +232,19 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     make olddefconfig >/dev/null 2>&1 && \
     kconfig-tweak --enable CONFIG_NSH_TELNET      && \
     kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
+    kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     make olddefconfig 2>&1 | tail -5
 
 # NOTE: telnetd の3つの Kconfig は依存が段階的 (NETUTILS_TELNETD →
 # SYSTEM_TELNETD → NSH_TELNET) なので、間に olddefconfig を挟まないと
 # 後段が黙って落ちる。NSH_TELNET が入ると nsh_init.c が nsh_telnetstart()
 # を呼び、ポート 23 の telnetd が起動時に自動で上がる。
+
+# NOTE: CONFIG_NSH_LINELEN を既定の 64 から 160 に引き上げている。
+# "wg set peer <44 文字の base64 鍵> endpoint <ip:port> allowed-ips <cidr>
+#  persistent-keepalive <n>" は約 134 文字あり、64 では途中で切られて
+# 残りが別のコマンドとして解釈される (実機で踏んだ)。実行時設定を使うなら
+# 必須の設定。
 
 # NOTE: telnet セッションのスタックを既定の 3072 から 4096 に引き上げている。
 # 実機の ps で 2448/3072 = 81.1% まで積まれており、NuttX が 80% 超で付ける
