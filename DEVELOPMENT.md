@@ -31,9 +31,10 @@
 |---|---|
 | `nuttx-platform.c` | `wireguard-platform.h` の4関数を実装(`clock_gettime`・`/dev/urandom`・TAI64N・`is_under_load()=false`) |
 | `nuttx-wireguardif.c` | `wg0` を NuttX の `NET_LL_TUN` netdev として登録。UDP ソケットを「配線」に見立てて暗号化パケットの送受信・ハンドシェイク/keepalive タイマーを実装(参照実装 `wireguardif.c` の移植) |
-| `nuttx-wireguardif.h` | 上記の公開 API(`wg_initialize()` / `wg_show()`) |
-| `wg_main.c` | NSH ビルトインコマンド `wg`(起動)/ `wg show`(公開鍵・ピア状態・送受信バイト数の表示) |
-| `Kconfig` | 秘密鍵・リッスンポート・ピア公開鍵/エンドポイント/allowed-ip・トンネル IP を設定可能に |
+| `nuttx-wireguardif.h` | 上記の公開 API(起動・停止・実行時設定・鍵生成) |
+| `wg_main.c` | NSH ビルトインコマンド `wg`。`up` / `down` / `show` / `showconf` / `setconf` / `genkey` / `pubkey` / `set` を実装(本家 `wg(8)` に準拠) |
+| `wireguard-platform.h` | vendored 版を置き換え、ピア数と allowed-ips 上限を Kconfig 化(BSD 表記・プロトタイプは無変更) |
+| `Kconfig` | 秘密鍵・リッスンポート・ピア設定・トンネル IP に加え、最大ピア数・設定ファイルのパスを設定可能に |
 | `Makefile` / `CMakeLists.txt` | 上記を NuttX のビルドシステムに統合(builtin `wg` コマンド登録込み) |
 
 `Dockerfile` はビルドが通るよう複数の Kconfig 依存関係の問題を修正済み(`ALLOW_BSD_COMPONENTS`・`NET_SOCKOPTS`・`/dev/urandom` 周りなど。詳細は [docs/phase2-log.md](docs/phase2-log.md))。
@@ -178,10 +179,12 @@ sim/QEMU 向けに書いたプラットフォーム層・netif 統合コード�
 
 ## まだ確認できていないこと
 
-- **長時間・異常系の通信**: sim/QEMU/ESP32-S3 いずれも短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive、再接続、MTU 境界、複数 peer は未確認
+- **長時間・異常系の通信**: 短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive・再接続・MTU 境界は未確認([Issue #5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5))。**2026-08-29 のソークテストで、約20分後に ESP32-S3 がネットワークから消える事象を観測**したが、USB 非接続でコンソールが読めず原因未特定(クラッシュ / Wi-Fi 切断 / 電源断のいずれか)
+- **複数ピアの実機動作**: sim では3ピアの設定・登録・削除・ファイル往復を確認済みだが、実機で複数ピアと同時にハンドシェイクする検証は未実施
+- **設定永続化の実機動作**: sim で `showconf` → ファイル → `setconf` の往復を確認済み。実機での電源断をまたぐ確認は未実施(ESP32-S3 が USB 非接続で書き込めないため)
 - **Spresense の実ピア通信**: 実機での `wg0` 起動は確認済みだが、メインボードに Wi-Fi が無いためハンドシェイク・トンネル疎通は未検証(別売りの GS2200M 拡張モジュールが必要)
 - **ESP32-WROOM-32 の実機書き込み**: GPIO0 を Low にする経路(BOOT ボタン・DTR トランジスタ)が両方効かず、ダウンロードモードに入れない。ビルドは成功しているため移植性の主張には影響しないが、実機確認には別個体が要る。詳細は [docs/phase4-log.md](docs/phase4-log.md)
-- **upstream 提出に向けた整形**: コーディングスタイル(`checkpatch.sh`/`nxstyle`)準拠、`LICENSE` 追記、コミットの `Assisted-by:` タグ運用は未着手(詳細は [docs/upstream-strategy.md](docs/upstream-strategy.md))
+- **upstream 提出**: スタイル準拠(`checkpatch.sh` 全ファイルクリーン)・`LICENSE` 追記案・`Assisted-by:` タグ運用は対応済み。残るのは **dev@ での設計合意**([Issue #3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)、投稿ドラフトは [docs/dev-list-proposal.md](docs/dev-list-proposal.md))と、**FLAT ビルド前提の扱い**([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))
 
 ---
 
