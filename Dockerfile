@@ -33,6 +33,16 @@ RUN git clone --depth=1 https://github.com/smartalock/wireguard-lwip.git /opt/wi
 #   - netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
 RUN mkdir -p /opt/apps/netutils/wireguard && \
     cp -r /opt/wireguard-lwip/src/* /opt/apps/netutils/wireguard/
+
+# Drop the vendored files this port does not build. wireguardif.c is the lwIP
+# netif glue that nuttx-wireguardif.c replaces, and crypto/cortex is an
+# ARM-assembly X25519 we do not select. Carrying unused third-party sources
+# would widen what has to be enumerated in nuttx-apps' LICENSE for no gain,
+# so the tree here matches what would actually be submitted upstream.
+RUN cd /opt/apps/netutils/wireguard && \
+    rm -f wireguardif.c wireguardif.h && \
+    rm -rf crypto/cortex
+
 COPY nuttx_port/apps/netutils/wireguard/ /opt/apps/netutils/wireguard/
 RUN cd /opt/apps/netutils && \
     bash /opt/apps/tools/mkkconfig.sh -m "Network Utilities" -o Kconfig

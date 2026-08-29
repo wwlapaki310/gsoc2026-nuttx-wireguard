@@ -32,7 +32,7 @@
 - `wireguardif.c` / `wireguardif.h` — lwIP netif 向けのグルー。NuttX では `nuttx-wireguardif.c` が置き換えるため未使用
 - `crypto/cortex/scalarmult.c` / `.h` — Cortex-M 向けアセンブリ最適化 (CC0 / B. Haase)。現状ビルドしていない
 
-→ **提出時はこの2つを vendored ツリーから外すことを推奨**。使わないファイルを持ち込むとライセンス記載の対象が無駄に増え、レビューの手間も増える。外す場合、上表の CC0 エントリは不要になる。
+→ **対応済み (2026-08-29)。** `Dockerfile` の base ステージで `wireguardif.c` / `wireguardif.h` / `crypto/cortex/` を削除するようにした。したがって **CC0 (crypto/cortex) のエントリは不要**で、上記の追記案がそのまま提出対象になる。
 
 ---
 
@@ -132,10 +132,10 @@ The following files retain their original BSD-3-Clause license:
 
 ## 3. 提出前チェックリスト
 
-- [ ] `wireguardif.c` / `wireguardif.h` を vendored ツリーから除外する(または残す判断をして、その場合は上記に BSD エントリを追加)
-- [ ] `crypto/cortex/` を除外する(または残して CC0 エントリを追加)
-- [ ] 各 vendored ファイルの元ライセンスヘッダが**改変されずに残っている**ことを再確認
-- [ ] `x25519.c` が参照している `LICENSE.txt`(STROBE 側の)の本文を実際に確認し、上記 MIT 全文が正しいか裏を取る
+- [x] `wireguardif.c` / `wireguardif.h` を vendored ツリーから除外する — **完了** (2026-08-29)。`Dockerfile` の base ステージで削除するようにした。除外後も esp32s3 のビルドが通ることを確認済み
+- [x] `crypto/cortex/` を除外する — **完了** (2026-08-29)。同上
+- [x] 各 vendored ファイルの元ライセンスヘッダが**改変されずに残っている**ことを再確認 — **完了**。`blake2s.c` は `// Taken from RFC7693 - https://tools.ietf.org/html/rfc7693`、`poly1305-donna.h` は `// Taken from https://github.com/floodyberry/poly1305-donna - public domain or MIT` のまま
+- [x] `x25519.c` が参照している `LICENSE.txt`(STROBE 側の)の本文を実際に確認し、上記 MIT 全文が正しいか裏を取る — **完了**。`crypto/refc/x25519-license.txt` の実物と照合し、`Copyright (c) 2015-2016 Cryptography Research, Inc.` の MIT 全文が上記記載と一致することを確認
 - [ ] 最新の `apache/nuttx-apps/LICENSE` の書式に合わせる
 - [ ] メンターにライセンス記載のレビューを依頼する
 
