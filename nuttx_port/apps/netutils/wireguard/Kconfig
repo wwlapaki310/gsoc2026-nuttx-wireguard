@@ -17,6 +17,13 @@ config NET_WIREGUARD
 		BSD-3-Clause licensed, same as NET_TUN's tun.c, hence the
 		ALLOW_BSD_COMPONENTS dependency.
 
+		NOTE: if you intend to configure the tunnel at runtime, raise
+		CONFIG_NSH_LINELEN. A full "wg set peer" line carries a 44
+		character base64 key plus an endpoint and allowed-ips and runs to
+		about 134 characters; at the default of 64/80 NSH truncates it
+		mid-argument and runs the remainder as separate commands. 160 is
+		enough. Loading a file with "wg setconf" is not affected.
+
 if NET_WIREGUARD
 
 config NET_WIREGUARD_PROGNAME
