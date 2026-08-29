@@ -246,7 +246,13 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_NSH_TELNET      && \
     kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_SPIFLASH_OP_TASK_STACKSIZE 3072 && \
+    kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE: SPI フラッシュ操作タスクのスタックを既定の 768 から 3072 に引き上げている。
+# 実機の ps で 560/704 = 79.5%、もう一方は 80.4% で NuttX の "!" 警告が出ていた。
+# 3072 なら 18.6% に下がる。"wg saveconf" がこの経路を通るため余裕を持たせておく。
 
 # NOTE: telnetd の3つの Kconfig は依存が段階的 (NETUTILS_TELNETD →
 # SYSTEM_TELNETD → NSH_TELNET) なので、間に olddefconfig を挟まないと

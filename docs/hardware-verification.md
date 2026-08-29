@@ -142,7 +142,7 @@ nsh> wg set peer <対向の公開鍵> endpoint 192.168.0.216:51820 allowed-ips 1
 nsh> wg up
 wg0 is up (listen port 51820)
 
-nsh> wg showconf > /data/wg0.conf                # 電源断をまたいで残す
+nsh> wg saveconf                                 # 電源断をまたいで残す
 ```
 
 保存すると、次回起動時に rcS が `wg up` の前に読み込む。ファイルが無ければ
