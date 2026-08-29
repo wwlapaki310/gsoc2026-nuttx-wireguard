@@ -1,0 +1,3 @@
+
+# upstream 参照用の一時クローン (checkpatch/API 確認に使う。コミット対象外)
+.tmp_*/

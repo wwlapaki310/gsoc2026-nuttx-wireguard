@@ -68,6 +68,66 @@ peer: <Windows 側公開鍵>
 
 Windows 側は Linux カーネル実装ではなく **公式 WireGuard for Windows クライアント**(`winget install WireGuard.WireGuard`)を使用し、異実装間の相互運用性も確認した。`ping 10.10.0.2`(ESP32-S3 のトンネルアドレス)で 4/4 パケット・0% packet loss を確認。詳細な手順・ログは [docs/phase4-log.md](phase4-log.md) を参照。
 
+### ヘッドレス運用(USB シリアルなし・Wi-Fi のみ)— 確認済み
+
+PC から USB を抜き、電源アダプタだけで動かした状態で、ネットワーク越しに操作できる。
+成立させるには次の3つが必要だった。
+
+| 必要なもの | 実現方法 |
+|---|---|
+| 起動時に `wg0` が上がること | `/etc/init.d/rcS` に `wg` を置く(下記) |
+| 起動時に telnetd が上がること | `CONFIG_NSH_TELNET=y`(`nsh_init.c` が `nsh_telnetstart()` を呼ぶ) |
+| 宛先アドレスが分かること | トンネル側 `10.10.0.2` は Kconfig 固定なので常に一定 |
+
+**`wg` の自動実行:** `apps/nshlib/nsh_init.c` の起動順は
+`netinit_bringup()` → `/etc/init.d/rcS` → `nsh_telnetstart()` なので、
+rcS は「ネットワークが上がった後」に走る。ここに `wg` を1行置けば電源投入だけでトンネルが張られる。
+rcS は ROMFS に焼き込まれ、`boards/Board.mk` の `RCSRCS` 経由でビルドされる
+(esp32s3-devkit には元々 `src/etc/` が無いため、`docker/esp32s3-etc/` から配置し
+`src/Make.defs` に `RCSRCS` を追記している。いずれも `Dockerfile` の `esp32s3` ステージが自動で行う)。
+
+DHCP の完了を待つ必要はない。`wg` は `INADDR_ANY` に bind するだけで、
+ハンドシェイクは `wg_rx` タスクが `REKEY_TIMEOUT` ごとに再試行するため、
+アドレス取得が遅れても自動的に追いつく。
+
+起動ログ(USB を抜く前に確認したもの):
+
+```
+*** Booting NuttX ***
+wg0 is up (listen port 51820)     ← rcS が自動実行
+telnetd [10:100]                  ← telnetd 自動起動
+
+NuttShell (NSH) NuttX-12.7.0
+nsh> ifconfig
+wlan0	Link encap:Ethernet HWaddr a4:cb:8f:df:e9:54 at RUNNING mtu 1500
+	inet addr:192.168.0.152 DRaddr:192.168.0.1 Mask:255.255.255.0
+
+wg0	Link encap:TUN at RUNNING mtu 1420
+	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+```
+
+**2つの入り口が使える:**
+
+```bash
+telnet 192.168.0.152     # LAN 経由(DHCP アドレス)
+telnet 10.10.0.2         # トンネル経由(Kconfig 固定・常に一定)
+```
+
+トンネル経由で `wg show` を実行し、トンネル自身の状態がトンネル越しに返ることまで確認済み。
+
+**アドレスについて:** LAN 側は DHCP のままにしてある。
+リースが MAC に対して安定しているため実運用では `192.168.0.152` から動かないが、
+確実に固定したい場合はルータ側で DHCP 予約を入れるのが安全
+(NuttX 側で静的 IP にすると、ルータの DHCP プールと衝突した際に
+USB を挿し直さないと復旧できなくなる)。
+**トンネル側 `10.10.0.2` は Kconfig 由来なので、そもそも DHCP に依存しない。**
+ネットワークが変わっても変わらないアドレスとして使えるのが VPN を載せた効果でもある。
+
+> **注意:** ピアのエンドポイント(`CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP`)は
+> 現状ビルド時固定なので、対向 PC の IP が変わるとトンネルは張れない。
+> その場合は LAN 側の telnet から復旧する。実行時設定は
+> [code-review-2026-08.md](code-review-2026-08.md) の課題 (D) として残っている。
+
 ---
 
 ## ESP32-WROOM-32
@@ -161,5 +221,5 @@ flash_writer.exe -c COM5 -d nuttx.spk
 - ESP32(無印)・Spresense とも実機への書き込み・起動確認が完了していない(上記参照、詳細は [docs/phase4-log.md](phase4-log.md))
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
 - `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(デフォルト 3072)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
-- `wapi` による Wi-Fi 接続を起動シーケンスに自動化する仕組み(netinit 連携)は未実装。手動での `wapi` 実行が前提
+- ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる
 - Raspberry Pi Pico W / Pico 2 W は NuttX に CYW43439 用ドライバが無いため Wi-Fi が使えない(上記スコープ節参照)。本プロジェクトで対応するなら新規ドライバ実装が必要で、別スコープの作業になる

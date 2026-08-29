@@ -201,6 +201,17 @@ RUN pip3 install --break-system-packages esptool
 COPY docker/webserver-demo/header.html docker/webserver-demo/index.shtml \
      /opt/apps/examples/webserver/httpd-fs/
 
+# ヘッドレス運用 (USB シリアルなし) のための起動スクリプト。
+# apps/nshlib/nsh_init.c は netinit_bringup() の後に /etc/init.d/rcS を
+# 実行するので、ここで wg を叩けば電源投入だけでトンネルが上がる。
+# ROMFS への焼き込みは boards/Board.mk の RCSRCS 経由で行われるため、
+# ボードの src/Make.defs にその指定を追加する (esp32s3-devkit には
+# 元々 etc/ が無い。esp32c3-devkit の同等の記述に倣った)。
+COPY docker/esp32s3-etc/init.d/rcS docker/esp32s3-etc/init.d/rc.sysinit \
+     /opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/etc/init.d/
+RUN printf '\nifeq ($(CONFIG_ETC_ROMFS),y)\nRCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS\nendif\n' \
+    >> /opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/Make.defs
+
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
@@ -212,7 +223,20 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --enable CONFIG_NETUTILS_WEBSERVER && \
     kconfig-tweak --enable CONFIG_EXAMPLES_WEBSERVER && \
+    kconfig-tweak --enable CONFIG_FS_ROMFS        && \
+    kconfig-tweak --enable CONFIG_ETC_ROMFS       && \
+    kconfig-tweak --enable CONFIG_BOARDCTL_ROMDISK && \
+    kconfig-tweak --enable CONFIG_NETUTILS_TELNETD && \
+    make olddefconfig >/dev/null 2>&1 && \
+    kconfig-tweak --enable CONFIG_SYSTEM_TELNETD  && \
+    make olddefconfig >/dev/null 2>&1 && \
+    kconfig-tweak --enable CONFIG_NSH_TELNET      && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE: telnetd の3つの Kconfig は依存が段階的 (NETUTILS_TELNETD →
+# SYSTEM_TELNETD → NSH_TELNET) なので、間に olddefconfig を挟まないと
+# 後段が黙って落ちる。NSH_TELNET が入ると nsh_init.c が nsh_telnetstart()
+# を呼び、ポート 23 の telnetd が起動時に自動で上がる。
 
 # NOTE: NET_TUN_PKTSIZE is wg0's MTU. 1420 (not the 1500 the sim/qemu
 # stages use) matches WIREGUARDIF_MTU in the vendored wireguard-lwip code
