@@ -231,12 +231,20 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_SYSTEM_TELNETD  && \
     make olddefconfig >/dev/null 2>&1 && \
     kconfig-tweak --enable CONFIG_NSH_TELNET      && \
+    kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
     make olddefconfig 2>&1 | tail -5
 
 # NOTE: telnetd の3つの Kconfig は依存が段階的 (NETUTILS_TELNETD →
 # SYSTEM_TELNETD → NSH_TELNET) なので、間に olddefconfig を挟まないと
 # 後段が黙って落ちる。NSH_TELNET が入ると nsh_init.c が nsh_telnetstart()
 # を呼び、ポート 23 の telnetd が起動時に自動で上がる。
+
+# NOTE: telnet セッションのスタックを既定の 3072 から 4096 に引き上げている。
+# 実機の ps で 2448/3072 = 81.1% まで積まれており、NuttX が 80% 超で付ける
+# "!" 警告が出ていた (トンネル越しに NSH コマンドを実行した状態で計測)。
+# NSH のコマンド実行はセッションタスクのスタック上で起きるため、コマンド次第で
+# さらに深くなりうる。wg_rx 側 (CONFIG_NET_WIREGUARD_RX_STACKSIZE) と同じく、
+# 余裕を実測に基づいて確保しておく。
 
 # NOTE: NET_TUN_PKTSIZE is wg0's MTU. 1420 (not the 1500 the sim/qemu
 # stages use) matches WIREGUARDIF_MTU in the vendored wireguard-lwip code
