@@ -366,6 +366,7 @@
     <div class="stat"><span class="v">260 KiB/s</span><span class="l">トンネル越し<br>TCP スループット</span></div>
     <div class="stat"><span class="v">1,637 行</span><span class="l">新規実装<br>(残りは無改変で流用)</span></div>
     <div class="stat"><span class="v">4 個</span><span class="l">OS 依存関数<br>(移植に必要な全て)</span></div>
+    <div class="stat"><span class="v">904 B</span><span class="l">ピアを1つ増やす<br>RAM コスト</span></div>
   </div>
 
   <!-- ============================================================ -->
@@ -1168,8 +1169,119 @@
   </section>
 
   <!-- ============================================================ -->
+  <!-- ============================================================ -->
+  <section id="operate">
+    <span class="sec-no">08 — 運用</span>
+    <h2>鍵をビルドに焼かない</h2>
+
+    <div class="col">
+      <p class="lede">
+        設定がビルド時固定だと、ピアを1つ変えるだけで再ビルドと書き込みが要る。
+        それは開発中の不便で済まず、<strong>秘密鍵がビルド成果物に残る</strong>という
+        性質の問題でもある。
+      </p>
+
+      <p>
+        そこでコマンド体系を本家 <code>wg(8)</code> に寄せ、設定ファイル形式も
+        本家と同じ INI 形式にした。独自形式を作らなかったことで、
+        <strong>デスクトップの WireGuard クライアントと設定ファイルがそのまま行き来する。</strong>
+      </p>
+    </div>
+
+    <div class="scroll">
+      <div class="tbl-bar"><b>表 9</b> &nbsp; NSH コマンド</div>
+      <table>
+        <thead>
+          <tr><th>コマンド</th><th>内容</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">wg genkey</td><td>デバイス上で秘密鍵を生成(<code>/dev/urandom</code>)</td></tr>
+          <tr><td class="k">wg pubkey &lt;key&gt;</td><td>対応する公開鍵を導出</td></tr>
+          <tr><td class="k">wg set private-key &lt;key&gt;</td><td>秘密鍵を設定</td></tr>
+          <tr>
+            <td class="k">wg set peer &lt;key&gt; …</td>
+            <td>ピアを追加/更新。<code>endpoint</code> / <code>allowed-ips</code> /
+                <code>persistent-keepalive</code> を指定。既存の鍵を名指しすると更新</td>
+          </tr>
+          <tr><td class="k">wg set peer &lt;key&gt; remove</td><td>ピアを削除</td></tr>
+          <tr><td class="k">wg showconf</td><td>設定を wg(8) 形式で出力</td></tr>
+          <tr><td class="k">wg setconf &lt;file&gt;</td><td>wg(8) 形式の設定を読み込む</td></tr>
+          <tr><td class="k">wg up / down</td><td>インターフェースの起動・停止</td></tr>
+          <tr><td class="k">wg show</td><td>ハンドシェイク状態・転送量</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <h3>電源を切っても残す</h3>
+      <p>
+        新しいストレージ API は作っていない。保存はシェルのリダイレクトで足りる。
+      </p>
+    </div>
+
+    <figure>
+      <div class="plate-bar"><b>図 7</b><span>設定が電源断をまたぐ経路</span></div>
+      <div class="plate-body">
+        <svg viewBox="0 0 1020 300" role="img"
+             aria-label="実行時に設定した内容をwg showconfでファイルに保存し、次回起動時にrcSがwg setconfで読み込んでからwg upする流れの図。ファイルが無い場合はKconfigの値にフォールバックする。">
+          <rect class="nxbox" x="30" y="40" width="200" height="56" rx="2"/>
+          <text class="jp nxt" x="130" y="64" text-anchor="middle">実行時に設定</text>
+          <text class="sm nxt" x="130" y="82" text-anchor="middle">wg set / setconf</text>
+
+          <rect class="box" x="300" y="40" width="200" height="56" rx="2"/>
+          <text class="jp" x="400" y="64" text-anchor="middle">保存</text>
+          <text class="sm" x="400" y="82" text-anchor="middle">wg showconf &gt; file</text>
+
+          <rect class="soft" x="570" y="40" width="200" height="56" rx="2"/>
+          <text class="jp" x="670" y="64" text-anchor="middle">フラッシュ上のファイル</text>
+          <text class="sm dim" x="670" y="82" text-anchor="middle">/data/wg0.conf</text>
+
+          <rect class="wgbox" x="840" y="40" width="150" height="56" rx="2"/>
+          <text class="jp wgt" x="915" y="70" text-anchor="middle">電源断</text>
+
+          <line class="ln-n" x1="234" y1="68" x2="294" y2="68" marker-end="url(#ah-n)"/>
+          <line class="ln" x1="504" y1="68" x2="564" y2="68" marker-end="url(#ah)"/>
+          <line class="ln-w dash" x1="774" y1="68" x2="834" y2="68" marker-end="url(#ah-w)"/>
+
+          <path class="ln" d="M 670 100 L 670 150 L 130 150 L 130 186" marker-end="url(#ah)"/>
+          <text class="jp sm dim" x="400" y="142" text-anchor="middle">次回起動時に読み戻す</text>
+
+          <rect class="nxbox" x="30" y="186" width="200" height="56" rx="2"/>
+          <text class="nxt" x="130" y="210" text-anchor="middle">rcS</text>
+          <text class="sm nxt" x="130" y="228" text-anchor="middle">wg setconf</text>
+
+          <rect class="nxbox" x="300" y="186" width="200" height="56" rx="2"/>
+          <text class="nxt" x="400" y="216" text-anchor="middle">wg up</text>
+
+          <line class="ln-n" x1="234" y1="214" x2="294" y2="214" marker-end="url(#ah-n)"/>
+
+          <text class="jp sm dim" x="530" y="206">
+            ファイルが無ければ Kconfig の値で起動する
+          </text>
+          <text class="jp sm dim" x="530" y="228">
+            — 未設定のボードもそのまま立ち上がる
+          </text>
+        </svg>
+      </div>
+      <figcaption>
+        保存は明示操作。自動保存にしないのは、試しに入れた設定が意図せず焼き付くのを避けるため。
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <h3>複数ピア</h3>
+      <p>
+        ピア数は <code>CONFIG_NET_WIREGUARD_MAX_PEERS</code> で決まる。
+        vendored コードは malloc を避けて構造体内に静的確保するため、これは
+        そのまま RAM との取引になる — ESP32-S3 実測で
+        <strong>1ピアあたり約 904 バイト</strong>(1ピア 4,324 B → 8ピア 10,652 B)。
+        大半は rekey 中に新旧の鍵を並行保持するための3つの keypair。
+      </p>
+    </div>
+  </section>
+
   <section id="status">
-    <span class="sec-no">08 — 現状と今後</span>
+    <span class="sec-no">09 — 現状と今後</span>
     <h2>残っている距離</h2>
 
     <div class="col">
@@ -1192,24 +1304,15 @@
             <td>コード完成後に方針が覆るリスクを先に潰す</td>
           </tr>
           <tr>
-            <td><strong>実行時設定</strong></td>
-            <td>鍵・ピアが Kconfig 固定。<code>wg setconf</code> 相当が未実装</td>
-            <td class="bad">鍵がビルド成果物に焼き込まれる。設定変更のたびに再ビルド</td>
-          </tr>
-          <tr>
-            <td>停止手段</td>
-            <td><code>wg down</code> がなく、一度上げると RX タスクが残る</td>
-            <td>リソースリーク</td>
-          </tr>
-          <tr>
-            <td>複数ピア</td>
-            <td>現状は単一ピア(vendored ヘッダの上限に依存)</td>
-            <td>用途が1対1に限られる</td>
+            <td><strong>設定の永続化</strong></td>
+            <td>実行時に設定した内容はファイルに保存すれば残るが、保存操作は手動
+                (<code>wg showconf &gt; &lt;file&gt;</code>)</td>
+            <td>自動保存はしない — 意図しない設定が焼き付くのを避けるため</td>
           </tr>
           <tr>
             <td>ビルドモード</td>
             <td><code>psock_*()</code> 依存により FLAT ビルド前提</td>
-            <td>PROTECTED / KERNEL では別設計が要る</td>
+            <td class="bad">PROTECTED / KERNEL では別設計が要る</td>
           </tr>
           <tr>
             <td>異常系検証</td>
@@ -1235,7 +1338,7 @@
 
   <!-- ============================================================ -->
   <section id="closing">
-    <span class="sec-no">09 — まとめ</span>
+    <span class="sec-no">10 — まとめ</span>
     <h2>移植して分かったこと</h2>
 
     <div class="col">
