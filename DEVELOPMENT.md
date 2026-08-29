@@ -2,7 +2,7 @@
 
 このリポジトリの「今どこまで進んでいるか」をまとめたもの。詳細な作業ログやこれからの計画は各ドキュメントにリンクしている。
 
-**現在地を一言で言うと:** **ESP32-S3 実機で、実 Wi-Fi・実ピア(Windows 公式 WireGuard クライアント)との実ハンドシェイクとトンネル越し ping(0% packet loss)、さらにトンネル越し telnet でのコマンド実行・Web サーバーアクセスまで確認した。** sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物のネットワーク環境でも WireGuard 実装が正しく動作することを実証できた(プロポーザル Phase 4 の目標を達成)。その過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドからの `sendto()` が `EBADF` で失敗していた)を発見し、`psock_*()` 内部 API への切り替えで修正済み。ESP32-WROOM-32 と Sony Spresense 向けにもコード変更なしでビルドが通ることを確認したが、こちらは実機への書き込み・起動確認がハードウェア側の問題(詳細は [docs/phase4-log.md](docs/phase4-log.md))で止まっている。
+**現在地を一言で言うと:** **ESP32-S3 実機で、実 Wi-Fi・実ピア(Windows 公式 WireGuard クライアント)との実ハンドシェイクとトンネル越し ping(0% packet loss)、さらにトンネル越し telnet でのコマンド実行・Web サーバーアクセスまで確認した。** sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物のネットワーク環境でも WireGuard 実装が正しく動作することを実証できた(プロポーザル Phase 4 の目標を達成)。その過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドからの `sendto()` が `EBADF` で失敗していた)を発見し、`psock_*()` 内部 API への切り替えで修正済み。**Sony Spresense (ARM Cortex-M4F) 実機でも `wg0` の起動を確認済み** — 2つ目のアーキテクチャでの動作実証になった(Wi-Fi 非搭載のためハンドシェイクは未確認)。ESP32-WROOM-32 のみ、GPIO0 経路の故障で書き込みに到達できていない(詳細は [docs/phase4-log.md](docs/phase4-log.md))。
 
 **デモ動画:** [https://youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet ログイン→コマンド実行→Web サーバー起動→ブラウザアクセスまでの一連の流れ。まとめは [docs/phase4-summary.md](docs/phase4-summary.md)。
 
@@ -18,7 +18,7 @@
 | Phase 1 | ビルドシステム統合(`CONFIG_NET_WIREGUARD=y` でビルドが通る) | ✅ 完了 |
 | Phase 2 | プラットフォーム層実装 + netif 統合(`wg0` が `ifconfig` に出る) | ✅ 完了(sim で確認済み) |
 | Phase 3 | ハンドシェイクとトンネル疎通(Midterm) | ✅ sim と QEMU(qemu-armv7a + TAP) の両方で本物の Linux WireGuard ピアとの実ハンドシェイク・ping 疎通を確認 |
-| Phase 4 | NSH コマンド・Kconfig 統合・実機テスト | ✅ `wg` / `wg show` 実装済み。**ESP32-S3 実機で実 Wi-Fi・実ピアとの WireGuard ハンドシェイク・トンネル ping を確認**(0% packet loss)。**トンネル越し telnet で見つかった TCP 特有バグ(`EBADF`)を修正し、コマンド実行まで確認**。ESP32-WROOM-32・Spresense はビルド成功もハードウェア側の問題で書き込み未達成 |
+| Phase 4 | NSH コマンド・Kconfig 統合・実機テスト | ✅ `wg` / `wg show` 実装済み。**ESP32-S3 実機で実 Wi-Fi・実ピアとの WireGuard ハンドシェイク・トンネル ping を確認**(0% packet loss)。**トンネル越し telnet で見つかった TCP 特有バグ(`EBADF`)を修正し、コマンド実行まで確認**。**Spresense 実機でも `wg0` 起動を確認**(ARM Cortex-M4F)。ESP32-WROOM-32 のみ GPIO0 故障で書き込み未達 |
 | Phase 5 | upstream PR | ⛔ 未着手。方針は [docs/upstream-strategy.md](docs/upstream-strategy.md) にまとめ済み |
 
 ---
@@ -170,7 +170,7 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .     # nuttx.bin が�
 docker build --target spresense -t nuttx-wireguard:spresense . # nuttx.spk が生成される
 ```
 
-無印 ESP32・Spresense で足止めされているブートモード/USB認識問題は ESP32-S3(別個体)では発生しなかった — チップ世代というより個体/ボード側の問題だった可能性が高い。
+Spresense は実機での `wg0` 起動まで確認済み(当初「USB 認識されない」としていたのは CP210x ドライバ未インストールによる誤診断で、訂正済み)。無印 ESP32 のみ、GPIO0 経路の故障によりダウンロードモードに入れず書き込みに到達できていない。
 
 **余談:** Raspberry Pi Pico W / Pico 2 W も検討したが、NuttX にオンボード Wi-Fi チップ(CYW43439)用のドライバが存在しないため、現状 Wi-Fi 経由の WireGuard 通信はできないことが判明した(詳細は [docs/hardware-verification.md](docs/hardware-verification.md) のスコープ節)。
 
@@ -179,7 +179,8 @@ sim/QEMU 向けに書いたプラットフォーム層・netif 統合コード�
 ## まだ確認できていないこと
 
 - **長時間・異常系の通信**: sim/QEMU/ESP32-S3 いずれも短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive、再接続、MTU 境界、複数 peer は未確認
-- **ESP32-WROOM-32・Spresense の実機起動確認**: ビルドは成功するが、実機への書き込みで足止めされている。ESP32 はブートモードに入らない(`Wrong boot mode detected`)、Spresense は USB デバイスとして列挙されない。どちらもハードウェア側の問題を疑っているが未特定。詳細と試行錯誤の記録は [docs/phase4-log.md](docs/phase4-log.md)、手順書は [docs/hardware-verification.md](docs/hardware-verification.md)
+- **Spresense の実ピア通信**: 実機での `wg0` 起動は確認済みだが、メインボードに Wi-Fi が無いためハンドシェイク・トンネル疎通は未検証(別売りの GS2200M 拡張モジュールが必要)
+- **ESP32-WROOM-32 の実機書き込み**: GPIO0 を Low にする経路(BOOT ボタン・DTR トランジスタ)が両方効かず、ダウンロードモードに入れない。ビルドは成功しているため移植性の主張には影響しないが、実機確認には別個体が要る。詳細は [docs/phase4-log.md](docs/phase4-log.md)
 - **upstream 提出に向けた整形**: コーディングスタイル(`checkpatch.sh`/`nxstyle`)準拠、`LICENSE` 追記、コミットの `Assisted-by:` タグ運用は未着手(詳細は [docs/upstream-strategy.md](docs/upstream-strategy.md))
 
 ---

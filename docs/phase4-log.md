@@ -4,7 +4,7 @@
 
 実際に手元にある実機(ESP32-WROOM-32、ESP32-S3、Sony Spresense メインボード)で `CONFIG_NET_WIREGUARD=y` のビルドを通し、書き込み・起動・実ネットワーク越しの WireGuard 通信まで確認する。
 
-**結論を先に:** **ESP32-S3 で完全成功。** 実機を Wi-Fi 経由で実際のアクセスポイントに接続し、Windows 上の公式 WireGuard クライアントと実際にハンドシェイクを成立させ、トンネル越しの ping(0% packet loss)まで確認できた。さらに telnetd をトンネル越しに使おうとした際に見つかった「TCP のアプリケーションデータだけがトンネルを通らない」バグ(原因: LPWORK ワーカースレッドから `sendto()` する際にファイルディスクリプタがそのスレッドのタスクグループに属さず `EBADF` になっていた)を特定・修正し、トンネル越し telnet セッションでのコマンド実行まで実機で確認した(詳細は後述の節)。ESP32-WROOM-32・Spresense については、WireGuard を含む NuttX ビルド自体はコード変更なしで成功したが、実機への書き込み・起動確認はハードウェア側の問題(詳細後述)で完了できなかった。
+**結論を先に:** **ESP32-S3 で完全成功。** 実機を Wi-Fi 経由で実際のアクセスポイントに接続し、Windows 上の公式 WireGuard クライアントと実際にハンドシェイクを成立させ、トンネル越しの ping(0% packet loss)まで確認できた。さらに telnetd をトンネル越しに使おうとした際に見つかった「TCP のアプリケーションデータだけがトンネルを通らない」バグ(原因: LPWORK ワーカースレッドから `sendto()` する際にファイルディスクリプタがそのスレッドのタスクグループに属さず `EBADF` になっていた)を特定・修正し、トンネル越し telnet セッションでのコマンド実行まで実機で確認した(詳細は後述の節)。**Spresense (ARM Cortex-M4F) でも実機起動・`wg0` 起動を確認した** — 当初「ハードウェア故障の疑い」としていたが、実際には CP210x ドライバ未インストールが原因の誤診断で、後日訂正した(詳細後述)。ESP32-WROOM-32 のみ、GPIO0 経路の故障により書き込みに到達できていない。
 
 ---
 
@@ -207,6 +207,70 @@ Spresense の書き込みには NuttX リポジトリに同梱されていない
 
 電源 LED(緑・青)は点灯しており電源自体は供給されているが、USB データ通信の列挙が一切発生しない状態。CDC ドライバのインストールは、そもそも列挙されない状態では試す意味がないため保留した。原因はハードウェア側(USB コネクタの半田不良、ボード自体の初期不良など)の可能性が高いが、未特定。
 
+### 訂正 (2026-08-29): ハードウェア故障ではなかった — 実機で NuttX 起動・`wg0` 起動を確認
+
+**上記の「ハードウェア故障の疑い」は誤りだった。** 後日再検証したところ、Spresense は正常に動作しており、原因は **CP210x ドライバが未インストールだったこと**と判明した。
+
+Spresense メインボードの USB シリアルは **Silicon Labs CP210x ブリッジ**であり、無印 ESP32 DevKitC と同じチップを使っている。当時は CP210x ドライバが入っておらず、そのため列挙されなかった。その後 ESP32 のために同じドライバをインストールしたことで、Spresense も認識されるようになっていた。
+
+**当時の切り分けが誤った理由:**
+
+- `Get-PnpDevice` は既定で「過去に接続した非存在デバイス」も返すため、接続前後で件数を比較しても差分が出ず、「変化なし」に見えていた。`-PresentOnly` を付けて現在接続中のものだけを見る必要があった
+- CP210x が既に別デバイス(ESP32)で見えていたため、同じ `VID_10C4&PID_EA60` を ESP32 のものと思い込んでいた。**シリアル番号部分が異なる**(ESP32: `\0001`、Spresense: `\C20C66A8...`)ことに気づけば、別個体だと分かった
+
+**検証結果:**
+
+Sony 提供の `flash_writer.exe`(`sonydevworld/spresense` の `sdk/tools/windows/`)で書き込みに成功した:
+
+```
+$ ./flash_writer.exe -s -c COM6 -d -b 921600 nuttx.spk
+>>> Install files ...
+install -b 921600
+Install nuttx.spk
+|0%-----------------------------50%------------------------------100%|
+######################################################################
+132288 bytes loaded.
+Package validation is OK.
+Saving package to "nuttx"
+updater# Restarting the board ...
+```
+
+起動後、NSH が立ち上がり `wg` builtin が使えることを確認:
+
+```
+NuttShell (NSH) NuttX-12.7.0
+
+nsh> wg set private-key KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+nsh> wg up
+wg0 is up (listen port 51820)
+
+nsh> wg show
+interface: wg0
+  public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+  listening port: 51820
+
+nsh> ifconfig
+wg0	Link encap:TUN at UP mtu 1500
+	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+
+nsh> wg pubkey KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+
+nsh> wg down
+wg0 is down
+```
+
+確認できたこと:
+
+- **ARM Cortex-M4F 実機で `wg0` の netdev 登録・起動が成立**(Xtensa の ESP32-S3 に続く2つ目のアーキテクチャ)
+- **`wg genkey` / `wg pubkey` / `wg set` / `wg up` / `wg down` がすべて動作。** `wg pubkey` の出力が `wg show` の interface public key と完全一致しており、暗号導出が ARM 上でも正しい
+- **実行時設定の価値が実証された。** Spresense ステージは Kconfig に秘密鍵を設定していないため、従来なら鍵を埋めて再ビルド・再書き込みが必要だった。実行時設定により**リビルドなしで鍵を投入して `wg0` を起動**できた
+- `wg down` 後に `ifconfig` から `wg0` が消え、`ps` にも `wg_rx` が残らないことを確認 — teardown が別アーキテクチャでも正しい
+
+**未確認:** Spresense メインボードには Wi-Fi が内蔵されていないため、実ピアとのハンドシェイク・トンネル疎通は依然として検証できない(別売りの GS2200M 拡張モジュールが必要)。ここで確認できたのは「wg0 が上がる」ところまで。
+
+なお起動時に `cxd56_farapiinitialize: Mismatched version: loader(20585) != Self(20591)` の警告が出るが、NSH の動作および `wg` の動作には影響していない。Sony 提供のローダ/GNSS ファームを更新すれば消えるはず。
+
 ---
 
 ## トンネル越し telnet で見つかった TCP 特有バグの調査・修正
@@ -313,6 +377,6 @@ Starting webserver
 ### 未解決
 
 - ESP32-WROOM-32: 実機のブートモード切り替え(ハードウェア側の問題の疑い、上記の通り ESP32-S3 では再現しなかった)
-- Spresense: USB 列挙が発生しない(ハードウェア側の問題の疑い、CDC ドライバのテストは未実施)
+- ~~Spresense: USB 列挙が発生しない~~ → **解決。** CP210x ドライバ未インストールによる誤診断だった。実機で NuttX 起動・`wg0` 起動・`wg` の各サブコマンド動作を確認済み。ただし Wi-Fi 非搭載のため実ピアとのハンドシェイクは未確認(GS2200M 拡張モジュールが必要)
 - 両方とも、次回は「別の PC で試す」「別のケーブル・電源で試す」など、より切り分けの効く環境で再挑戦する必要がある
 - ESP32-S3 側で長時間 keepalive・再接続・複数 peer など異常系の検証はまだ(sim/QEMU と同様、短時間の handshake + ping のみ確認済み)

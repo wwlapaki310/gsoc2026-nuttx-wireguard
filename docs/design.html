@@ -1084,11 +1084,12 @@
           </tr>
           <tr>
             <td>ESP32-WROOM-32</td><td>Xtensa LX6</td><td>—</td>
-            <td>ビルドのみ(実機はブートモード不良)</td><td class="bad">未達</td>
+            <td>ビルドのみ(GPIO0 経路の故障で書き込み不可)</td><td class="bad">未達</td>
           </tr>
           <tr>
-            <td>Spresense</td><td>ARM Cortex-M4F</td><td>—</td>
-            <td>ビルドのみ(実機は USB 未認識)</td><td class="bad">未達</td>
+            <td><strong>Spresense 実機</strong></td><td>ARM Cortex-M4F</td><td>—</td>
+            <td><code>wg0</code> 起動・<code>genkey</code>/<code>set</code>/<code>up</code>/<code>down</code>(Wi-Fi 非搭載のためハンドシェイクは不可)</td>
+            <td class="ok">確認済</td>
           </tr>
         </tbody>
       </table>
