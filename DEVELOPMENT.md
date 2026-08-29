@@ -204,7 +204,26 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun \
   /workspace/scripts/verify-qemu-wireguard.sh
 ```
 
-`CONFIG_NET_WIREGUARD_PRIVATE_KEY` のデフォルトは空(セキュアなデフォルト)なので、手動起動で `wg` コマンドを見る場合は秘密鍵を設定してリビルドする必要がある。上記の検証スクリプトはテスト用鍵を一時生成してリビルドする。
+検証スクリプトは4本ある。いずれも**本物の Linux カーネル WireGuard** を相手にしており、
+自作同士の通信ではないため相互運用性の証拠になる。
+
+| スクリプト | 何を確かめるか |
+|---|---|
+| `verify-sim-wireguard.sh` | Kconfig で設定したトンネルの handshake + ping(sim) |
+| `verify-qemu-wireguard.sh` | 同上を QEMU / ARM Cortex-A7 の実 NuttX スケジューラ上で |
+| `verify-sim-wg-runtime.sh` | **鍵をビルドに含めない**状態から `wg genkey` → `set` → `up` で実トンネルを張る。`wg down` で本当に止まること、保存したファイルから復元して再び通ることまで |
+| `verify-sim-wg-multipeer.sh` | 2つの Linux ピアと**同時に**セッションを保持できること(両方の handshake epoch が非ゼロであることで判定) |
+
+```bash
+# 実行時設定と永続化
+docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/workspace/scripts:ro   --entrypoint bash nuttx-wireguard:sim   /workspace/scripts/verify-sim-wg-runtime.sh
+
+# 複数ピア (MAX_PEERS >= 2 のビルドが必要。sim ステージは 4)
+docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/workspace/scripts:ro   --entrypoint bash nuttx-wireguard:sim   /workspace/scripts/verify-sim-wg-multipeer.sh
+```
+
+`CONFIG_NET_WIREGUARD_PRIVATE_KEY` のデフォルトは空(セキュアなデフォルト)。手動で `wg` を試す場合は
+`wg genkey` → `wg set private-key <key>` で実行時に入れられるので、リビルドは要らない。
 
 ---
 
