@@ -1744,26 +1744,40 @@ static int wg_mask_to_prefix(FAR const char *mask)
  * Name: wg_showconf_peer
  ****************************************************************************/
 
-static void wg_showconf_peer(FAR const struct wg_staged_peer_s *cfg)
+static void wg_showconf_peer(FAR FILE *out,
+                             FAR const struct wg_staged_peer_s *cfg)
 {
-  printf("\n[Peer]\n");
-  printf("PublicKey = %s\n", cfg->public_key);
-  printf("AllowedIPs = %s/%d\n", cfg->allowed_ip,
-         wg_mask_to_prefix(cfg->allowed_mask));
+  fprintf(out, "\n[Peer]\n");
+  fprintf(out, "PublicKey = %s\n", cfg->public_key);
+  fprintf(out, "AllowedIPs = %s/%d\n", cfg->allowed_ip,
+          wg_mask_to_prefix(cfg->allowed_mask));
 
   if (strlen(cfg->endpoint_ip) > 0)
     {
-      printf("Endpoint = %s:%d\n", cfg->endpoint_ip,
-             cfg->endpoint_port != 0 ? cfg->endpoint_port :
-             CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT);
+      fprintf(out, "Endpoint = %s:%d\n", cfg->endpoint_ip,
+              cfg->endpoint_port != 0 ? cfg->endpoint_port :
+              CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT);
     }
 
-  printf("PersistentKeepalive = %d\n",
-         cfg->keepalive >= 0 ? cfg->keepalive :
-         CONFIG_NET_WIREGUARD_PEER_KEEPALIVE);
+  fprintf(out, "PersistentKeepalive = %d\n",
+          cfg->keepalive >= 0 ? cfg->keepalive :
+          CONFIG_NET_WIREGUARD_PEER_KEEPALIVE);
 }
 
-int wg_showconf(void)
+/****************************************************************************
+ * Name: wg_writeconf
+ *
+ * Description:
+ *   Emit the configuration in wg(8) INI format to an already-open stream.
+ *   Shared by wg_showconf() and wg_saveconf() so that what is printed and
+ *   what is saved cannot drift apart.
+ *
+ * Returned Value:
+ *   0 (OK), or -ENODATA when there is no private key to describe.
+ *
+ ****************************************************************************/
+
+static int wg_writeconf(FAR FILE *out)
 {
   struct wg_staged_peer_s kcfg;
   FAR const char *key;
@@ -1776,15 +1790,15 @@ int wg_showconf(void)
       return -ENODATA;
     }
 
-  printf("[Interface]\n");
-  printf("PrivateKey = %s\n", key);
-  printf("ListenPort = %d\n", CONFIG_NET_WIREGUARD_LISTEN_PORT);
+  fprintf(out, "[Interface]\n");
+  fprintf(out, "PrivateKey = %s\n", key);
+  fprintf(out, "ListenPort = %d\n", CONFIG_NET_WIREGUARD_LISTEN_PORT);
 
   if (g_staged.npeers > 0)
     {
       for (i = 0; i < g_staged.npeers; i++)
         {
-          wg_showconf_peer(&g_staged.peers[i]);
+          wg_showconf_peer(out, &g_staged.peers[i]);
         }
 
       return OK;
@@ -1812,8 +1826,50 @@ int wg_showconf(void)
   kcfg.endpoint_port = CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
   kcfg.keepalive = CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
 
-  wg_showconf_peer(&kcfg);
+  wg_showconf_peer(out, &kcfg);
   return OK;
+}
+
+/****************************************************************************
+ * Name: wg_showconf
+ ****************************************************************************/
+
+int wg_showconf(void)
+{
+  return wg_writeconf(stdout);
+}
+
+/****************************************************************************
+ * Name: wg_saveconf
+ ****************************************************************************/
+
+int wg_saveconf(FAR const char *path)
+{
+  FAR FILE *f;
+  int ret;
+
+  /* Deliberately not left to "wg showconf > file": NSH runs a builtin as a
+   * spawned task with its stdout redirected, and on esp32s3 that
+   * combination hangs the board when the target is the SPIFFS volume,
+   * while the same write issued from inside the application succeeds.
+   * Opening the file here also keeps saving symmetric with wg_setconf()
+   * and independent of shell behaviour.
+   */
+
+  f = fopen(path, "w");
+  if (f == NULL)
+    {
+      return -errno;
+    }
+
+  ret = wg_writeconf(f);
+
+  if (fclose(f) != 0 && ret >= 0)
+    {
+      ret = -errno;
+    }
+
+  return ret;
 }
 
 /****************************************************************************

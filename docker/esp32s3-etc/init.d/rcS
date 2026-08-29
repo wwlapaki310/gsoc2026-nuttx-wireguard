@@ -31,7 +31,7 @@
  * tunnel would only ever come up by typing wg on a console, which is
  * exactly what is unavailable on a headless board.
  *
- * A configuration saved with "wg showconf > <file>" is loaded first, so
+ * A configuration saved with "wg saveconf" is loaded first, so
  * settings made at runtime survive a power cycle. If the file is absent
  * setconf simply fails and the Kconfig values are used, which is what a
  * board that has never been configured should do.

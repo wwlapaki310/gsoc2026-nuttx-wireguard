@@ -48,6 +48,7 @@ static void wg_usage(void)
     "  down                    take wg0 down\n"
     "  show                    print interface and peer status\n"
     "  showconf                print the configuration in wg(8) format\n"
+    "  saveconf [file]         write it to a file so it survives a reboot\n"
     "  setconf <file>          load a wg(8) format configuration file\n"
     "  genkey                  print a new private key\n"
     "  pubkey <private-key>    print the matching public key\n"
@@ -64,9 +65,9 @@ static void wg_usage(void)
     "\"set\" and \"setconf\" only work while wg0 is down, and override the\n"
     "matching CONFIG_NET_WIREGUARD_* build-time settings.\n"
     "\n"
-    "To make a configuration survive a reboot, write it to the file the\n"
-    "start-up script reads:\n"
-    "  wg showconf > " CONFIG_NET_WIREGUARD_CONFIG_PATH "\n");
+    "To make a configuration survive a reboot, save it where the start-up\n"
+    "script looks for it:\n"
+    "  wg saveconf\n");
 }
 
 /****************************************************************************
@@ -251,6 +252,27 @@ int main(int argc, FAR char *argv[])
           return 1;
         }
 
+      return 0;
+    }
+
+  if (argc >= 2 && strcmp(argv[1], "saveconf") == 0)
+    {
+      FAR const char *path = argc >= 3 ? argv[2] :
+                             CONFIG_NET_WIREGUARD_CONFIG_PATH;
+
+      ret = wg_saveconf(path);
+      if (ret == -ENODATA)
+        {
+          fprintf(stderr, "wg: no private key configured\n");
+          return 1;
+        }
+      else if (ret < 0)
+        {
+          fprintf(stderr, "wg: could not write '%s': %d\n", path, ret);
+          return 1;
+        }
+
+      printf("saved to %s\n", path);
       return 0;
     }
 

@@ -209,6 +209,29 @@ int wg_pubkey(FAR const char *priv_b64, FAR char *out, size_t outlen);
 int wg_showconf(void);
 
 /****************************************************************************
+ * Name: wg_saveconf
+ *
+ * Description:
+ *   Write the configuration to a file in the same format wg_showconf()
+ *   prints, so that the board start-up script can restore it.
+ *
+ *   This exists rather than leaving users to redirect wg_showconf(): NSH
+ *   runs a builtin as a spawned task with its stdout redirected, and on
+ *   esp32s3 that hangs when the target is the SPIFFS volume, whereas
+ *   writing from inside the application works.
+ *
+ * Input Parameters:
+ *   path - File to write, truncating any existing contents.
+ *
+ * Returned Value:
+ *   0 (OK) on success; -ENODATA if no private key is configured; a negated
+ *   errno value if the file cannot be written.
+ *
+ ****************************************************************************/
+
+int wg_saveconf(FAR const char *path);
+
+/****************************************************************************
  * Name: wg_setconf
  *
  * Description:
