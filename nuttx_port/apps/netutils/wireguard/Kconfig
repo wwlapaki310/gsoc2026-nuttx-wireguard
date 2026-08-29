@@ -61,6 +61,22 @@ config NET_WIREGUARD_LISTEN_PORT
 	int "UDP listen port"
 	default 51820
 
+config NET_WIREGUARD_CONFIG_PATH
+	string "Default configuration file"
+	default "/data/wg0.conf"
+	---help---
+		Path used by "wg setconf" when no file is given, and the file the
+		board start-up script loads before "wg up" so that a configuration
+		survives a reboot. Save the current settings there with:
+
+			wg showconf > /data/wg0.conf
+
+		The format is the same INI-style layout wg(8) uses, so the file is
+		interchangeable with a desktop WireGuard configuration.
+
+		This needs a writable file system mounted at that location. On
+		esp32s3-devkit the board already mounts SPIFFS at /data.
+
 config NET_WIREGUARD_PRIVATE_KEY
 	string "Private key (base64)"
 	default ""

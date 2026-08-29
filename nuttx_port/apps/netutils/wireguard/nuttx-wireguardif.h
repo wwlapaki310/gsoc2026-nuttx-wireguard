@@ -175,6 +175,46 @@ int wg_genkey(FAR char *out, size_t outlen);
 int wg_pubkey(FAR const char *priv_b64, FAR char *out, size_t outlen);
 
 /****************************************************************************
+ * Name: wg_showconf
+ *
+ * Description:
+ *   Print the staged/active configuration to stdout in the same INI-style
+ *   format wg(8) uses ([Interface] / [Peer] with PrivateKey, ListenPort,
+ *   PublicKey, AllowedIPs, Endpoint, PersistentKeepalive). Redirecting this
+ *   to a file produces something wg_setconf() can read back, and something
+ *   a desktop WireGuard client would also accept.
+ *
+ *   Note this prints the private key in the clear, exactly as
+ *   "wg showconf" does.
+ *
+ * Returned Value:
+ *   0 (OK) on success; -ENODATA if no private key is configured.
+ *
+ ****************************************************************************/
+
+int wg_showconf(void);
+
+/****************************************************************************
+ * Name: wg_setconf
+ *
+ * Description:
+ *   Read a wg(8)-style configuration file and stage it, as though the
+ *   equivalent wg_set_private_key() / wg_set_peer() calls had been made.
+ *   Unrecognised keys are ignored so that files carrying wg-quick-only
+ *   directives (Address, DNS, MTU ...) still load.
+ *
+ * Input Parameters:
+ *   path - Configuration file to read.
+ *
+ * Returned Value:
+ *   0 (OK) on success; -EBUSY if wg0 is up; a negated errno value if the
+ *   file cannot be read or contains an unusable key.
+ *
+ ****************************************************************************/
+
+int wg_setconf(FAR const char *path);
+
+/****************************************************************************
  * Name: wg_show
  *
  * Description:

@@ -47,6 +47,8 @@ static void wg_usage(void)
     "  up                      bring wg0 up (default if no argument)\n"
     "  down                    take wg0 down\n"
     "  show                    print interface and peer status\n"
+    "  showconf                print the configuration in wg(8) format\n"
+    "  setconf <file>          load a wg(8) format configuration file\n"
     "  genkey                  print a new private key\n"
     "  pubkey <private-key>    print the matching public key\n"
     "\n"
@@ -55,8 +57,12 @@ static void wg_usage(void)
     "                         [allowed-ips <addr>/<prefix>]\n"
     "                         [persistent-keepalive <seconds>]\n"
     "\n"
-    "\"set\" only works while wg0 is down, and overrides the matching\n"
-    "CONFIG_NET_WIREGUARD_* build-time setting.\n");
+    "\"set\" and \"setconf\" only work while wg0 is down, and override the\n"
+    "matching CONFIG_NET_WIREGUARD_* build-time settings.\n"
+    "\n"
+    "To make a configuration survive a reboot, write it to the file the\n"
+    "start-up script reads:\n"
+    "  wg showconf > " CONFIG_NET_WIREGUARD_CONFIG_PATH "\n");
 }
 
 /****************************************************************************
@@ -211,6 +217,37 @@ int main(int argc, FAR char *argv[])
         }
 
       printf("%s\n", key);
+      return 0;
+    }
+
+  if (argc >= 2 && strcmp(argv[1], "showconf") == 0)
+    {
+      if (wg_showconf() < 0)
+        {
+          fprintf(stderr, "wg: no private key configured\n");
+          return 1;
+        }
+
+      return 0;
+    }
+
+  if (argc >= 2 && strcmp(argv[1], "setconf") == 0)
+    {
+      FAR const char *path = argc >= 3 ? argv[2] :
+                             CONFIG_NET_WIREGUARD_CONFIG_PATH;
+
+      ret = wg_setconf(path);
+      if (ret == -EBUSY)
+        {
+          fprintf(stderr, "wg: wg0 is up; run \"wg down\" first\n");
+          return 1;
+        }
+      else if (ret < 0)
+        {
+          fprintf(stderr, "wg: could not load '%s': %d\n", path, ret);
+          return 1;
+        }
+
       return 0;
     }
 

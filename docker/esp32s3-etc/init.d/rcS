@@ -22,7 +22,7 @@
 
 #ifdef CONFIG_NET_WIREGUARD
 
-/* Bring up the WireGuard tunnel using the keys and peer from Kconfig.
+/* Bring up the WireGuard tunnel.
  *
  * nsh_init.c runs this script after netinit_bringup(), so the Wi-Fi link
  * is already starting. wg does not need an address on the underlying
@@ -30,7 +30,16 @@
  * by wg_rx every REKEY_TIMEOUT until DHCP has finished. Without this the
  * tunnel would only ever come up by typing wg on a console, which is
  * exactly what is unavailable on a headless board.
+ *
+ * A configuration saved with "wg showconf > <file>" is loaded first, so
+ * settings made at runtime survive a power cycle. If the file is absent
+ * setconf simply fails and the Kconfig values are used, which is what a
+ * board that has never been configured should do.
  */
+
+if [ -f CONFIG_NET_WIREGUARD_CONFIG_PATH ]; then
+  wg setconf CONFIG_NET_WIREGUARD_CONFIG_PATH
+fi
 
 wg
 

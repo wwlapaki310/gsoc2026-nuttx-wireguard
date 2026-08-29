@@ -1585,6 +1585,214 @@ int wg_pubkey(FAR const char *priv_b64, FAR char *out, size_t outlen)
 }
 
 /****************************************************************************
+ * Name: wg_showconf
+ ****************************************************************************/
+
+int wg_showconf(void)
+{
+  FAR const char *key;
+  FAR const char *ip;
+  FAR const char *mask;
+  struct in_addr addr;
+  int prefix;
+
+  key = wg_cfg_str(g_staged.private_key,
+                   CONFIG_NET_WIREGUARD_PRIVATE_KEY);
+  if (strlen(key) == 0)
+    {
+      return -ENODATA;
+    }
+
+  printf("[Interface]\n");
+  printf("PrivateKey = %s\n", key);
+  printf("ListenPort = %d\n", CONFIG_NET_WIREGUARD_LISTEN_PORT);
+
+  key = wg_cfg_str(g_staged.peer_public_key,
+                   CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY);
+  if (strlen(key) == 0)
+    {
+      return OK;
+    }
+
+  printf("\n[Peer]\n");
+  printf("PublicKey = %s\n", key);
+
+  ip = wg_cfg_str(g_staged.peer_allowed_ip,
+                  CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP);
+  mask = wg_cfg_str(g_staged.peer_allowed_mask,
+                    CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK);
+  if (inet_pton(AF_INET, mask, &addr) == 1)
+    {
+      /* Count the leading ones to turn the netmask back into a prefix */
+
+      uint32_t m = ntohl(addr.s_addr);
+      for (prefix = 0; prefix < 32 && (m & 0x80000000u) != 0; prefix++)
+        {
+          m <<= 1;
+        }
+    }
+  else
+    {
+      prefix = 32;
+    }
+
+  printf("AllowedIPs = %s/%d\n", ip, prefix);
+
+  ip = wg_cfg_str(g_staged.peer_endpoint_ip,
+                  CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP);
+  if (strlen(ip) > 0)
+    {
+      printf("Endpoint = %s:%d\n", ip,
+             g_staged.peer_endpoint_port != 0 ?
+             g_staged.peer_endpoint_port :
+             CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT);
+    }
+
+  printf("PersistentKeepalive = %d\n",
+         g_staged.peer_keepalive >= 0 ?
+         g_staged.peer_keepalive : CONFIG_NET_WIREGUARD_PEER_KEEPALIVE);
+
+  return OK;
+}
+
+/****************************************************************************
+ * Name: wg_conf_trim
+ *
+ * Description:
+ *   Strip leading/trailing whitespace in place and return the start of the
+ *   trimmed string.
+ *
+ ****************************************************************************/
+
+static FAR char *wg_conf_trim(FAR char *s)
+{
+  FAR char *end;
+
+  while (*s == ' ' || *s == '\t')
+    {
+      s++;
+    }
+
+  end = s + strlen(s);
+  while (end > s)
+    {
+      char c = *(end - 1);
+
+      if (c != ' ' && c != '\t' && c != '\r' && c != '\n')
+        {
+          break;
+        }
+
+      end--;
+    }
+
+  *end = '\0';
+  return s;
+}
+
+/****************************************************************************
+ * Name: wg_setconf
+ ****************************************************************************/
+
+int wg_setconf(FAR const char *path)
+{
+  char line[128];
+  char pubkey[WG_KEY_STRLEN];
+  char endpoint[INET_ADDRSTRLEN + 8];
+  char allowed[INET_ADDRSTRLEN + 8];
+  int keepalive = -1;
+  bool have_peer = false;
+  FAR FILE *f;
+  FAR char *k;
+  FAR char *v;
+  FAR char *eq;
+  int ret = OK;
+
+  if (g_wg.registered)
+    {
+      return -EBUSY;
+    }
+
+  f = fopen(path, "r");
+  if (f == NULL)
+    {
+      return -errno;
+    }
+
+  pubkey[0] = '\0';
+  endpoint[0] = '\0';
+  allowed[0] = '\0';
+
+  while (fgets(line, sizeof(line), f) != NULL)
+    {
+      k = wg_conf_trim(line);
+
+      /* Skip blanks, comments and the [Interface] / [Peer] headers: with a
+       * single peer there is nothing to disambiguate, so which section a
+       * key appeared in does not change how it is applied.
+       */
+
+      if (*k == '\0' || *k == '#' || *k == ';' || *k == '[')
+        {
+          continue;
+        }
+
+      eq = strchr(k, '=');
+      if (eq == NULL)
+        {
+          continue;
+        }
+
+      *eq = '\0';
+      v = wg_conf_trim(eq + 1);
+      k = wg_conf_trim(k);
+
+      if (strcasecmp(k, "PrivateKey") == 0)
+        {
+          ret = wg_set_private_key(v);
+          if (ret < 0)
+            {
+              break;
+            }
+        }
+      else if (strcasecmp(k, "PublicKey") == 0)
+        {
+          strlcpy(pubkey, v, sizeof(pubkey));
+          have_peer = true;
+        }
+      else if (strcasecmp(k, "Endpoint") == 0)
+        {
+          strlcpy(endpoint, v, sizeof(endpoint));
+        }
+      else if (strcasecmp(k, "AllowedIPs") == 0)
+        {
+          strlcpy(allowed, v, sizeof(allowed));
+        }
+      else if (strcasecmp(k, "PersistentKeepalive") == 0)
+        {
+          keepalive = atoi(v);
+        }
+
+      /* Anything else (Address, DNS, MTU, ...) is a wg-quick directive that
+       * does not apply here; ignoring it lets unmodified desktop config
+       * files be loaded.
+       */
+    }
+
+  fclose(f);
+
+  if (ret >= 0 && have_peer)
+    {
+      ret = wg_set_peer(pubkey,
+                        endpoint[0] != '\0' ? endpoint : NULL,
+                        allowed[0] != '\0' ? allowed : NULL,
+                        keepalive);
+    }
+
+  return ret;
+}
+
+/****************************************************************************
  * Name: wg_show
  *
  * Description:
