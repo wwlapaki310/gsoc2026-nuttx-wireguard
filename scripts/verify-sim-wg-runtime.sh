@@ -86,6 +86,25 @@ echo "NuttX private key generated on device; public key: ${nuttx_pub}"
 
 printf "wg set private-key %s\n" "${nuttx_priv}" >&3
 sleep 1
+
+# Rejected input must leave nothing behind. A bad endpoint used to return an
+# error only *after* the peer slot had been taken, so "wg up" would then
+# bring up a peer the operator had just been told was not accepted.
+#
+# No valid peer has been set at this point, so any PublicKey in showconf's
+# output can only have come from the request that was refused.
+printf 'wg set peer %s endpoint garbage\n' "${linux_pub}" >&3
+sleep 1
+printf 'wg showconf\n' >&3
+sleep 1
+
+if grep -q "PublicKey =" /tmp/nuttx.out; then
+  echo "ERROR: a rejected 'wg set peer' still staged a peer"
+  sed -n "1,200p" /tmp/nuttx.out
+  exit 1
+fi
+
+echo "PASS: rejected peer settings stage nothing"
 printf "wg set peer %s endpoint 10.0.0.1:51821 allowed-ips 10.10.0.1/32 persistent-keepalive 25\n" "${linux_pub}" >&3
 sleep 1
 printf "wg showconf\n" >&3

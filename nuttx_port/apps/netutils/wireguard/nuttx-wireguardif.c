@@ -1469,6 +1469,7 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
   uint8_t key[WIREGUARD_PUBLIC_KEY_LEN];
   char scratch[INET_ADDRSTRLEN + 8];
   FAR struct wg_staged_peer_s *cfg = NULL;
+  struct wg_staged_peer_s tmp;
   struct in_addr addr;
   FAR char *sep;
   int port;
@@ -1499,27 +1500,35 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
         }
     }
 
-  if (cfg == NULL)
+  /* Everything below writes into a local copy, and the staged array is only
+   * touched once the whole request has been validated. Otherwise a bad
+   * endpoint would leave a half-configured peer behind while still
+   * reporting failure, and "wg up" would then quietly use it.
+   */
+
+  if (cfg != NULL)
+    {
+      tmp = *cfg;
+    }
+  else
     {
       if (g_staged.npeers >= WIREGUARD_MAX_PEERS)
         {
           return -ENOSPC;
         }
 
-      cfg = &g_staged.peers[g_staged.npeers];
-      memset(cfg, 0, sizeof(*cfg));
-      cfg->keepalive = -1;
+      memset(&tmp, 0, sizeof(tmp));
+      tmp.keepalive = -1;
 
       /* A peer added at runtime still needs somewhere to route to, so
        * inherit the Kconfig allowed-ips until told otherwise.
        */
 
-      strlcpy(cfg->allowed_ip, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP,
-              sizeof(cfg->allowed_ip));
-      strlcpy(cfg->allowed_mask, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK,
-              sizeof(cfg->allowed_mask));
-      strlcpy(cfg->public_key, pubkey_b64, sizeof(cfg->public_key));
-      g_staged.npeers++;
+      strlcpy(tmp.allowed_ip, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP,
+              sizeof(tmp.allowed_ip));
+      strlcpy(tmp.allowed_mask, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK,
+              sizeof(tmp.allowed_mask));
+      strlcpy(tmp.public_key, pubkey_b64, sizeof(tmp.public_key));
     }
 
   /* "address:port" */
@@ -1541,8 +1550,8 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
           return -EINVAL;
         }
 
-      strlcpy(cfg->endpoint_ip, scratch, sizeof(cfg->endpoint_ip));
-      cfg->endpoint_port = (uint16_t)port;
+      strlcpy(tmp.endpoint_ip, scratch, sizeof(tmp.endpoint_ip));
+      tmp.endpoint_port = (uint16_t)port;
     }
 
   /* "address/prefix", or a bare address meaning /32 */
@@ -1567,12 +1576,12 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
           return -EINVAL;
         }
 
-      strlcpy(cfg->allowed_ip, scratch, sizeof(cfg->allowed_ip));
+      strlcpy(tmp.allowed_ip, scratch, sizeof(tmp.allowed_ip));
 
       addr.s_addr = prefix == 0 ? 0 :
                     htonl(0xffffffffu << (32 - prefix));
-      if (inet_ntop(AF_INET, &addr, cfg->allowed_mask,
-                    sizeof(cfg->allowed_mask)) == NULL)
+      if (inet_ntop(AF_INET, &addr, tmp.allowed_mask,
+                    sizeof(tmp.allowed_mask)) == NULL)
         {
           return -EINVAL;
         }
@@ -1580,9 +1589,18 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
 
   if (keepalive >= 0)
     {
-      cfg->keepalive = keepalive;
+      tmp.keepalive = keepalive;
     }
 
+  /* Validated: commit */
+
+  if (cfg == NULL)
+    {
+      cfg = &g_staged.peers[g_staged.npeers];
+      g_staged.npeers++;
+    }
+
+  *cfg = tmp;
   return OK;
 }
 
@@ -1971,6 +1989,18 @@ int wg_setconf(FAR const char *path)
   if (ret >= 0)
     {
       ret = wg_conf_flush_peer(&acc);
+    }
+
+  if (ret < 0)
+    {
+      /* Discard whatever parsed before the error rather than leaving a
+       * partial peer list staged: an operator who ignores the message and
+       * runs "wg up" should get no tunnel, not an arbitrary subset of the
+       * one they asked for. The private key may already have been applied,
+       * which is harmless on its own - wg up still refuses without a peer.
+       */
+
+      g_staged.npeers = 0;
     }
 
   return ret;
