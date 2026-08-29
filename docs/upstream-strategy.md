@@ -102,24 +102,62 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 
 1本の巨大 PR ではなく、ロードマップの各フェーズに沿って分割する。各 PR は「ビルドが通り、既存機能を壊さない」単位で完結させる(CONTRIBUTING 1.7.5: 個々のコミットが全体のビルド/実行を壊してはならない)。
 
-### PR #1: ビルドシステム統合(Phase 1 相当)
-- `apps/netutils/wireguard/` の Kconfig・Makefile・CMakeLists.txt
-- vendored `wireguard.c` / `crypto/` (BSD ヘッダそのまま)
-- `nuttx-platform.c` / `nuttx-wireguardif.c` はこの時点ではスタブ(現状の Phase 1 相当に戻した最小構成)
-- `apache/nuttx-apps/LICENSE` への追記
-- `[EXPERIMENTAL]` タグを付けることを検討(独自の UDP ソケット経由 netdev というアーキテクチャはコミュニティにとって前例がなく、設計自体への異論が出る可能性があるため、まず小さく提示して合意を得る)
+### PR #1: ビルドシステム統合 + vendored ソース
 
-### PR #2: プラットフォーム層 + netif 統合(Phase 2 相当)
-- `nuttx-platform.c` の実装
-- `nuttx-wireguardif.c` の netdev 登録・暗号化送受信・タイマー
-- sim (`sim:net`) 上での `wg0` 表示ログを添付
+- `apps/netutils/wireguard/` の `Kconfig` / `Makefile` / `CMakeLists.txt` / `Make.defs`
+- vendored 一式(`wireguard.c` / `crypto.c` / `crypto/refc/*`)を元の BSD ヘッダのまま
+- `wireguard-platform.h`(ピア数・allowed-ips 上限を Kconfig 化した NuttX 版)
+- `nuttx-platform.c`(OS 依存4関数)
+- `apache/nuttx-apps/LICENSE` への追記(下書きは [license-appendix-draft.md](license-appendix-draft.md))
 
-### PR #3: NSH コマンド(Phase 4 前倒し分)
-- `wg_main.c`(`wg` / `wg show`)
+この時点では `wg0` を登録しないので機能としては何もしないが、**ビルドが通り既存を壊さない**単位として成立する。
 
-### PR #4: 実機対応 + ドキュメント(Phase 4)
-- ESP32-S3 実機ログ
-- `Documentation/` 更新(nuttx 本体側に別 PR が必要か要確認 — CONTRIBUTING 1.8 参照)
+> **注意:** `wireguardif.c` / `crypto/cortex/` は**含めない**。ビルド対象外であり、
+> 持ち込むと LICENSE の記載対象が無駄に広がる(対応済み — `Dockerfile` の base ステージで削除している)。
+
+### PR #2: netdev 統合(このシリーズの本体)
+
+- `nuttx-wireguardif.c` / `nuttx-wireguardif.h`
+- `wg_main.c` の最小形(`wg up` / `wg show`)
+
+**レビューの焦点がここに集中する**ので、PR 説明で以下を明示する:
+
+- `NET_LL_TUN` netdev + UDP ソケットという構成の理由(`drivers/net/` 案・TUN + デーモン案との比較)
+- **`psock_*()` 依存による FLAT ビルド前提**([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))— fd がタスクグループ単位でスコープされるため fd ベースでは `EBADF` になる経緯も添える
+- 実機ログ(ESP32-S3 / Spresense)と sim・QEMU の検証スクリプト出力
+
+### PR #3: 実行時設定
+
+- `wg genkey` / `pubkey` / `set` / `setconf` / `showconf` / `down`
+- `CONFIG_NET_WIREGUARD_CONFIG_PATH`
+- 設定形式が `wg(8)` 互換であること(デスクトップの設定ファイルと相互運用できる)を PR 説明に書く
+
+PR #2 と分けるのは、netdev の設計に異論が出た場合にこちらが巻き添えにならないようにするため。
+
+### PR #4: 複数ピア
+
+- `CONFIG_NET_WIREGUARD_MAX_PEERS` / `MAX_SRC_IPS`
+- 実測した RAM コスト(1ピアあたり約 904 B)を PR 説明に含める
+
+### PR #5: ドキュメント
+
+- `Documentation/` の更新(nuttx 本体側に別 PR が必要か要確認 — CONTRIBUTING 1.8 参照)
+
+---
+
+### 各 PR に添付する検証ログ
+
+CONTRIBUTING は実機ログを必須としている。`scripts/` の4本はいずれも**本物の Linux カーネル WireGuard** を相手にしており、出力をそのまま添付できる:
+
+| スクリプト | 添付先 |
+|---|---|
+| `verify-sim-wireguard.sh` / `verify-qemu-wireguard.sh` | PR #2 |
+| `verify-sim-wg-runtime.sh` | PR #3 |
+| `verify-sim-wg-multipeer.sh` | PR #4 |
+
+実機ログ(ESP32-S3 の実 Wi-Fi ハンドシェイク・TCP 疎通、Spresense の `wg0` 起動)は PR #2 に添える。
+
+---
 
 **PR を出す前に**、まず dev@nuttx.apache.org に設計概要(なぜ lwIP netif ではなく NuttX 独自 netdev として実装したか、UDP ソケットを「配線」に使う設計判断など)を投げて、アーキテクチャ自体への合意を得ることを推奨。これは NuttX 側にとって初めてのパターンなので、コードが仕上がってから晒すより早期に議論した方がやり直しのコストが低い。
 
@@ -129,7 +167,22 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 
 1. ~~**Assisted-by 運用の開始**~~ ✅ 2026-08-22 のコミットから適用開始
 2. ~~**ESP32-S3 実機ログの取得**~~ ✅ 完了([phase4-log.md](phase4-log.md))
-3. ~~**`checkpatch.sh`/`nxstyle` によるスタイル整形**~~ ✅ 完了(4ファイルともクリーン)
-4. ~~**`apache/nuttx-apps/LICENSE` 追記案の作成**~~ ✅ 下書き完了([license-appendix-draft.md](license-appendix-draft.md))
-5. **vendored ツリーの整理**: `wireguardif.c`(lwIP 版、未使用)と `crypto/cortex/`(未ビルド)を外すか判断し、Docker の `git clone` 方式から実ファイル同梱方式へ移行する
-6. **dev@ メーリングリストでの早期共有**: PR #1 を出す前にアーキテクチャの概要を投げて反応を見る。**次にやるべきはこれ** — コードの整形が済んだので、設計そのものへの合意取りに進める段階になった
+3. ~~**`checkpatch.sh`/`nxstyle` によるスタイル整形**~~ ✅ 完了(4ファイルともクリーン、以後も維持)
+4. ~~**`apache/nuttx-apps/LICENSE` 追記案の作成**~~ ✅ 下書き完了([license-appendix-draft.md](license-appendix-draft.md))。記載内容は実ファイルと照合済み
+5. ~~**vendored ツリーの整理**~~ ✅ `wireguardif.c` / `crypto/cortex/` を除外(`Dockerfile` の base ステージ)。**残るのは Docker の `git clone` 方式から実ファイル同梱方式への移行** — upstream には実ファイルとしてコミットする必要があるため、提出時に一度だけ必要な作業
+6. **dev@ メーリングリストでの早期共有** ← **次にやるべきはこれ**。投稿ドラフトは [dev-list-proposal.md](dev-list-proposal.md)、追跡は [Issue #3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)。設計をひっくり返しうる2点(netdev 配置・FLAT ビルド前提)を先に問う構成にしてある
+7. **FLAT ビルド前提の扱いを決める**([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))。6 の反応次第で、Kconfig で `depends on` を付けて明示するか、別設計に変えるかが決まる
+
+---
+
+## 5. 提出前チェックリスト
+
+コードは揃っているので、残るのは合意形成と提出作業。
+
+- [ ] dev@ に設計を投稿し、netdev 配置への合意を得る(項目 6)
+- [ ] FLAT ビルド制約の扱いを決める(項目 7)
+- [ ] vendored ソースを実ファイルとしてコミットする形に移行(項目 5 の後半)
+- [ ] 最新の `apache/nuttx-apps/LICENSE` の書式に合わせて追記案を確定
+- [ ] メンターにライセンス記載と PR 分割をレビューしてもらう
+- [ ] 各 PR に対応する検証ログを添付(§3 の表を参照)
+- [ ] 独立した2名以上のレビュアーを確保(§1.5 — メンターだけでは足りない可能性がある)
