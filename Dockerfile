@@ -70,6 +70,7 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     make olddefconfig 2>&1 | tail -5
 

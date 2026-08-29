@@ -64,6 +64,37 @@ config NET_WIREGUARD_RX_STACKSIZE
 		or if you see stack overflows on an architecture with bigger
 		frames. CONFIG_STACK_COLORATION plus "ps" reports the real usage.
 
+config NET_WIREGUARD_MAX_PEERS
+	int "Maximum number of peers"
+	default 1
+	range 1 16
+	---help---
+		How many peers wg0 can hold. Peers are stored statically inside the
+		device structure (the vendored protocol code avoids malloc), so this
+		is a direct RAM trade. Measured on ESP32-S3, .bss of the interface
+		object grows by about 904 bytes per additional peer:
+
+			1 peer   4324 bytes
+			2 peers  5228 bytes
+			4 peers  7036 bytes
+			8 peers 10652 bytes
+
+		Most of that is the three key pairs each peer keeps so that rekeying
+		can overlap with traffic still using the old keys.
+
+		1 is right for a device that dials home to a single server. Raise it
+		to terminate several tunnels, for example a gateway reached by more
+		than one operator.
+
+config NET_WIREGUARD_MAX_SRC_IPS
+	int "Maximum allowed-ips entries per peer"
+	default 2
+	range 1 8
+	---help---
+		How many allowed-ips ranges each peer may carry. Traffic is routed
+		to a peer by matching the destination against these, so a peer that
+		fronts several subnets needs one entry per subnet.
+
 config NET_WIREGUARD_LISTEN_PORT
 	int "UDP listen port"
 	default 51820

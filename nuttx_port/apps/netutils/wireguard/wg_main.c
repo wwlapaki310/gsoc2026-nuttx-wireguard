@@ -56,6 +56,10 @@ static void wg_usage(void)
     "  set peer <public-key> [endpoint <addr:port>]\n"
     "                         [allowed-ips <addr>/<prefix>]\n"
     "                         [persistent-keepalive <seconds>]\n"
+    "  set peer <public-key> remove\n"
+    "\n"
+    "Naming an existing peer updates it; a new key adds one, up to\n"
+    "CONFIG_NET_WIREGUARD_MAX_PEERS.\n"
     "\n"
     "\"set\" and \"setconf\" only work while wg0 is down, and override the\n"
     "matching CONFIG_NET_WIREGUARD_* build-time settings.\n"
@@ -113,6 +117,25 @@ static int wg_do_set(int argc, FAR char *argv[])
       fprintf(stderr, "wg: unknown setting '%s'\n", argv[2]);
       wg_usage();
       return 1;
+    }
+
+  /* "wg set peer <public-key> remove" */
+
+  if (argc == 5 && strcmp(argv[4], "remove") == 0)
+    {
+      ret = wg_remove_peer(argv[3]);
+      if (ret == -EBUSY)
+        {
+          fprintf(stderr, "wg: wg0 is up; run \"wg down\" first\n");
+          return 1;
+        }
+      else if (ret == -ENOENT)
+        {
+          fprintf(stderr, "wg: no such peer\n");
+          return 1;
+        }
+
+      return 0;
     }
 
   /* "wg set peer <public-key> [key value]... " */

@@ -169,15 +169,28 @@ struct wg_netdev_s
  * instead, so a purely Kconfig-driven build behaves exactly as before.
  */
 
+struct wg_staged_peer_s
+{
+  char public_key[WG_KEY_STRLEN];
+  char endpoint_ip[INET_ADDRSTRLEN];
+  char allowed_ip[INET_ADDRSTRLEN];
+  char allowed_mask[INET_ADDRSTRLEN];
+  uint16_t endpoint_port;
+  int keepalive;
+};
+
 struct wg_staged_s
 {
   char private_key[WG_KEY_STRLEN];
-  char peer_public_key[WG_KEY_STRLEN];
-  char peer_endpoint_ip[INET_ADDRSTRLEN];
-  char peer_allowed_ip[INET_ADDRSTRLEN];
-  char peer_allowed_mask[INET_ADDRSTRLEN];
-  uint16_t peer_endpoint_port;
-  int peer_keepalive;
+
+  /* Peers staged by "wg set peer" / "wg setconf". While npeers is zero the
+   * CONFIG_NET_WIREGUARD_PEER_* values are used instead, so a build that
+   * configures its single peer entirely through Kconfig is unaffected by
+   * any of this.
+   */
+
+  struct wg_staged_peer_s peers[WIREGUARD_MAX_PEERS];
+  int npeers;
 };
 
 /****************************************************************************
@@ -225,10 +238,7 @@ static void wg_configure_address(FAR struct wg_netdev_s *priv);
 
 static struct wg_netdev_s g_wg;
 
-static struct wg_staged_s g_staged =
-{
-  .peer_keepalive = -1
-};
+static struct wg_staged_s g_staged;
 
 /****************************************************************************
  * Private Functions
@@ -1128,32 +1138,21 @@ static int wg_ifdown(FAR struct net_driver_s *dev)
 }
 
 /****************************************************************************
- * Name: wg_configure_peer
+ * Name: wg_add_peer
  *
  * Description:
- *   Set up the single peer, taking each value from "wg set peer" if it was
- *   staged and from Kconfig otherwise. Does nothing if no public key is
- *   available from either source - wg0 still comes up, just with no peer,
- *   which is the useful state for "wg genkey" then "wg set peer".
+ *   Allocate and populate one wireguard_peer from a staged description.
  *
  ****************************************************************************/
 
-static void wg_configure_peer(FAR struct wg_netdev_s *priv)
+static void wg_add_peer(FAR struct wg_netdev_s *priv,
+                        FAR const struct wg_staged_peer_s *cfg)
 {
   uint8_t public_key[WIREGUARD_PUBLIC_KEY_LEN];
   FAR struct wireguard_peer *peer;
-  FAR const char *str;
   struct in_addr addr;
-  int keepalive;
 
-  str = wg_cfg_str(g_staged.peer_public_key,
-                   CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY);
-  if (strlen(str) == 0)
-    {
-      return;
-    }
-
-  if (wg_decode_key(str, public_key, sizeof(public_key)) < 0)
+  if (wg_decode_key(cfg->public_key, public_key, sizeof(public_key)) < 0)
     {
       nerr("ERROR: peer public key is not a valid base64 key\n");
       return;
@@ -1162,7 +1161,8 @@ static void wg_configure_peer(FAR struct wg_netdev_s *priv)
   peer = peer_alloc(&priv->wg);
   if (peer == NULL)
     {
-      nerr("ERROR: no free WireGuard peer slots\n");
+      nerr("ERROR: no free WireGuard peer slots "
+           "(CONFIG_NET_WIREGUARD_MAX_PEERS is %d)\n", WIREGUARD_MAX_PEERS);
       return;
     }
 
@@ -1172,37 +1172,78 @@ static void wg_configure_peer(FAR struct wg_netdev_s *priv)
       return;
     }
 
-  keepalive = g_staged.peer_keepalive >= 0 ?
-              g_staged.peer_keepalive : CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
-  peer->keepalive_interval = keepalive;
+  peer->keepalive_interval = cfg->keepalive >= 0 ?
+                             cfg->keepalive :
+                             CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
 
-  str = wg_cfg_str(g_staged.peer_allowed_ip,
-                   CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP);
-  if (inet_pton(AF_INET, str, &addr) == 1)
+  if (inet_pton(AF_INET, cfg->allowed_ip, &addr) == 1)
     {
       peer->allowed_source_ips[0].ip = addr;
     }
 
-  str = wg_cfg_str(g_staged.peer_allowed_mask,
-                   CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK);
-  if (inet_pton(AF_INET, str, &addr) == 1)
+  if (inet_pton(AF_INET, cfg->allowed_mask, &addr) == 1)
     {
       peer->allowed_source_ips[0].mask = addr;
     }
 
   peer->allowed_source_ips[0].valid = true;
 
-  str = wg_cfg_str(g_staged.peer_endpoint_ip,
-                   CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP);
-  if (strlen(str) > 0 && inet_pton(AF_INET, str, &addr) == 1)
+  if (strlen(cfg->endpoint_ip) > 0 &&
+      inet_pton(AF_INET, cfg->endpoint_ip, &addr) == 1)
     {
       peer->connect_ip = addr;
-      peer->connect_port = g_staged.peer_endpoint_port != 0 ?
-                           g_staged.peer_endpoint_port :
+      peer->connect_port = cfg->endpoint_port != 0 ?
+                           cfg->endpoint_port :
                            CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
       peer->ip = peer->connect_ip;
       peer->port = peer->connect_port;
     }
+}
+
+/****************************************************************************
+ * Name: wg_configure_peer
+ *
+ * Description:
+ *   Register every staged peer, or the single Kconfig-described peer when
+ *   nothing has been staged. Does nothing if no public key is available
+ *   from either source - wg0 still comes up, just with no peer, which is
+ *   the useful state for "wg genkey" followed by "wg set peer".
+ *
+ ****************************************************************************/
+
+static void wg_configure_peer(FAR struct wg_netdev_s *priv)
+{
+  struct wg_staged_peer_s kcfg;
+  int i;
+
+  if (g_staged.npeers > 0)
+    {
+      for (i = 0; i < g_staged.npeers; i++)
+        {
+          wg_add_peer(priv, &g_staged.peers[i]);
+        }
+
+      return;
+    }
+
+  if (strlen(CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY) == 0)
+    {
+      return;
+    }
+
+  memset(&kcfg, 0, sizeof(kcfg));
+  strlcpy(kcfg.public_key, CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY,
+          sizeof(kcfg.public_key));
+  strlcpy(kcfg.allowed_ip, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP,
+          sizeof(kcfg.allowed_ip));
+  strlcpy(kcfg.allowed_mask, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK,
+          sizeof(kcfg.allowed_mask));
+  strlcpy(kcfg.endpoint_ip, CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP,
+          sizeof(kcfg.endpoint_ip));
+  kcfg.endpoint_port = CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
+  kcfg.keepalive = CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
+
+  wg_add_peer(priv, &kcfg);
 }
 
 /****************************************************************************
@@ -1427,10 +1468,12 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
 {
   uint8_t key[WIREGUARD_PUBLIC_KEY_LEN];
   char scratch[INET_ADDRSTRLEN + 8];
+  FAR struct wg_staged_peer_s *cfg = NULL;
   struct in_addr addr;
   FAR char *sep;
   int port;
   int prefix;
+  int i;
 
   if (g_wg.registered)
     {
@@ -1440,6 +1483,43 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
   if (wg_decode_key(pubkey_b64, key, sizeof(key)) < 0)
     {
       return -EINVAL;
+    }
+
+  /* Naming an existing peer updates it, as wg(8) does; a new key adds one.
+   * The Kconfig peer is not consulted once anything has been staged, so
+   * mixing the two cannot produce a half-Kconfig, half-runtime peer.
+   */
+
+  for (i = 0; i < g_staged.npeers; i++)
+    {
+      if (strcmp(g_staged.peers[i].public_key, pubkey_b64) == 0)
+        {
+          cfg = &g_staged.peers[i];
+          break;
+        }
+    }
+
+  if (cfg == NULL)
+    {
+      if (g_staged.npeers >= WIREGUARD_MAX_PEERS)
+        {
+          return -ENOSPC;
+        }
+
+      cfg = &g_staged.peers[g_staged.npeers];
+      memset(cfg, 0, sizeof(*cfg));
+      cfg->keepalive = -1;
+
+      /* A peer added at runtime still needs somewhere to route to, so
+       * inherit the Kconfig allowed-ips until told otherwise.
+       */
+
+      strlcpy(cfg->allowed_ip, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP,
+              sizeof(cfg->allowed_ip));
+      strlcpy(cfg->allowed_mask, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK,
+              sizeof(cfg->allowed_mask));
+      strlcpy(cfg->public_key, pubkey_b64, sizeof(cfg->public_key));
+      g_staged.npeers++;
     }
 
   /* "address:port" */
@@ -1461,9 +1541,8 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
           return -EINVAL;
         }
 
-      strlcpy(g_staged.peer_endpoint_ip, scratch,
-              sizeof(g_staged.peer_endpoint_ip));
-      g_staged.peer_endpoint_port = (uint16_t)port;
+      strlcpy(cfg->endpoint_ip, scratch, sizeof(cfg->endpoint_ip));
+      cfg->endpoint_port = (uint16_t)port;
     }
 
   /* "address/prefix", or a bare address meaning /32 */
@@ -1488,13 +1567,12 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
           return -EINVAL;
         }
 
-      strlcpy(g_staged.peer_allowed_ip, scratch,
-              sizeof(g_staged.peer_allowed_ip));
+      strlcpy(cfg->allowed_ip, scratch, sizeof(cfg->allowed_ip));
 
       addr.s_addr = prefix == 0 ? 0 :
                     htonl(0xffffffffu << (32 - prefix));
-      if (inet_ntop(AF_INET, &addr, g_staged.peer_allowed_mask,
-                    sizeof(g_staged.peer_allowed_mask)) == NULL)
+      if (inet_ntop(AF_INET, &addr, cfg->allowed_mask,
+                    sizeof(cfg->allowed_mask)) == NULL)
         {
           return -EINVAL;
         }
@@ -1502,12 +1580,39 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
 
   if (keepalive >= 0)
     {
-      g_staged.peer_keepalive = keepalive;
+      cfg->keepalive = keepalive;
     }
 
-  strlcpy(g_staged.peer_public_key, pubkey_b64,
-          sizeof(g_staged.peer_public_key));
   return OK;
+}
+
+/****************************************************************************
+ * Name: wg_remove_peer
+ ****************************************************************************/
+
+int wg_remove_peer(FAR const char *pubkey_b64)
+{
+  int i;
+
+  if (g_wg.registered)
+    {
+      return -EBUSY;
+    }
+
+  for (i = 0; i < g_staged.npeers; i++)
+    {
+      if (strcmp(g_staged.peers[i].public_key, pubkey_b64) == 0)
+        {
+          /* Close the gap so npeers stays a simple count */
+
+          memmove(&g_staged.peers[i], &g_staged.peers[i + 1],
+                  (g_staged.npeers - i - 1) * sizeof(g_staged.peers[0]));
+          g_staged.npeers--;
+          return OK;
+        }
+    }
+
+  return -ENOENT;
 }
 
 /****************************************************************************
@@ -1588,13 +1693,63 @@ int wg_pubkey(FAR const char *priv_b64, FAR char *out, size_t outlen)
  * Name: wg_showconf
  ****************************************************************************/
 
+/****************************************************************************
+ * Name: wg_mask_to_prefix
+ *
+ * Description:
+ *   Turn a dotted-quad netmask back into a prefix length, so that
+ *   "wg showconf" can emit the AllowedIPs notation wg(8) uses.
+ *
+ ****************************************************************************/
+
+static int wg_mask_to_prefix(FAR const char *mask)
+{
+  struct in_addr addr;
+  uint32_t m;
+  int prefix;
+
+  if (inet_pton(AF_INET, mask, &addr) != 1)
+    {
+      return 32;
+    }
+
+  m = ntohl(addr.s_addr);
+  for (prefix = 0; prefix < 32 && (m & 0x80000000u) != 0; prefix++)
+    {
+      m <<= 1;
+    }
+
+  return prefix;
+}
+
+/****************************************************************************
+ * Name: wg_showconf_peer
+ ****************************************************************************/
+
+static void wg_showconf_peer(FAR const struct wg_staged_peer_s *cfg)
+{
+  printf("\n[Peer]\n");
+  printf("PublicKey = %s\n", cfg->public_key);
+  printf("AllowedIPs = %s/%d\n", cfg->allowed_ip,
+         wg_mask_to_prefix(cfg->allowed_mask));
+
+  if (strlen(cfg->endpoint_ip) > 0)
+    {
+      printf("Endpoint = %s:%d\n", cfg->endpoint_ip,
+             cfg->endpoint_port != 0 ? cfg->endpoint_port :
+             CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT);
+    }
+
+  printf("PersistentKeepalive = %d\n",
+         cfg->keepalive >= 0 ? cfg->keepalive :
+         CONFIG_NET_WIREGUARD_PEER_KEEPALIVE);
+}
+
 int wg_showconf(void)
 {
+  struct wg_staged_peer_s kcfg;
   FAR const char *key;
-  FAR const char *ip;
-  FAR const char *mask;
-  struct in_addr addr;
-  int prefix;
+  int i;
 
   key = wg_cfg_str(g_staged.private_key,
                    CONFIG_NET_WIREGUARD_PRIVATE_KEY);
@@ -1607,51 +1762,39 @@ int wg_showconf(void)
   printf("PrivateKey = %s\n", key);
   printf("ListenPort = %d\n", CONFIG_NET_WIREGUARD_LISTEN_PORT);
 
-  key = wg_cfg_str(g_staged.peer_public_key,
-                   CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY);
-  if (strlen(key) == 0)
+  if (g_staged.npeers > 0)
+    {
+      for (i = 0; i < g_staged.npeers; i++)
+        {
+          wg_showconf_peer(&g_staged.peers[i]);
+        }
+
+      return OK;
+    }
+
+  /* Nothing staged: describe the Kconfig peer, so that saving and
+   * reloading a never-configured board reproduces its built-in settings
+   * rather than emptying them.
+   */
+
+  if (strlen(CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY) == 0)
     {
       return OK;
     }
 
-  printf("\n[Peer]\n");
-  printf("PublicKey = %s\n", key);
+  memset(&kcfg, 0, sizeof(kcfg));
+  strlcpy(kcfg.public_key, CONFIG_NET_WIREGUARD_PEER_PUBLIC_KEY,
+          sizeof(kcfg.public_key));
+  strlcpy(kcfg.allowed_ip, CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP,
+          sizeof(kcfg.allowed_ip));
+  strlcpy(kcfg.allowed_mask, CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK,
+          sizeof(kcfg.allowed_mask));
+  strlcpy(kcfg.endpoint_ip, CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP,
+          sizeof(kcfg.endpoint_ip));
+  kcfg.endpoint_port = CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT;
+  kcfg.keepalive = CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
 
-  ip = wg_cfg_str(g_staged.peer_allowed_ip,
-                  CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP);
-  mask = wg_cfg_str(g_staged.peer_allowed_mask,
-                    CONFIG_NET_WIREGUARD_PEER_ALLOWED_MASK);
-  if (inet_pton(AF_INET, mask, &addr) == 1)
-    {
-      /* Count the leading ones to turn the netmask back into a prefix */
-
-      uint32_t m = ntohl(addr.s_addr);
-      for (prefix = 0; prefix < 32 && (m & 0x80000000u) != 0; prefix++)
-        {
-          m <<= 1;
-        }
-    }
-  else
-    {
-      prefix = 32;
-    }
-
-  printf("AllowedIPs = %s/%d\n", ip, prefix);
-
-  ip = wg_cfg_str(g_staged.peer_endpoint_ip,
-                  CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP);
-  if (strlen(ip) > 0)
-    {
-      printf("Endpoint = %s:%d\n", ip,
-             g_staged.peer_endpoint_port != 0 ?
-             g_staged.peer_endpoint_port :
-             CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT);
-    }
-
-  printf("PersistentKeepalive = %d\n",
-         g_staged.peer_keepalive >= 0 ?
-         g_staged.peer_keepalive : CONFIG_NET_WIREGUARD_PEER_KEEPALIVE);
-
+  wg_showconf_peer(&kcfg);
   return OK;
 }
 
@@ -1694,14 +1837,51 @@ static FAR char *wg_conf_trim(FAR char *s)
  * Name: wg_setconf
  ****************************************************************************/
 
-int wg_setconf(FAR const char *path)
+/* What one [Peer] section accumulated while being parsed */
+
+struct wg_conf_peer_s
 {
-  char line[128];
   char pubkey[WG_KEY_STRLEN];
   char endpoint[INET_ADDRSTRLEN + 8];
   char allowed[INET_ADDRSTRLEN + 8];
-  int keepalive = -1;
-  bool have_peer = false;
+  int keepalive;
+  bool valid;
+};
+
+/****************************************************************************
+ * Name: wg_conf_flush_peer
+ *
+ * Description:
+ *   Stage whatever the current [Peer] section collected and reset the
+ *   accumulator. Called on every section header and once at end of file,
+ *   which is what allows a file to carry more than one peer.
+ *
+ * Returned Value:
+ *   0 (OK), or the error from wg_set_peer().
+ *
+ ****************************************************************************/
+
+static int wg_conf_flush_peer(FAR struct wg_conf_peer_s *acc)
+{
+  int ret = OK;
+
+  if (acc->valid)
+    {
+      ret = wg_set_peer(acc->pubkey,
+                        acc->endpoint[0] != '\0' ? acc->endpoint : NULL,
+                        acc->allowed[0] != '\0' ? acc->allowed : NULL,
+                        acc->keepalive);
+    }
+
+  memset(acc, 0, sizeof(*acc));
+  acc->keepalive = -1;
+  return ret;
+}
+
+int wg_setconf(FAR const char *path)
+{
+  struct wg_conf_peer_s acc;
+  char line[128];
   FAR FILE *f;
   FAR char *k;
   FAR char *v;
@@ -1719,21 +1899,32 @@ int wg_setconf(FAR const char *path)
       return -errno;
     }
 
-  pubkey[0] = '\0';
-  endpoint[0] = '\0';
-  allowed[0] = '\0';
+  /* Loading a file replaces the peer list rather than adding to it, so that
+   * reloading an edited file drops peers it no longer names.
+   */
 
-  while (fgets(line, sizeof(line), f) != NULL)
+  g_staged.npeers = 0;
+
+  memset(&acc, 0, sizeof(acc));
+  acc.keepalive = -1;
+
+  while (fgets(line, sizeof(line), f) != NULL && ret >= 0)
     {
       k = wg_conf_trim(line);
 
-      /* Skip blanks, comments and the [Interface] / [Peer] headers: with a
-       * single peer there is nothing to disambiguate, so which section a
-       * key appeared in does not change how it is applied.
+      if (*k == '\0' || *k == '#' || *k == ';')
+        {
+          continue;
+        }
+
+      /* A section header ends the peer being accumulated. Which section a
+       * key sits in is otherwise not consulted: the key names are already
+       * unambiguous.
        */
 
-      if (*k == '\0' || *k == '#' || *k == ';' || *k == '[')
+      if (*k == '[')
         {
+          ret = wg_conf_flush_peer(&acc);
           continue;
         }
 
@@ -1750,27 +1941,23 @@ int wg_setconf(FAR const char *path)
       if (strcasecmp(k, "PrivateKey") == 0)
         {
           ret = wg_set_private_key(v);
-          if (ret < 0)
-            {
-              break;
-            }
         }
       else if (strcasecmp(k, "PublicKey") == 0)
         {
-          strlcpy(pubkey, v, sizeof(pubkey));
-          have_peer = true;
+          strlcpy(acc.pubkey, v, sizeof(acc.pubkey));
+          acc.valid = true;
         }
       else if (strcasecmp(k, "Endpoint") == 0)
         {
-          strlcpy(endpoint, v, sizeof(endpoint));
+          strlcpy(acc.endpoint, v, sizeof(acc.endpoint));
         }
       else if (strcasecmp(k, "AllowedIPs") == 0)
         {
-          strlcpy(allowed, v, sizeof(allowed));
+          strlcpy(acc.allowed, v, sizeof(acc.allowed));
         }
       else if (strcasecmp(k, "PersistentKeepalive") == 0)
         {
-          keepalive = atoi(v);
+          acc.keepalive = atoi(v);
         }
 
       /* Anything else (Address, DNS, MTU, ...) is a wg-quick directive that
@@ -1781,12 +1968,9 @@ int wg_setconf(FAR const char *path)
 
   fclose(f);
 
-  if (ret >= 0 && have_peer)
+  if (ret >= 0)
     {
-      ret = wg_set_peer(pubkey,
-                        endpoint[0] != '\0' ? endpoint : NULL,
-                        allowed[0] != '\0' ? allowed : NULL,
-                        keepalive);
+      ret = wg_conf_flush_peer(&acc);
     }
 
   return ret;

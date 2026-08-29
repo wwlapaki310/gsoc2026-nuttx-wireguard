@@ -137,6 +137,20 @@ int wg_set_peer(FAR const char *pubkey_b64, FAR const char *endpoint,
                 FAR const char *allowed, int keepalive);
 
 /****************************************************************************
+ * Name: wg_remove_peer
+ *
+ * Description:
+ *   Drop a staged peer, matched by its base64 public key.
+ *
+ * Returned Value:
+ *   0 (OK) on success; -ENOENT if no staged peer has that key; -EBUSY if
+ *   wg0 is currently up.
+ *
+ ****************************************************************************/
+
+int wg_remove_peer(FAR const char *pubkey_b64);
+
+/****************************************************************************
  * Name: wg_genkey
  *
  * Description:
