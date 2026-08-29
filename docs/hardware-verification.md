@@ -127,10 +127,52 @@ USB を挿し直さないと復旧できなくなる)。
 **トンネル側 `10.10.0.2` は Kconfig 由来なので、そもそも DHCP に依存しない。**
 ネットワークが変わっても変わらないアドレスとして使えるのが VPN を載せた効果でもある。
 
-> **注意:** ピアのエンドポイント(`CONFIG_NET_WIREGUARD_PEER_ENDPOINT_IP`)は
-> 現状ビルド時固定なので、対向 PC の IP が変わるとトンネルは張れない。
-> その場合は LAN 側の telnet から復旧する。実行時設定は
-> [code-review-2026-08.md](code-review-2026-08.md) の課題 (D) として残っている。
+### 実行時設定と永続化
+
+鍵・ピアはビルドに焼き込まなくてよい。`wg(8)` と同じサブコマンドで設定でき、
+`wg(8)` と同じ INI 形式で保存できる。
+
+```
+nsh> wg genkey                                  # デバイス上で鍵を生成
+KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+
+nsh> wg down
+nsh> wg set private-key <上で生成した鍵>
+nsh> wg set peer <対向の公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32
+nsh> wg up
+wg0 is up (listen port 51820)
+
+nsh> wg showconf > /data/wg0.conf                # 電源断をまたいで残す
+```
+
+保存すると、次回起動時に rcS が `wg up` の前に読み込む。ファイルが無ければ
+Kconfig の値にフォールバックするので、未設定のボードもそのまま起動する。
+
+出力は本家と同じ形式なので、**デスクトップの WireGuard クライアントの設定ファイルと
+相互に読める**:
+
+```
+[Interface]
+PrivateKey = ...
+ListenPort = 51820
+
+[Peer]
+PublicKey = ...
+AllowedIPs = 10.10.0.1/32
+Endpoint = 192.168.0.216:51820
+PersistentKeepalive = 25
+```
+
+保存先は `CONFIG_NET_WIREGUARD_CONFIG_PATH`(既定 `/data/wg0.conf`)。
+esp32s3-devkit は SPIFFS を `/data` にマウント済みなので追加設定は要らない。
+
+> **注意:** `wg set` / `wg setconf` は **wg0 が down のときだけ**受け付ける
+> (稼働中のピア差し替えは RX タスクと競合するため)。`wg down` してから設定し、
+> `wg up` で戻す。
+>
+> また、`wg set peer` の行は 44 文字の base64 鍵を含むため約 134 文字になる。
+> **`CONFIG_NSH_LINELEN` を 160 に上げていないと途中で切られる**ので注意
+> (`Dockerfile` の各ステージでは設定済み)。
 
 ---
 
