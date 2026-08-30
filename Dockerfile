@@ -32,26 +32,26 @@ RUN git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx.
     echo "NuttX ref: ${NUTTX_REF}" > /opt/nuttx-ref.txt && \
     git -C nuttx log --oneline -1 >> /opt/nuttx-ref.txt
 
-# wireguard-lwip: LwIP netif ベースの WireGuard 実装 (ポーティング作業用)
-RUN git clone --depth=1 https://github.com/smartalock/wireguard-lwip.git /opt/wireguard-lwip
-
-# apps/netutils/wireguard/ を構成:
-#   - wireguard-lwip のソースをコピー
-#   - NuttX ポーティングファイル (Kconfig, Make.defs, CMakeLists.txt, nuttx-platform.c) をコピー
-#   - netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
-RUN mkdir -p /opt/apps/netutils/wireguard && \
-    cp -r /opt/wireguard-lwip/src/* /opt/apps/netutils/wireguard/
-
-# Drop the vendored files this port does not build. wireguardif.c is the lwIP
-# netif glue that nuttx-wireguardif.c replaces, and crypto/cortex is an
-# ARM-assembly X25519 we do not select. Carrying unused third-party sources
-# would widen what has to be enumerated in nuttx-apps' LICENSE for no gain,
-# so the tree here matches what would actually be submitted upstream.
-RUN cd /opt/apps/netutils/wireguard && \
-    rm -f wireguardif.c wireguardif.h && \
-    rm -rf crypto/cortex
-
+# apps/netutils/wireguard/ を構成。
+#
+# wireguard-lwip のソースは nuttx_port/ 以下に実ファイルとして取り込んである
+# (元の BSD ヘッダを保持したまま、byte-identical)。ビルド時に clone しない
+# 理由は3つ:
+#
+#   - upstream (apache/nuttx-apps) には実ファイルとしてコミットする必要が
+#     あるので、このリポジトリのツリーが提出物とそのまま一致する
+#   - ネットワークに依存せずビルドが再現する
+#   - 上流リポジトリが動いてもビルド結果が変わらない
+#
+# 取り込んでいないもの: wireguardif.c/h (lwIP netif グルー。
+# nuttx-wireguardif.c が置き換える) と crypto/cortex (ARM アセンブリの
+# X25519。選択していない)。使わないサードパーティコードを持ち込むと
+# nuttx-apps の LICENSE に列挙すべき対象が無駄に増えるため。
+#
+# 由来と各ファイルのライセンスは docs/license-appendix-draft.md を参照。
 COPY nuttx_port/apps/netutils/wireguard/ /opt/apps/netutils/wireguard/
+
+# netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
 RUN cd /opt/apps/netutils && \
     bash /opt/apps/tools/mkkconfig.sh -m "Network Utilities" -o Kconfig
 
