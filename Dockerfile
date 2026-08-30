@@ -20,9 +20,17 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
 # kconfiglib: NuttX 拡張 Kconfig 構文の解析に必要 (olddefconfig 等)
 RUN pip3 install --break-system-packages kconfiglib
 
+# NuttX を取得する ref。既定は本プロジェクトが検証済みの 12.7.0 だが、
+#   docker build --build-arg NUTTX_REF=master ...
+# とすれば upstream master に対してビルドできる。upstream 提出は master
+# ベースになるため、API のズレを早めに検出するために使う。
+ARG NUTTX_REF=nuttx-12.7.0
+
 WORKDIR /opt
-RUN git clone --depth=1 --branch nuttx-12.7.0 https://github.com/apache/nuttx.git nuttx && \
-    git clone --depth=1 --branch nuttx-12.7.0 https://github.com/apache/nuttx-apps.git apps
+RUN git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx.git nuttx && \
+    git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx-apps.git apps && \
+    echo "NuttX ref: ${NUTTX_REF}" > /opt/nuttx-ref.txt && \
+    git -C nuttx log --oneline -1 >> /opt/nuttx-ref.txt
 
 # wireguard-lwip: LwIP netif ベースの WireGuard 実装 (ポーティング作業用)
 RUN git clone --depth=1 https://github.com/smartalock/wireguard-lwip.git /opt/wireguard-lwip
@@ -72,6 +80,7 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
+    kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
     make olddefconfig 2>&1 | tail -5
 
 # NOTE: CONFIG_NET_TUN (needed for the NET_LL_TUN link type wg0 registers
@@ -127,6 +136,7 @@ RUN ./tools/configure.sh qemu-armv7a:nsh && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
+    kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
     make olddefconfig 2>&1 | tail -5
 
 RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
@@ -246,6 +256,7 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_NSH_TELNET      && \
     kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
+    kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
     kconfig-tweak --set-val CONFIG_ESP32S3_SPIFLASH_OP_TASK_STACKSIZE 3072 && \
     kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
     make olddefconfig 2>&1 | tail -5
