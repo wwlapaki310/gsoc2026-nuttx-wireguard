@@ -422,9 +422,31 @@ list_for_every_entry(&priv->runlist, temp_p, struct rt_timer_s, list)
 `enter_critical_section()` を使う経路も混在しており、その組み合わせが疑わしい。ただし
 競合の正確な経路までは特定できていないため、断定はしない。
 
-なお NuttX master では `esp32s3_rt_timer.c` 自体が存在せず、この領域は再編されている。
-本プロジェクトが固定している 12.7.0 固有の問題である可能性があり、**新しい NuttX で
-再現するかの確認は今後の課題**。
+### upstream では、この実装ごと置き換わっている
+
+NuttX master を確認したところ、**`esp32s3_rt_timer.c` は存在しない**。同名の実装が残っているのは
+`arch/risc-v/src/esp32c3-legacy/` だけで、名前のとおり非推奨扱いになっている。
+
+置き換え先は共通 Espressif 層の `esp_hr_timer.h` で、中身はこうなっている:
+
+```c
+/* This is a compatibility wrapper for the new ESP-HAL timer adapter */
+#include "esp_timer_adapter.h"
+```
+
+つまり **NuttX は自前のリンクリスト実装(今回クラッシュした `start_rt_timer()` そのもの)を捨て、
+Espressif の HAL タイマーに委譲する方式へ移行している**。今回踏んだコードは upstream には
+もう無い。
+
+したがって本件は「12.7.0 期のコードに残っていた不具合で、upstream では実装ごと差し替え済み」
+という位置づけになる。対応方針としては:
+
+- **upstream にバグ報告する価値は低い** — 該当コードが既に無いため
+- **新しい NuttX へ移行すれば解消する可能性が高い**。ただし未確認なので、長時間動作で
+  再現しないことを実際に確かめる必要がある
+- 12.7.0 に留まる場合、この Wi-Fi クラッシュは既知の制約として受け入れることになる
+
+Pico 2 W の検証で既に NuttX master を使っているため、**バージョン固定を外す判断とも関係する**。
 
 ### 副産物: `wg_rx` のスタック実測値が更新された
 
