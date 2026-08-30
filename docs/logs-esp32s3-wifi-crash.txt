@@ -1,0 +1,58 @@
+
+=== capture started 2026-08-30 00:45:01.346454 ===
+[CPU0] xtensa_user_panic: User Exception: EXCCAUSE=001c task: wifi
+[CPU0] dump_assert_info: Current Version: NuttX  12.7.0 5d8cdeae-dirty Aug 30 2026 00:38:46 xtensa
+[CPU0] dump_assert_info: Assertion failed user panic: at file: common/xtensa_assert.c:180 task(CPU0): wifi process: Kernel 0x4037d56c
+[CPU0] up_dump_register:    PC: 42029e05    PS: 00060e32
+[CPU0] up_dump_register:    A0: 82029f8c    A1: 3fcb3e50    A2: 3fcbac20    A3: 00000000
+[CPU0] up_dump_register:    A4: bf8a17ae    A5: bf8a17ae    A6: 3fca5abc    A7: 00000004
+[CPU0] up_dump_register:    A8: ffffffe0    A9: 00000003   A10: 3fca5ad4   A11: 00000003
+[CPU0] up_dump_register:   A12: 00400000   A13: 00000000   A14: 00060c22   A15: 00000000
+[CPU0] up_dump_register:   SAR: 00000018 CAUSE: 0000001c VADDR: ffffffec
+[CPU0] up_dump_register:  LBEG: 40056fc5  LEND: 40056fe7  LCNT: ffffffff
+[CPU0] dump_stack: User Stack:
+[CPU0] dump_stack:   base: 0x3fcb25d0
+[CPU0] dump_stack:   size: 00006624
+[CPU0] dump_stack:     sp: 0x3fcb3e50
+[CPU0] stack_dump: 0x3fcb3e30: 00000000 00000009 00000210 000001b0 82055c45 3fcb3e70 3fcbac20 00060e20
+[CPU0] stack_dump: 0x3fcb3e50: 3fcbab90 00000000 0000000a 00000012 82053ee4 3fcb3e90 3fcbac20 00000000
+[CPU0] stack_dump: 0x3fcb3e70: 005b8d80 00000000 00000000 3fca56b0 82053f0b 3fcb3eb0 3fcbac20 005b8d80
+[CPU0] stack_dump: 0x3fcb3e90: 005b8d80 00000000 3fc9858c 3fca56b0 8037e180 3fcb3ed0 3fcba508 00001770
+[CPU0] stack_dump: 0x3fcb3eb0: 00000000 3fc8f930 00000000 3fc8f700 8037ec28 3fcb3ef0 42053ef4 3fcba508
+[CPU0] stack_dump: 0x3fcb3ed0: 00000000 3fcb3f68 00000000 00000000 8037ee65 3fcb3f10 00000000 00000001
+[CPU0] stack_dump: 0x3fcb3ef0: 00000000 3fca5d20 00000008 3fcb2498 8037d68d 3fcb3f30 3fca4aa8 00000000
+[CPU0] stack_dump: 0x3fcb3f10: 3fcef940 3fcb3f38 00060e20 3fcef954 8202369c 3fcb3f60 3fcef940 3fcef904
+[CPU0] stack_dump: 0x3fcb3f30: 1a32fece 00000bc6 00000000 00000000 00000000 00000001 000265d2 00000000
+[CPU0] stack_dump: 0x3fcb3f50: 00000000 3fcb3f90 00000002 4037d56c 0000001d 00000000 00000000 00000000
+[CPU0] stack_dump: 0x3fcb3f70: 00000000 4037d67f 3fc8f700 00000004 00000000 3fcb3fb0 00000000 00000000
+[CPU0] stack_dump: 0x3fcb3f90: 00050020 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[CPU0] stack_dump: 0x3fcb3fb0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[CPU0] dump_fatal_info: Dump CPU1: PAUSED
+[CPU0] up_dump_register:    PC: 4209c33e    PS: 00060a30
+[CPU0] up_dump_register:    A0: 820223cf    A1: 3fca94d0    A2: 00000000    A3: 00000001
+[CPU0] up_dump_register:    A4: 3fc8f930    A5: 00060020    A6: 00000222    A7: 00000001
+[CPU0] up_dump_register:    A8: 3fc9858c    A9: 3fc8f7cc   A10: 3fc8f7cc   A11: 00000001
+[CPU0] up_dump_register:   A12: 80378ecf   A13: 3fc982a8   A14: 3fc98590   A15: 3fcaa2d0
+[CPU0] up_dump_register:   SAR: 0000001f CAUSE: 3fca94d0 VADDR: 00000000
+[CPU0] up_dump_register:  LBEG: 00000000  LEND: 00000000  LCNT: 00000000
+[CPU0] dump_stack: User Stack:
+[CPU0] dump_stack:   base: 0x3fca8920
+[CPU0] dump_stack:   size: 00003056
+[CPU0] dump_stack:     sp: 0x3fca94d0
+[CPU0] stack_dump: 0x3fca94b0: 00000000 00000000 00000000 00000000 00000000 3fca94f0 00000000 00000000
+[CPU0] stack_dump: 0x3fca94d0: 3fc8f930 00060020 00000222 00000001 00000000 3fca9510 00000000 00000000
+[CPU0] stack_dump: 0x3fca94f0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[CPU0] stack_dump: 0x3fca9510: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[CPU0] dump_tasks:    PID GROUP   CPU PRI POLICY   TYPE    NPX STATE   EVENT      SIGMASK          STACKBASE  STACKSIZE      USED   FILLED    COMMAND
+[CPU0] dump_tasks:   ----   ---     0 --- -------- ------- --- ------- ---------- ---------------- 0x3fc972f8      2048      1080    52.7%    irq
+[CPU0] dump_tasks:   ----   ---     1 --- -------- ------- --- ------- ---------- ---------------- 0x3fc97af8      2048       232    11.3%    irq
+[CPU0] dump_task:       0     0     0   0 FIFO     Kthread -   Assigned           0000000000000000 0x3fca4cd0      3056       688    22.5%    CPU0 IDLE
+[CPU0] dump_task:       1     0     1   0 FIFO     Kthread -   Running            0000000000000000 0x3fca8920      3056       864    28.2%    CPU1 IDLE
+[CPU0] dump_task:       2     0     1 100 RR       Kthread -   Waiting Semaphore  0000000000000000 0x3fca97e8      4024      1328    33.0%    lpwork 0x3fca58c0 0x3fca58e4
+[CPU0] dump_task:       3     3     1 100 RR       Task    -   Waiting Semaphore  0000000000000000 0x3fcaad78      8136      1824    22.4%    nsh_main
+[CPU0] dump_task:       4     0     0 255 RR       Kthread -   Waiting Semaphore  0000000000000000 0x3fcad0e0      3008       560    18.6%    spiflash_op 0x3fcacc0c
+[CPU0] dump_task:       5     0     1 255 RR       Kthread -   Waiting Semaphore  0000000000000000 0x3fcaddb8      3000       560    18.6%    spiflash_op 0x3fcacc0c
+[CPU0] dump_task:       6     0     1 223 RR       Kthread -   Waiting Semaphore  0000000000000000 0x3fcb0f10      4048       912    22.5%    rt_timer
+[CPU0] dump_task:       7     0     0 253 RR       Kthread -   Running            0000000000000000 0x3fcb25d0      6624      2288    34.5%    wifi
+[CPU0] dump_task:      10    10     0 100 RR       Task    -   Waiting Semaphore  0000000000000000 0x3fcbd2c8      4056      3392    83.6%!   wg_rx
+[CPU0] dump_task:      11    11     1 100 RR       Task    -   Waiting Semaphore  0000000000000000 0x3fcbe2d0      4064      1120    27.5%    telnetd

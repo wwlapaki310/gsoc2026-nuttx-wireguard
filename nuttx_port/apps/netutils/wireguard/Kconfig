@@ -42,7 +42,7 @@ config NET_WIREGUARD_STACKSIZE
 
 config NET_WIREGUARD_RX_STACKSIZE
 	int "WireGuard RX thread stack size"
-	default 4096
+	default 6144
 	---help---
 		Stack size of the background thread that receives WireGuard UDP
 		packets and drives the handshake/keepalive timers.
@@ -54,15 +54,20 @@ config NET_WIREGUARD_RX_STACKSIZE
 		encryption of the reply on the way back out) runs on this stack
 		rather than on the caller's.
 
-		The default comes from measurement rather than guesswork: with
-		CONFIG_STACK_COLORATION enabled on an ESP32-S3 (IPv4 only, single
-		peer, wg0 MTU 1420), pushing ~7 MB of TCP through the tunnel
-		alongside a large-packet ping flood left a high water mark of
-		2960 bytes. 4096 keeps roughly 38% headroom on top of that.
+		The default comes from measurement, but note how much the
+		measurement moved with how long the board ran. On an ESP32-S3
+		with CONFIG_STACK_COLORATION (IPv4 only, wg0 MTU 1420), a short
+		burst of ~7 MB of TCP plus a ping flood left a high water mark of
+		2960 bytes; a board left running for hours reached 3392. A brief
+		load test is not a worst case here, because the deepest paths
+		depend on which combination of stack states a packet happens to
+		arrive in. 6144 keeps roughly 45% headroom over the larger
+		observed figure.
 
 		Raise it if you enable IPv6, IP fragmentation, or a larger MTU,
 		or if you see stack overflows on an architecture with bigger
-		frames. CONFIG_STACK_COLORATION plus "ps" reports the real usage.
+		frames. CONFIG_STACK_COLORATION plus "ps" reports the real usage
+		- and let the board run before trusting the number.
 
 config NET_WIREGUARD_MAX_PEERS
 	int "Maximum number of peers"

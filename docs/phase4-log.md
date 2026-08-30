@@ -365,6 +365,84 @@ Starting webserver
 
 ---
 
+## 長時間動作で観測したクラッシュ — Wi-Fi ドライバ側 (2026-08-30)
+
+ヘッドレス運用中に ESP32-S3 がネットワークから消える事象が2度あった。1度目(2026-08-29)は
+USB を繋いでいなかったためコンソールが読めず、クラッシュ・Wi-Fi 切断・電源断のどれかを
+区別できなかった。2度目はシリアルを記録しながら回していたため、**原因を特定できた**。
+
+記録は [logs-esp32s3-wifi-crash.txt](logs-esp32s3-wifi-crash.txt) に保存してある。
+
+### 発生状況
+
+**4時間28分の連続稼働後**にクラッシュ。それまでトンネル越しに約 490 KB を送信し続けており
+(1分ごとの ping + telnet セッション)、直前まで劣化の兆候は無かった。
+
+### クラッシュ内容
+
+```
+xtensa_user_panic: User Exception: EXCCAUSE=001c task: wifi
+up_dump_register:    PC: 42029e05
+up_dump_register:    A8: ffffffe0
+up_dump_register:   SAR: 00000018 CAUSE: 0000001c VADDR: ffffffec
+```
+
+`EXCCAUSE=0x1c` は LoadProhibited(不正なアドレスからのロード)。
+`addr2line` で呼び出し経路を解決すると:
+
+```
+start_rt_timer              ← ここで例外 (arch/xtensa/src/esp32s3/esp32s3_rt_timer.c)
+  esp32s3_rt_timer_start
+  esp_timer_arm             (esp32s3_wifi_adapter.c)
+  sta_reset_beacon_timeout
+  pm_rx_beacon_process
+  pm_on_beacon_rx
+  ppTask                    (Espressif Wi-Fi バイナリ)
+```
+
+**クラッシュしたのは `wifi` タスクで、`wg_rx` ではない。** Wi-Fi の省電力処理が
+ビーコン受信時にビーコンタイムアウトのタイマーを張り直す経路で落ちている。
+
+### 原因の所在
+
+`start_rt_timer()` はタイマーリストを走査する:
+
+```c
+list_for_every_entry(&priv->runlist, temp_p, struct rt_timer_s, list)
+  {
+    if (temp_p->alarm > timer->alarm)   /* ← ここで例外 */
+```
+
+`struct rt_timer_s` の `list` メンバはオフセット 32 にある。レジスタ **A8 が `0xffffffe0`**、
+すなわち `0 - 32` になっており、これは `container_of(NULL, struct rt_timer_s, list)` の結果に
+ほかならない。つまり **`priv->runlist` に NULL リンクが混入していた**(リスト破壊)。
+
+**これは NuttX の ESP32-S3 プラットフォームコード側の問題であり、WireGuard 実装とは無関係。**
+`esp32s3_rt_timer_start()` 自体は `spin_lock_irqsave()` を取っているが、同ファイル内には
+`enter_critical_section()` を使う経路も混在しており、その組み合わせが疑わしい。ただし
+競合の正確な経路までは特定できていないため、断定はしない。
+
+なお NuttX master では `esp32s3_rt_timer.c` 自体が存在せず、この領域は再編されている。
+本プロジェクトが固定している 12.7.0 固有の問題である可能性があり、**新しい NuttX で
+再現するかの確認は今後の課題**。
+
+### 副産物: `wg_rx` のスタック実測値が更新された
+
+クラッシュダンプにはタスク一覧も含まれており、そこで自分の過去の計測が甘かったことが判明した:
+
+```
+dump_task:  10  10  0 100 RR Task - Waiting Semaphore ... 4056  3392  83.6%!   wg_rx
+```
+
+短時間の負荷試験では **2,960 バイト (72.9%)** だったが、長時間動作では **3,392 バイト (83.6%)**
+まで伸びており、NuttX の `!` 警告が出ていた。深い経路に入るかどうかは「パケットが到着した
+瞬間のスタック状態の組み合わせ」に依存するため、**短時間のバーストは worst case にならない**。
+
+`CONFIG_NET_WIREGUARD_RX_STACKSIZE` の既定値を **4096 → 6144** に引き上げ、Kconfig の help にも
+「数値を信じる前にボードを長時間走らせること」を明記した。
+
+---
+
 ## 学んだこと・引き継ぎ事項
 
 ### 良かった点
