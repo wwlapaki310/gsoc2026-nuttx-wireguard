@@ -1,0 +1,1767 @@
+<title>wg0 on NuttX — 発表スライド</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:   #f5f7f8;
+    --surface: #ffffff;
+    --sunk:    #eaeef0;
+    --ink:     #121a20;
+    --ink-2:   #56626d;
+    --ink-3:   #838f99;
+    --rule:    #d3dade;
+    --rule-2:  #e6eaed;
+    --wg:      #8c1a1f;
+    --nx:      #1b6c68;
+    --wg-fill: #f7e9ea;
+    --nx-fill: #e4f0ef;
+    --warn:    #8a5a06;
+    --warn-fill:#fbf0dc;
+
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas,
+            "Liberation Mono", monospace;
+    --sans: "Zen Kaku Gothic New", system-ui, -apple-system, "Segoe UI",
+            "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0e1317;
+      --surface: #161d23;
+      --sunk:    #121920;
+      --ink:     #e6ebef;
+      --ink-2:   #9ea9b3;
+      --ink-3:   #76828c;
+      --rule:    #2a333c;
+      --rule-2:  #202830;
+      --wg:      #e8797d;
+      --nx:      #52bdb4;
+      --wg-fill: #2b1a1c;
+      --nx-fill: #13282a;
+      --warn:    #d9a441;
+      --warn-fill:#2a2113;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:   #0e1317;
+    --surface: #161d23;
+    --sunk:    #121920;
+    --ink:     #e6ebef;
+    --ink-2:   #9ea9b3;
+    --ink-3:   #76828c;
+    --rule:    #2a333c;
+    --rule-2:  #202830;
+    --wg:      #e8797d;
+    --nx:      #52bdb4;
+    --wg-fill: #2b1a1c;
+    --nx-fill: #13282a;
+    --warn:    #d9a441;
+    --warn-fill:#2a2113;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+
+  /* ================= stage ================= */
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  #canvas {
+    width: 1280px;
+    height: 720px;
+    flex: none;
+    transform-origin: center center;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    display: none;
+    padding: 56px 72px 60px 108px;
+    overflow: hidden;
+  }
+
+  .slide.on { display: block; }
+
+  /* left measurement rail — datasheet margin ruler */
+  .slide::before {
+    content: "";
+    position: absolute;
+    left: 52px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--rule-2);
+  }
+
+  .rail {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 52px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 60px;
+    pointer-events: none;
+  }
+
+  .rail span {
+    writing-mode: vertical-rl;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .ticks {
+    position: absolute;
+    left: 40px; top: 56px; bottom: 56px;
+    width: 12px;
+  }
+
+  .ticks i {
+    position: absolute;
+    right: 0;
+    height: 1px;
+    width: 6px;
+    background: var(--rule);
+  }
+
+  .ticks i.maj { width: 12px; background: var(--ink-3); }
+
+  /* top progress hairline */
+  #bar {
+    position: absolute;
+    left: 0; top: 0; height: 3px;
+    background: var(--wg);
+    transition: width .25s ease;
+    z-index: 5;
+  }
+
+  .num {
+    position: absolute;
+    right: 30px; bottom: 22px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ================= slide typography ================= */
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--wg);
+    margin-bottom: 14px;
+  }
+
+  .eyebrow.nx { color: var(--nx); }
+
+  h2 {
+    font-size: 40px;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin: 0 0 26px;
+    text-wrap: balance;
+  }
+
+  h2.sm { font-size: 33px; }
+
+  h2 code, .kbd {
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .lede {
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0 0 26px;
+  }
+
+  ul.pts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-size: 19px;
+    line-height: 1.62;
+    max-width: 66ch;
+  }
+
+  ul.pts li {
+    padding-left: 22px;
+    position: relative;
+  }
+
+  ul.pts li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0.72em;
+    width: 9px; height: 1.5px;
+    background: var(--nx);
+  }
+
+  ul.pts li.wg::before { background: var(--wg); height: 3px; top: 0.66em; }
+
+  ul.pts ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  ul.pts ul li { padding-left: 16px; }
+  ul.pts ul li::before {
+    width: 5px; height: 1px; background: var(--ink-3); top: 0.75em;
+  }
+
+  strong { font-weight: 700; color: var(--ink); }
+  .red { color: var(--wg); font-weight: 700; }
+  .tl  { color: var(--nx); font-weight: 700; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    background: var(--sunk);
+    padding: 1px 5px;
+    border-radius: 2px;
+    letter-spacing: -0.02em;
+  }
+
+  /* ================= building blocks ================= */
+
+  .cols {
+    display: grid;
+    gap: 34px;
+    align-items: start;
+  }
+  .cols.c2 { grid-template-columns: 1fr 1fr; }
+  .cols.c2u { grid-template-columns: 1.05fr 0.95fr; }
+  .cols.c3 { grid-template-columns: repeat(3, 1fr); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule-2);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 7px;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n { text-align: right; font-family: var(--mono); }
+  td.big { font-family: var(--mono); font-size: 19px; font-weight: 600; }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.62;
+    background: var(--sunk);
+    border: 1px solid var(--rule-2);
+    border-left: 3px solid var(--ink-3);
+    padding: 14px 16px;
+    margin: 0;
+    overflow-x: auto;
+    letter-spacing: -0.01em;
+  }
+
+  pre.bad { border-left-color: var(--wg); }
+  pre.good { border-left-color: var(--nx); }
+  pre b { color: var(--wg); font-weight: 600; }
+  pre i { color: var(--nx); font-style: normal; font-weight: 600; }
+  pre s { color: var(--ink-3); text-decoration: none; }
+
+  .card {
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    background: var(--surface);
+  }
+
+  .card h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin: 0 0 10px;
+  }
+
+  .card p { margin: 0; font-size: 16px; line-height: 1.62; color: var(--ink-2); }
+  .card p + p { margin-top: 8px; }
+
+  .card.hi { background: var(--wg-fill); border-color: var(--wg); }
+  .card.hi h3 { color: var(--wg); }
+  .card.hi p { color: var(--ink); }
+  .card.ok { background: var(--nx-fill); border-color: var(--nx); }
+  .card.ok h3 { color: var(--nx); }
+  .card.ok p { color: var(--ink); }
+
+  /* metric readout */
+  .metrics { display: flex; gap: 0; border: 1px solid var(--rule); }
+  .metric { flex: 1; padding: 16px 18px; border-right: 1px solid var(--rule-2); }
+  .metric:last-child { border-right: 0; }
+  .metric .k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 7px;
+  }
+  .metric .v {
+    font-family: var(--mono); font-size: 27px; font-weight: 600;
+    letter-spacing: -0.03em; display: block; line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric .u { font-size: 14px; font-weight: 400; color: var(--ink-2); }
+  .metric.up .v { color: var(--nx); }
+  .metric.down .v { color: var(--wg); }
+
+  .note {
+    font-size: 14px;
+    color: var(--ink-3);
+    line-height: 1.6;
+    margin: 14px 0 0;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    color: var(--ink-3);
+    vertical-align: 2px;
+  }
+  .tag.ok { color: var(--nx); }
+  .tag.no { color: var(--wg); }
+  .tag.wip { color: var(--warn); }
+
+  /* ================= title slide ================= */
+
+  .title-slide { padding: 0; display: none; }
+  .title-slide.on { display: grid; }
+  .title-slide {
+    grid-template-rows: 1fr auto;
+  }
+  .t-main { padding: 0 80px; display: flex; flex-direction: column; justify-content: center; }
+  .t-main h1 {
+    font-size: 62px;
+    line-height: 1.16;
+    letter-spacing: -0.035em;
+    font-weight: 900;
+    margin: 0 0 20px;
+  }
+  .t-main h1 .m { font-family: var(--mono); letter-spacing: -0.06em; color: var(--wg); }
+  .t-sub { font-size: 21px; color: var(--ink-2); margin: 0 0 34px; }
+  .t-meta {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.1em;
+    color: var(--ink-3); display: flex; gap: 26px; flex-wrap: wrap;
+  }
+  .t-strip {
+    display: flex; border-top: 1px solid var(--rule);
+    background: var(--sunk);
+  }
+  .t-strip div {
+    flex: 1; padding: 16px 24px; border-right: 1px solid var(--rule-2);
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--ink-2);
+  }
+  .t-strip div:last-child { border-right: 0; }
+  .t-strip b { display: block; color: var(--ink); font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+
+  /* ================= chapter slide ================= */
+
+  .chapter { display: none; }
+  .chapter.on { display: flex; }
+  .chapter {
+    flex-direction: column; justify-content: center;
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .chapter .eyebrow { color: var(--wg); }
+  .chapter h2 { color: var(--paper); font-size: 48px; margin-bottom: 20px; }
+  .chapter .lede { color: #9ea9b3; font-size: 19px; }
+  .chapter .num { color: #6d7982; }
+  .chapter .rail span { color: #6d7982; }
+  .chapter::before { background: #2a333c; }
+  .chapter .ticks i { background: #2a333c; }
+  .chapter .ticks i.maj { background: #6d7982; }
+
+  /* ================= figures ================= */
+
+  svg text {
+    font-family: var(--mono);
+    font-size: 12px;
+    fill: var(--ink-2);
+  }
+  svg text.lbl { font-size: 11px; letter-spacing: 0.08em; fill: var(--ink-3); }
+  svg text.hd { font-size: 13px; font-weight: 600; fill: var(--ink); }
+  svg text.rd { fill: var(--wg); font-weight: 600; }
+  svg text.td { fill: var(--nx); font-weight: 600; }
+
+  /* ================= notes drawer ================= */
+
+  #notes {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-height: 42vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-top: 2px solid var(--ink);
+    padding: 20px 30px 26px;
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--ink-2);
+    display: none;
+    z-index: 20;
+  }
+  #notes.on { display: block; }
+  #notes h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--wg); margin: 0 0 10px; font-weight: 500;
+  }
+  #notes p { margin: 0 0 10px; max-width: 100ch; }
+  #notes p:last-child { margin-bottom: 0; }
+
+  .notes-src { display: none; }
+
+  /* ================= overview ================= */
+
+  #ov {
+    position: fixed; inset: 0; z-index: 30;
+    background: var(--paper);
+    overflow-y: auto;
+    padding: 28px;
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+    align-content: start;
+  }
+  #ov.on { display: grid; }
+  .ov-i {
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    padding: 12px 13px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: var(--ink);
+    display: flex; flex-direction: column; gap: 7px;
+    min-height: 92px;
+  }
+  .ov-i:hover, .ov-i:focus-visible { border-color: var(--wg); outline: none; }
+  .ov-i.cur { border-color: var(--wg); background: var(--wg-fill); }
+  .ov-i .n {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    color: var(--ink-3); font-variant-numeric: tabular-nums;
+  }
+  .ov-i .t { font-size: 13.5px; line-height: 1.45; font-weight: 500; }
+
+  /* ================= help ================= */
+
+  #help {
+    position: fixed; right: 14px; top: 12px; z-index: 25;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+    color: var(--ink-3); display: flex; gap: 14px;
+    background: var(--paper); padding: 5px 9px;
+  }
+  #help b { color: var(--ink-2); font-weight: 500; }
+
+  a { color: var(--nx); }
+
+  :focus-visible { outline: 2px solid var(--wg); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #bar { transition: none; }
+  }
+</style>
+
+<div id="help">
+  <span><b>←→</b> 移動</span>
+  <span><b>N</b> 原稿</span>
+  <span><b>O</b> 一覧</span>
+</div>
+
+<div id="stage"><div id="canvas">
+  <div id="bar"></div>
+
+<!-- ================= 1 ================= -->
+<section class="slide title-slide" data-t="タイトル">
+  <div class="t-main">
+    <p class="eyebrow">Google Summer of Code 2026 &nbsp;·&nbsp; Apache NuttX</p>
+    <h1>WireGuard を<br>Apache NuttX に移植する</h1>
+    <p class="t-sub">組み込み RTOS に、現代的な VPN を。<br>そして「動いた」の先に何があったか。</p>
+    <p class="t-meta"><span>satoru akita</span><span>2026</span><span class="m">wg0 / netutils</span></p>
+  </div>
+  <div class="t-strip">
+    <div><b>ESP32-S3</b>実機 · Xtensa LX7</div>
+    <div><b>実 Wi-Fi</b>家庭用 AP 経由</div>
+    <div><b>本物のピア</b>Linux kernel / Windows 公式</div>
+    <div><b>260 KiB/s</b>トンネル越し TCP</div>
+  </div>
+  <div class="num">01</div>
+  <div class="notes-src">
+今日は、Apache NuttX という組み込み向けの RTOS に、WireGuard という VPN を移植した話をします。実際に ESP32-S3 の実機の上で動かして、家の Wi-Fi 越しに、Windows の公式 WireGuard クライアントと通信するところまで確認できています。
+||
+ただ、今日いちばん話したいのは「動きました」ではありません。動くまでと、動き続けさせるまでの間に、OS の前提を取り違えて何度も嵌まりました。そこが本題です。
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="slide" data-t="3行でいうと" data-rail="intro">
+  <p class="eyebrow">Summary</p>
+  <h2>3行でいうと</h2>
+  <ul class="pts">
+    <li>NuttX には VPN がなかった。WireGuard を <code>wg0</code> という<strong>仮想ネットワークインターフェース</strong>として実装した。</li>
+    <li>sim → QEMU → <strong>ESP32-S3 実機</strong>で、実 Wi-Fi 越しに<strong>本物の WireGuard</strong> と疎通。設定も永続化も複数ピアも動く。</li>
+    <li class="wg">その過程で <span class="red">「テストは通ったのに壊れている」</span>を 5 回踏んだ。&nbsp;← 今日の本題</li>
+  </ul>
+  <div style="margin-top:34px" class="metrics">
+    <div class="metric"><span class="k">移植したコード</span><span class="v">2,953<span class="u"> 行</span></span></div>
+    <div class="metric"><span class="k">無改変で流用</span><span class="v">3,079<span class="u"> 行</span></span></div>
+    <div class="metric"><span class="k">検証したアーキ</span><span class="v">4<span class="u"> 種</span></span></div>
+    <div class="metric"><span class="k">最長連続動作</span><span class="v">4:28<span class="u"> h:mm</span></span></div>
+  </div>
+  <div class="num">02</div>
+  <div class="notes-src">
+先に結論だけ言っておきます。NuttX には VPN の実装がなかったので、WireGuard を wg0 という仮想ネットワークインターフェースとして実装しました。シミュレータだけでなく実機で、本物の Wi-Fi を経由して、Windows の公式クライアントと通信できています。
+||
+そして、その過程で「テストは通ったのに実は壊れている」というパターンを5回踏みました。全部、確認の仕方が浅かったせいです。今日はそれを順番に話します。
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="slide" data-t="Apache NuttX とは" data-rail="intro">
+  <p class="eyebrow nx">Context 1 / 2</p>
+  <h2>Apache NuttX とは</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>Apache Software Foundation で開発されている<strong>組み込み向け RTOS</strong></li>
+        <li>特徴は <strong>POSIX 準拠</strong>。<code>open()</code> / <code>socket()</code> / <code>pthread</code> がそのまま使える</li>
+        <li>数十 KB 規模のマイコンから動く</li>
+        <li>ARM / RISC-V / Xtensa / x86 / …</li>
+      </ul>
+      <p class="note">「小さいけれど Linux っぽく書ける」——<br>今日はこれが効いた場面と、<strong>効かなかった場面</strong>の両方が出てきます。</p>
+    </div>
+    <div class="card ok">
+      <h3>効いたところ</h3>
+      <p>OS 依存を <code>socket()</code> と <code>pthread</code> だけに寄せられた。プラットフォーム層は <strong>186 行</strong>。</p>
+      <p style="margin-top:14px"><strong>sim / QEMU / Xtensa / Cortex-M4F — 4 アーキすべて無変更で動いた。</strong></p>
+    </div>
+  </div>
+  <div class="num">03</div>
+  <div class="notes-src">
+NuttX は Apache Software Foundation で開発されている組み込み向けの RTOS です。最大の特徴は POSIX 準拠であることで、open や socket、pthread といった Linux でおなじみの API がそのまま使えます。小さいけれど Linux っぽく書ける、というのが売りです。
+||
+実際これは効きました。OS 依存の部分をソケットとスレッドだけに寄せられたので、プラットフォーム層は186行で済んでいます。おかげで4つのアーキテクチャで無変更で動きました。ただ、この「Linux っぽい」が後半で牙をむきます。
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="slide" data-t="WireGuard とは" data-rail="intro">
+  <p class="eyebrow">Context 2 / 2</p>
+  <h2>WireGuard とは</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>モダンな VPN プロトコル。<strong>Linux カーネル 5.6 でマージ</strong></li>
+        <li class="wg">何が嬉しいか — <span class="red">とにかく小さい</span></li>
+        <li>暗号スイートが<strong>固定</strong>(Noise / Curve25519 / ChaCha20-Poly1305 / BLAKE2s)
+          <ul><li>ネゴシエーションがない = 実装が小さく、攻撃面も小さい</li></ul>
+        </li>
+        <li>UDP 単一ポートで動く — NAT 越えが素直</li>
+      </ul>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>実装</th><th style="text-align:right">おおよその規模</th></tr></thead>
+        <tbody>
+          <tr><td>OpenVPN</td><td class="n">~ 100,000 行</td></tr>
+          <tr><td>IPsec (strongSwan)</td><td class="n">~ 400,000 行</td></tr>
+          <tr><td><strong>WireGuard</strong></td><td class="n" style="color:var(--wg);font-weight:700">~ 4,000 行</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:18px"><strong>小さい = 監査しやすい</strong>、そして<br><strong class="red">組み込みに載る</strong>。ここが出発点です。</p>
+    </div>
+  </div>
+  <div class="num">04</div>
+  <div class="notes-src">
+WireGuard は比較的新しい VPN プロトコルで、Linux カーネル 5.6 でマージされています。何が嬉しいかというと、とにかく実装が小さいことです。OpenVPN や IPsec が十万行から数十万行あるのに対し、WireGuard は約4,000行です。
+||
+なぜ小さいかというと、暗号スイートを固定してネゴシエーションをなくしたからです。実装が小さいということは、監査しやすいということであり、そして組み込みに載る、ということです。ここが今回の出発点です。
+  </div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="slide" data-t="なぜ組み込みに VPN が要るのか" data-rail="why">
+  <p class="eyebrow">Motivation</p>
+  <h2>現場に置いた機器に、どうやって触るのか</h2>
+  <div class="cols c3">
+    <div class="card">
+      <h3>選択肢 A</h3>
+      <p><strong>グローバル IP を晒す</strong></p>
+      <p>ポートを開ける。SSH や HTTP をインターネットに直接向ける。</p>
+      <p style="color:var(--wg);margin-top:12px">スキャンされ、総当たりされる。</p>
+    </div>
+    <div class="card">
+      <h3>選択肢 B</h3>
+      <p><strong>独自プロトコルを作る</strong></p>
+      <p>常時接続でクラウドに繋ぎ、そこを踏み台にする。</p>
+      <p style="color:var(--wg);margin-top:12px">認証も暗号も自作。作り込みが要る。</p>
+    </div>
+    <div class="card">
+      <h3>選択肢 C</h3>
+      <p><strong>ベンダーのクラウド</strong></p>
+      <p>SoC ベンダーの IoT プラットフォームに寄せる。</p>
+      <p style="color:var(--wg);margin-top:12px">ロックイン。プロトコルは自分で選べない。</p>
+    </div>
+  </div>
+  <div class="card hi" style="margin-top:26px">
+    <h3>本来の答え</h3>
+    <p><strong>VPN を張る。</strong>ただし NuttX には、その選択肢が<strong>存在しなかった</strong>。<br>
+    そして WireGuard は 4,000 行なので、載る。</p>
+  </div>
+  <div class="num">05</div>
+  <div class="notes-src">
+そもそもなぜ組み込みに VPN が要るのか。機器を現場に設置したあと、ファームウェアを更新したりログを取ったりデバッグしたりする必要が出てきます。そのときの現実的な選択肢が、この3つです。
+||
+グローバル IP を晒すか、独自プロトコルを作り込むか、ベンダーのクラウドに繋ぐか。どれも嬉しくありません。本来なら VPN を張ればいい話なのに、NuttX にはその選択肢がありませんでした。そして WireGuard は小さいので載る。これが動機です。
+  </div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section class="slide" data-t="NuttX が VPN を話せると何が変わるか" data-rail="why">
+  <p class="eyebrow nx">Why it matters</p>
+  <h2 class="sm">NuttX が VPN を話せると、何が変わるか</h2>
+  <p class="lede">やりたいことが変わるのではなく、<strong>やりたかったことが普通の方法でできるようになる</strong>。</p>
+  <div class="cols c2" style="gap:22px 40px">
+    <div>
+      <ul class="pts" style="font-size:17px;gap:13px">
+        <li><strong>設置後の保守</strong> — 現場の機器に <code>ssh</code> / <code>telnet</code> で入る。ログを取る。ファームを更新する。<em>いつもの道具のまま。</em></li>
+        <li><strong>センサの回収</strong> — 機器がクラウドに合わせるのではなく、<strong>クラウドの側を機器のネットワークに引き込む</strong>。</li>
+      </ul>
+    </div>
+    <div>
+      <ul class="pts" style="font-size:17px;gap:13px">
+        <li><strong>ゼロトラストの末端まで</strong> — 認証済みの暗号トンネルが、MCU まで届く。境界の内側が LAN で終わらない。</li>
+        <li><strong>相互運用</strong> — 相手は Linux でも Windows でも既存の WireGuard サーバでもいい。<strong>独自プロトコルではない</strong>ことがそのまま価値になる。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card ok" style="margin-top:24px">
+    <h3>この発表のデモが示していること</h3>
+    <p>ESP32-S3 の上で <strong>Web サーバを起動して、ブラウザから開いた</strong>。特別なクライアントは要らない。
+    トンネルの向こうの MCU が、ただの LAN 上のホストとして振る舞っている。</p>
+  </div>
+  <div class="num">06</div>
+  <div class="notes-src">
+少し夢の話をさせてください。NuttX が VPN を話せるようになると何が変わるか。やりたいことが増えるというより、やりたかったことが普通の方法でできるようになります。
+||
+現場の機器に SSH で入る。ログを回収する。センサのデータを取りに行く。全部、いつものネットワークの道具のままできます。機器がクラウドに合わせるのではなく、クラウドを機器のネットワークに引き込める。そして相手は既存の WireGuard サーバでいい。独自プロトコルではないことが、そのまま価値になります。
+||
+このあとのデモで、ESP32 の上で Web サーバを起動してブラウザから開きます。特別なクライアントは要りません。トンネルの向こうのマイコンが、ただの LAN 上のホストとして振る舞っている。それが言いたいことです。
+  </div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section class="slide" data-t="ベース選定" data-rail="design">
+  <p class="eyebrow">Approach</p>
+  <h2>ゼロから書かない</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>ベース: <strong>wireguard-lwip</strong> (BSD-3-Clause, Daniel Hope)
+          <ul><li>lwIP 向けの WireGuard 実装</li><li>NuttX のライセンス方針とも整合</li></ul>
+        </li>
+        <li class="wg">この実装の良いところ:<br><span class="red">OS 依存が 4 関数に隔離されている</span></li>
+      </ul>
+      <pre style="margin-top:20px">/* wireguard-platform.h */
+uint32_t <i>wireguard_sys_now</i>(void);
+void     <i>wireguard_random_bytes</i>(void *, size_t);
+void     <i>wireguard_tai64n_now</i>(uint8_t *);
+bool     <i>wireguard_is_under_load</i>(void);</pre>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>upstream の関数</th><th>NuttX での実装</th></tr></thead>
+        <tbody>
+          <tr><td><code>sys_now</code></td><td><code>clock_gettime(MONOTONIC)</code></td></tr>
+          <tr><td><code>random_bytes</code></td><td><code>/dev/urandom</code></td></tr>
+          <tr><td><code>tai64n_now</code></td><td><code>clock_gettime(REALTIME)</code></td></tr>
+          <tr><td><code>is_under_load</code></td><td><code>return false</code></td></tr>
+        </tbody>
+      </table>
+      <div class="card ok" style="margin-top:20px">
+        <h3>方針</h3>
+        <p><strong>プロトコル・暗号コア</strong> (<code>wireguard.c</code> / <code>crypto/</code>) → <strong>無改変で流用</strong>。upstream と <code>cmp</code> でバイト一致を確認。</p>
+        <p><strong>lwIP netif グルー</strong> → <strong>NuttX 用に書き直し</strong>。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">07</div>
+  <div class="notes-src">
+ゼロから書くのではなく、wireguard-lwip という lwIP 向けの実装をベースにしました。BSD ライセンスで、NuttX のライセンス方針とも相性がいいです。
+||
+この実装の良いところは、OS 依存の部分が4つの関数に隔離されていることです。時刻、乱数、TAI64N のタイムスタンプ、そして負荷判定。これだけです。なので、プロトコルと暗号のコアはそのまま持ってきて、lwIP に依存しているネットワークインターフェース部分だけを書き直す、という方針にしました。
+||
+流用した部分は upstream から取ってきたままで、cmp コマンドでバイト一致を確認しています。差分が出ないことが、あとで upstream に出すときの説明のしやすさに直結します。
+  </div>
+</section>
+
+<!-- ================= 8 ================= -->
+<section class="slide" data-t="設計判断: netdev として実装する" data-rail="design">
+  <p class="eyebrow">Design decision</p>
+  <h2>lwIP netif ではなく、NuttX netdev として</h2>
+  <div class="cols c2u">
+    <div>
+      <table>
+        <thead><tr><th></th><th>lwIP</th><th>NuttX</th></tr></thead>
+        <tbody>
+          <tr><td>NIC 抽象</td><td><code>struct netif</code></td><td><code>struct net_driver_s</code></td></tr>
+          <tr><td>バッファ</td><td><code>pbuf</code></td><td><code>iob</code></td></tr>
+          <tr><td>登録</td><td><code>netif_add()</code></td><td><code>netdev_register()</code></td></tr>
+          <tr><td>送出契機</td><td>コールバック</td><td><code>devif_poll()</code></td></tr>
+        </tbody>
+      </table>
+      <p class="note">NuttX は lwIP を使っていない。<strong>独自のネットワークスタックを持っている</strong>。<br>
+      → <code>wireguardif.c</code> は使えない。<code>drivers/net/tun.c</code> を手本に書き直し。</p>
+    </div>
+    <div class="card hi">
+      <h3>この設計の要点</h3>
+      <p><code>wg0</code> を <code>NET_LL_TUN</code> の netdev として登録する。
+      <strong>アプリから見れば、ただのネットワークインターフェース</strong>。<code>ifconfig</code> も既存アプリもそのまま動く。</p>
+      <p style="margin-top:14px">ただし、この仮想 NIC の「配線」は物理イーサネットではなく——</p>
+      <p style="margin-top:6px;font-size:20px"><strong class="red">UDP ソケット</strong></p>
+      <p style="margin-top:12px;font-size:14px;color:var(--ink-2)">この一点が、後で 3 つ目の落とし穴を生みます。</p>
+    </div>
+  </div>
+  <div class="num">08</div>
+  <div class="notes-src">
+ここが最初の設計判断です。NuttX は lwIP を使っておらず、独自のネットワークスタックを持っています。NIC の抽象化も、バッファ管理も、登録 API も、送信の契機も全部違うので、既存の netif グルーはそのまま使えません。
+||
+そこで NuttX の TUN ドライバを手本にして、wg0 を仮想 NIC として登録する形で書き直しました。アプリから見ればただのネットワークインターフェースなので、ifconfig も既存のアプリもそのまま動きます。
+||
+ポイントは、この仮想 NIC の配線が、物理的なイーサネットではなく UDP ソケットだということです。当たり前のことを言っているようですが、この一点が後で3つ目の落とし穴を生みます。覚えておいてください。
+  </div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section class="slide" data-t="データの流れ" data-rail="design">
+  <p class="eyebrow">Data path</p>
+  <h2>データの流れ</h2>
+  <svg viewBox="0 0 1080 380" style="width:100%;height:auto;max-height:392px" role="img" aria-label="送信は devif_poll から暗号化して sendto、受信は wg_rx タスクが recvfrom して復号し ipv4_input で注入する">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+      </marker>
+    </defs>
+
+    <!-- TX row -->
+    <text class="lbl" x="0" y="16">TX &nbsp;— 送信</text>
+    <g color="var(--nx)">
+      <rect x="0" y="30" width="150" height="52" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="75" y="61" text-anchor="middle">アプリ</text>
+      <line x1="152" y1="56" x2="196" y2="56" stroke="currentColor" marker-end="url(#ar)"></line>
+
+      <rect x="200" y="30" width="176" height="52" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="288" y="53" text-anchor="middle">NuttX TCP/IP</text>
+      <text x="288" y="70" text-anchor="middle" font-size="11">devif_poll()</text>
+      <line x1="378" y1="56" x2="422" y2="56" stroke="currentColor" marker-end="url(#ar)"></line>
+    </g>
+    <g color="var(--wg)">
+      <rect x="426" y="30" width="200" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="526" y="53" text-anchor="middle">wg_txpoll()</text>
+      <text class="rd" x="526" y="70" text-anchor="middle" font-size="11">ChaCha20-Poly1305</text>
+      <line x1="628" y1="56" x2="672" y2="56" stroke="currentColor" marker-end="url(#ar)"></line>
+
+      <rect x="676" y="30" width="176" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="764" y="61" text-anchor="middle">psock_sendto()</text>
+      <line x1="854" y1="56" x2="898" y2="56" stroke="currentColor" marker-end="url(#ar)"></line>
+    </g>
+    <rect x="902" y="18" width="178" height="76" fill="none" stroke="var(--ink-3)" stroke-dasharray="4 3"></rect>
+    <text class="hd" x="991" y="50" text-anchor="middle">相手のピア</text>
+    <text x="991" y="68" text-anchor="middle" font-size="11">UDP/51820</text>
+
+    <line x1="0" y1="130" x2="1080" y2="130" stroke="var(--rule)"></line>
+
+    <!-- RX row -->
+    <text class="lbl" x="0" y="170">RX &nbsp;— 受信 &nbsp;·&nbsp; すべて wg_rx タスクのコンテキスト</text>
+    <rect x="0" y="186" width="1080" height="104" fill="none" stroke="var(--nx)" stroke-dasharray="4 3"></rect>
+    <text class="td" x="1064" y="204" text-anchor="end" font-size="11">wg_rx task</text>
+
+    <g color="var(--wg)">
+      <rect x="16" y="214" width="176" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="104" y="245" text-anchor="middle">psock_poll()</text>
+      <line x1="194" y1="240" x2="238" y2="240" stroke="currentColor" marker-end="url(#ar)"></line>
+
+      <rect x="242" y="214" width="186" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="335" y="245" text-anchor="middle">psock_recvfrom()</text>
+      <line x1="430" y1="240" x2="474" y2="240" stroke="currentColor" marker-end="url(#ar)"></line>
+
+      <rect x="478" y="214" width="150" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="553" y="245" text-anchor="middle">復号</text>
+      <line x1="630" y1="240" x2="674" y2="240" stroke="currentColor" marker-end="url(#ar)"></line>
+    </g>
+    <g color="var(--nx)">
+      <rect x="678" y="214" width="186" height="52" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="771" y="245" text-anchor="middle">ipv4_input()</text>
+      <line x1="866" y1="240" x2="910" y2="240" stroke="currentColor" marker-end="url(#ar)"></line>
+
+      <rect x="914" y="214" width="150" height="52" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="989" y="245" text-anchor="middle">アプリ</text>
+    </g>
+
+    <text x="0" y="330" font-size="13" fill="var(--wg)" font-weight="600">この「スタックに注入し直す」ところが、あとで 2 回効いてきます。</text>
+    <text x="0" y="354" font-size="12">— 応答パケットが wg_rx のスタックの上で作られる（→ スタック消費）／ TX は別タスクから出る（→ EBADF）</text>
+  </svg>
+  <div class="num">09</div>
+  <div class="notes-src">
+データの流れです。送信側は、アプリが wg0 宛にパケットを出すと、NuttX のスタックが devif_poll 経由で wg0 に渡してくるので、暗号化して UDP で相手に送ります。
+||
+受信側は、バックグラウンドのタスクが UDP を待っていて、届いたら復号して、ipv4_input で NuttX のスタックに注入し直します。
+||
+この「注入し直す」ところを覚えておいてください。これが後で2回効いてきます。ひとつは、注入した先で作られる応答パケットが、この受信タスクのスタックの上で作られるということ。もうひとつは、送信だけが別のタスクから出るということです。
+  </div>
+</section>
+
+<!-- ================= 10 ================= -->
+<section class="slide" data-t="できたもの" data-rail="build">
+  <p class="eyebrow nx">What exists</p>
+  <h2>できたもの</h2>
+  <div class="cols c2u">
+    <div>
+      <pre class="good">nsh&gt; <i>wg</i> genkey
+<s>iN9uJ...(base64 32 bytes)</s>
+nsh&gt; <i>wg</i> set private-key &lt;KEY&gt;
+nsh&gt; <i>wg</i> set peer &lt;PUBKEY&gt; \
+        endpoint 203.0.113.9:51820 \
+        allowed-ips 10.10.0.1/32 \
+        persistent-keepalive 25
+nsh&gt; <i>wg</i> up
+nsh&gt; <i>wg</i> show
+nsh&gt; <i>wg</i> saveconf        <s># /data/wg0.conf</s>
+nsh&gt; <i>wg</i> setconf /data/wg0.conf</pre>
+      <p class="note"><strong>設定ファイルは wg(8) と同じ INI 形式</strong>。デスクトップの <code>.conf</code> をそのまま持ち込める。</p>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>構成要素</th><th style="text-align:right">行数</th><th>由来</th></tr></thead>
+        <tbody>
+          <tr><td><code>wireguard.c</code> + <code>crypto/</code></td><td class="n">3,079</td><td><span class="tag">流用</span></td></tr>
+          <tr><td><code>nuttx-wireguardif.c</code></td><td class="n">2,157</td><td><span class="tag no">自作</span></td></tr>
+          <tr><td><code>wg_main.c</code> (NSH)</td><td class="n">344</td><td><span class="tag no">自作</span></td></tr>
+          <tr><td><code>nuttx-wireguardif.h</code></td><td class="n">266</td><td><span class="tag no">自作</span></td></tr>
+          <tr><td><code>nuttx-platform.c</code></td><td class="n">186</td><td><span class="tag no">自作</span></td></tr>
+          <tr><td>Kconfig / ビルド統合</td><td class="n">248</td><td><span class="tag no">自作</span></td></tr>
+        </tbody>
+      </table>
+      <div class="card ok" style="margin-top:18px">
+        <h3>ディレクトリ構成</h3>
+        <p><code>apps/netutils/wireguard/</code> ——<br><strong>そのまま PR に出せる形</strong>で置いてある。手元のツリーと PR のツリーが同じもの。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">10</div>
+  <div class="notes-src">
+できたものです。NSH のコマンドとして wg を用意していて、鍵の生成から、ピアの設定、起動、状態表示、設定の保存と読み込みまでできます。
+||
+設定ファイルは wg(8) と同じ INI 形式にしたので、デスクトップの WireGuard の設定ファイルをそのまま持ち込めます。
+||
+行数の内訳はこの通りで、流用が3,079行、自分で書いたのが約3,000行です。ディレクトリ構成は apps/netutils/wireguard としていて、これはそのまま upstream の PR に出せる形にしてあります。手元のツリーと PR のツリーが同じものになるようにしています。
+  </div>
+</section>
+
+<!-- ================= 11 ================= -->
+<section class="slide" data-t="検証マトリクス" data-rail="build">
+  <p class="eyebrow">Verification</p>
+  <h2>どこまで確かめたか</h2>
+  <table>
+    <thead><tr><th>環境</th><th>アーキテクチャ</th><th>相手のピア</th><th>確認したこと</th></tr></thead>
+    <tbody>
+      <tr><td><strong>sim</strong></td><td>x86_64 / Linux</td><td>Linux kernel WireGuard</td><td>ハンドシェイク・疎通・ランタイム設定・<strong>2 ピア同時セッション</strong> <span class="tag ok">自動</span></td></tr>
+      <tr><td><strong>QEMU</strong></td><td>ARM Cortex-A7</td><td>Linux kernel WireGuard</td><td>実スタック上での疎通</td></tr>
+      <tr><td><strong>ESP32-S3</strong></td><td>Xtensa LX7</td><td>Windows 公式クライアント</td><td><strong>実 Wi-Fi 越し</strong>の telnet / HTTP / 7 MB 転送 / rekey / 電源断からの復帰</td></tr>
+      <tr><td><strong>Spresense</strong></td><td>ARM Cortex-M4F</td><td>—</td><td><code>wg0</code> 起動まで(<strong>コード変更ゼロ</strong>)</td></tr>
+    </tbody>
+  </table>
+  <div class="card hi" style="margin-top:26px">
+    <h3>意図的にこだわった点</h3>
+    <p>通信相手を<strong>すべて本物の WireGuard 実装</strong>にした。自作同士で通信して「動きました」では、<strong>相互運用性の証明にならない</strong>。<br>
+    Linux カーネルの WireGuard モジュールと、Windows の公式クライアント。どちらも仕様の側の実装です。</p>
+  </div>
+  <p class="note">sim の 2 本(疎通・複数ピア)はスクリプト化してあり、<code>scripts/verify-sim-wg-*.sh</code> で回帰として回せる。</p>
+  <div class="num">11</div>
+  <div class="notes-src">
+検証は4環境でやりました。シミュレータ、QEMU、ESP32-S3 の実機、そして Spresense です。
+||
+意図的にこだわったのは、通信相手を全部「本物の WireGuard 実装」にしたことです。自作同士で通信して動きましたと言っても、それは相互運用性の証明になりません。相手が Linux カーネルの WireGuard モジュールと、Windows の公式クライアントであることに意味があります。
+||
+シミュレータでの疎通と複数ピアの確認はスクリプトにしてあって、回帰テストとして回せるようにしています。
+  </div>
+</section>
+
+<!-- ================= 12 ================= -->
+<section class="slide" data-t="デモ" data-rail="build">
+  <p class="eyebrow">Demo</p>
+  <h2>トンネルの向こうの ESP32-S3 を、ただのホストとして触る</h2>
+  <div class="cols c2u">
+    <div>
+      <pre>nsh&gt; uname -a       <s># 本物の NuttX</s>
+nsh&gt; ifconfig       <s># wg0 = 10.10.0.2</s>
+nsh&gt; wg show        <s># handshake / transfer</s>
+nsh&gt; ps             <s># wg_rx が動いている</s>
+nsh&gt; webserver &amp;    <s># Web サーバ起動</s></pre>
+      <p class="note" style="margin-top:16px">→ ブラウザで <code>http://10.10.0.2/</code><br>
+      <strong>この telnet も HTTP も、すべてトンネル越し。</strong></p>
+    </div>
+    <div class="card ok">
+      <h3>録画</h3>
+      <p style="font-size:18px"><a href="https://youtu.be/1kyX2av5WG4">youtu.be/1kyX2av5WG4</a></p>
+      <p style="margin-top:14px">ESP32-S3 が家庭用 Wi-Fi に繋がり、そこに WireGuard トンネルを張っている。
+      PC からはトンネルの内側の IP <code>10.10.0.2</code> しか見ていない。</p>
+      <p style="margin-top:14px"><strong>USB は繋がっていない。</strong>電源アダプタのみ。設定も操作も全部ネットワーク越し。</p>
+    </div>
+  </div>
+  <div class="num">12</div>
+  <div class="notes-src">
+では実際に動いているところをご覧ください。ESP32-S3 が家の Wi-Fi に繋がっていて、そこに WireGuard のトンネルを張っています。トンネル越しに telnet でログインして、コマンドを叩いて、Web サーバーを起動して、最後にブラウザでアクセスします。
+||
+補足すると、この時点で USB は繋がっていません。電源アダプタだけです。起動時に設定を読んでトンネルを張り、telnet が上がってくるので、あとは全部ネットワーク越しに操作しています。組み込み機器の運用としては、これが本来の姿だと思います。
+  </div>
+</section>
+
+<!-- ================= 13 chapter ================= -->
+<section class="slide chapter" data-t="【本題】「動いた」と「動き続ける」の間" data-rail="pitfalls">
+  <p class="eyebrow">Part 2</p>
+  <h2>「動いた」と<br>「動き続ける」の間</h2>
+  <p class="lede">ここからが本題です。<br>
+  この移植で踏んだ落とし穴は、すべて同じ形をしていました——<br>
+  <strong style="color:#fff">浅いテストが通り、深いテストで落ちる。</strong></p>
+  <div class="num">13</div>
+  <div class="notes-src">
+ここからが今日の本題です。
+||
+動くまでに何度も嵌まったんですが、あとから並べてみると全部同じ形をしていました。浅いテストが通って、深いテストで落ちる。しかも、浅いテストが通ったせいで「そこは大丈夫」だと思い込んで、別のところを何時間も探す。この繰り返しでした。
+||
+5つ紹介します。
+  </div>
+</section>
+
+<!-- ================= 14 ================= -->
+<section class="slide" data-t="落とし穴 1: SO_RCVTIMEO" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 1 / 5</p>
+  <h2>戻り値は <code>0</code>。でも効いていない</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>設計: <code>recvfrom()</code> をタイムアウト付きでブロックし、<strong>タイムアウトのたびにタイマー処理</strong>を回す</li>
+        <li><code>setsockopt(SO_RCVTIMEO)</code> は <strong class="tl">成功を返す</strong>(<code>ret = 0</code>)</li>
+        <li>しかし <code>recvfrom()</code> は <strong class="red">永久にブロックする</strong></li>
+      </ul>
+      <div class="card hi" style="margin-top:22px">
+        <h3>結果 — 完全な鶏卵</h3>
+        <p>タイマーが一度も回らない → <strong>最初のハンドシェイクが送られない</strong> → 相手も何も送ってこない → <code>recvfrom()</code> が戻らない</p>
+      </div>
+    </div>
+    <div>
+      <pre class="bad">setsockopt(sock, SOL_SOCKET,
+           SO_RCVTIMEO, &amp;tv, sizeof(tv));
+<s>/* → 0 (成功)  ...のはずだった */</s>
+
+recvfrom(sock, ...);
+<b>/* 永久にブロック */</b></pre>
+      <pre class="good" style="margin-top:16px">poll(&amp;fds, 1, <i>timeout_ms</i>);
+if (fds.revents &amp; POLLIN)
+  recvfrom(sock, ...);</pre>
+      <p class="note"><strong>教訓:</strong> 戻り値が <code>0</code> でも、その機能が実装されているとは限らない。<br>
+      <strong>設定したことではなく、期待した挙動を確認する。</strong></p>
+    </div>
+  </div>
+  <div class="num">14</div>
+  <div class="notes-src">
+1つ目。受信スレッドは、UDP をタイムアウト付きで待って、タイムアウトするたびにハンドシェイクや keepalive のタイマー処理を回す設計にしていました。
+||
+setsockopt でタイムアウトを設定すると、戻り値は 0 で成功します。ところが recvfrom は永久にブロックしました。相手から何か来ない限り戻ってこない。でも、こちらからハンドシェイクを送らないと相手は何も送ってこない。完全な鶏と卵です。
+||
+教訓は、戻り値が 0 でもその機能が実装されているとは限らない、ということです。設定したことを確認するのではなく、期待した挙動を確認しないといけない。poll に変えて解決しました。
+  </div>
+</section>
+
+<!-- ================= 15 ================= -->
+<section class="slide" data-t="落とし穴 2: detach した pthread" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 2 / 5</p>
+  <h2>生成には成功する。でも生き残らない</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li><code>wg</code> コマンドが <code>pthread_create()</code> + <code>pthread_detach()</code> で受信スレッドを起動</li>
+        <li><code>wg</code> コマンドが終了すると、<strong class="red">スレッドも動かなくなる</strong>
+          <ul><li><code>ps</code> にすら出てこない</li></ul>
+        </li>
+        <li>面白い挙動: <code>pthread_create()</code> の直後に <code>usleep()</code> を入れると<strong>スレッド内の <code>printf</code> は出る</strong><br>→ 生成自体はされている</li>
+        <li>POSIX の建前では、detach したスレッドは生成元と無関係に生き続けるはず</li>
+      </ul>
+    </div>
+    <div>
+      <pre class="bad">pthread_create(&amp;tid, NULL, wg_rx, priv);
+pthread_detach(tid);
+return OK;   <b>/* wg コマンド終了 → 消える */</b></pre>
+      <pre class="good" style="margin-top:16px"><i>task_create</i>("wg_rx", prio, stack,
+            wg_rx_task, NULL);</pre>
+      <div class="card" style="margin-top:20px">
+        <h3>教訓</h3>
+        <p><strong>POSIX 準拠 ≠ Linux と同じ寿命モデル。</strong><br>
+        「生成に成功した」は「生き続ける」の保証ではない。<br>
+        <code>ps</code> で<strong>存在を確認する</strong>まで信じない。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">15</div>
+  <div class="notes-src">
+2つ目。受信スレッドを pthread_create して pthread_detach していたんですが、wg コマンドが終了した瞬間にスレッドが動かなくなりました。ps にも出てきません。
+||
+面白いのは、pthread_create の直後に usleep を入れるとスレッド内の printf が出ることです。つまり生成自体はされている。POSIX の建前では detach したスレッドは生成元と無関係に生き続けるはずなんですが、そうなりませんでした。
+||
+task_create で独立したタスクにして解決しました。ここでも同じで、生成に成功したことは生き続けることの保証ではない。ps で存在を確認するまで信じない、という話です。
+  </div>
+</section>
+
+<!-- ================= 16 ================= -->
+<section class="slide" data-t="落とし穴 3: ping は通るのに TCP だけ死ぬ" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 3 / 5 &nbsp;·&nbsp; 症状</p>
+  <h2><code>ping</code> は通る。<code>telnet</code> は死ぬ。</h2>
+  <div class="cols c3" style="margin-bottom:24px">
+    <div class="card ok">
+      <h3>実機 ping</h3>
+      <p style="font-size:19px"><strong>0% packet loss</strong></p>
+      <p>トンネル越し。完璧に通る。</p>
+    </div>
+    <div class="card hi">
+      <h3>同じトンネルで telnet</h3>
+      <p>TCP 3-way ハンドシェイクは<strong class="tl">成立する</strong></p>
+      <p>しかし telnetd のバナーが<strong class="red">1 バイトも届かない</strong></p>
+    </div>
+    <div class="card ok">
+      <h3>切り分け: WireGuard 抜き</h3>
+      <p>同一 LAN で直接 telnet</p>
+      <p><strong>正常に動く</strong> → telnetd も TCP スタックも悪くない</p>
+    </div>
+  </div>
+  <div class="card" style="border-color:var(--wg);border-left-width:4px">
+    <h3 style="color:var(--wg)">絞り込み</h3>
+    <p><code>wg0</code> の実装のうち、<strong>TCP のアプリケーションデータを送出する経路だけ</strong>が壊れている。<br>
+    暗号化も、ハンドシェイクも、ICMP も、TCP の SYN-ACK も動いているのに。</p>
+  </div>
+  <p class="note"><strong class="red">「ping が通るから経路は大丈夫」——この思い込みが、いちばん時間を溶かしました。</strong></p>
+  <div class="num">16</div>
+  <div class="notes-src">
+3つ目。これが一番厄介でした。実機で ping は完璧に通ります。0% パケットロスです。
+||
+ところが同じトンネルで telnet すると、TCP の 3-way ハンドシェイクまでは成立するのに、telnetd が出すバナーが1バイトも届かない。切り分けのために WireGuard を使わず同じ LAN で直接 telnet したら、正常に動きました。つまり telnetd も TCP スタックも悪くない。
+||
+wg0 の実装の、TCP のデータを送る経路だけが壊れている。暗号化もハンドシェイクも ICMP も SYN-ACK も動いているのに、です。正直に言うと、ping が通っていたせいで「送信経路は大丈夫だろう」と思い込んで、しばらく別のところを探していました。これがいちばん時間を溶かしました。
+  </div>
+</section>
+
+<!-- ================= 17 ================= -->
+<section class="slide" data-t="犯人は EBADF" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 3 / 5 &nbsp;·&nbsp; 犯人</p>
+  <h2>送信経路にログを仕込む</h2>
+  <pre class="bad" style="font-size:15px">wg_txpoll: d_len=72 proto=<b>6 (TCP)</b> peer=0x3fc9a720
+wg_encrypt_and_send: psock_sendto ret=-1 <b>errno=9</b>      <s>← EBADF: Bad file descriptor</s></pre>
+  <div class="cols c2" style="margin-top:26px">
+    <div class="card ok">
+      <h3>成功する送信</h3>
+      <p><strong><code>wg_rx</code> タスク自身のコンテキスト</strong></p>
+      <p style="margin-top:10px">· ハンドシェイク応答<br>· keepalive<br>· ICMP echo reply &nbsp;<span class="tag ok">= ping</span><br>· TCP SYN-ACK &nbsp;<span class="tag ok">= 3-way は成立</span></p>
+    </div>
+    <div class="card hi">
+      <h3>失敗する送信</h3>
+      <p><strong>LPWORK ワーカースレッド</strong>から</p>
+      <p style="margin-top:10px">· TCP のアプリケーションデータ<br>&nbsp;&nbsp;<strong>すべて</strong> &nbsp;<span class="tag no">= バナーが消える</span></p>
+      <p style="margin-top:14px;font-size:14px">同じソケット。同じコード。<br><strong>呼ぶタスクだけが違う。</strong></p>
+    </div>
+  </div>
+  <div class="num">17</div>
+  <div class="notes-src">
+送信経路にログを仕込んで実機で再現させたところ、sendto が errno=9、つまり EBADF、不正なファイルディスクリプタを返していました。
+||
+そして成功する送信と失敗する送信が、きれいに分かれていました。成功するのは受信タスク自身のコンテキストから出るもの。ハンドシェイク応答、keepalive、ICMP の echo reply、そして TCP の SYN-ACK です。ping が通ったのも、3-way ハンドシェイクが成立したのも、全部これです。
+||
+失敗するのは LPWORK というワーカースレッドから出るもので、これが TCP のアプリケーションデータ全部に相当していました。同じソケット、同じコード、呼ぶタスクだけが違う。
+  </div>
+</section>
+
+<!-- ================= 18 ================= -->
+<section class="slide" data-t="原因: fd はタスクグループに閉じている" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 3 / 5 &nbsp;·&nbsp; 原因</p>
+  <h2 class="sm">fd は「プロセス」ではなく<strong class="red">タスクグループ</strong>に閉じている</h2>
+  <svg viewBox="0 0 1080 300" style="width:100%;height:auto;max-height:300px" role="img" aria-label="wg_rx タスクグループの fd テーブルにソケットがあり、LPWORK は独立したタスクグループなので同じ fd 番号が存在しない">
+    <defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+      </marker>
+    </defs>
+    <!-- wg_rx group -->
+    <rect x="0" y="14" width="470" height="200" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+    <text class="td" x="16" y="38">task group: wg_rx</text>
+    <rect x="18" y="52" width="200" height="44" fill="var(--surface)" stroke="var(--nx)"></rect>
+    <text class="hd" x="118" y="79" text-anchor="middle">wg_rx task</text>
+    <rect x="248" y="52" width="204" height="144" fill="var(--surface)" stroke="var(--nx)"></rect>
+    <text class="lbl" x="350" y="72" text-anchor="middle">fd table</text>
+    <line x1="262" y1="82" x2="438" y2="82" stroke="var(--rule)"></line>
+    <text x="266" y="104">0,1,2 &nbsp; console</text>
+    <text class="td" x="266" y="130">3 &nbsp;&nbsp;&nbsp;&nbsp; UDP socket</text>
+    <text x="266" y="156" font-size="11" fill="var(--ink-3)">— ここにだけ存在する</text>
+    <line x1="220" y1="74" x2="244" y2="74" stroke="var(--nx)" marker-end="url(#ar2)" color="var(--nx)"></line>
+    <text x="18" y="130" font-size="12">同期的に返るもの:</text>
+    <text class="td" x="18" y="152" font-size="12">ICMP reply / SYN-ACK</text>
+    <text x="18" y="174" font-size="12">→ この中で完結 →</text>
+    <text class="td" x="18" y="196" font-size="13" font-weight="600">送信できる ✓</text>
+
+    <!-- separator -->
+    <text x="514" y="118" text-anchor="middle" font-size="13" fill="var(--ink-3)">親子関係</text>
+    <text x="514" y="140" text-anchor="middle" font-size="17" fill="var(--wg)" font-weight="700">なし</text>
+    <line x1="514" y1="14" x2="514" y2="214" stroke="var(--wg)" stroke-dasharray="5 4"></line>
+
+    <!-- LPWORK group -->
+    <rect x="562" y="14" width="470" height="200" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+    <text class="rd" x="578" y="38">task group: LPWORK</text>
+    <rect x="580" y="52" width="200" height="44" fill="var(--surface)" stroke="var(--wg)"></rect>
+    <text class="hd" x="680" y="79" text-anchor="middle">lpwork thread</text>
+    <rect x="810" y="52" width="204" height="144" fill="var(--surface)" stroke="var(--wg)"></rect>
+    <text class="lbl" x="912" y="72" text-anchor="middle">fd table</text>
+    <line x1="824" y1="82" x2="1000" y2="82" stroke="var(--rule)"></line>
+    <text x="828" y="104">0,1,2 &nbsp; console</text>
+    <text class="rd" x="828" y="130">3 &nbsp;&nbsp;&nbsp;&nbsp; — 未使用 —</text>
+    <text x="828" y="156" font-size="11" fill="var(--wg)">→ EBADF (errno 9)</text>
+    <line x1="782" y1="74" x2="806" y2="74" stroke="var(--wg)" marker-end="url(#ar2)" color="var(--wg)"></line>
+    <text x="580" y="130" font-size="12">非同期にキューされるもの:</text>
+    <text class="rd" x="580" y="152" font-size="12">TCP アプリケーションデータ</text>
+    <text x="580" y="174" font-size="12">→ devif_poll() 経由 →</text>
+    <text class="rd" x="580" y="196" font-size="13" font-weight="600">無言で死ぬ ✗</text>
+
+    <text x="0" y="252" font-size="13" fill="var(--ink)" font-weight="600">LPWORK は起動時から存在する独立したシステムタスク。wg_rx とは task_create() の系譜が一切つながっていない。</text>
+    <text x="0" y="278" font-size="13" fill="var(--wg)" font-weight="600">だから「ping が通る」は、送信経路が正しいことの証明にならなかった。半分しか通っていなかった。</text>
+  </svg>
+  <div class="num">18</div>
+  <div class="notes-src">
+原因はこうでした。NuttX のファイルディスクリプタは、タスクグループ単位でスコープされます。UDP ソケットの fd を持っているのは受信タスクとその子孫だけです。
+||
+ところが LPWORK は起動時から存在する独立したシステムタスクで、受信タスクとは task_create の系譜が一切つながっていません。だから LPWORK の fd テーブルにはそのソケットが存在せず、EBADF になります。
+||
+ping が通ったのは、ICMP の応答が ipv4_input の呼び出しの中で同期的に作られて、受信タスクのコンテキストのまま送り返されるからです。TCP の SYN-ACK も同じ。だからハンドシェイクまでは成立する。でもアプリケーションのデータは非同期にキューされて LPWORK から出るので、そこだけ無言で死ぬ。
+||
+つまり「ping が通る」は、送信経路が正しいことの証明になっていませんでした。半分しか通っていなかったんです。
+  </div>
+</section>
+
+<!-- ================= 19 ================= -->
+<section class="slide" data-t="修正: psock_*() 内部 API へ" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 3 / 5 &nbsp;·&nbsp; 修正</p>
+  <h2>fd テーブルを経由しない</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>NuttX には <strong>fd を介さない内部 API</strong> がある<br>
+          <code>psock_socket()</code> / <code>psock_bind()</code> /<br>
+          <code>psock_sendto()</code> / <code>psock_recvfrom()</code></li>
+        <li>実体は <code>struct socket</code> —— <strong>ただのメモリ上の構造体</strong></li>
+        <li>ポインタで触るだけなので、<strong class="tl">どのタスクからでも同じように使える</strong></li>
+      </ul>
+      <pre style="margin-top:20px"><b>- int sock;</b>              <s>/* タスクグループに縛られる */</s>
+<i>+ struct socket psock;</i>   <s>/* どこからでも OK */</s>
+
+<b>- sendto(priv-&gt;sock, ...);</b>
+<i>+ psock_sendto(&amp;priv-&gt;psock, ...);</i></pre>
+    </div>
+    <div>
+      <div class="card ok">
+        <h3>結果</h3>
+        <p>トンネル越しの <strong>telnet と HTTP が動作</strong>。<br>
+        さっきのデモの Web サーバは、この修正の産物です。</p>
+      </div>
+      <div class="card" style="margin-top:18px;border-color:var(--warn)">
+        <h3 style="color:var(--warn)">正直に言うと — これは借金でもある</h3>
+        <p><code>psock_*()</code> は内部 API なので、この実装は <strong>FLAT ビルド前提</strong>になった。
+        PROTECTED / KERNEL ビルドではアドレス空間が分かれるため、別の設計が要る。</p>
+        <p style="margin-top:10px"><strong>upstream に出すときの論点として Issue に立ててある</strong>(#6)。隠さずに相談する。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">19</div>
+  <div class="notes-src">
+修正は、fd テーブルを経由しない内部 API に切り替えることでした。psock_sendto などの API があって、これは struct socket という構造体を直接ポインタで受け取ります。ただのメモリ上の構造体なので、どのタスクから触っても問題ありません。
+||
+この修正で、さっきデモでお見せした telnet と Web サーバーが動くようになりました。
+||
+ただ、正直に言うとこれは借金でもあります。psock は内部 API なので、この実装は FLAT ビルド前提になりました。PROTECTED や KERNEL ビルドではアドレス空間が分かれるので、別の設計が要ります。ここは upstream に出すときの論点になるので、隠さずに Issue に立てて相談するつもりです。
+  </div>
+</section>
+
+<!-- ================= 20 ================= -->
+<section class="slide" data-t="代償と回収: 50ms が 10倍を隠していた" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 4 / 5</p>
+  <h2>「大した影響はない」を実測したら、10 倍だった</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>修正の代償: <code>poll()</code> も fd ベースだったので使えなくなった</li>
+        <li>暫定対応 —— <strong>50 ms ごとに覗きに行くポーリング</strong>
+          <ul><li>当時の認識:「アイドル時に CPU を無駄に起こすだけだろう」</li></ul>
+        </li>
+        <li class="wg"><span class="red">間違いだった。</span>届いたパケットが最大 50 ms 待たされ、<strong>スループット自体を律速していた</strong></li>
+        <li><code>psock_poll()</code> にコールバックを仕込み、セマフォで待つ<strong>本来のブロッキング待機</strong>に戻した</li>
+      </ul>
+    </div>
+    <div>
+      <div class="metrics" style="flex-direction:column">
+        <div class="metric down"><span class="k">ポーリング — TCP スループット</span><span class="v">24<span class="u"> KiB/s</span></span></div>
+        <div class="metric up" style="border-top:1px solid var(--rule-2)"><span class="k">ブロッキング — TCP スループット</span><span class="v">260<span class="u"> KiB/s</span></span></div>
+      </div>
+      <table style="margin-top:20px">
+        <thead><tr><th></th><th style="text-align:right">ポーリング</th><th style="text-align:right">ブロッキング</th></tr></thead>
+        <tbody>
+          <tr><td>負荷時 ping RTT</td><td class="n">370–1146 ms</td><td class="n" style="color:var(--nx);font-weight:600">33–68 ms</td></tr>
+        </tbody>
+      </table>
+      <div class="card ok" style="margin-top:18px">
+        <h3>副産物</h3>
+        <p>7 MB の連続転送中に <strong>rekey が発生して成功</strong>した。<br>それまで一度も通っていなかった経路です。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">20</div>
+  <div class="notes-src">
+実はさっきの修正には代償がありました。sendto を内部 API に変えたのはいいのですが、poll も同じく fd ベースなので使えなくなったんです。そこで暫定的に「50ミリ秒ごとに覗きに行く」ポーリングにしました。
+||
+このとき私は「アイドル時に CPU を無駄に起こすだけだろう」と思っていたんですが、これが間違いでした。パケットが届いてから最大50ミリ秒待たされるので、スループット自体が律速されていたんです。
+||
+psock_poll にコールバックを仕込んでセマフォで待つ形に直したところ、スループットが 24 KB/s から 260 KB/s へ、約10倍になりました。負荷時の ping も1秒近くかかっていたのが数十ミリ秒です。
+||
+おまけに、7MB を連続で流している最中に鍵の再ネゴシエーション、rekey が発生して成功することも確認できました。これは今まで一度も通っていなかった経路です。長く流さないと出てこない挙動でした。
+  </div>
+</section>
+
+<!-- ================= 21 ================= -->
+<section class="slide" data-t="落とし穴 5: sim では通るのに実機が固まる" data-rail="pitfalls">
+  <p class="eyebrow">Pitfall 5 / 5</p>
+  <h2>sim では通る。実機は<strong class="red">固まる</strong>。</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>設定の永続化を実装。保存はシェルのリダイレクトで済ませるつもりだった</li>
+      </ul>
+      <pre class="bad" style="margin-top:16px">nsh&gt; wg showconf &gt; /data/wg0.conf
+<b>(ボードごと固まる。応答なし)</b></pre>
+      <ul class="pts" style="margin-top:20px">
+        <li>sim では通る。実機の SPIFFS 上でだけ固まる</li>
+        <li>原因: <strong>NSH は builtin を別タスクとして spawn する</strong>。その stdout を SPIFFS 上のファイルに向けると詰まる</li>
+        <li>SPI flash 操作タスクのスタックを 768 → 3072 に増やしても<strong>直らなかった</strong>
+          <ul><li>ただし <code>ps</code> の使用率は 80.4% → 18.6% だったので、その修正自体は残した</li></ul>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <pre class="good">nsh&gt; wg <i>saveconf</i>
+nsh&gt; reboot
+<s>...</s>
+nsh&gt; wg show
+<i>interface: wg0</i>
+  <s>public key: ...</s>
+  <i>listening port: 51820</i></pre>
+      <div class="card ok" style="margin-top:20px">
+        <h3>アプリの中で書く</h3>
+        <p>リダイレクトに頼らず、<code>wg saveconf</code> が自分で <code>fopen()</code> して書く。同じ処理でも<strong>アプリのコンテキストからなら通る</strong>。</p>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3>検証は Kconfig で表現できない値で</h3>
+        <p>keepalive <code>33</code> / <code>44</code>、ピア 2 つ。<strong>ビルド時のデフォルトでは絶対に出ない値</strong>を保存して、電源断のあとに読み出せることを確認した。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">21</div>
+  <div class="notes-src">
+5つ目。設定の永続化を実装したとき、保存はシェルのリダイレクトで済ませるつもりでした。wg showconf の出力をファイルに流すだけです。
+||
+これがボードごと固まりました。シミュレータでは通るのに、実機の SPIFFS 上でだけ固まる。原因は、NSH が builtin コマンドを別タスクとして spawn していて、その標準出力を SPIFFS 上のファイルに向けると詰まる、というものでした。
+||
+SPI フラッシュ操作タスクのスタックを増やしても直りませんでした。ただ、調べる過程で ps を見たらそのタスクのスタック使用率が80%を超えていたので、その修正自体は残してあります。
+||
+最終的には、リダイレクトに頼らず wg saveconf が自分で fopen して書く形にしました。
+||
+それと、検証のときに気をつけたのが、Kconfig のデフォルト値では絶対に出てこない値を使うことです。keepalive を 33 と 44 にして、ピアを2つにして保存する。読み出せた値がビルド時の値なのか、本当にファイルから来たのか、区別できるようにしています。
+  </div>
+</section>
+
+<!-- ================= 22 ================= -->
+<section class="slide" data-t="実測が覆した数字: スタック" data-rail="pitfalls">
+  <p class="eyebrow">Measurement</p>
+  <h2>「測った」でも足りなかった</h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>受信タスクのスタック、当初 <strong>3072 バイト</strong> —— 誰も測っていない数字</li>
+        <li><code>wg_rx</code> は <code>ipv4_input()</code> を自分のスタックで呼ぶ<br>= <strong>TCP スタックの深さが丸ごと乗る</strong>。さらに即答するパケットは<strong>返信の暗号化まで</strong>この上で走る</li>
+        <li><code>CONFIG_STACK_COLORATION</code> + <code>ps</code> で実機計測</li>
+      </ul>
+      <table style="margin-top:22px">
+        <thead><tr><th>計測条件</th><th style="text-align:right">高水位</th><th style="text-align:right">3072 での余裕</th></tr></thead>
+        <tbody>
+          <tr><td>起動直後</td><td class="n">2,864 B</td><td class="n">208 B</td></tr>
+          <tr><td>7 MB TCP + ping フラッド<br><span style="font-size:13px;color:var(--ink-3)">(短時間バースト)</span></td><td class="n">2,960 B</td><td class="n">112 B</td></tr>
+          <tr><td><strong>数時間の連続運転</strong></td><td class="n" style="color:var(--wg);font-weight:700">3,392 B</td><td class="n" style="color:var(--wg);font-weight:700">不足</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="card hi">
+        <h3>ここが今日いちばん言いたいこと</h3>
+        <p>一度目の計測で <strong>2,960 B</strong> を得て、「4096 にすれば 38% の余裕」と結論した。<br>
+        <strong>その結論を、後日のクラッシュダンプが否定した。</strong></p>
+        <p style="margin-top:12px">深いパスは、<strong>パケットが「どの状態の組み合わせ」で届くか</strong>に依存する。
+        短時間の負荷試験は<strong>最悪ケースではない</strong>。</p>
+      </div>
+      <div class="metrics" style="margin-top:20px">
+        <div class="metric"><span class="k">当初</span><span class="v">3072</span></div>
+        <div class="metric"><span class="k">一度目の結論</span><span class="v" style="color:var(--warn)">4096</span></div>
+        <div class="metric up"><span class="k">現在</span><span class="v">6144</span></div>
+      </div>
+      <p class="note"><strong>どうやって測ったか</strong>と<strong>短時間では足りないこと</strong>を Kconfig の help に書いた。次に触る人が同じ穴に落ちないように。</p>
+    </div>
+  </div>
+  <div class="num">22</div>
+  <div class="notes-src">
+最後にもう一つ。受信タスクのスタックサイズが当初 3072 バイトだったんですが、これは誰も測っていない数字でした。
+||
+さっき話したとおり、このタスクは ipv4_input を自分のスタックで呼ぶので、TCP スタックの深さが丸ごと乗ります。しかも ping や TCP の ACK のように即座に返すパケットは、返信の暗号化までこのスタックの上で走ります。
+||
+実機で計測したら、7MB の TCP と ping フラッドをかけたときのピークが 2960 バイトでした。それで 4096 にすれば約38%の余裕がある、と結論しました。
+||
+ところが、後日のクラッシュダンプでこの結論が否定されました。数時間動かしたあとの高水位が 3392 バイトだったんです。私が測ったのは最悪ケースではありませんでした。深いパスは、パケットがどの状態の組み合わせで届くかに依存するので、短時間の負荷試験では出てこないんです。
+||
+今は 6144 にしています。そして、どうやって測ったかと、短時間では足りないということを、Kconfig のヘルプに書きました。次に触る人が同じ穴に落ちないように。
+  </div>
+</section>
+
+<!-- ================= 23 ================= -->
+<section class="slide" data-t="実用に耐えるまで" data-rail="ship">
+  <p class="eyebrow nx">Part 3 &nbsp;·&nbsp; Production readiness</p>
+  <h2>デモから、運用できるものへ</h2>
+  <div class="cols c3">
+    <div class="card">
+      <h3>Before</h3>
+      <p>鍵を <strong>Kconfig にベタ書き</strong>してビルド。設定を変えるたびに再ビルド・再書き込み。</p>
+      <p style="margin-top:10px;color:var(--wg)">鍵がビルド成果物に焼き込まれる。</p>
+    </div>
+    <div class="card ok">
+      <h3>ランタイム設定</h3>
+      <p><code>wg genkey</code> / <code>wg set</code> / <code>wg setconf</code>。<strong>ビルドし直さずに鍵とピアを設定できる</strong>。</p>
+      <p style="margin-top:10px">拒否された設定が中途半端に残らないよう、<strong>検証してからコミット</strong>する実装にした。</p>
+    </div>
+    <div class="card ok">
+      <h3>永続化 + 自動起動</h3>
+      <p><code>wg saveconf</code> で保存し、起動スクリプト <code>rcS</code> が読んで <code>wg up</code>。</p>
+      <p style="margin-top:10px"><strong>電源を入れるだけでトンネルが上がる。</strong>USB も コンソールも要らない。</p>
+    </div>
+  </div>
+  <div class="cols c2u" style="margin-top:26px">
+    <div>
+      <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin:0 0 12px">複数ピア対応 — RAM とのトレード</h3>
+      <table>
+        <thead><tr><th>ピア数</th><th style="text-align:right">.bss</th><th style="text-align:right">増分</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="n">4,324 B</td><td class="n">—</td></tr>
+          <tr><td>2</td><td class="n">5,228 B</td><td class="n">+904 B</td></tr>
+          <tr><td>4</td><td class="n">7,036 B</td><td class="n">+904 B/peer</td></tr>
+          <tr><td>8</td><td class="n">10,652 B</td><td class="n">+904 B/peer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Kconfig に「なぜ」を書く</h3>
+      <p>この表をそのまま <code>NET_WIREGUARD_MAX_PEERS</code> の help に載せた。<br>
+      増分の大半は、<strong>rekey 中に旧鍵の通信を続けるための鍵ペア 3 組</strong>。</p>
+      <p style="margin-top:12px">組み込みでは <strong>RAM が直接のコスト</strong>。数字を出さずに「1〜16」とだけ書いても、選べない。</p>
+    </div>
+  </div>
+  <div class="num">23</div>
+  <div class="notes-src">
+デモが動いたあと、運用できるものにする作業をしました。
+||
+まず、鍵が Kconfig にベタ書きだったのを、実行時に設定できるようにしました。ビルド成果物に鍵が焼き込まれるのは良くないですし、設定を変えるたびに再ビルドが必要でした。実際、デモの準備でここが一番面倒でした。
+||
+次に永続化です。保存した設定を起動スクリプトが読んで自動で wg up するようにしたので、電源を入れるだけでトンネルが上がります。
+||
+そして複数ピア対応です。ピアは静的に確保されるので RAM と直接のトレードになります。実測して、1ピアあたり約904バイトという数字を出しました。この表はそのまま Kconfig のヘルプに載せています。組み込みでは RAM が直接のコストなので、「1から16まで選べます」とだけ書かれても選べないからです。
+  </div>
+</section>
+
+<!-- ================= 24 ================= -->
+<section class="slide" data-t="長時間動かして、犯人を探す" data-rail="ship">
+  <p class="eyebrow">Long-run</p>
+  <h2>止まったとき、<strong class="red">自分のせいかを言えるか</strong></h2>
+  <div class="cols c2u">
+    <div>
+      <ul class="pts">
+        <li>ボードを置きっぱなしにして、1 分ごとに <strong>4 つを独立にサンプル</strong>する監視を書いた
+          <ul>
+            <li><code>ROUTER</code> — 測っている PC 側は生きているか</li>
+            <li><code>LAN</code> — ボードはネットワークにいるか</li>
+            <li><code>TUN</code> — WireGuard は運んでいるか</li>
+            <li><code>TCP</code> — アプリのデータは流れるか</li>
+          </ul>
+        </li>
+        <li>最初の版はトンネルしか見ていなかった。<strong>止まったときに、原因を切り分けられなかった</strong></li>
+      </ul>
+      <pre style="margin-top:18px;font-size:13px">[0183] <i>OK</i>              router=1 lan=1 tun=1 tcp=1
+[0184] <b>BOARD-OFF-NETWORK</b> router=1 lan=0 tun=0 tcp=0</pre>
+    </div>
+    <div>
+      <div class="card hi">
+        <h3>1 回目 — 4h28m で停止。原因が分かった</h3>
+        <p><code>EXCCAUSE=0x1c</code>、<code>wifi</code> タスク。<code>start_rt_timer</code> が NULL リンクを辿っていた
+        (<code>A8 = 0xffffffe0</code> = <code>container_of(NULL, …)</code>)。</p>
+        <p style="margin-top:10px"><strong>ESP32-S3 の Wi-Fi ドライバ側のバグ。WireGuard ではなかった。</strong></p>
+        <p style="margin-top:10px;font-size:14px">しかも該当ファイルは <strong>upstream master で削除済み</strong>だった。報告ではなく、NuttX を新しくするのが筋。</p>
+      </div>
+      <div class="card" style="margin-top:16px;border-color:var(--warn)">
+        <h3 style="color:var(--warn)">2 回目 — 3h36m で停止。原因は言えない</h3>
+        <p>シリアルログ 2.3 MB に<strong>パニックが 1 件もない</strong>。ネットワークより先に <strong>USB ポートが消えている</strong>。</p>
+        <p style="margin-top:10px">電源断や物理的な抜けと整合するが、<strong>証明ではない</strong>。分からないものは分からないと書いた。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">24</div>
+  <div class="notes-src">
+長時間動かす話です。ボードを置きっぱなしにして監視していたんですが、最初の版はトンネルしか見ていませんでした。だから止まったときに、ファームが落ちたのか、Wi-Fi が切れたのか、私の PC 側の問題なのか、切り分けられませんでした。
+||
+書き直して、1分ごとに4つを独立にサンプルするようにしました。ルータ、ボードの LAN アドレス、トンネルのアドレス、そして TCP でログインしてコマンドが返るか。これで、止まったときにログが診断になります。
+||
+1回目は4時間28分で止まりました。クラッシュダンプが取れていて、Wi-Fi タスクの中で、タイマーのリストの NULL リンクを辿っていました。これは ESP32-S3 の Wi-Fi ドライバ側のバグで、WireGuard ではありませんでした。しかも調べたら、該当のファイルは upstream の master では削除済みでした。報告するより NuttX を新しくするのが筋、ということになります。
+||
+2回目は3時間36分で止まりましたが、こちらは原因が言えません。シリアルログにパニックが1件もなく、ネットワークより先に USB ポートが消えています。電源が落ちたか物理的に抜けたかと整合しますが、証明ではありません。分からないものは分からないと書きました。
+  </div>
+</section>
+
+<!-- ================= 25 ================= -->
+<section class="slide" data-t="移植性の答え合わせ" data-rail="ship">
+  <p class="eyebrow nx">Portability</p>
+  <h2>「4 関数に隔離した」の答え合わせ</h2>
+  <div class="cols c2u">
+    <div>
+      <table>
+        <thead><tr><th>移した先</th><th>コード変更</th><th>結果</th></tr></thead>
+        <tbody>
+          <tr><td>x86_64 (sim)</td><td><strong class="tl">なし</strong></td><td><span class="tag ok">疎通</span></td></tr>
+          <tr><td>ARM Cortex-A7 (QEMU)</td><td><strong class="tl">なし</strong></td><td><span class="tag ok">疎通</span></td></tr>
+          <tr><td>Xtensa LX7 (ESP32-S3)</td><td><strong class="tl">なし</strong></td><td><span class="tag ok">実 Wi-Fi 疎通</span></td></tr>
+          <tr><td>ARM Cortex-M4F (Spresense)</td><td><strong class="tl">なし</strong></td><td><span class="tag ok">wg0 起動</span></td></tr>
+          <tr><td>NuttX 12.7.0 → master</td><td><strong class="tl">なし</strong></td><td><span class="tag ok">ビルド通過</span></td></tr>
+        </tbody>
+      </table>
+      <p class="note">ビルドは <code>--build-arg NUTTX_REF=&lt;ref&gt;</code> で任意のリビジョンに切り替えられるようにした。</p>
+    </div>
+    <div>
+      <div class="card" style="border-color:var(--warn)">
+        <h3 style="color:var(--warn)">ただし master 移行でも「静かに壊れた」</h3>
+        <p><code>CONFIG_NSH_LINELEN</code> が master で <code>CONFIG_LINE_MAX</code> に<strong>改名</strong>されていた。</p>
+        <p style="margin-top:10px">古い名前を指定しても<strong>エラーにならない</strong>。ビルドは通る。
+        起動もする。<strong class="red"><code>wg set peer</code> の行だけが途中で切れる。</strong></p>
+        <p style="margin-top:10px;font-size:14px">44 文字の base64 鍵を含む行は約 134 文字。デフォルトの 64 では、残りが別コマンドとして実行されていた。</p>
+      </div>
+      <div class="card ok" style="margin-top:18px">
+        <h3>また同じ形だった</h3>
+        <p>ビルドが通る。起動する。<code>ping</code> も通る。<strong>それでも壊れている。</strong><br>
+        今回の 6 個目です。</p>
+      </div>
+    </div>
+  </div>
+  <div class="num">25</div>
+  <div class="notes-src">
+「OS 依存を4関数に隔離した」と最初に言いましたが、その答え合わせです。
+||
+x86、ARM Cortex-A7、Xtensa、ARM Cortex-M4F、そして NuttX のバージョンを 12.7.0 から master に上げるところまで、コード変更ゼロで通りました。設計としては当たっていたと思います。
+||
+ただし、master に上げたときにも同じ形の罠を踏みました。NSH の行長を指定する設定が、master で名前が変わっていたんです。古い名前を指定してもエラーになりません。ビルドは通るし、起動もするし、ping も通る。ただ wg set peer の行だけが途中で切れて、残りが別のコマンドとして実行されていました。
+||
+44文字の base64 鍵を含む行は134文字くらいあるので、デフォルトの64文字では切れます。これも「浅いテストが通って深いテストで落ちる」でした。今回の6個目です。
+  </div>
+</section>
+
+<!-- ================= 26 ================= -->
+<section class="slide" data-t="今後: upstream へ" data-rail="ship">
+  <p class="eyebrow">Next</p>
+  <h2>upstream へ</h2>
+  <div class="cols c2u">
+    <div>
+      <table>
+        <thead><tr><th>やること</th><th>状態</th></tr></thead>
+        <tbody>
+          <tr><td>コーディング規約準拠 (<code>checkpatch.sh</code> / <code>nxstyle</code>)</td><td><span class="tag ok">済</span></td></tr>
+          <tr><td>vendored ソースをツリーに取り込み、upstream とバイト一致を確認</td><td><span class="tag ok">済</span></td></tr>
+          <tr><td>PR に出せるディレクトリ構成にする</td><td><span class="tag ok">済</span></td></tr>
+          <tr><td><code>dev@nuttx.apache.org</code> に設計を共有し、合意を取る</td><td><span class="tag wip">草稿あり #3</span></td></tr>
+          <tr><td><code>LICENSE</code> への著作権表示追記</td><td><span class="tag wip">草稿あり #7</span></td></tr>
+          <tr><td>FLAT ビルド前提の扱いを決める</td><td><span class="tag wip">論点 #6</span></td></tr>
+          <tr><td><code>lwip/</code> 互換シムを残すか、<code>wireguard.h</code> を patch するか</td><td><span class="tag wip">要相談</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="card hi">
+        <h3>いきなり PR を投げない</h3>
+        <p>先に <code>dev@</code> に設計を出して、<strong>論点を先に潰す</strong>。<br>
+        特に「内部 API を使っている」ことは、こちらから言う。</p>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>その先</h3>
+        <p>· IPv6<br>
+        · ESP32-S3 の暗号アクセラレータへの載せ替え<br>
+        · MTU 境界・再接続まわりの異常系<br>
+        · Raspberry Pi Pico 2 W (RP2350 の Wi-Fi ドライバ移植が別タスク)</p>
+      </div>
+      <p class="note">残作業と論点は GitHub Issue に立ててある。<strong>「あとで思い出す」に頼らない。</strong></p>
+    </div>
+  </div>
+  <div class="num">26</div>
+  <div class="notes-src">
+今後です。upstream に出す準備として、コーディング規約の準拠と、流用ソースの取り込み、PR に出せるディレクトリ構成、ここまでは終わっています。
+||
+残っているのは、開発者メーリングリストに設計を共有して合意を取ること、LICENSE への著作権表示、それから FLAT ビルド前提をどう扱うかです。
+||
+方針として、いきなり PR を投げないようにしています。先に dev@ に設計を出して論点を潰す。特に「内部 API を使っている」ことは、指摘される前にこちらから言うつもりです。
+||
+残作業と論点は全部 GitHub の Issue に立ててあります。あとで思い出す、に頼らないようにしています。
+  </div>
+</section>
+
+<!-- ================= 27 ================= -->
+<section class="slide" data-t="まとめ" data-rail="ship">
+  <p class="eyebrow">Summary</p>
+  <h2>まとめ</h2>
+  <div class="cols c2" style="gap:36px">
+    <div>
+      <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--nx);font-weight:500;margin:0 0 14px">できたこと</h3>
+      <ul class="pts" style="font-size:17px;gap:12px">
+        <li>NuttX に WireGuard を <code>wg0</code> として実装した</li>
+        <li>実機・実 Wi-Fi・<strong>本物のピア</strong>で疎通。設定も永続化も複数ピアも動く</li>
+        <li>OS 依存を 4 関数に隔離した設計は当たった —— <strong>4 アーキ・2 バージョンで無変更</strong></li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--wg);font-weight:500;margin:0 0 14px">持ち帰ってほしいこと</h3>
+      <ul class="pts" style="font-size:17px;gap:12px">
+        <li class="wg">POSIX 準拠 <strong>≠</strong> Linux と同じ</li>
+        <li class="wg"><code>ping</code> が通ることは、<strong>経路が正しいことの証明にならない</strong></li>
+        <li class="wg">「たぶん大した影響はない」を実測すると、<strong>10 倍</strong>だったりする</li>
+        <li class="wg">短時間の負荷試験は<strong>最悪ケースではない</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="card hi" style="margin-top:30px">
+    <h3>結局これに尽きます</h3>
+    <p style="font-size:21px;line-height:1.6"><strong>「動いた」を証明したつもりのテストが、何を証明していないのかを毎回考えること。</strong></p>
+    <p style="margin-top:10px">この移植で踏んだ落とし穴は 6 個、全部それでした。</p>
+  </div>
+  <p class="note" style="text-align:right;margin-top:22px">ご清聴ありがとうございました。&nbsp;&nbsp;<span style="font-family:var(--mono)">github.com/&hellip;/gsoc2026-nuttx-wireguard</span></p>
+  <div class="num">27</div>
+  <div class="notes-src">
+まとめです。NuttX に WireGuard を実装して、実機で本物のピアと通信できるところまで確認しました。設定も永続化も複数ピアも動きます。OS 依存を4関数に隔離した設計は当たっていて、4つのアーキテクチャと2つの NuttX バージョンで無変更で動きました。
+||
+持ち帰ってほしいのは右側です。POSIX 準拠は Linux と同じという意味ではない。ping が通ることは経路が正しいことの証明にならない。たぶん大した影響はないと思ったものを実測すると10倍だったりする。そして、短時間の負荷試験は最悪ケースではない。
+||
+結局これに尽きると思っています。「動いた」を証明したつもりのテストが、何を証明していないのかを毎回考えること。この移植で踏んだ落とし穴は6個ありましたが、全部これでした。
+||
+ご清聴ありがとうございました。
+  </div>
+</section>
+
+</div></div>
+
+<div id="notes"><h4>話すこと</h4><div id="notes-body"></div></div>
+<div id="ov"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("canvas");
+  var slides = Array.prototype.slice.call(canvas.querySelectorAll(".slide"));
+  var bar    = document.getElementById("bar");
+  var notes  = document.getElementById("notes");
+  var nbody  = document.getElementById("notes-body");
+  var ov     = document.getElementById("ov");
+  var cur    = 0;
+
+  var RAIL = {
+    intro:    "Context",
+    why:      "Motivation",
+    design:   "Design",
+    build:    "Built",
+    pitfalls: "Pitfalls",
+    ship:     "Shipping"
+  };
+
+  /* decorate each slide with rail + tick marks + measured slide number */
+  slides.forEach(function (s, i) {
+    if (!s.classList.contains("title-slide")) {
+      var rail = document.createElement("div");
+      rail.className = "rail";
+      var sp = document.createElement("span");
+      sp.textContent = RAIL[s.dataset.rail] || "";
+      rail.appendChild(sp);
+      s.appendChild(rail);
+
+      var ticks = document.createElement("div");
+      ticks.className = "ticks";
+      for (var t = 0; t <= 24; t++) {
+        var e = document.createElement("i");
+        e.style.top = (t / 24 * 100) + "%";
+        if (t % 6 === 0) { e.className = "maj"; }
+        ticks.appendChild(e);
+      }
+      s.appendChild(ticks);
+    }
+    var n = s.querySelector(".num");
+    if (n) { n.textContent = String(i + 1).padStart(2, "0") + " / " + slides.length; }
+  });
+
+  function fit() {
+    var pad = 24;
+    var k = Math.min((window.innerWidth - pad) / 1280,
+                     (window.innerHeight - pad) / 720);
+    canvas.style.transform = "scale(" + k + ")";
+  }
+
+  function renderNotes(s) {
+    var src = s.querySelector(".notes-src");
+    nbody.textContent = "";
+    if (!src) { return; }
+    src.textContent.split("||").forEach(function (p) {
+      var t = p.trim();
+      if (!t) { return; }
+      var el = document.createElement("p");
+      el.textContent = t;
+      nbody.appendChild(el);
+    });
+  }
+
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, j) { s.classList.toggle("on", j === cur); });
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    renderNotes(slides[cur]);
+    if (location.hash !== "#" + (cur + 1)) {
+      history.replaceState(null, "", "#" + (cur + 1));
+    }
+    Array.prototype.forEach.call(ov.children, function (b, j) {
+      b.classList.toggle("cur", j === cur);
+    });
+  }
+
+  /* overview grid */
+  slides.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.className = "ov-i";
+    b.type = "button";
+    var n = document.createElement("span");
+    n.className = "n";
+    n.textContent = String(i + 1).padStart(2, "0") + " · " + (RAIL[s.dataset.rail] || "Title");
+    var t = document.createElement("span");
+    t.className = "t";
+    t.textContent = s.dataset.t || "";
+    b.appendChild(n);
+    b.appendChild(t);
+    b.addEventListener("click", function () {
+      ov.classList.remove("on");
+      show(i);
+    });
+    ov.appendChild(b);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") {
+      e.preventDefault(); show(cur + 1);
+    } else if (k === "ArrowLeft" || k === "PageUp") {
+      e.preventDefault(); show(cur - 1);
+    } else if (k === "Home") {
+      e.preventDefault(); show(0);
+    } else if (k === "End") {
+      e.preventDefault(); show(slides.length - 1);
+    } else if (k === "N" || k === "n") {
+      e.preventDefault(); notes.classList.toggle("on");
+    } else if (k === "O" || k === "o") {
+      e.preventDefault(); ov.classList.toggle("on");
+    } else if (k === "f" || k === "F") {
+      e.preventDefault();
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    } else if (k === "Escape") {
+      ov.classList.remove("on");
+    }
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (n && n - 1 !== cur) { show(n - 1); }
+  });
+
+  fit();
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+})();
+</script>
