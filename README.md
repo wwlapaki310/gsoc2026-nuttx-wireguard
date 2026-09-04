@@ -8,6 +8,33 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 
 ---
 
+## Project Overview
+
+WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and
+increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP
+using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s), while keeping
+the implementation small enough — roughly 4,000 lines — to run on microcontrollers.
+
+Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface.
+However, NuttX currently has no VPN capability. This project implements WireGuard as a NuttX
+network device (`wg0`), enabling secure remote access to NuttX-based devices.
+
+### Why This Matters
+
+Remote and secure access to NuttX devices is a real, unsolved problem across many domains:
+
+- **Edge AI and industrial IoT** — devices deployed in the field need firmware updates and remote diagnostics without physical access
+- **Satellite and space hardware** — NuttX is used in small satellite projects; once launched, the only maintenance path is through the network
+- **Unmanned infrastructure** — sensors in remote locations (ocean buoys, mountain stations, pipelines) require secure bidirectional communication
+- **Secure device mesh** — NuttX devices can communicate directly with each other through an encrypted tunnel without relying on cloud relay
+
+Without a VPN the realistic options are to expose a global IP, build a bespoke protocol, or
+accept a vendor cloud — each unappealing for its own reasons. WireGuard's small footprint and
+simple key model make it particularly well-suited for these constrained environments, and the
+peer on the other end can be any existing WireGuard endpoint.
+
+---
+
 ## Status
 
 The tunnel works end to end on hardware, is configurable at runtime, and survives a power
@@ -35,22 +62,6 @@ Peers are always real WireGuard implementations — the Linux kernel module and 
 Windows client. Interoperating with another copy of this code would prove nothing.
 
 The port also builds unchanged against both NuttX 12.7.0 and `master`.
-
----
-
-## Why
-
-NuttX has no VPN. Reaching a device after it has been deployed means exposing a global IP,
-building a bespoke protocol, or accepting a vendor cloud — each unappealing for its own
-reasons. WireGuard is roughly 4,000 lines, so it fits on a microcontroller, and the peer on
-the other end can be any existing WireGuard endpoint.
-
-This matters in places where NuttX already runs:
-
-- **Edge AI and industrial IoT** — firmware updates and diagnostics without physical access
-- **Satellites** — after launch, the network is the only maintenance path
-- **Unmanned infrastructure** — buoys, mountain stations, pipelines
-- **Device-to-device** — an encrypted tunnel without a cloud relay in the middle
 
 ---
 
