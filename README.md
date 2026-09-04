@@ -1,37 +1,60 @@
-# GSoC 2026 — WireGuard Port to Apache NuttX
+# WireGuard for Apache NuttX
+
+A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), exposed as a
+`wg0` network device. Verified on real hardware against real WireGuard peers.
 
 > **Discussion:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
-
-| | |
-|---|---|
-| **Organization** | [Apache Software Foundation](https://summerofcode.withgoogle.com/programs/2026/organizations/apache-software-foundation) |
-| **Difficulty** | Major |
-| **Size** | ~175 hours (Medium) |
-| **Mentors** | Alan Carvalho de Assis (acassis@apache.org), dev@nuttx.apache.org |
-| **Reference** | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip), [ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) |
+> **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel
 
 ---
 
-## Project Overview
+## Status
 
-WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using state-of-the-art cryptography (Curve25519, ChaCha20-Poly1305, BLAKE2s), while keeping the implementation small enough to run on microcontrollers.
+The tunnel works end to end on hardware, is configurable at runtime, and survives a power
+cycle. What remains is upstream submission.
 
-Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface. However, NuttX currently has no VPN capability. This project implements WireGuard as a NuttX network device, enabling secure remote access to NuttX-based devices.
+| | |
+|---|---|
+| **Interface** | `wg0`, registered as a `NET_LL_TUN` netdev over a UDP socket |
+| **Configuration** | Runtime (`wg genkey` / `wg set` / `wg setconf`), persisted to a `wg(8)`-compatible INI file |
+| **Peers** | 1–16, selectable in Kconfig (~904 bytes of `.bss` per peer) |
+| **Throughput** | 260 KiB/s over Wi-Fi on ESP32-S3, tunnelled TCP |
+| **Longest observed run** | 4 h 28 min |
+| **Upstream** | Not yet submitted — see [Remaining work](#remaining-work) |
 
-### Why This Matters
+### Verified on
 
-Remote and secure access to NuttX devices is a real, unsolved problem across many domains:
+| Environment | Architecture | Peer | What was confirmed |
+|---|---|---|---|
+| sim | x86_64 / Linux | Linux kernel WireGuard | Handshake, traffic, runtime config, **two simultaneous peer sessions** (scripted) |
+| QEMU | ARM Cortex-A7 | Linux kernel WireGuard | Traffic on a real NuttX scheduler |
+| **ESP32-S3** | Xtensa LX7 | **Windows official client** | **Real Wi-Fi**: telnet, HTTP, 7 MB transfer, rekey, recovery from power loss |
+| Spresense | ARM Cortex-M4F | — | `wg0` comes up (**zero code changes**) |
 
-- **Edge AI and industrial IoT** — devices deployed in the field need firmware updates and remote diagnostics without physical access
-- **Satellite and space hardware** — NuttX is used in small satellite projects; once launched, the only maintenance path is through the network
-- **Unmanned infrastructure** — sensors in remote locations (ocean buoys, mountain stations, pipelines) require secure bidirectional communication
-- **Secure device mesh** — NuttX devices can communicate directly with each other through an encrypted tunnel without relying on cloud relay
+Peers are always real WireGuard implementations — the Linux kernel module and the official
+Windows client. Interoperating with another copy of this code would prove nothing.
 
-WireGuard's small footprint and simple key model make it particularly well-suited for these constrained environments.
+The port also builds unchanged against both NuttX 12.7.0 and `master`.
 
-### Architecture
+---
 
-WireGuard is implemented as a NuttX network device (`wg0`). The porting work is split into three layers:
+## Why
+
+NuttX has no VPN. Reaching a device after it has been deployed means exposing a global IP,
+building a bespoke protocol, or accepting a vendor cloud — each unappealing for its own
+reasons. WireGuard is roughly 4,000 lines, so it fits on a microcontroller, and the peer on
+the other end can be any existing WireGuard endpoint.
+
+This matters in places where NuttX already runs:
+
+- **Edge AI and industrial IoT** — firmware updates and diagnostics without physical access
+- **Satellites** — after launch, the network is the only maintenance path
+- **Unmanned infrastructure** — buoys, mountain stations, pipelines
+- **Device-to-device** — an encrypted tunnel without a cloud relay in the middle
+
+---
+
+## Architecture
 
 ```
 +-----------------------------------------------+
@@ -41,252 +64,194 @@ WireGuard is implemented as a NuttX network device (`wg0`). The porting work is 
 |           |                                   |
 |    NuttX Network Stack (BSD socket API)       |
 |       |              |                        |
-|  eth0 / wlan0       wg0  ← this project       |
+|  eth0 / wlan0       wg0  <- this project      |
 |  (physical NIC)  (WireGuard netdev)           |
 |                      |                        |
 |         +------------+------------+           |
 |         |            |            |           |
-|   wireguard.c   wireguardif.c  nuttx-         |
-|   + crypto/     (logic reused) platform.c     |
-|   unchanged     lwIP API calls  (clock,       |
-|                 → NuttX API     urandom)      |
-|                      |                        |
+|   wireguard.c   nuttx-wireguardif.c   nuttx-  |
+|   + crypto/     (netdev + UDP socket) platform.c
+|   unmodified    written for NuttX     (clock, |
+|                      |                urandom)|
 |              UDP socket (port 51820)          |
 +-----------------------------------------------+
               |
     Internet / LTE / satellite link
               |
-    WireGuard peer (Linux server)
+    WireGuard peer (Linux, Windows, ...)
 ```
+
+NuttX has its own TCP/IP stack and does not use lwIP, so the reference implementation's netif
+glue could not be reused — `wg0` is registered with `netdev_register()`, modelled on
+`drivers/net/tun.c`. The protocol and crypto sources are carried unmodified.
+
+Transmission goes through `devif_poll()` → encrypt → `psock_sendto()`. Reception runs in a
+background task that blocks on `psock_poll()`, decrypts, and injects with `ipv4_input()`.
+
+> The socket is held as a `struct socket` rather than a file descriptor, because NuttX scopes
+> descriptors per task group and the transmit path runs on an unrelated worker thread. This
+> ties the current implementation to FLAT builds — see
+> [Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6).
 
 ---
 
-## Development Environment
+## Usage
 
-This repository includes a Docker-based development environment with two build targets.
+```
+nsh> wg genkey
+<base64 private key>
+nsh> wg set private-key <KEY>
+nsh> wg set peer <PUBKEY> endpoint 203.0.113.9:51820 \
+                          allowed-ips 10.10.0.1/32 \
+                          persistent-keepalive 25
+nsh> wg up
+nsh> wg show
+interface: wg0
+  public key: <base64>
+  listening port: 51820
+peer: <base64>
+  endpoint: 203.0.113.9:51820
+  latest handshake: 5 seconds ago
+  transfer: 1.23 KiB received, 0.45 KiB sent
+
+nsh> wg saveconf          # -> /data/wg0.conf, reloaded at next boot
+```
+
+The configuration file uses the same INI layout as `wg(8)` (`[Interface]` / `[Peer]`), so a
+desktop WireGuard configuration can be dropped in as-is.
+
+> `CONFIG_LINE_MAX` (`CONFIG_NSH_LINELEN` on 12.7.0) must be at least 160 for runtime
+> configuration — a full `wg set peer` line runs to about 134 characters, and NSH silently
+> truncates it at the default.
+
+---
+
+## Development environment
+
+Docker-based, with three build targets.
 
 ```bash
-# SIM — primary development environment (fast iteration)
+# sim — primary development environment (fast iteration)
 docker build --target sim -t nuttx-wireguard:sim .
 docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
 
 # QEMU — RTOS verification
 docker build --target qemu -t nuttx-wireguard:qemu .
 docker run --rm -it nuttx-wireguard:qemu
+
+# ESP32-S3 — real hardware
+docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 ```
 
-See [docs/dev-environment.md](docs/dev-environment.md) for details on each environment.
+Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>` (default
+`nuttx-12.7.0`; `master` is known to build).
+
+See [docs/dev-environment.md](docs/dev-environment.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### Verification scripts
+
+| Script | Proves |
+|---|---|
+| `scripts/verify-sim-wg-runtime.sh` | A tunnel configured entirely at runtime reaches a live Linux peer, survives save/restore, and rejects bad input |
+| `scripts/verify-sim-wg-multipeer.sh` | Two Linux WireGuard interfaces hold sessions with `wg0` at the same time |
 
 ---
 
-## Reference Implementations
+## Source layout
 
-**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)**
+Everything lives under [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard/),
+laid out exactly as it would be submitted to `apache/nuttx-apps`.
 
-The primary source for this port. The codebase has three layers with different porting costs:
+| | Lines | Origin |
+|---|---:|---|
+| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip), BSD-3-Clause, **byte-identical to upstream** |
+| `nuttx-wireguardif.c` | 2,157 | Written for NuttX |
+| `wg_main.c` | 344 | The `wg` NSH command |
+| `nuttx-wireguardif.h` | 266 | |
+| `nuttx-platform.c` | 186 | The four OS hooks |
+| Kconfig, build files | 248 | |
+
+The four OS hooks are all the reference implementation needs from the platform:
+
+| Function | NuttX implementation |
+|---|---|
+| `wireguard_sys_now()` | `clock_gettime(CLOCK_MONOTONIC)` |
+| `wireguard_random_bytes()` | `read("/dev/urandom")` |
+| `wireguard_tai64n_now()` | `clock_gettime(CLOCK_REALTIME)` |
+| `wireguard_is_under_load()` | `return false` |
+
+Isolating them there is why the port moved across four architectures without code changes.
+See [the port's README](nuttx_port/apps/netutils/wireguard/README.md) for which files are
+third-party, adapted, or original.
+
+---
+
+## Remaining work
+
+| | Tracking |
+|---|---|
+| Share the design on `dev@nuttx.apache.org` before opening a PR | [#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3) |
+| Decide how to handle the FLAT-build restriction | [#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6) |
+| Add the wireguard-lwip copyright notice to `LICENSE` | [#7](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/7) |
+| Choose the baseline NuttX version | [#8](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/8) |
+| Long-run and failure-mode testing (keepalive, reconnect, MTU edges) | [#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5) |
+
+Coding style (`checkpatch.sh`, `nxstyle`) is clean, the vendored sources are in the tree and
+verified against upstream, and the directory is already shaped for a pull request. The plan is
+in [docs/upstream-strategy.md](docs/upstream-strategy.md); the `dev@` post is drafted in
+[docs/dev-list-proposal.md](docs/dev-list-proposal.md).
+
+Beyond that: IPv6, the ESP32-S3 crypto accelerator, and Raspberry Pi Pico 2 W (which needs a
+CYW43439 driver on RP2350 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/1),
+[#2](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/2)).
+
+---
+
+## Documentation
+
+| | |
+|---|---|
+| [docs/design.html](docs/design.html) | Design document — figures and tables |
+| [docs/slides.html](docs/slides.html) | Presentation deck (27 slides; press `N` for speaker notes) |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Current state, how to build and test |
+| [docs/upstream-strategy.md](docs/upstream-strategy.md) | Submission plan |
+| [docs/hardware-verification.md](docs/hardware-verification.md) | What each board did and did not do |
+| [docs/phase4-log.md](docs/phase4-log.md) | Bring-up log, including the failures |
+
+---
+
+## Presentation
+
+To be presented at the **NuttX International Workshop**, co-located with
+[Community Over Code Glasgow 2026](https://communityovercode.org/) (Oct 11–14). CFP submitted.
+
+---
+
+## Reference implementations
+
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)** — the codebase
+this port is built on. Three layers with very different porting costs:
 
 | File | Role | Porting cost |
-|------|------|--------------|
-| `wireguard.c` + `crypto/` | WireGuard protocol and crypto | None — portable C, used as-is |
-| `wireguard-platform.h` | OS-specific functions (clock, random, timer) | Low — replace with NuttX POSIX API |
-| `wireguardif.c` | Network integration layer (lwIP API calls) | Medium — reuse logic, replace lwIP API with NuttX netdev + BSD socket |
+|---|---|---|
+| `wireguard.c` + `crypto/` | Protocol and crypto | None — portable C, used as-is |
+| `wireguard-platform.h` | OS hooks (clock, random, timer) | Low — four functions |
+| `wireguardif.c` | lwIP netif glue | Total — replaced by `nuttx-wireguardif.c` |
 
-NuttX has its own TCP/IP stack and does not use lwIP, so `wireguardif.c` cannot be compiled as-is. However, the protocol logic (packet encryption/decryption, handshake flow) is fully reusable. The lwIP API calls (`netif_add`, `udp_new`, `pbuf_alloc`, etc.) are replaced with their NuttX equivalents in `nuttx-wireguardif.c`.
-
-**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino)**
-
-A prior port of wireguard-lwip to ESP32 (FreeRTOS + ESP-IDF). Studied as a reference for OS-specific adaptations — timer API, random number generation, and task management patterns in an embedded RTOS environment.
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino)** — an
+earlier port of the same code to ESP32 (FreeRTOS + ESP-IDF), read as a reference for which
+OS-specific details tend to need attention.
 
 ---
 
-## Project Timeline
+## About
 
-> **Note:** This timeline is tentative and subject to change based on discussion with mentors.
-
-The applicant is based in Japan (JST, UTC+9). Available approximately **15 hours per week** (weekday evenings + weekends). Unavailable August 8–15 (Obon holiday).
-
-| Period | Dates | Phase | Hours |
-|--------|-------|-------|-------|
-| Community Bonding | May 8 – Jun 1 | Phase 0 | — |
-| Weeks 1–2 | Jun 2 – Jun 13 | Phase 1 ✅ | 30h |
-| Weeks 3–5 | Jun 16 – Jul 4 | Phase 2 | 45h |
-| **Buffer** | Jul 7 – Jul 11 | — | — |
-| Weeks 6–8 | Jul 14 – Aug 1 | Phase 3 ★ Midterm (Jul 14–18) | 45h |
-| Weeks 9–11 | Aug 4–8, Aug 18 – Sep 5 | Phase 4 | 45h |
-| *(Obon holiday)* | Aug 8 – Aug 15 | — | — |
-| *GSoC final submission* | Aug 25 | — | — |
-| Weeks 12–14 | Sep 8 – Sep 27 | Phase 5 | 45h |
-| **Conference** | Oct 11 – Oct 14 | ASF Conference @ Glasgow (CFP submitted) | — |
-
-**Total: ~210 hours** (Phase 1 completed pre-GSoC; post-Aug 25 work covers upstream PR and conference preparation)
-
----
-
-### Phase 0 — Preparation (Community Bonding: May 8 – Jun 1)
-
-**Goal:** Understand the codebase and establish the development environment before coding begins.
-
-**Already completed (pre-application):**
-- Docker images for SIM and QEMU build targets are working (see `Dockerfile`)
-- SIM boots to `nsh>` and `ifconfig` shows `eth0 (10.0.0.2)`
-- `qemu-armv7a` boots to `nsh>`
-- `wireguard-lwip` source integrated into `apps/netutils/wireguard/`; `CONFIG_NET_WIREGUARD=y` builds successfully
-- Identified that `wireguardif.c` cannot be compiled as-is (NuttX does not have lwIP headers); created minimal shim headers under `lwip/` and a stub `nuttx-wireguardif.c` to unblock the build (see [docs/phase1-log.md](docs/phase1-log.md))
-
-**To complete during community bonding:**
-- Map all lwIP API calls in `wireguardif.c` to their NuttX equivalents
-- Design the full `nuttx-wireguardif.c` implementation
-
-**Deliverable:** API mapping documented; `nuttx-wireguardif.c` design complete.
-
----
-
-### Phase 1 — Build System Integration (Weeks 1–2: Jun 2 – Jun 13)
-
-**Environment:** SIM (`sim:nsh`)
-
-**Status: ✅ Completed (pre-GSoC)**
-
-**Goal:** `CONFIG_NET_WIREGUARD=y` builds successfully and NuttX boots to `nsh>` without errors.
-
-wireguard-lwip provides only `.c`/`.h` source files with no standalone build system. NuttX uses CMake + Kconfig + make; a directory under `apps/netutils/wireguard/` requires `CMakeLists.txt`, `Make.defs`, `Makefile`, and `Kconfig` to be recognized by the build system.
-
-The porting challenge is OS API differences — not the protocol logic itself. `wireguard.c` and `crypto/` are portable C and require no changes.
-
-- `apps/netutils/wireguard/` directory with build files in place
-- `wireguard.c`, `crypto/`, `nuttx-platform.c` (stub), `nuttx-wireguardif.c` (stub) compile cleanly
-- `CONFIG_NET_WIREGUARD=y` build succeeds; SIM boots to `nsh>`
-
-**Deliverable:** `CONFIG_NET_WIREGUARD=y` build succeeds and NuttX reaches `nsh>`.
-
----
-
-### Phase 2 — NuttX Integration Layer on SIM (Weeks 3–5: Jun 16 – Jul 4)
-
-**Environment:** SIM (`sim:nsh` with `CONFIG_NET=y`, `CONFIG_SIM_NETDEV=y`)
-
-**Goal:** `nsh> ifconfig` shows `wg0` alongside `eth0`.
-
-This phase has two parts.
-
-**Part A — Platform layer (`nuttx-platform.c`):**
-
-| Function | Purpose | NuttX implementation |
-|----------|---------|---------------------|
-| `wireguard_sys_now()` | Monotonic ms counter for timers | `clock_gettime(CLOCK_MONOTONIC)` |
-| `wireguard_random_bytes()` | Cryptographic random for key generation | `read("/dev/urandom")` |
-| `wireguard_tai64n_now()` | TAI64N timestamp for replay prevention | `clock_gettime(CLOCK_REALTIME)` |
-| `wireguard_is_under_load()` | Cookie reply decision | `return false` |
-
-**Part B — Network integration layer (`nuttx-wireguardif.c`):**
-
-The protocol logic from `wireguardif.c` is reused. Only the lwIP API calls are replaced with their NuttX equivalents:
-
-| wireguardif.c (lwIP) | nuttx-wireguardif.c (NuttX) |
-|----------------------|-----------------------------|
-| `struct netif` | `struct net_driver_s` |
-| `netif->output = fn` | `dev->d_ifup = fn` equiv. |
-| `ip_input(pbuf, netif)` | `devif_input(dev)` |
-| `netif_set_link_up()` | `netdev_carrier_on()` |
-| `udp_new()` / `udp_bind()` / `udp_recv()` | BSD `socket()` / `bind()` / `recvfrom()` |
-| `pbuf_alloc()` / `pbuf_free()` | `iob_alloc()` / `iob_free()` |
-| `sys_timeout()` | `wd_start()` |
-
-**Deliverable:** `nsh> ifconfig` shows `wg0` on SIM.
-
----
-
-### Phase 3 — Handshake and Tunnel on QEMU (Weeks 6–8: Jul 14 – Aug 1) ★ Midterm (Jul 14–18)
-
-**Environment:** `qemu-armv7a`
-
-**Goal:** Complete a WireGuard handshake with a Linux peer and pass traffic through the encrypted tunnel.
-
-SIM shares the host Linux scheduler. QEMU introduces an emulated ARM CPU with NuttX's own scheduler, necessary to verify timer behavior and task scheduling with WireGuard's periodic operations (keepalive, handshake expiry).
-
-- Port the working SIM configuration to `qemu-armv7a`
-- Generate key pairs on both NuttX (QEMU) and Linux sides
-- Verify Noise protocol handshake over UDP port 51820
-- Test end-to-end: `nsh> ping 10.0.0.1`
-
-**Deliverable:**
-```
-# Linux:
-$ sudo wg show
-peer: <NuttX public key>
-  latest handshake: 3 seconds ago
-
-# NuttX (QEMU):
-nsh> ping 10.0.0.1
-64 bytes from 10.0.0.1: icmp_seq=0 time=4 ms
-```
-
----
-
-### Phase 4 — NSH Command and Real Hardware (Weeks 9–11: Aug 4–8, Aug 18 – Sep 5)
-
-**Environment:** ESP32-S3
-
-**Goal:** Add a `wg` shell command to NSH and validate on real hardware.
-
-**NSH command:**
-- Implement `wg show` and `wg setconf` as NSH built-in commands
-- Finalize Kconfig dependency chain: `NET_WIREGUARD` depends on `NET`, `NET_UDP`, `MBEDTLS`
-
-```
-nsh> wg show
-interface: wg0
-  public key: <base64>
-  listening port: 51820
-peer: <base64>
-  endpoint: 192.168.x.x:51820
-  latest handshake: 5 seconds ago
-  transfer: 1.23 KiB received, 0.45 KiB sent
-```
-
-**Real hardware test (ESP32-S3):**
-
-QEMU uses virtio-net; ESP32-S3 uses a Wi-Fi driver. Real hardware testing validates the netdev integration with a physical network interface.
-
-- Flash NuttX + WireGuard image to ESP32-S3
-- Connect to Wi-Fi and verify `wg0` comes up alongside `wlan0`
-- Establish a WireGuard tunnel to a Linux peer over Wi-Fi
-- Verify `nsh> ping` through the tunnel
-- Measure Flash and RAM usage
-
-**Deliverable:** WireGuard tunnel working on ESP32-S3 over Wi-Fi.
-
----
-
-### Phase 5 — Upstream PR and Documentation (Weeks 12–14: Sep 8 – Sep 27)
-
-**Goal:** Submit a pull request to `apache/nuttx-apps` and prepare conference presentation.
-
-- Sign Apache CLA
-- Submit PR to `apps/netutils/wireguard/` conforming to NuttX coding style
-- Address review feedback
-- Write final documentation and prepare slides for ASF Conference
-
-**Deliverable:** PR open on `apache/nuttx-apps`; presentation slides ready.
-
----
-
-### ASF Conference @ Glasgow (Oct 11–14)
-
-Present the project results at the **NuttX International Workshop**, co-located with [Community Over Code Glasgow 2026](https://communityovercode.org/).
-CFP has been submitted.
-
----
-
-## About Me
-
-I work as an EdgeAI engineer at Sony Semiconductor Solutions, where I use NuttX from the application side — primarily with SPRESENSE and ESP32-based edge AI camera systems. Being able to securely access NuttX boards remotely for debugging and maintenance is something I have wanted myself, so this project aligns naturally with my daily work.
-
-**Relevant experience:**
+I work as an edge AI engineer at Sony Semiconductor Solutions, using NuttX from the
+application side — mostly SPRESENSE and ESP32-based edge AI camera systems. Being able to
+reach a NuttX board securely for debugging and maintenance is something I wanted myself.
 
 - NuttX: daily use with SPRESENSE and ESP32
 - Embedded C: cross-compilation with `arm-none-eabi-gcc`, POSIX API on RTOS
-- Docker + QEMU: working `sim` and `qemu-armv7a` development environments set up for this project (see repository)
-- Certifications: GCP, AWS, TensorFlow Developer, Information Security Specialist (Japan)
+- Certifications: GCP, AWS, TensorFlow Developer, Registered Information Security Specialist (Japan)
 
-GitHub: [https://github.com/wwlapaki310](https://github.com/wwlapaki310)
+GitHub: [wwlapaki310](https://github.com/wwlapaki310)

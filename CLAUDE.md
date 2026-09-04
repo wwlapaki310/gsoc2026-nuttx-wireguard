@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a GSoC 2026 proposal and development workspace for porting WireGuard to Apache NuttX as an lwIP virtual network interface (`wg0`). The repository currently contains the Docker-based development environment and documentation. Actual WireGuard implementation code will live under `apps/netutils/wireguard/` in the NuttX apps tree (inside the Docker container at `/opt/apps/`).
+This is a development workspace for porting WireGuard to Apache NuttX as a `wg0` network device. It began as a GSoC 2026 proposal, which was not accepted; the work continued anyway and the port now runs on real hardware. Do not describe the project as a GSoC project in anything user-facing.
+
+NuttX has its own TCP/IP stack (not lwIP), so `wg0` is a `NET_LL_TUN` netdev registered with `netdev_register()`, backed by a UDP socket — not an lwIP netif. The implementation lives in `nuttx_port/apps/netutils/wireguard/`, laid out exactly as it would be submitted to `apache/nuttx-apps`, and is copied into the NuttX apps tree at Docker build time (`/opt/apps/netutils/wireguard/`).
 
 ## Development Environment
 
@@ -54,7 +56,7 @@ make olddefconfig
 ├── Dockerfile                  # Full dev environment: NuttX 12.7.0 + wireguard-lwip + QEMU
 ├── docker/docker-entrypoint.sh # Launches QEMU with virtio-net + UDP 51820 forwarded
 └── docs/
-    ├── proposal.md             # GSoC proposal text
+    ├── proposal.md             # Original proposal text (historical)
     ├── development-roadmap.md  # Phase-by-phase plan (Japanese)
     ├── feasibility.md          # Technical feasibility study (Japanese)
     └── why-wireguard.md

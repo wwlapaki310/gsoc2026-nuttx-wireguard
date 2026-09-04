@@ -1,286 +1,257 @@
-# GSoC 2026 — WireGuard の Apache NuttX への移植
+# WireGuard の Apache NuttX への移植
+
+[Apache NuttX](https://nuttx.apache.org/) 上で動く WireGuard VPN の実装。`wg0` という
+ネットワークデバイスとして見える。実機で、本物の WireGuard ピアを相手に検証済み。
+
+> **議論:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
+> **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し
+
+---
+
+## 現状
+
+トンネルは実機でエンドツーエンドに動き、実行時に設定でき、電源を落としても設定が残る。
+残っているのは upstream への提出。
 
 | | |
 |---|---|
-| **組織** | [Apache Software Foundation](https://summerofcode.withgoogle.com/programs/2026/organizations/apache-software-foundation) |
-| **難易度** | Major |
-| **規模** | 約175時間（Medium） |
-| **メンター** | Alan Carvalho de Assis (acassis@apache.org), dev@nuttx.apache.org |
-| **参照実装** | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip), [ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) |
+| **インターフェース** | `wg0`（UDP ソケットを配線とする `NET_LL_TUN` netdev） |
+| **設定** | 実行時（`wg genkey` / `wg set` / `wg setconf`）。`wg(8)` 互換の INI 形式で永続化 |
+| **ピア数** | 1〜16（Kconfig。1 ピアあたり `.bss` 約 904 バイト） |
+| **スループット** | ESP32-S3・Wi-Fi 経由、トンネル越し TCP で 260 KiB/s |
+| **最長連続動作** | 4 時間 28 分 |
+| **upstream** | 未提出 — [残作業](#残作業)を参照 |
+
+### 検証済みの環境
+
+| 環境 | アーキテクチャ | 相手のピア | 確認したこと |
+|---|---|---|---|
+| sim | x86_64 / Linux | Linux カーネル WireGuard | ハンドシェイク・疎通・ランタイム設定・**2 ピア同時セッション**（スクリプト化済み） |
+| QEMU | ARM Cortex-A7 | Linux カーネル WireGuard | NuttX 自身のスケジューラ上での疎通 |
+| **ESP32-S3** | Xtensa LX7 | **Windows 公式クライアント** | **実 Wi-Fi 越し**の telnet・HTTP・7 MB 転送・rekey・電源断からの復帰 |
+| Spresense | ARM Cortex-M4F | — | `wg0` の起動（**コード変更ゼロ**） |
+
+通信相手は常に本物の WireGuard 実装（Linux カーネルモジュールと Windows 公式クライアント）。
+自作同士で通信しても相互運用性の証明にならないため。
+
+NuttX 12.7.0 と `master` の両方で、コード変更なしにビルドが通る。
 
 ---
 
-## プロジェクト概要
+## なぜ
 
-WireGuard は Linux 向けに開発された軽量な VPN プロトコルで、組み込み・IoT 分野でも採用が広がっている。UDP 上で暗号化トンネルを確立し、使用する暗号アルゴリズムは Curve25519・ChaCha20-Poly1305・BLAKE2s。実装がコンパクトでマイコン上での動作にも適している。
+NuttX には VPN がない。現場に設置した機器に触るには、グローバル IP を晒すか、独自プロトコルを
+作り込むか、ベンダーのクラウドに乗るか——どれも嬉しくない。WireGuard は約 4,000 行なので
+マイコンに載り、しかも相手は既存の WireGuard エンドポイントで構わない。
 
-Apache NuttX は POSIX 準拠の RTOS で、lwIP TCP/IP スタックによるネットワーク機能を持つ。しかし現時点では VPN 機能が存在しない。
+NuttX がすでに使われている場所で、これが効く:
 
-本プロジェクトでは WireGuard を **lwIP の仮想ネットワークインターフェース（netif）** として実装し、NuttX に移植する。参照実装として [wireguard-lwip](https://github.com/smartalock/wireguard-lwip) を使用する。これはすでに lwIP ベースの WireGuard 実装であり、NuttX への移植起点として適している。
-
-### なぜこのプロジェクトが必要か
-
-NuttX デバイスへの遠隔・安全なアクセスは多くの分野で未解決の課題となっている。
-
-- **エッジ AI・産業 IoT** — フィールドに展開されたデバイスに対して、物理的なアクセスなしにファームウェア更新や遠隔診断を行う必要がある
-- **衛星・宇宙機** — NuttX は小型衛星プロジェクトで採用されている。打ち上げ後はネットワーク経由が唯一のメンテナンス手段になる
-- **無人インフラ** — 海洋ブイ・山岳観測所・パイプラインなど遠隔地のセンサーには安全な双方向通信が必要
-- **デバイス間直接通信** — クラウド中継なしに NuttX デバイス同士が暗号化トンネルで直接通信できる
-
-WireGuard のコンパクトな実装とシンプルな鍵モデルは、こうした制約のある環境に適している。
-
-### アーキテクチャ
-
-```
-+----------------------------------+
-|          NuttX RTOS              |
-|                                  |
-|  Application / NSH               |
-|           |                      |
-|      lwIP TCP/IP Stack           |
-|       |            |             |
-|   eth0 / wlan0    wg0            |  ← WireGuard netif（本プロジェクト）
-|   (物理 NIC)    (VPN トンネル)    |
-|                   |              |
-|        UDP ソケット（ポート 51820）|
-+----------------------------------+
-            |
-     インターネット / LTE / 衛星回線
-            |
-     WireGuard ピア（Linux サーバー）
-```
+- **エッジ AI・産業 IoT** — 物理アクセスなしのファームウェア更新と遠隔診断
+- **衛星** — 打ち上げ後はネットワークが唯一のメンテナンス経路
+- **無人インフラ** — 海洋ブイ・山岳観測所・パイプライン
+- **機器同士の直接通信** — クラウド中継を挟まない暗号化トンネル
 
 ---
 
-## 開発環境
-
-Docker ベースの開発環境を用意しています。1回のビルドで `sim:net`（高速開発）と `qemu-armv7a`（RTOS検証）の両方のバイナリが生成されます。
-
-```bash
-# sim:nsh + NET — メイン開発環境（高速ビルド・実行）
-docker build --target sim -t nuttx-wireguard:sim .
-docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
-
-# qemu-armv7a — RTOS 動作検証
-docker build --target qemu -t nuttx-wireguard:qemu .
-docker run --rm -it nuttx-wireguard:qemu
-```
-
-詳細は [docs/dev-environment.md](docs/dev-environment.md) を参照。
-
----
-
-## 参照実装
-
-2つの既存プロジェクトを参照として使用する。それぞれ役割が異なる。
-
-**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip) — 移植元のコード本体**
-
-NuttX に持ち込む実際のコード。WireGuard を lwIP の netif として実装しており、OS 固有の処理はすべて4関数のプラットフォーム抽象層（`wireguard-platform.h`）に集約されている。WireGuard プロトコル本体（`wireguard.c`）と暗号実装（`crypto/`）は OS 依存がなくそのまま使用できる。移植作業の中心は `wireguard-platform.h` を NuttX 向けに実装することと、`wireguardif.c` からプラットフォーム固有のコードを取り除くことである。
-
-**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino) — 移植の先例**
-
-wireguard-lwip を ESP32（FreeRTOS + ESP-IDF）に移植したプロジェクト。NuttX も組み込み RTOS + lwIP という構成であるため、この ESP32 移植で行われた変更（FreeRTOS プリミティブの置き換え・ログ出力の変更・プラットフォーム固有ヘッダの削除）は、wireguard-lwip を新しいターゲットに移植する際に何を変える必要があるかを示す具体的な参照として使える。
-
----
-
-## 開発環境
-
-開発はイテレーション速度の順に3段階で進める。
+## アーキテクチャ
 
 ```
-SIM  (sim:nsh / sim:net)  ★★★★★  Linux プロセスとして実行
-      -> 最速のビルド・テストループ
-QEMU (qemu-armv7a)        ★★★    仮想 CPU、RTOS 挙動の確認
-HW   (ESP32-S3)           ★      実機、最終検証
-```
-
-```
-           Docker
++-----------------------------------------------+
+|                  NuttX RTOS                   |
+|                                               |
+|  アプリケーション / NSH                        |
+|           |                                   |
+|    NuttX ネットワークスタック (BSD socket API) |
+|       |              |                        |
+|  eth0 / wlan0       wg0  <- 本プロジェクト     |
+|  (物理 NIC)      (WireGuard netdev)           |
+|                      |                        |
+|         +------------+------------+           |
+|         |            |            |           |
+|   wireguard.c   nuttx-wireguardif.c   nuttx-  |
+|   + crypto/     (netdev + UDP ソケット) platform.c
+|   無改変        NuttX 向けに新規作成   (時刻・  |
+|                      |                 乱数)   |
+|              UDP ソケット (ポート 51820)       |
++-----------------------------------------------+
               |
-              v
-           build
+    インターネット / LTE / 衛星回線
               |
-        nuttx image
-              |
-     +---------+---------+
-     |                   |
-     v                   v
-   SIM               QEMU
- (Linux プロセス)   (仮想 CPU)
-     |                   |
-     v                   v
- 機能開発          RTOS 挙動確認
-     |
-     v
-   HW (ESP32-S3)
-     |
-     v
- 実機検証
+    WireGuard ピア (Linux, Windows, ...)
 ```
 
-SIM（`sim:nsh`・`sim:net`）は NuttX をホスト上の Linux プロセスとして実行する。ホストのネットワークスタックを共有し、仮想 CPU を必要としないためビルド・テストループが最も速い。QEMU は ARM CPU をエミュレートし、NuttX 自身のスケジューラで動作するため、タイマー・タスク実行・割り込みなど RTOS 挙動の確認に必要。実機は最終検証のみで使用する。
+**NuttX は lwIP ではなく独自の TCP/IP スタックを持つ**ため、参照実装の netif グルーは
+そのまま使えない。`wg0` は `drivers/net/tun.c` を手本に `netdev_register()` で登録している。
+プロトコルと暗号のソースは無改変で持ち込んでいる。
+
+送信は `devif_poll()` → 暗号化 → `psock_sendto()`。受信はバックグラウンドタスクが
+`psock_poll()` でブロックし、復号して `ipv4_input()` で注入する。
+
+> ソケットはファイルディスクリプタではなく `struct socket` として保持している。NuttX は fd を
+> タスクグループ単位でスコープするが、送信経路は無関係なワーカースレッド上で走るため。
+> この都合で現状の実装は FLAT ビルド前提になっている —
+> [Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6)。
 
 ---
 
-## 開発タイムライン
-
-> **注:** このタイムラインは検討中であり、メンターとの議論を経て変更される可能性がある。
-
-筆者は日本在住（JST / UTC+9）。8月8日〜15日は対応不可。
-
-### Phase 0 — 準備（GSoC 開始前 / コミュニティボンディング期間）
-
-**目標:** NuttX 固有のコードを書き始める前に、必要な理解と環境を整える。
-
-**応募前に完了済み:**
-- Docker + QEMU 開発環境の構築（NuttX `qemu-armv7a:nsh`・ネットワーク有効化済み）（本リポジトリの `Dockerfile` 参照）
-- wireguard-lwip と WireGuard-ESP32-Arduino のソースコードを読み、移植スコープを把握
-
-**コミュニティボンディング期間中に完了予定:**
-- wireguard-lwip 内で NuttX 向けに置き換えが必要な OS 固有 API をすべて洗い出す（スレッド・mutex・時刻・乱数）
-- ESP32 移植を diff として読む: wireguard-lwip から FreeRTOS + ESP-IDF で動かすために何を変えたかを把握し、各変更を NuttX の対応 API にマッピングする
-- `sim:net` を機能開発の主要環境として整備する
-
-**成果物:** 置き換えが必要な API の一覧ドキュメントと、SIM 上で動作するビルドループ。
-
----
-
-### Phase 1 — SIM 上でのビルドシステム統合（第1〜2週）
-
-**環境:** `sim:nsh`
-
-**目標:** wireguard-lwip を NuttX のビルドシステムに追加し、NuttX がエラーなく起動することを確認する。
-
-wireguard-lwip は `.c`/`.h` ソースファイルのみを提供しており、独自のビルドシステムを持たない。各ターゲットのビルドシステムに組み込むことを前提とした設計である。NuttX は CMake + Kconfig + make を組み合わせたビルドシステムを使用しており、`apps/netutils/wireguard/` 以下にソースを置くだけでは認識されない。`CMakeLists.txt`（または `Make.defs`）と `Kconfig` を自分で記述することがこのフェーズの主な作業である。
-
-本プロジェクトの移植における本質的な課題は OS の API 差異であり、wireguard-lwip のコアロジック（`wireguard.c`・`crypto/`）はポータブルな C で書かれており変更不要。OS 差異の吸収は `wireguard-platform.h` の実装（Phase 2）で行う。
-
-このフェーズのゴールは単純に：
+## 使い方
 
 ```
-CONFIG_WIREGUARD=y
-  make
-    -> ビルド成功
-    -> 起動成功（nsh> 到達、クラッシュなし）
-```
-
-- wireguard-lwip のソースを `apps/netutils/wireguard/` 以下に配置
-- NuttX の作法に従って `CMakeLists.txt` と `Make.defs` を記述
-- `Kconfig` エントリを追加: `CONFIG_NET_WIREGUARD`
-- wireguard を含む NuttX が SIM 上で `nsh>` までクラッシュなく起動することを確認
-
-**成果物:** `CONFIG_WIREGUARD=y` でビルドが成功し、NuttX が `nsh>` に到達すること。
-
----
-
-### Phase 2 — SIM 上でのプラットフォーム層実装と lwIP 統合（第3〜6週）
-
-**環境:** `sim:net`
-
-**目標:** プラットフォーム抽象層を実装し、WireGuard を lwIP の netif として登録する。`sim:net` 上で `wg0` が `ifconfig` に表示されることを確認する。
-
-**プラットフォーム層（`wireguard-platform.h`）:**
-
-| 関数 | 用途 | NuttX での実装 |
-|------|------|---------------|
-| `wireguard_sys_now()` | タイマー用の単調増加ミリ秒カウンタ | `clock_gettime(CLOCK_MONOTONIC)` |
-| `wireguard_random_bytes()` | 鍵生成用の暗号乱数 | `read("/dev/urandom")` |
-| `wireguard_tai64n_now()` | リプレイ攻撃防止用の TAI64N タイムスタンプ | `clock_gettime(CLOCK_REALTIME)` |
-| `wireguard_is_under_load()` | Cookie リプライの判定 | `return false`（組み込みでは十分） |
-
-- `nuttx-platform.c` を新規作成して4関数を実装
-- `wireguardif.c` 内の ESP 固有ログ（`ESP_LOGI` 等）を `syslog()` に置き換え
-- ESP 固有ヘッダ（`esp_netif.h`・`tcpip_adapter.h`）を削除
-- NuttX 起動時に `wireguardif_init()` を呼び出し、`netif_add()` で `wg0` を登録
-- WireGuard パラメータ（秘密鍵・待受ポート）を Kconfig で設定
-
-**成果物:** `sim:net` 上で `nsh> ifconfig` に `wg0` が表示されること。
-
----
-
-### Phase 3 — QEMU 上でのハンドシェイクとトンネル疎通（第7〜9週）★ Midterm
-
-**環境:** `qemu-armv7a`
-
-**目標:** RTOS のスケジューリング条件下での挙動を確認し、Linux ピアとの WireGuard ハンドシェイクを完了する。
-
-SIM はホストの Linux スケジューラを共有する。QEMU は ARM CPU をエミュレートし NuttX 自身のスケジューラで動作するため、WireGuard の周期タスク（keepalive・ハンドシェイク期限切れ）がタイマー・タスク優先度・割り込みと協調して動作するか確認するために必要。
-
-- `sim:net` で動作する構成を `qemu-armv7a` に移植
-- NuttX 側・Linux 側それぞれで鍵ペアを生成
-- UDP ポート 51820 を使った Noise プロトコルのハンドシェイクを確認
-- エンドツーエンドの疎通確認: `nsh> ping 10.0.0.1`
-
-**成果物（Midterm）:**
-```
-# Linux 側:
-$ sudo wg show
-peer: <NuttX の公開鍵>
-  latest handshake: 3 seconds ago
-
-# NuttX (QEMU):
-nsh> ping 10.0.0.1
-64 bytes from 10.0.0.1: icmp_seq=0 time=4 ms
-```
-
----
-
-### Phase 4 — NSH コマンド・Kconfig 統合・実機テスト（第10〜11週）
-
-**環境:** ESP32-S3
-
-**目標:** `wg` コマンドを NSH に追加し、実機で動作を検証する。
-
-**NSH コマンド:**
-- `wg show` と `wg setconf` を NSH ビルトインコマンドとして実装
-- Kconfig の依存関係を整備: `NET_WIREGUARD` は `NET`・`NET_UDP`・`MBEDTLS` に依存
-
-```
+nsh> wg genkey
+<base64 の秘密鍵>
+nsh> wg set private-key <KEY>
+nsh> wg set peer <PUBKEY> endpoint 203.0.113.9:51820 \
+                          allowed-ips 10.10.0.1/32 \
+                          persistent-keepalive 25
+nsh> wg up
 nsh> wg show
 interface: wg0
   public key: <base64>
   listening port: 51820
 peer: <base64>
-  endpoint: 192.168.x.x:51820
+  endpoint: 203.0.113.9:51820
   latest handshake: 5 seconds ago
   transfer: 1.23 KiB received, 0.45 KiB sent
+
+nsh> wg saveconf          # -> /data/wg0.conf、次回起動時に自動で読まれる
 ```
 
-**実機テスト（ESP32-S3）:**
+設定ファイルは `wg(8)` と同じ INI 形式（`[Interface]` / `[Peer]`）なので、デスクトップの
+WireGuard の設定をそのまま持ち込める。
 
-QEMU は virtio-net ドライバ経由で lwIP に接続するが、ESP32-S3 は Wi-Fi ドライバ経由で接続する。実際の物理 NIC を用いた netif 統合の検証に実機テストが必要。
-
-- ESP32-S3 に NuttX + WireGuard イメージを書き込む
-- Wi-Fi に接続し、`wlan0` と並んで `wg0` が起動することを確認
-- Wi-Fi 経由で Linux ピアとの WireGuard トンネルを確立
-- トンネル越しに `nsh> ping` が通ることを確認
-- Flash・RAM の実測値を確認
-
-**成果物:** ESP32-S3 の Wi-Fi 経由で WireGuard トンネルが動作すること。
+> ランタイム設定を使うなら `CONFIG_LINE_MAX`（12.7.0 では `CONFIG_NSH_LINELEN`）を 160 以上に
+> すること。`wg set peer` の行は約 134 文字あり、デフォルトでは NSH が**無言で切り詰める**。
 
 ---
 
-### Phase 5 — upstream PR（第12週）
+## 開発環境
 
-**目標:** `apache/nuttx-apps` にプルリクエストを提出する。
+Docker ベース。ビルドターゲットは3つ。
 
-- Apache CLA に署名
-- NuttX コーディングスタイルに準拠した PR を `apps/netutils/wireguard/` に提出
+```bash
+# sim — メイン開発環境（高速なビルド・テストループ）
+docker build --target sim -t nuttx-wireguard:sim .
+docker run --rm -it --cap-add=NET_ADMIN --device=/dev/net/tun nuttx-wireguard:sim
 
-**成果物:** `apache/nuttx-apps` に PR がオープンされること。
+# QEMU — RTOS 挙動の検証
+docker build --target qemu -t nuttx-wireguard:qemu .
+docker run --rm -it nuttx-wireguard:qemu
+
+# ESP32-S3 — 実機
+docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
+```
+
+`--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる（既定は `nuttx-12.7.0`。
+`master` でもビルドが通ることを確認済み）。
+
+詳細は [docs/dev-environment.md](docs/dev-environment.md) と [DEVELOPMENT.md](DEVELOPMENT.md)。
+
+### 検証スクリプト
+
+| スクリプト | 何を証明するか |
+|---|---|
+| `scripts/verify-sim-wg-runtime.sh` | 実行時だけで設定したトンネルが実際の Linux ピアに届き、保存・復元を経ても動き、不正な入力を拒否すること |
+| `scripts/verify-sim-wg-multipeer.sh` | 2 つの Linux WireGuard インターフェースが `wg0` と同時にセッションを保持すること |
+
+---
+
+## ソース構成
+
+すべて [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard/) の下にあり、
+`apache/nuttx-apps` にそのまま提出できる形に置いてある。
+
+| | 行数 | 由来 |
+|---|---:|---|
+| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)（BSD-3-Clause）**upstream とバイト一致** |
+| `nuttx-wireguardif.c` | 2,157 | NuttX 向けに新規作成 |
+| `wg_main.c` | 344 | `wg` NSH コマンド |
+| `nuttx-wireguardif.h` | 266 | |
+| `nuttx-platform.c` | 186 | OS 依存の 4 関数 |
+| Kconfig・ビルド統合 | 248 | |
+
+参照実装がプラットフォームに要求するのは、この 4 関数だけ:
+
+| 関数 | 用途 | NuttX での実装 |
+|---|---|---|
+| `wireguard_sys_now()` | タイマー用の単調増加ミリ秒カウンタ | `clock_gettime(CLOCK_MONOTONIC)` |
+| `wireguard_random_bytes()` | 鍵生成用の暗号乱数 | `read("/dev/urandom")` |
+| `wireguard_tai64n_now()` | リプレイ防止用の TAI64N タイムスタンプ | `clock_gettime(CLOCK_REALTIME)` |
+| `wireguard_is_under_load()` | Cookie リプライの判定 | `return false` |
+
+ここに OS 依存を隔離したことが、4 アーキテクチャをコード変更なしで移れた理由。
+どのファイルがサードパーティ／改変あり／自作かは
+[移植先の README](nuttx_port/apps/netutils/wireguard/README.md) にまとめてある。
+
+---
+
+## 残作業
+
+| | 追跡 |
+|---|---|
+| PR を出す前に `dev@nuttx.apache.org` へ設計を共有する | [#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3) |
+| FLAT ビルド前提をどう扱うか決める | [#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6) |
+| `LICENSE` に wireguard-lwip の著作権表示を追記する | [#7](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/7) |
+| ベースにする NuttX のバージョンを決める | [#8](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/8) |
+| 長時間動作・異常系の検証（keepalive・再接続・MTU 境界） | [#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5) |
+
+コーディングスタイル（`checkpatch.sh`・`nxstyle`）は全ファイルクリーン、流用ソースは
+ツリーに取り込んで upstream と一致を確認済み、ディレクトリ構成も PR の形になっている。
+方針は [docs/upstream-strategy.md](docs/upstream-strategy.md)、`dev@` への投稿ドラフトは
+[docs/dev-list-proposal.md](docs/dev-list-proposal.md)。
+
+その先: IPv6、ESP32-S3 の暗号アクセラレータ、Raspberry Pi Pico 2 W（RP2350 側に CYW43439
+ドライバの移植が必要 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/1),
+[#2](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/2)）。
+
+---
+
+## ドキュメント
+
+| | |
+|---|---|
+| [docs/design.html](docs/design.html) | 設計ドキュメント（図表ベース） |
+| [docs/slides.html](docs/slides.html) | 発表スライド 27 枚（`N` キーで発表者ノート） |
+| [docs/talk-script.md](docs/talk-script.md) | 発表台本（時間配分・削る順番つき） |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | 現状・ビルド方法・テスト方法 |
+| [docs/upstream-strategy.md](docs/upstream-strategy.md) | 提出計画 |
+| [docs/hardware-verification.md](docs/hardware-verification.md) | 各ボードで何ができて何ができなかったか |
+| [docs/phase4-log.md](docs/phase4-log.md) | 立ち上げの記録（失敗も含む） |
+
+---
+
+## 発表
+
+[Community Over Code Glasgow 2026](https://communityovercode.org/)（10月11〜14日）併設の
+**NuttX International Workshop** での発表を予定。CFP 提出済み。
+
+---
+
+## 参照実装
+
+**[smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)** — 移植元のコード本体。
+3 つの層で移植コストがまったく違う:
+
+| ファイル | 役割 | 移植コスト |
+|---|---|---|
+| `wireguard.c` + `crypto/` | プロトコルと暗号 | なし — ポータブルな C。そのまま使用 |
+| `wireguard-platform.h` | OS 依存（時刻・乱数・タイマー） | 小 — 4 関数のみ |
+| `wireguardif.c` | lwIP netif グルー | 全面 — `nuttx-wireguardif.c` で置き換え |
+
+**[ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino)** —
+同じコードを ESP32（FreeRTOS + ESP-IDF）に移植した先例。OS 固有のどこに注意が要るかの
+参考として読んだ。
 
 ---
 
 ## 自己紹介
 
-ソニーセミコンダクタソリューションズでエッジ AI エンジニアとして勤務しており、SPRESENSE および ESP32 ベースのエッジ AI カメラシステムを中心にアプリケーション側から NuttX を使用している。NuttX ボードにリモートから安全にアクセスしてデバッグ・メンテナンスを行えるようにしたいと考えていたため、本プロジェクトは日常業務と直接つながっている。
-
-**関連経験:**
+ソニーセミコンダクタソリューションズでエッジ AI エンジニアとして勤務。SPRESENSE および
+ESP32 ベースのエッジ AI カメラシステムを中心に、アプリケーション側から NuttX を使っている。
+NuttX ボードにリモートから安全にアクセスしてデバッグ・メンテナンスしたい、というのは
+自分自身が欲しかったもの。
 
 - NuttX: SPRESENSE・ESP32 での日常利用
-- 組み込み C: `arm-none-eabi-gcc` によるクロスコンパイル・RTOS 上での POSIX API
-- Docker + QEMU: 本プロジェクト用に `qemu-armv7a:nsh` の開発環境を構築済み（本リポジトリ参照）
+- 組み込み C: `arm-none-eabi-gcc` によるクロスコンパイル、RTOS 上での POSIX API
 - 資格: GCP・AWS・TensorFlow Developer・情報処理安全確保支援士
 
-GitHub: [https://github.com/wwlapaki310](https://github.com/wwlapaki310)
+GitHub: [wwlapaki310](https://github.com/wwlapaki310)

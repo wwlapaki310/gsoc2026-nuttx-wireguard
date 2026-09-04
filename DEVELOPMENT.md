@@ -231,7 +231,7 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 
 | ドキュメント | 内容 |
 |---|---|
-| [docs/proposal.ja.md](docs/proposal.ja.md) | GSoC プロポーザル本体・全体ロードマップ |
+| [docs/proposal.ja.md](docs/proposal.ja.md) | 当初のプロポーザル本体・全体ロードマップ（応募時の記録） |
 | [docs/dev-environment.md](docs/dev-environment.md) | sim / QEMU / 実機の開発環境の使い分け |
 | [docs/phase1-log.md](docs/phase1-log.md) | Phase 1(ビルドシステム統合)の作業ログ |
 | [docs/phase2-log.md](docs/phase2-log.md) | Phase 2(プラットフォーム層・netif 統合)の作業ログ・詰まった点 |

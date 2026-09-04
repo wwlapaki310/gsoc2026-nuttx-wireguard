@@ -21,10 +21,10 @@ Issue #3 用。PR を出す前にアーキテクチャの合意を取るため�
 ```
 Hi all,
 
-I am working on bringing WireGuard VPN support to NuttX as a GSoC 2026
-project, and before sending patches I would like to check the core design
-decision with the list, because it is not something NuttX has done before
-and I would rather find out now than after the code is written.
+I have been working on bringing WireGuard VPN support to NuttX, and before
+sending patches I would like to check the core design decision with the
+list, because it is not something NuttX has done before and I would rather
+find out now than after the code is written.
 
 Short version: "wg0" is implemented as a NET_LL_TUN netdev whose "wire" is
 a UDP socket, rather than as a driver in the kernel tree. I would like to
