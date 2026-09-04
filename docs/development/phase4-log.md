@@ -240,7 +240,7 @@ updater# Restarting the board ...
 ```
 NuttShell (NSH) NuttX-12.7.0
 
-nsh> wg set private-key KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+nsh> wg set private-key <秘密鍵 44 文字。ここには実物を貼らないこと>
 nsh> wg up
 wg0 is up (listen port 51820)
 
@@ -253,7 +253,7 @@ nsh> ifconfig
 wg0	Link encap:TUN at UP mtu 1500
 	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
 
-nsh> wg pubkey KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+nsh> wg pubkey <秘密鍵 44 文字。ここには実物を貼らないこと>
 iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
 
 nsh> wg down

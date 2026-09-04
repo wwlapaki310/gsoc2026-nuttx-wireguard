@@ -58,6 +58,12 @@
 
   * { box-sizing: border-box; }
 
+  /* Opened straight from disk there is no doctype, so the browser uses
+     quirks mode, where tables do not inherit font-family. Harmless in
+     standards mode; keeps the local view correct. */
+  table, th, td, button, input { font-family: inherit; line-height: inherit; }
+
+
   body {
     margin: 0;
     background: var(--paper);

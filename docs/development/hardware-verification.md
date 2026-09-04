@@ -10,14 +10,14 @@
 
 ESP32-WROOM-32 のみ、GPIO0 を Low にする経路の故障によりダウンロードモードに入れず、書き込みに到達できていない(ビルド自体はコード変更なしで成功)。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
-Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0 では RP2350/Pico 2 系のボード定義が存在しないため、そのままではビルド対象にできない。Apache NuttX master では `raspberrypi-pico-2` ボードとして USB NSH の起動が確認でき、さらに本リポジトリの WireGuard 実装を移植して `wg` builtin と `wg0` TUN インターフェースの起動まで確認した。公式 Raspberry Pi Pico 2 W 向けの Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中だが、まだ master にはマージされていない。そのため、現時点でこちらが確認できたのは USB シリアル経由のローカル実行までで、Wi-Fi 経由の WireGuard ハンドシェイクは未確認。
+Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0 では RP2350/Pico 2 系のボード定義が存在しないため、そのままではビルド対象にできない。Apache NuttX master では `raspberrypi-pico-2` ボードとして USB NSH の起動が確認でき、さらに本リポジトリの WireGuard 実装を移植して `wg` builtin と `wg0` TUN インターフェースの起動まで確認した。その後、公式 Raspberry Pi Pico 2 W 向け Wi-Fi bringup の [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) も試したが、CYW43439 の GSPI 初期化で ready レジスタが `0xffffffff` となり、Wi-Fi 接続前で止まっている。
 
 ---
 
 ## スコープについて
 
 - **Raspberry Pi Pico / Pico 2 (無印)**: ネットワーク機能を持たないため対象外
-- **Raspberry Pi Pico W / Pico 2 W**: Pico W(RP2040) と Pico 2 W(RP2350) はどちらもオンボード Wi-Fi チップとして CYW43439 を使う。NuttX master には CYW43439 系ドライバと RP2350 ボード定義が入っているが、本リポジトリが固定している NuttX 12.7.0 には Pico 2 W をそのまま使うためのボード定義が無い。公式 Raspberry Pi Pico 2 W ボードとしての Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中。master にはまだ `raspberrypi-pico-2-w` は無いので、**現時点でこちらが確認できたのは USB シリアル経由の NuttX 起動と `wg0` 起動まで**。Wi-Fi 経由の WireGuard 通信を試すには、PR #19250 を取り込んで試すか、既に master に入っている [apache/nuttx#19533](https://github.com/apache/nuttx/pull/19533) の `pimoroni-pico-plus-2-w` 実装を参考にする
+- **Raspberry Pi Pico W / Pico 2 W**: Pico W(RP2040) と Pico 2 W(RP2350) はどちらもオンボード Wi-Fi チップとして CYW43439 を使う。NuttX master には CYW43439 系ドライバと RP2350 ボード定義が入っているが、本リポジトリが固定している NuttX 12.7.0 には Pico 2 W をそのまま使うためのボード定義が無い。公式 Raspberry Pi Pico 2 W ボードとしての Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中。こちらでは PR #19250 を試し、USB シリアル経由の NuttX 起動、`wapi`/`wg` builtin、`wg0` 起動まで確認済み。Wi-Fi は `wlan0` 登録後、GSPI 初期化で `0xffffffff` を読み続けて `ifup wlan0` が `-ENODEV` になるため未接続
 - **Sony Spresense**: 当初はプロポーザル上「著者の業務経験」として触れているのみでロードマップ外だったが、実機を保有しているため試験的に対応した。**Spresense 本体には Wi-Fi が内蔵されていない**ため、Wi-Fi 経由の WireGuard 通信には別売りの GS2200M 拡張モジュール(NuttX のボードコンフィグ `wifi`)が必要。今回はビルド・起動確認のみを目標にしている(ネットワーク到達性の検証は対象外)
 - **ESP32-S3**: プロポーザル上の当初の実機ターゲット。**実機検証完了**(下記参照)
 
@@ -134,7 +134,7 @@ USB を挿し直さないと復旧できなくなる)。
 
 ```
 nsh> wg genkey                                  # デバイス上で鍵を生成
-KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=
+<秘密鍵 44 文字。ここには実物を貼らないこと>
 
 nsh> wg down
 nsh> wg set private-key <上で生成した鍵>
@@ -199,7 +199,15 @@ nsh> uname -a
 NuttX  0.0.0 5d2ed54d-dirty Aug 29 2026 11:16:29 arm raspberrypi-pico-2
 ```
 
-これは `wg0` の netdev 登録、WireGuard 鍵の読み込み、TUN インターフェース起動が Pico 2 W 上でも成立することの確認である。一方で、こちらの確認時点では公式 Pico 2 W ボードの Wi-Fi bringup を含む [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) をまだ取り込んでいないため、ESP32-S3 のような「実 Wi-Fi + 実ピアとのハンドシェイク + ping」までは未確認。
+これは `wg0` の netdev 登録、WireGuard 鍵の読み込み、TUN インターフェース起動が Pico 2 W 上でも成立することの確認である。その後、公式 Pico 2 W ボードの Wi-Fi bringup を含む [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) も取り込んで試したが、現時点では Wi-Fi 接続前の GSPI 初期化で止まっている。
+
+### 2026-09-04 追記: Pico 2 W Wi-Fi bring-up調査メモ
+
+Pico 2 W は BOOTSEL 時に `RP2350`、NuttX 起動後に USB CDC `COM8` として認識できる。`raspberrypi-pico-2-w`(apache/nuttx#19250) + 本リポジトリの WireGuard アプリで、NSH、`wapi`、`wg` builtin までは起動確認済み。
+
+一方、Wi-Fi は未接続。`wlan0` は登録されるが MAC が `00:00:00:00:00:00` のまま `DOWN`、`ifup wlan0` は `-ENODEV` で失敗する。デバッグログでは `bcmf_wl_active()` 内の GSPI 初期化で CYW43439 ready レジスタが `0xffffffff` となり、ready pattern を検出できていない。SSID/PSK/DHCP 以前の段階で止まっている。
+
+切り分けとして、GSPI 1MHz 化、電源 ON 待ち時間延長、PR #19533 の DATA/CLK pull-down 修正、GPIO25 LED/CS 衝突回避を試したが、現象は変わらず。現時点では telnet/VPN over Wi-Fi は未到達。
 
 ### 前提条件
 
@@ -300,15 +308,15 @@ nsh> free
 
 ### まだできていないこと
 
-- Pico 2 W のオンボード Wi-Fi (`CYW43439`) を使った `wlan0` 起動([apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) では telnet over Wi-Fi まで実機検証されているが、こちらでは未確認)
+- Pico 2 W のオンボード Wi-Fi (`CYW43439`) を使った `wlan0` 起動(`ifup wlan0` が `-ENODEV`)
 - Windows / Linux 側 WireGuard ピアとの実ハンドシェイク
 - トンネル越し ping / telnet / HTTP
 - 本リポジトリの `Dockerfile` への正式な `pico2w` ビルドステージ追加
 
 Pico 2 W で ESP32-S3 と同等の実通信を行うには、次のどちらかが必要になる。
 
-- [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) を取り込んで `raspberrypi-pico-2-w:telnet` 相当を試す
-- master にマージ済みの [apache/nuttx#19533](https://github.com/apache/nuttx/pull/19533) / `pimoroni-pico-plus-2-w:wifi` を読み、公式 Pico 2 W との差分を確認する
+- [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) の GSPI/CYW43439 初期化失敗(`0xffffffff`)を追う
+- master にマージ済みの [apache/nuttx#19533](https://github.com/apache/nuttx/pull/19533) / `pimoroni-pico-plus-2-w:wifi` との差分を追加で確認する
 
 ---
 
@@ -404,4 +412,4 @@ flash_writer.exe -c COM5 -d nuttx.spk
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
 - `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(現在のデフォルト 6144)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
 - ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる
-- Raspberry Pi Pico 2 W は USB シリアル経由での NuttX 起動と `wg0` 起動まで確認済み。公式 Pico 2 W 向け Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中だが、こちらではまだ取り込んでいないため、Wi-Fi 経由の WireGuard 実通信は未確認(上記 Pico 2 W 節参照)
+- Raspberry Pi Pico 2 W は USB シリアル経由での NuttX 起動、`wapi`/`wg` builtin、`wg0` 起動まで確認済み。Wi-Fi は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) を試したが、CYW43439 の GSPI 初期化で `0xffffffff` を読み続け、`ifup wlan0` が `-ENODEV` になるため未接続(上記 Pico 2 W 節参照)
