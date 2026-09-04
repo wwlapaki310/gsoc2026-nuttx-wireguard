@@ -16,10 +16,10 @@
 |---|---|---|
 | Phase 0 | 開発環境構築・移植スコープの把握 | ✅ 完了 |
 | Phase 1 | ビルドシステム統合(`CONFIG_NET_WIREGUARD=y` でビルドが通る) | ✅ 完了 |
-| Phase 2 | プラットフォーム層実装 + netif 統合(`wg0` が `ifconfig` に出る) | ✅ 完了(sim で確認済み) |
+| Phase 2 | プラットフォーム層実装 + netdev 統合(`wg0` が `ifconfig` に出る) | ✅ 完了(sim で確認済み) |
 | Phase 3 | ハンドシェイクとトンネル疎通(Midterm) | ✅ sim と QEMU(qemu-armv7a + TAP) の両方で本物の Linux WireGuard ピアとの実ハンドシェイク・ping 疎通を確認 |
 | Phase 4 | NSH コマンド・Kconfig 統合・実機テスト | ✅ `wg` / `wg show` 実装済み。**ESP32-S3 実機で実 Wi-Fi・実ピアとの WireGuard ハンドシェイク・トンネル ping を確認**(0% packet loss)。**トンネル越し telnet で見つかった TCP 特有バグ(`EBADF`)を修正し、コマンド実行まで確認**。**Spresense 実機でも `wg0` 起動を確認**(ARM Cortex-M4F)。ESP32-WROOM-32 のみ GPIO0 故障で書き込み未達 |
-| Phase 5 | upstream PR | ⛔ 未着手。方針は [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) にまとめ済み |
+| Phase 5 | upstream PR | 🔶 準備中。スタイル準拠・vendored ソースの取り込み・PR 形のディレクトリ構成は完了。残るのは dev@ での設計合意([#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3))と FLAT ビルド前提の扱い([#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))。方針は [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) |
 
 ---
 
@@ -179,9 +179,9 @@ sim/QEMU 向けに書いたプラットフォーム層・netif 統合コード�
 
 ## まだ確認できていないこと
 
-- **長時間・異常系の通信**: 短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive・再接続・MTU 境界は未確認([Issue #5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5))。**2026-08-29 のソークテストで、約20分後に ESP32-S3 がネットワークから消える事象を観測**したが、USB 非接続でコンソールが読めず原因未特定(クラッシュ / Wi-Fi 切断 / 電源断のいずれか)
-- **複数ピアの実機動作**: sim では3ピアの設定・登録・削除・ファイル往復を確認済みだが、実機で複数ピアと同時にハンドシェイクする検証は未実施
-- **設定永続化の実機動作**: sim で `showconf` → ファイル → `setconf` の往復を確認済み。実機での電源断をまたぐ確認は未実施(ESP32-S3 が USB 非接続で書き込めないため)
+- **長時間・異常系の通信**: 短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive・再接続・MTU 境界は未確認([Issue #5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5))。ソークテストは 4 項目(ルータ / ボードの LAN / トンネル / トンネル越し TCP)を独立にサンプルする形に書き直し、止まったときに切り分けられるようにした。到達した最長は **4 時間 28 分**で、そこでの停止は **ESP32-S3 の Wi-Fi ドライバ側のクラッシュ**と特定できた(`start_rt_timer` が NULL リンクを辿る。WireGuard ではない。[phase4-log.md](docs/development/phase4-log.md))。2 回目は 3 時間 36 分で停止したが、**シリアルログにパニックがなく、ネットワークより先に USB ポートが消えている**ため電源断と整合する — 断定はできない。日単位で動くことはまだ言えない
+- **複数ピアの実機動作**: sim では 3 ピアの設定・登録・削除・ファイル往復と、**2 ピアとの同時セッション保持**(`verify-sim-wg-multipeer.sh`)を確認済み。実機で複数ピアと同時にハンドシェイクする検証は未実施
+- ~~**設定永続化の実機動作**~~: **確認済み。** ESP32-S3 実機で、Kconfig では表現できない値(keepalive 33 / 44 の 2 ピア)を `wg saveconf` で保存し、電源を落として入れ直したあとに読み出せることを確認した。読めた値がビルド時の既定値ではなくファイル由来であることを区別できる値を選んである
 - **Spresense の実ピア通信**: 実機での `wg0` 起動は確認済みだが、メインボードに Wi-Fi が無いためハンドシェイク・トンネル疎通は未検証(別売りの GS2200M 拡張モジュールが必要)
 - **ESP32-WROOM-32 の実機書き込み**: GPIO0 を Low にする経路(BOOT ボタン・DTR トランジスタ)が両方効かず、ダウンロードモードに入れない。ビルドは成功しているため移植性の主張には影響しないが、実機確認には別個体が要る。詳細は [docs/development/phase4-log.md](docs/development/phase4-log.md)
 - **upstream 提出**: スタイル準拠(`checkpatch.sh` 全ファイルクリーン)・`LICENSE` 追記案・`Assisted-by:` タグ運用は対応済み。残るのは **dev@ での設計合意**([Issue #3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)、投稿ドラフトは [docs/upstream/dev-list-proposal.md](docs/upstream/dev-list-proposal.md))と、**FLAT ビルド前提の扱い**([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))
@@ -251,7 +251,7 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 全体像と根拠は [docs/development/code-review-2026-08.md](docs/development/code-review-2026-08.md) にまとめてある。
 
 1. **dev@nuttx.apache.org での設計共有** — スタイル整形と実機ログが揃い、upstream に出す前提が埋まったので、次は設計そのものへの合意取り(`wg0` を lwIP netif ではなく NuttX netdev として実装した判断について)
-2. **実行時設定 (`wg setconf` 相当)** — 鍵をビルドに焼き込まない。実用性・セキュリティ両面で最大の弱点
-3. vendored ツリーの整理(未使用の `wireguardif.c` / `crypto/cortex/` の扱いを決め、Docker の `git clone` 方式から実ファイル同梱へ)
+2. ~~**実行時設定**~~ — **完了**。`wg genkey` / `wg set` / `wg setconf` / `wg saveconf` で、鍵をビルドに焼き込まずに設定・永続化できる
+3. ~~vendored ツリーの整理~~ — **完了**。未使用の `wireguardif.c` / `crypto/cortex/` を外し、Docker の `git clone` 方式から実ファイル同梱に切り替えた(upstream と `cmp` でバイト一致を確認済み)
 4. 長時間 keepalive、再接続、MTU 境界、複数 peer の追加検証(ESP32-S3 実機で)
 5. ESP32-WROOM-32・Spresense の実機書き込み問題の切り分け(別 PC・別ケーブル/電源での再挑戦。[docs/development/phase4-log.md](docs/development/phase4-log.md) 参照)

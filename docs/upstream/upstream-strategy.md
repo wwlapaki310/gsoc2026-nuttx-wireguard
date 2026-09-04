@@ -83,18 +83,19 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 
 ## 2. 現状コードの upstream 化ギャップまとめ
 
-最終更新: 2026-08-22。
+最終更新: 2026-09-04。
 
 | 項目 | 現状 | 必要な対応 |
 |---|---|---|
-| ビルド方式 | Docker が `wireguard-lwip` を都度 `git clone` してコピーし、`nuttx_port/` を上書き | ⛔ upstream PR には実ファイルとしてコミットされたソースが要る。vendored ファイルをリポジトリに実体として含める(仕組みは Phase 5 で整理) |
+| ビルド方式 | ✅ **完了**。vendored ソースを実ファイルとしてリポジトリに含め、Docker は `git clone` せず `nuttx_port/` をコピーするだけ。upstream と `cmp` でバイト一致を確認済み | — |
 | ファイルヘッダ/構造 | ✅ **完了**。4ファイルとも ASF ヘッダ + 標準セクション構成に整形し、`checkpatch.sh` をクリーンに通過(2026-08-22) | — |
 | 実機検証ログ | ✅ **完了**。ESP32-S3 実機で handshake / ping / TCP(telnet・HTTP)疎通を確認 | — |
 | LICENSE/NOTICE | 🔶 追記案を [license-appendix-draft.md](license-appendix-draft.md) に用意。実際の `LICENSE` への反映は未 | 提出時に最新の書式に合わせて反映。`wireguardif.c` / `crypto/cortex/` を vendored ツリーから外すか判断する |
 | コミット規約 | 🔶 `Assisted-by:` タグの運用を 2026-08-22 のコミットから開始 | 過去分は書き直さず、以後徹底 |
 | PR 粒度 | 全部入りで開発中 | フェーズ単位・機能単位に分割(§3) |
+| FLAT ビルド前提 | ⛔ `psock_*()` 内部 API に依存しており PROTECTED / KERNEL ビルドでは成立しない | 隠さず dev@ から提示する。Kconfig で `depends on` を付けて明示するか、別設計に変えるか([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6)) |
 | レビュー体制 | メンター1名想定 | dev@ での早期共有 + 独立レビュアーの確保 |
-| 実行時設定 | ⛔ 鍵・ピアが Kconfig 固定。鍵がビルド成果物に焼き込まれる | `wg setconf` 相当の実装([../development/code-review-2026-08.md](../development/code-review-2026-08.md) §1-D) |
+| 実行時設定 | ✅ **完了**。`wg genkey` / `wg set` / `wg setconf` / `wg saveconf`。鍵をビルドに焼き込まずに設定でき、`wg(8)` 互換の INI で永続化される。Kconfig の値は未設定ボードのフォールバックとしてのみ残した | — |
 
 ---
 

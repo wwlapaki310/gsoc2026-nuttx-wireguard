@@ -402,6 +402,6 @@ flash_writer.exe -c COM5 -d nuttx.spk
 
 - ESP32(無印)・Spresense とも実機への書き込み・起動確認が完了していない(上記参照、詳細は [docs/phase4-log.md](phase4-log.md))
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
-- `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(デフォルト 3072)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
+- `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(現在のデフォルト 6144)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
 - ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる
 - Raspberry Pi Pico 2 W は USB シリアル経由での NuttX 起動と `wg0` 起動まで確認済み。公式 Pico 2 W 向け Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中だが、こちらではまだ取り込んでいないため、Wi-Fi 経由の WireGuard 実通信は未確認(上記 Pico 2 W 節参照)
