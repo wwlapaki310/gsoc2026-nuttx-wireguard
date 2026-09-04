@@ -66,7 +66,9 @@ WireGuard は約 4,000 行なのでマイコンに載る。
 
 ## 4 — 4 関数だけ置き換える
 
-**移植元:** wireguard-lwip（BSD-3-Clause）— OS 依存が 4 関数に隔離されている
+**移植元:** [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)
+Copyright (c) 2021 Daniel Hope (www.floorsense.nz) / BSD-3-Clause
+— lwIP 向けの WireGuard 実装。**OS 依存が 4 関数に隔離されている**
 
 | | 扱い | 規模 |
 |---|---|---|
@@ -79,6 +81,8 @@ WireGuard は約 4,000 行なのでマイコンに載る。
 
 **話で補う:** NuttX は lwIP ではなく独自スタックなので netif は流用できない。
 `wg0` は `netdev_register()` で登録する仮想 NIC で、その「配線」は UDP ソケット。
+OS 固有の勘所は [ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml/WireGuard-ESP32-Arduino)
+（同じコードの ESP32 / FreeRTOS + ESP-IDF への移植）を先例として参照した。
 
 ---
 
@@ -116,3 +120,19 @@ WireGuard は約 4,000 行なのでマイコンに載る。
 | なぜ WireGuard か | 実装規模。OpenVPN / IPsec は十万行以上、WireGuard は約 4,000 行。暗号スイート固定でネゴシエーションがない |
 | 苦労した点は | 「テストは通るが壊れている」の繰り返し。最悪は **`ping` は 0% ロスで通るのに TCP のデータだけ 1 バイトも届かない**（詳細は本編） |
 | 実用になるか | 実行時設定・設定の永続化・複数ピアまで動作。最長連続動作は 4 時間 28 分で、停止原因は Wi-Fi ドライバ側と特定済み |
+
+---
+
+## 参考
+
+| | |
+|---|---|
+| **WireGuard** | <https://www.wireguard.com/> — プロトコル本体。Linux カーネル 5.6 でマージ |
+| **Apache NuttX** | <https://nuttx.apache.org/> — POSIX 準拠の組み込み RTOS |
+| **smartalock/wireguard-lwip** | <https://github.com/smartalock/wireguard-lwip> — 移植元。Copyright (c) 2021 Daniel Hope (www.floorsense.nz)、BSD-3-Clause |
+| **ciniml/WireGuard-ESP32-Arduino** | <https://github.com/ciniml/WireGuard-ESP32-Arduino> — 同じコードの ESP32（FreeRTOS + ESP-IDF）への移植。OS 差分の先例として参照 |
+| **本プロジェクト** | <https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard> |
+| **NuttX 側の議論** | <https://github.com/apache/nuttx/issues/18548> |
+| **AITRIOS** | <https://www.aitrios.sony-semicon.com/> — ソニーセミコンダクタソリューションズのエッジ AI プラットフォーム |
+| **SPRESENSE** | <https://developer.sony.com/spresense/> |
+| **Community Over Code** | <https://communityovercode.org/> — 2026 年 10 月 11〜14 日、グラスゴー |
