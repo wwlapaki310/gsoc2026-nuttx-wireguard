@@ -50,7 +50,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 |---|---|
 | [slides.html](presentation/slides.html) | 発表スライド 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧 |
 | [talk-script.md](presentation/talk-script.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
-| [short-summary.md](presentation/short-summary.md) | 5 分紹介・LT 用のショートサマリ（実測 4.9 分） |
+| [short-slides.html](presentation/short-slides.html) | 5 分紹介デッキ 6 枚。`←→` 送り、`N` で発表者ノート |
+| [short-summary.md](presentation/short-summary.md) | その原稿（構成・時間配分・話で補う内容） |
 | [presentation-script.md](presentation/presentation-script.md) | 進行表と想定 Q&A |
 
 > **収録・登壇時の注意:** `.config`・`kconfig-tweak` の実行画面・ビルドログを画面に出さないこと

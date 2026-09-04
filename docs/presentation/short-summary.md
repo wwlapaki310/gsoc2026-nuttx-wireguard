@@ -1,6 +1,7 @@
 # 5分紹介スライド構成: WireGuard を Apache NuttX へ
 
 短時間の紹介枠・LT 用。**6 枚 / 5 分**。
+この原稿から起こしたデッキ: [short-slides.html](short-slides.html)
 1 枚 = 見出し + 主役の要素ひとつ + 締めの一行。詰め込まない。
 
 本編の 27 枚デッキは [slides.html](slides.html)、その台本は [talk-script.md](talk-script.md)。

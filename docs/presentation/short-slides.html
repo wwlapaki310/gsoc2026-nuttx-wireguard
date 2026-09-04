@@ -1,0 +1,485 @@
+<title>wg0 ショートピッチ</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:   #f5f7f8;
+    --surface: #ffffff;
+    --sunk:    #eaeef0;
+    --ink:     #121a20;
+    --ink-2:   #56626d;
+    --ink-3:   #838f99;
+    --rule:    #d3dade;
+    --rule-2:  #e6eaed;
+    --wg:      #8c1a1f;
+    --nx:      #1b6c68;
+    --wg-fill: #f7e9ea;
+    --nx-fill: #e4f0ef;
+
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --sans: "Zen Kaku Gothic New", system-ui, -apple-system, "Segoe UI",
+            "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0e1317;
+      --surface: #161d23;
+      --sunk:    #121920;
+      --ink:     #e6ebef;
+      --ink-2:   #9ea9b3;
+      --ink-3:   #76828c;
+      --rule:    #2a333c;
+      --rule-2:  #202830;
+      --wg:      #e8797d;
+      --nx:      #52bdb4;
+      --wg-fill: #2b1a1c;
+      --nx-fill: #13282a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:   #0e1317;
+    --surface: #161d23;
+    --sunk:    #121920;
+    --ink:     #e6ebef;
+    --ink-2:   #9ea9b3;
+    --ink-3:   #76828c;
+    --rule:    #2a333c;
+    --rule-2:  #202830;
+    --wg:      #e8797d;
+    --nx:      #52bdb4;
+    --wg-fill: #2b1a1c;
+    --nx-fill: #13282a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+
+  #canvas {
+    width: 1280px; height: 720px;
+    transform-origin: center center;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    display: none;
+    padding: 62px 76px 64px;
+    overflow: hidden;
+  }
+  .slide.on { display: flex; flex-direction: column; }
+
+  #bar {
+    position: absolute; left: 0; top: 0; height: 3px;
+    background: var(--wg); transition: width .25s ease; z-index: 5;
+  }
+
+  .num {
+    position: absolute; right: 30px; bottom: 22px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    color: var(--ink-3); font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--wg); margin: 0 0 16px;
+  }
+
+  h2 {
+    font-size: 46px; line-height: 1.2; letter-spacing: -.025em;
+    font-weight: 700; margin: 0 0 34px; text-wrap: balance;
+  }
+  h2 .m { font-family: var(--mono); font-weight: 600; letter-spacing: -.05em; }
+
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 30px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 21px; }
+  th, td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--rule-2); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+    border-bottom: 1px solid var(--rule); padding-bottom: 9px;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.h { font-weight: 700; }
+  td.n { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .old { color: var(--ink-3); }
+  .new { color: var(--wg); font-weight: 700; }
+  .sub { display: block; font-size: 15.5px; color: var(--ink-2); margin-top: 5px; line-height: 1.55; }
+
+  .kicker {
+    border-left: 4px solid var(--wg);
+    background: var(--wg-fill);
+    padding: 20px 26px;
+  }
+  .kicker p { margin: 0; font-size: 24px; line-height: 1.5; font-weight: 700; }
+  .kicker p + p { margin-top: 8px; font-size: 18px; font-weight: 400; color: var(--ink-2); }
+  .kicker.ok { border-left-color: var(--nx); background: var(--nx-fill); }
+
+  ul.big { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+  ul.big li { font-size: 27px; font-weight: 700; padding-left: 30px; position: relative; line-height: 1.4; }
+  ul.big li::before {
+    content: ""; position: absolute; left: 0; top: .55em;
+    width: 14px; height: 3px; background: var(--wg);
+  }
+  ul.big li span { display: block; font-size: 17px; font-weight: 400; color: var(--ink-2); margin-top: 7px; }
+
+  ul.pts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; font-size: 19px; }
+  ul.pts li { padding-left: 22px; position: relative; line-height: 1.6; }
+  ul.pts li::before { content: ""; position: absolute; left: 0; top: .72em; width: 9px; height: 2px; background: var(--nx); }
+
+  code { font-family: var(--mono); font-size: .9em; background: var(--sunk); padding: 1px 6px; border-radius: 2px; letter-spacing: -.02em; }
+  strong { font-weight: 700; }
+  .red { color: var(--wg); }
+  .tl { color: var(--nx); }
+  a { color: var(--nx); }
+
+  .src {
+    font-size: 15px; color: var(--ink-2); line-height: 1.7;
+    border: 1px solid var(--rule); padding: 14px 18px; background: var(--sunk);
+  }
+  .src b { color: var(--ink); font-weight: 600; }
+  .src .lic { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+
+  /* ---- title slide ---- */
+  .title-slide { padding: 0; }
+  .title-slide.on { display: grid; grid-template-rows: 1fr auto; }
+  .t-main { padding: 0 84px; display: flex; flex-direction: column; justify-content: center; }
+  .t-main h1 {
+    font-size: 66px; line-height: 1.15; letter-spacing: -.035em;
+    font-weight: 900; margin: 0 0 22px;
+  }
+  .t-main h1 .m { font-family: var(--mono); letter-spacing: -.06em; color: var(--wg); }
+  .t-sub { font-size: 23px; color: var(--ink-2); margin: 0 0 40px; }
+  .t-meta { font-family: var(--mono); font-size: 14px; letter-spacing: .08em; color: var(--ink-3); margin: 0; }
+  .t-strip { display: flex; border-top: 1px solid var(--rule); background: var(--sunk); }
+  .t-strip div { flex: 1; padding: 20px 26px; border-right: 1px solid var(--rule-2); }
+  .t-strip div:last-child { border-right: 0; }
+  .t-strip b { display: block; font-size: 19px; font-weight: 700; margin-bottom: 5px; }
+  .t-strip span { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); letter-spacing: .04em; }
+
+  /* ---- notes ---- */
+  #notes {
+    position: fixed; left: 0; right: 0; bottom: 0; max-height: 44vh; overflow-y: auto;
+    background: var(--surface); border-top: 2px solid var(--ink);
+    padding: 20px 30px 26px; font-size: 15px; line-height: 1.85; color: var(--ink-2);
+    display: none; z-index: 20;
+  }
+  #notes.on { display: block; }
+  #notes h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--wg); margin: 0 0 10px; font-weight: 500;
+  }
+  #notes p { margin: 0 0 10px; max-width: 100ch; }
+  #notes p:last-child { margin-bottom: 0; }
+  .notes-src { display: none; }
+
+  #help {
+    position: fixed; right: 14px; top: 12px; z-index: 25;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    color: var(--ink-3); display: flex; gap: 14px; background: var(--paper); padding: 5px 9px;
+  }
+  #help b { color: var(--ink-2); font-weight: 500; }
+
+  :focus-visible { outline: 2px solid var(--wg); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { #bar { transition: none; } }
+
+  svg text { font-family: var(--mono); font-size: 14px; fill: var(--ink-2); }
+  svg text.hd { font-size: 16px; font-weight: 600; fill: var(--ink); }
+  svg text.lbl { font-size: 12px; letter-spacing: .1em; fill: var(--ink-3); }
+</style>
+
+<div id="help"><span><b>←→</b> 移動</span><span><b>N</b> 原稿</span></div>
+
+<div id="stage"><div id="canvas">
+  <div id="bar"></div>
+
+<!-- ============ 1 ============ -->
+<section class="slide title-slide">
+  <div class="t-main">
+    <p class="eyebrow">Apache NuttX &nbsp;·&nbsp; netutils / wg0</p>
+    <h1>WireGuard を<br>Apache NuttX へ</h1>
+    <p class="t-sub">組み込み RTOS に、現代的な VPN を</p>
+    <p class="t-meta">秋田 悟 &nbsp;/&nbsp; ソニーセミコンダクタソリューションズ</p>
+  </div>
+  <div class="t-strip">
+    <div><b>ESP32-S3</b><span>実機 · Xtensa LX7</span></div>
+    <div><b>実 Wi-Fi</b><span>家庭用 AP 経由</span></div>
+    <div><b>本物のピア</b><span>Windows 公式クライアント</span></div>
+    <div><b>260 KiB/s</b><span>トンネル越し TCP</span></div>
+  </div>
+  <div class="num">1 / 6</div>
+  <div class="notes-src">
+WireGuard という VPN プロトコルを、Apache NuttX という組み込み向けの RTOS に移植した話を、5分でご紹介します。
+||
+ESP32-S3 の実機の上で、家庭用の Wi-Fi 越しに、Windows の公式 WireGuard クライアントと通信できるところまで確認できています。
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="slide">
+  <p class="eyebrow">What</p>
+  <h2>NuttX に VPN がなかった</h2>
+  <div class="body">
+    <table>
+      <thead><tr><th></th><th>従来</th><th>今回</th></tr></thead>
+      <tbody>
+        <tr><td class="h">接続</td><td class="old">シリアルケーブル</td><td class="new">ネットワーク</td></tr>
+        <tr><td class="h">場所</td><td class="old">機器の前</td><td class="new">リモート</td></tr>
+        <tr><td class="h">経路</td><td class="old">平文</td><td class="new">暗号化トンネル</td></tr>
+        <tr><td class="h">道具</td><td class="old">専用</td><td class="new"><code>ssh</code> / <code>telnet</code> / HTTP そのまま</td></tr>
+      </tbody>
+    </table>
+    <div class="kicker">
+      <p><code>wg0</code> という仮想 NIC が生える。</p>
+      <p>アプリケーションから見れば、ただのネットワークインターフェース。</p>
+    </div>
+  </div>
+  <div class="num">2 / 6</div>
+  <div class="notes-src">
+何をやったか。WireGuard という VPN プロトコルを Apache NuttX に移植しました。
+||
+これまで NuttX の機器をデバッグするには、その機器のところまで行ってシリアルケーブルを挿すしかありませんでした。ログを見るのも、コマンドを叩くのも全部それです。NuttX には VPN の実装がなかったので、ほかに安全な遠隔手段がなかったためです。
+||
+今回の実装で wg0 という仮想的なネットワークインターフェースが生えます。アプリから見ればただの NIC なので、ssh でも telnet でも HTTP でも、普段使っている道具がそのままトンネルの向こうの機器に届きます。
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="slide">
+  <p class="eyebrow">Why</p>
+  <h2>現場に置いたあと、触れない</h2>
+  <div class="body">
+    <table>
+      <thead><tr><th></th><th>何</th><th>なぜ触れない</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="h" style="color:var(--wg);white-space:nowrap">AITRIOS</td>
+          <td>エッジ AI プラットフォームの AI カメラ<span class="sub">ESP32 + NuttX</span></td>
+          <td>天井・屋外の高所<span class="sub">異常の兆候だけで人は出せない</span></td>
+        </tr>
+        <tr>
+          <td class="h" style="color:var(--wg);white-space:nowrap">人工衛星</td>
+          <td>ボトムアップ活動<span class="sub">SPRESENSE</span></td>
+          <td>打ち上げ後は物理アクセス不可<span class="sub">ネットワークが唯一の経路</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="kicker">
+      <p>本来は VPN で解決する話。<span class="red">NuttX にはその選択肢がなかった。</span></p>
+      <p>WireGuard は約 4,000 行 — マイコンに載る。</p>
+    </div>
+  </div>
+  <div class="num">3 / 6</div>
+  <div class="notes-src">
+なぜやったか。きっかけは GSoC のテーマ一覧でこの題目を見つけたことですが、やりたいと思った理由は仕事の方にあります。
+||
+私はソニーセミコンダクタソリューションズで、AITRIOS というエッジ AI プラットフォームに関わっています。そこで使っている AI カメラが ESP32 と NuttX の組み合わせです。それとは別に、ボトムアップの活動で SPRESENSE を使った人工衛星のプロジェクトにも関わっていました。
+||
+この2つ、まったく違うものに見えて、困りごとが同じでした。現場に置いたあと、触れない。カメラは天井や屋外の高所に設置されることもあるので、異常の兆候だけで人を派遣するのは現実的ではありません。衛星に至っては、打ち上げ後の物理アクセスは不可能です。
+||
+そのとき取りうる選択肢は多くありません。グローバル IP を晒してポートを開けるか、独自プロトコルを作り込むか、ベンダーのクラウドに寄せるか。どれも安全性か保守性か独立性のどれかを損ないます。本来は VPN で解決する話なのに、NuttX にはその選択肢がありませんでした。そして WireGuard は約 4,000 行と小さいので、マイコンに載ります。
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="slide">
+  <p class="eyebrow">How</p>
+  <h2>4 関数だけ置き換える</h2>
+  <div class="body" style="gap:22px">
+    <div class="src">
+      <b>移植元 &nbsp;smartalock/wireguard-lwip</b> &nbsp;
+      <a href="https://github.com/smartalock/wireguard-lwip">github.com/smartalock/wireguard-lwip</a><br>
+      <span class="lic">Copyright (c) 2021 Daniel Hope (www.floorsense.nz) · BSD-3-Clause</span><br>
+      lwIP 向けの WireGuard 実装。<b>OS 依存が 4 関数に隔離されている</b>
+    </div>
+    <table>
+      <thead><tr><th></th><th>扱い</th><th style="text-align:right">規模</th></tr></thead>
+      <tbody>
+        <tr><td class="h">プロトコル・暗号</td><td class="tl"><strong>無改変で流用</strong></td><td class="n">約 3,000 行</td></tr>
+        <tr><td class="h">OS 依存の 4 関数</td><td>NuttX の POSIX API で実装</td><td class="n">186 行</td></tr>
+        <tr><td class="h">lwIP netif グルー</td><td class="red"><strong>NuttX 用に書き直し</strong></td><td class="n">約 2,700 行</td></tr>
+      </tbody>
+    </table>
+    <div class="kicker ok">
+      <p>結果: <span class="tl">4 アーキテクチャでコード変更ゼロ</span></p>
+      <p>x86_64 / ARM Cortex-A7 / Xtensa LX7 / ARM Cortex-M4F</p>
+    </div>
+  </div>
+  <div class="num">4 / 6</div>
+  <div class="notes-src">
+どう作ったか。ゼロから実装したわけではありません。wireguard-lwip という lwIP 向けの WireGuard 実装が先行事例としてあり、これを移植元にしました。BSD ライセンスで、NuttX の方針とも相性がいいです。
+||
+この実装の良いところは、OS に依存する処理が4つの関数に隔離されていることです。単調増加時刻の取得、暗号乱数、TAI64N タイムスタンプ、負荷判定。プラットフォーム側が用意すべきものはこれだけです。
+||
+したがってプロトコルと暗号のコア、約3,000行はそのまま持ってきて、lwIP の API を呼んでいる部分だけを NuttX の API に置き換える、という作業になりました。NuttX は lwIP ではなく独自のネットワークスタックを持つので、ここは流用ではなく書き直しです。wg0 は netdev_register で登録する仮想 NIC で、その配線は物理イーサネットではなく UDP ソケットになります。
+||
+OS 固有の勘所については、同じコードを ESP32 の FreeRTOS 環境に移植した ciniml さんの WireGuard-ESP32-Arduino を先例として参照しました。
+||
+この設計判断は当たりでした。結果として、4つのアーキテクチャでコードを1行も変えずに動いています。
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="slide">
+  <p class="eyebrow">Status</p>
+  <h2>ESP32-S3 実機で動作</h2>
+  <div class="body" style="gap:26px">
+    <svg viewBox="0 0 1128 190" style="width:100%;height:auto" role="img" aria-label="PC から暗号化トンネルを通って ESP32-S3 上の Web サーバにブラウザで到達する構成図">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <rect x="0" y="34" width="230" height="96" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="115" y="75" text-anchor="middle">PC / ブラウザ</text>
+      <text x="115" y="100" text-anchor="middle" font-size="13">http://10.10.0.2/</text>
+
+      <line x1="232" y1="82" x2="300" y2="82" stroke="var(--ink-3)" marker-end="url(#a)" color="var(--ink-3)"></line>
+
+      <rect x="304" y="16" width="520" height="132" fill="var(--wg-fill)" stroke="var(--wg)" stroke-dasharray="5 4"></rect>
+      <text class="lbl" x="564" y="40" text-anchor="middle" fill="var(--wg)">WIREGUARD TUNNEL</text>
+      <text class="hd" x="564" y="76" text-anchor="middle" fill="var(--wg)">家庭用 Wi-Fi ─ インターネット</text>
+      <text x="564" y="104" text-anchor="middle" font-size="13">ChaCha20-Poly1305 / UDP 51820</text>
+      <text x="564" y="128" text-anchor="middle" font-size="12" fill="var(--ink-3)">相手は Windows 公式クライアント</text>
+
+      <line x1="828" y1="82" x2="896" y2="82" stroke="var(--ink-3)" marker-end="url(#a)" color="var(--ink-3)"></line>
+
+      <rect x="900" y="34" width="228" height="96" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="1014" y="70" text-anchor="middle">ESP32-S3</text>
+      <text x="1014" y="94" text-anchor="middle" font-size="13">NuttX + webserver</text>
+      <text x="1014" y="116" text-anchor="middle" font-size="12" fill="var(--nx)">USB 未接続・電源のみ</text>
+    </svg>
+
+    <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:34px;align-items:start">
+      <ul class="pts">
+        <li>デモ動画 &nbsp;<a href="https://youtu.be/1kyX2av5WG4">youtu.be/1kyX2av5WG4</a></li>
+        <li>telnet ログイン → Web サーバ起動 → ブラウザで閲覧</li>
+        <li><strong>仕様側の実装との相互運用</strong>を確認</li>
+      </ul>
+      <table style="font-size:16px">
+        <thead><tr><th>並行して</th><th>状態</th></tr></thead>
+        <tbody>
+          <tr><td>Pico 2 W</td><td>挑戦中<span class="sub">CYW43439 ドライバが RP2350 側に未整備</span></td></tr>
+          <tr><td>SPRESENSE</td><td><code>wg0</code> 起動まで確認<span class="sub">Wi-Fi モジュール確保後に通信検証</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="num">5 / 6</div>
+  <div class="notes-src">
+いまどこまで来ているか。ESP32-S3 の実機で動いています。家の Wi-Fi 越しに、相手は Windows の公式 WireGuard クライアント。自作実装同士ではなく、仕様側の実装と通信できているところが大事だと思っています。
+||
+デモ動画があります。トンネル越しに telnet でログインして、ボードの上で Web サーバを起動して、最後にブラウザで開きます。このとき USB は繋がっていません。電源アダプタだけです。
+||
+並行して、Raspberry Pi Pico 2 W に挑戦中です。こちらは Wi-Fi チップのドライバが NuttX の RP2350 側にまだ整備されていないので、そこからになります。SPRESENSE は wg0 の起動までは確認できていて、Wi-Fi モジュールを確保できたら通信まで持っていきます。
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="slide">
+  <p class="eyebrow">Next</p>
+  <h2>これから</h2>
+  <div class="body">
+    <ul class="big">
+      <li>対応実機を広げる
+        <span>Pico 2 W・SPRESENSE、そしてその先へ</span></li>
+      <li>Community Over Code グラスゴー（10 月）
+        <span>インパクトのあるデモの形を検討する</span></li>
+      <li>upstream へマージ
+        <span><code>apache/nuttx-apps</code> の <code>netutils/wireguard</code> として</span></li>
+    </ul>
+    <div class="kicker ok">
+      <p><span class="tl">NuttX 機器に、普通のやり方で手が届くようにしたい。</span></p>
+    </div>
+  </div>
+  <div class="num">6 / 6</div>
+  <div class="notes-src">
+これからです。対応する実機を広げていくこと。それから10月の Community Over Code グラスゴーで発表するので、見て伝わるデモの形を考えているところです。
+||
+そして最終的には、本家の NuttX にマージされるところまで持っていきたいと思っています。NuttX の機器に、特別なことをせず普通のやり方で手が届く。それが目標です。
+||
+ご清聴ありがとうございました。
+  </div>
+</section>
+
+</div></div>
+
+<div id="notes"><h4>話すこと</h4><div id="notes-body"></div></div>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById("canvas");
+  var slides = Array.prototype.slice.call(canvas.querySelectorAll(".slide"));
+  var bar = document.getElementById("bar");
+  var notes = document.getElementById("notes");
+  var nbody = document.getElementById("notes-body");
+  var cur = 0;
+
+  function fit() {
+    var k = Math.min((window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);
+    canvas.style.transform = "scale(" + k + ")";
+  }
+
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, j) { s.classList.toggle("on", j === cur); });
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    nbody.textContent = "";
+    var src = slides[cur].querySelector(".notes-src");
+    if (src) {
+      src.textContent.split("||").forEach(function (p) {
+        var t = p.trim();
+        if (!t) { return; }
+        var el = document.createElement("p");
+        el.textContent = t;
+        nbody.appendChild(el);
+      });
+    }
+    if (location.hash !== "#" + (cur + 1)) {
+      history.replaceState(null, "", "#" + (cur + 1));
+    }
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); show(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); show(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); show(0); }
+    else if (k === "End") { e.preventDefault(); show(slides.length - 1); }
+    else if (k === "n" || k === "N") { e.preventDefault(); notes.classList.toggle("on"); }
+    else if (k === "f" || k === "F") {
+      e.preventDefault();
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (n && n - 1 !== cur) { show(n - 1); }
+  });
+
+  fit();
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start ? start - 1 : 0);
+})();
+</script>
