@@ -8,20 +8,22 @@
 
 | 枚 | 見出し | 主役 | 目安 |
 |---|---|---|---|
-| 1 | タイトル | 実績バー | 10 秒 |
-| 2 | NuttX に VPN がなかった | 従来／今回の対比表 | 60 秒 |
-| 3 | 現場に置いたあと、触れない | 2 つの現場の表 | 100 秒 |
-| 4 | 4 関数だけ置き換える | 移植内訳の表 | 60 秒 |
-| 5 | ESP32-S3 実機で動作 | デモのスクリーンショット | 60 秒 |
-| 6 | これから | 3 項目 | 30 秒 |
+| 1 | **Title** — WireGuard Port to Apache NuttX | 実績バー | 10 秒 |
+| 2 | **Summary** — NuttX に VPN がなかった | 従来／今回の対比表 | 60 秒 |
+| 3 | **Motivation** — 現場に置いたあと、触れない | 2 つの現場の表 | 100 秒 |
+| 4 | **Implementation** — 4 関数だけ置き換える | 移植内訳の表 | 60 秒 |
+| 5 | **Current Status** — ESP32-S3 実機で動作 | デモ経路の模式図 | 60 秒 |
+| 6 | **Next Steps** — これから | 3 項目 | 30 秒 |
 
 削るなら 4。**3 は削らない**（この活動が単なる移植ではない理由）。
 
 ---
 
-## 1 — タイトル
+## 1 — Title
 
-### WireGuard を Apache NuttX へ
+### WireGuard Port to Apache NuttX
+
+<sub>proposal.md のタイトルと同一にしてある</sub>
 
 組み込み RTOS に、現代的な VPN を
 
@@ -34,7 +36,7 @@
 
 ---
 
-## 2 — NuttX に VPN がなかった
+## 2 — Summary: NuttX に VPN がなかった
 
 | | 従来 | 今回 |
 |---|---|---|
@@ -49,7 +51,7 @@
 
 ---
 
-## 3 — 現場に置いたあと、触れない
+## 3 — Motivation: 現場に置いたあと、触れない
 
 | | 何 | なぜ触れない |
 |---|---|---|
@@ -65,7 +67,7 @@ WireGuard は約 4,000 行なのでマイコンに載る。
 
 ---
 
-## 4 — 4 関数だけ置き換える
+## 4 — Implementation: 4 関数だけ置き換える
 
 **移植元:** [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)
 Copyright (c) 2021 Daniel Hope (www.floorsense.nz) / BSD-3-Clause
@@ -87,7 +89,7 @@ OS 固有の勘所は [ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml
 
 ---
 
-## 5 — ESP32-S3 実機で動作
+## 5 — Current Status: ESP32-S3 実機で動作
 
 **主役:** デモのスクリーンショット（ブラウザで `http://10.10.0.2/` が開いている画面）
 
@@ -104,7 +106,7 @@ OS 固有の勘所は [ciniml/WireGuard-ESP32-Arduino](https://github.com/ciniml
 
 ---
 
-## 6 — これから
+## 6 — Next Steps: これから
 
 - **対応実機を広げる**
 - **Community Over Code グラスゴー（10 月）** — インパクトのあるデモの形を検討
