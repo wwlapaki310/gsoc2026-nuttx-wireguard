@@ -146,7 +146,7 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>` (default
 `nuttx-12.7.0`; `master` is known to build).
 
-See [docs/dev-environment.md](docs/dev-environment.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
+See [docs/development/dev-environment.md](docs/development/dev-environment.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ### Verification scripts
 
@@ -159,7 +159,7 @@ See [docs/dev-environment.md](docs/dev-environment.md) and [DEVELOPMENT.md](DEVE
 
 ## Source layout
 
-Everything lives under [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard/),
+Everything lives under [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard),
 laid out exactly as it would be submitted to `apache/nuttx-apps`.
 
 | | Lines | Origin |
@@ -198,8 +198,8 @@ third-party, adapted, or original.
 
 Coding style (`checkpatch.sh`, `nxstyle`) is clean, the vendored sources are in the tree and
 verified against upstream, and the directory is already shaped for a pull request. The plan is
-in [docs/upstream-strategy.md](docs/upstream-strategy.md); the `dev@` post is drafted in
-[docs/dev-list-proposal.md](docs/dev-list-proposal.md).
+in [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md); the `dev@` post is drafted in
+[docs/upstream/dev-list-proposal.md](docs/upstream/dev-list-proposal.md).
 
 Beyond that: IPv6, the ESP32-S3 crypto accelerator, and Raspberry Pi Pico 2 W (which needs a
 CYW43439 driver on RP2350 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/1),
@@ -212,11 +212,11 @@ CYW43439 driver on RP2350 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx
 | | |
 |---|---|
 | [docs/design.html](docs/design.html) | Design document — figures and tables |
-| [docs/slides.html](docs/slides.html) | Presentation deck (27 slides; press `N` for speaker notes) |
+| [docs/presentation/slides.html](docs/presentation/slides.html) | Presentation deck (27 slides; press `N` for speaker notes) |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Current state, how to build and test |
-| [docs/upstream-strategy.md](docs/upstream-strategy.md) | Submission plan |
-| [docs/hardware-verification.md](docs/hardware-verification.md) | What each board did and did not do |
-| [docs/phase4-log.md](docs/phase4-log.md) | Bring-up log, including the failures |
+| [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | Submission plan |
+| [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | What each board did and did not do |
+| [docs/development/phase4-log.md](docs/development/phase4-log.md) | Bring-up log, including the failures |
 
 ---
 

@@ -53,13 +53,18 @@ make olddefconfig
 
 ```
 .
-├── Dockerfile                  # Full dev environment: NuttX 12.7.0 + wireguard-lwip + QEMU
-├── docker/docker-entrypoint.sh # Launches QEMU with virtio-net + UDP 51820 forwarded
+├── Dockerfile                  # sim / QEMU / esp32s3 build targets
+├── docker/                     # entrypoint + esp32s3 /etc/init.d scripts
+├── scripts/                    # verify-sim-wg-*.sh regression scripts
+├── nuttx_port/apps/netutils/wireguard/   # the implementation (PR-shaped)
+├── DEVELOPMENT.md              # current state, how to build and test
 └── docs/
-    ├── proposal.md             # Original proposal text (historical)
-    ├── development-roadmap.md  # Phase-by-phase plan (Japanese)
-    ├── feasibility.md          # Technical feasibility study (Japanese)
-    └── why-wireguard.md
+    ├── README.md               # index of everything below
+    ├── design.html             # design document (figures and tables)
+    ├── development/            # phase logs, hardware verification, review
+    ├── upstream/               # submission plan, dev@ draft, LICENSE draft
+    ├── presentation/           # slides.html, talk script, Q&A
+    └── proposal/               # the original proposal (historical)
 ```
 
 Inside the container:

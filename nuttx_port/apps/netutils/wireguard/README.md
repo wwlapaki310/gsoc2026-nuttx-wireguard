@@ -71,6 +71,6 @@ has to enumerate for no benefit.
 
 `apache/nuttx-apps` lists bundled third-party code in its top-level
 `LICENSE`. The text to add is drafted in
-[`docs/license-appendix-draft.md`](../../../../docs/license-appendix-draft.md),
+[`docs/license-appendix-draft.md`](../../../../docs/upstream/license-appendix-draft.md),
 with each file's license checked against the file itself rather than
 assumed.

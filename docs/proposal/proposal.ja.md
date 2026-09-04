@@ -195,8 +195,8 @@ Apache の公式リポジトリへの取り込みを通じて、OSS貢献の経�
 
 ソフトウェアカンファレンスへの参加・コミュニティ運営・ハッカソンを日常的に行っている。Open Source Summit Japan では運営スタッフとして携わり、Unitree G1 を使ったロボットハッカソンにも参加した。
 
-![Open Source Summit Japan 運営](../assets/oss-summit-japan.jpg)
-![Unitree G1 ロボットハッカソン](../assets/unitree-g1-hackathon.jpg)
+![Open Source Summit Japan 運営](../../assets/oss-summit-japan.jpg)
+![Unitree G1 ロボットハッカソン](../../assets/unitree-g1-hackathon.jpg)
 
 もともと宇宙が好きで、学生時代はロケットや自律ロボットの製作に取り組んでいた。それが SPRESENSE や NuttX を使ったエッジ AI・宇宙機開発への関心につながっている。そのほか、マラソン・ゴルフ・旅行・歴史が好き。
 

@@ -144,7 +144,7 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 `--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる（既定は `nuttx-12.7.0`。
 `master` でもビルドが通ることを確認済み）。
 
-詳細は [docs/dev-environment.md](docs/dev-environment.md) と [DEVELOPMENT.md](DEVELOPMENT.md)。
+詳細は [docs/development/dev-environment.md](docs/development/dev-environment.md) と [DEVELOPMENT.md](DEVELOPMENT.md)。
 
 ### 検証スクリプト
 
@@ -157,7 +157,7 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 
 ## ソース構成
 
-すべて [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard/) の下にあり、
+すべて [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard) の下にあり、
 `apache/nuttx-apps` にそのまま提出できる形に置いてある。
 
 | | 行数 | 由来 |
@@ -196,8 +196,8 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 
 コーディングスタイル（`checkpatch.sh`・`nxstyle`）は全ファイルクリーン、流用ソースは
 ツリーに取り込んで upstream と一致を確認済み、ディレクトリ構成も PR の形になっている。
-方針は [docs/upstream-strategy.md](docs/upstream-strategy.md)、`dev@` への投稿ドラフトは
-[docs/dev-list-proposal.md](docs/dev-list-proposal.md)。
+方針は [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md)、`dev@` への投稿ドラフトは
+[docs/upstream/dev-list-proposal.md](docs/upstream/dev-list-proposal.md)。
 
 その先: IPv6、ESP32-S3 の暗号アクセラレータ、Raspberry Pi Pico 2 W（RP2350 側に CYW43439
 ドライバの移植が必要 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/1),
@@ -210,12 +210,12 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 | | |
 |---|---|
 | [docs/design.html](docs/design.html) | 設計ドキュメント（図表ベース） |
-| [docs/slides.html](docs/slides.html) | 発表スライド 27 枚（`N` キーで発表者ノート） |
-| [docs/talk-script.md](docs/talk-script.md) | 発表台本（時間配分・削る順番つき） |
+| [docs/presentation/slides.html](docs/presentation/slides.html) | 発表スライド 27 枚（`N` キーで発表者ノート） |
+| [docs/presentation/talk-script.md](docs/presentation/talk-script.md) | 発表台本（時間配分・削る順番つき） |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | 現状・ビルド方法・テスト方法 |
-| [docs/upstream-strategy.md](docs/upstream-strategy.md) | 提出計画 |
-| [docs/hardware-verification.md](docs/hardware-verification.md) | 各ボードで何ができて何ができなかったか |
-| [docs/phase4-log.md](docs/phase4-log.md) | 立ち上げの記録（失敗も含む） |
+| [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | 提出計画 |
+| [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | 各ボードで何ができて何ができなかったか |
+| [docs/development/phase4-log.md](docs/development/phase4-log.md) | 立ち上げの記録（失敗も含む） |
 
 ---
 

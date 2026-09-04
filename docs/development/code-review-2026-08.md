@@ -197,7 +197,7 @@ NuttX の `!` 警告が出ていたため。3072 で 18.6% になる)。ハン�
 | `LICENSE` 追記案 | wireguard-lwip の著作権表示を `apache/nuttx-apps/LICENSE` の Appendix パターンで追記する差分を用意 |
 | `Assisted-by:` 運用 | 以後のコミットに `Assisted-by: Claude:claude-sonnet-5` を付与(ASF の生成 AI ポリシー準拠) |
 
-詳細は [upstream-strategy.md](upstream-strategy.md) の §1・§4 を参照。
+詳細は [../upstream/upstream-strategy.md](../upstream/upstream-strategy.md) の §1・§4 を参照。
 
 ### 第3段階: 実用性・堅牢性
 
@@ -214,10 +214,10 @@ NuttX の `!` 警告が出ていたため。3072 で 18.6% になる)。ハン�
 
 ### 第4段階: upstream PR
 
-[upstream-strategy.md](upstream-strategy.md) §3 の段階的 PR 戦略に従う。その前に dev@nuttx.apache.org でアーキテクチャの合意を取る。
+[../upstream/upstream-strategy.md](../upstream/upstream-strategy.md) §3 の段階的 PR 戦略に従う。その前に dev@nuttx.apache.org でアーキテクチャの合意を取る。
 
 ---
 
 ## 3. 発表資料
 
-[presentation-script.md](presentation-script.md) に発表原稿をまとめた。技術的な山場は「ping は通るのに TCP だけ無言で死ぬ」バグの調査過程(`EBADF` / タスクグループとファイルディスクリプタのスコープ)。
+[../presentation/presentation-script.md](../presentation/presentation-script.md) に発表原稿をまとめた。技術的な山場は「ping は通るのに TCP だけ無言で死ぬ」バグの調査過程(`EBADF` / タスクグループとファイルディスクリプタのスコープ)。

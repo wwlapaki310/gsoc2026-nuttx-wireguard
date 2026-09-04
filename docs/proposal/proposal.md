@@ -187,8 +187,8 @@ As a daily NuttX user, I also want to make a concrete contribution to the open-s
 
 I regularly attend software conferences, help with community organizing, and participate in hackathons. I served as a staff organizer at Open Source Summit Japan, and took part in a robotics hackathon using the Unitree G1.
 
-![Open Source Summit Japan (organizer)](../assets/oss-summit-japan.jpg)
-![Unitree G1 Robot Hackathon](../assets/unitree-g1-hackathon.jpg)
+![Open Source Summit Japan (organizer)](../../assets/oss-summit-japan.jpg)
+![Unitree G1 Robot Hackathon](../../assets/unitree-g1-hackathon.jpg)
 
 I grew up fascinated by space and spent my student years building rockets and autonomous robots — an interest that eventually led me to edge AI and spacecraft development with SPRESENSE and NuttX. Outside of tech, I enjoy marathon running, golf, travel, and history.
 

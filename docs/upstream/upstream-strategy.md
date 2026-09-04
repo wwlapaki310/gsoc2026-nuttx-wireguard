@@ -25,7 +25,7 @@
 
 > "For code changes build and runtime logs are **mandatory** to prove code was tested on **at least one** real world hardware target."
 
-これが今のプロジェクト進捗における一番大きいギャップ。現状の検証は sim / QEMU のみで、**実機(ESP32-S3)でのビルド・実行ログがない状態では通常の PR ですら受理されない**。[hardware-verification.md](hardware-verification.md) の手順を実施し、ログを取得することが upstream 提出の前提条件になる。
+これが今のプロジェクト進捗における一番大きいギャップ。現状の検証は sim / QEMU のみで、**実機(ESP32-S3)でのビルド・実行ログがない状態では通常の PR ですら受理されない**。[../development/hardware-verification.md](../development/hardware-verification.md) の手順を実施し、ログを取得することが upstream 提出の前提条件になる。
 
 Breaking Change 扱いの変更はさらに厳しく「QEMU のテストはカウントされない」「複数アーキテクチャでの実機ログが必須」と明記されている。今回の変更はどのアーキテクチャの既存動作も変えない(新規 Kconfig はデフォルト `n`)ため Breaking Change には該当しない想定だが、念のため意識しておく。
 
@@ -94,7 +94,7 @@ PR タイトルも `functional/area: 内容` 形式(例: `netutils/wireguard: Ad
 | コミット規約 | 🔶 `Assisted-by:` タグの運用を 2026-08-22 のコミットから開始 | 過去分は書き直さず、以後徹底 |
 | PR 粒度 | 全部入りで開発中 | フェーズ単位・機能単位に分割(§3) |
 | レビュー体制 | メンター1名想定 | dev@ での早期共有 + 独立レビュアーの確保 |
-| 実行時設定 | ⛔ 鍵・ピアが Kconfig 固定。鍵がビルド成果物に焼き込まれる | `wg setconf` 相当の実装([code-review-2026-08.md](code-review-2026-08.md) §1-D) |
+| 実行時設定 | ⛔ 鍵・ピアが Kconfig 固定。鍵がビルド成果物に焼き込まれる | `wg setconf` 相当の実装([../development/code-review-2026-08.md](../development/code-review-2026-08.md) §1-D) |
 
 ---
 
@@ -166,7 +166,7 @@ CONTRIBUTING は実機ログを必須としている。`scripts/` の4本はい�
 ## 4. 次にやること(優先順)
 
 1. ~~**Assisted-by 運用の開始**~~ ✅ 2026-08-22 のコミットから適用開始
-2. ~~**ESP32-S3 実機ログの取得**~~ ✅ 完了([phase4-log.md](phase4-log.md))
+2. ~~**ESP32-S3 実機ログの取得**~~ ✅ 完了([../development/phase4-log.md](../development/phase4-log.md))
 3. ~~**`checkpatch.sh`/`nxstyle` によるスタイル整形**~~ ✅ 完了(4ファイルともクリーン、以後も維持)
 4. ~~**`apache/nuttx-apps/LICENSE` 追記案の作成**~~ ✅ 下書き完了([license-appendix-draft.md](license-appendix-draft.md))。記載内容は実ファイルと照合済み
 5. ~~**vendored ツリーの整理**~~ ✅ `wireguardif.c` / `crypto/cortex/` を除外(`Dockerfile` の base ステージ)。**残るのは Docker の `git clone` 方式から実ファイル同梱方式への移行** — upstream には実ファイルとしてコミットする必要があるため、提出時に一度だけ必要な作業

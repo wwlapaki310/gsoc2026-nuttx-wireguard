@@ -48,4 +48,4 @@ telnet 10.10.0.2            # NSH にログイン
 
 ## 現在地
 
-プロポーザルの Phase 4(実機テスト)完了。詳細な進捗は [DEVELOPMENT.md](../DEVELOPMENT.md)、作業ログは [docs/phase4-log.md](phase4-log.md) を参照。
+プロポーザルの Phase 4(実機テスト)完了。詳細な進捗は [DEVELOPMENT.md](../../DEVELOPMENT.md)、作業ログは [docs/phase4-log.md](phase4-log.md) を参照。
