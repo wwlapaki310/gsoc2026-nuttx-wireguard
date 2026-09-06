@@ -3,6 +3,7 @@
 | ディレクトリ | 中身 | いつ読むか |
 |---|---|---|
 | [design.html](design.html) | 設計ドキュメント（図表ベース） | **まずこれ。** 何をどう作ったかを一枚で |
+| [library-usage.html](library-usage.html) | 移植元ライブラリの使い方 | 「何を借りて何を書いたか」を理解したいとき |
 | [development/](development/) | 開発と検証の記録 | 実装の経緯・詰まった点・実機で何が起きたかを追うとき |
 | [upstream/](upstream/) | `apache/nuttx-apps` への提出準備 | PR を出す前に |
 | [presentation/](presentation/) | 発表資料 | 登壇・デモの前に |

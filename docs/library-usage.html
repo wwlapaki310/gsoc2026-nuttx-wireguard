@@ -1,0 +1,762 @@
+<title>借りたもの、書いたもの</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:   #f5f7f8;
+    --surface: #ffffff;
+    --sunk:    #eef1f3;
+    --ink:     #121a20;
+    --ink-2:   #56626d;
+    --ink-3:   #808c96;
+    --rule:    #d5dbe0;
+    --rule-2:  #e6eaed;
+    --wg:      #8c1a1f;
+    --nx:      #1b6c68;
+    --wg-fill: #f6e9ea;
+    --nx-fill: #e5f1f0;
+    --amb:     #8a5a06;
+    --amb-fill:#fbf1dd;
+
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --sans: "Zen Kaku Gothic New", system-ui, -apple-system, "Segoe UI",
+            "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    --frame: 1080px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0f1419;
+      --surface: #171e25;
+      --sunk:    #131a20;
+      --ink:     #e4e9ed;
+      --ink-2:   #9da9b3;
+      --ink-3:   #75818b;
+      --rule:    #29323b;
+      --rule-2:  #212930;
+      --wg:      #e47074;
+      --nx:      #4cb5ad;
+      --wg-fill: #2a1a1c;
+      --nx-fill: #14282a;
+      --amb:     #d9a441;
+      --amb-fill:#2a2113;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:   #0f1419;
+    --surface: #171e25;
+    --sunk:    #131a20;
+    --ink:     #e4e9ed;
+    --ink-2:   #9da9b3;
+    --ink-3:   #75818b;
+    --rule:    #29323b;
+    --rule-2:  #212930;
+    --wg:      #e47074;
+    --nx:      #4cb5ad;
+    --wg-fill: #2a1a1c;
+    --nx-fill: #14282a;
+    --amb:     #d9a441;
+    --amb-fill:#2a2113;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* No doctype is present when this file is opened straight from the
+     repository, so the browser uses quirks mode, where tables do not
+     inherit font-family. Harmless in standards mode. */
+  table, th, td { font-family: inherit; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .frame { max-width: var(--frame); margin: 0 auto; padding: 0 28px 120px; }
+  .col { max-width: 72ch; }
+
+  .masthead { border-bottom: 2px solid var(--ink); padding: 60px 0 26px; margin-bottom: 52px; }
+  .doc-id {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 24px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.16; letter-spacing: -.022em;
+    font-weight: 900; margin: 0 0 16px; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-2); max-width: 66ch; margin: 0; }
+
+  section { margin-bottom: 76px; scroll-margin-top: 20px; }
+
+  h2 {
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -.015em;
+    margin: 0 0 8px; text-wrap: balance;
+    padding-top: 18px; border-top: 1px solid var(--rule);
+  }
+  h2 .n {
+    font-family: var(--mono); font-size: .78rem; color: var(--wg);
+    letter-spacing: .14em; display: block; margin-bottom: 10px; font-weight: 500;
+  }
+  h3 {
+    font-size: 1.06rem; font-weight: 700; margin: 38px 0 10px;
+    letter-spacing: -.01em;
+  }
+  p { margin: 0 0 18px; }
+
+  ul, ol { margin: 0 0 18px; padding-left: 0; list-style: none; }
+  ul li, ol li { position: relative; padding-left: 22px; margin-bottom: 9px; }
+  ul li::before {
+    content: ""; position: absolute; left: 0; top: .8em;
+    width: 9px; height: 2px; background: var(--nx);
+  }
+  ol { counter-reset: n; }
+  ol li::before {
+    counter-increment: n; content: counter(n);
+    position: absolute; left: 0; top: 0;
+    font-family: var(--mono); font-size: .76rem; color: var(--wg);
+    font-weight: 600;
+  }
+
+  code {
+    font-family: var(--mono); font-size: .875em; background: var(--sunk);
+    padding: 1px 5px; border-radius: 2px; letter-spacing: -.02em;
+  }
+  strong { font-weight: 700; }
+  .red { color: var(--wg); font-weight: 700; }
+  .tl  { color: var(--nx); font-weight: 700; }
+
+  .tw { overflow-x: auto; margin: 0 0 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td {
+    text-align: left; padding: 10px 13px;
+    border-bottom: 1px solid var(--rule-2); vertical-align: top; line-height: 1.65;
+  }
+  thead th {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+    border-bottom: 1px solid var(--rule); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  td.m { font-family: var(--mono); font-size: .86rem; letter-spacing: -.02em; }
+  tr.tot td { border-top: 1px solid var(--rule); font-weight: 700; }
+
+  .cap {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px;
+  }
+
+  .note {
+    border-left: 3px solid var(--nx); background: var(--nx-fill);
+    padding: 16px 20px; margin: 0 0 20px;
+  }
+  .note.wg { border-left-color: var(--wg); background: var(--wg-fill); }
+  .note.amb { border-left-color: var(--amb); background: var(--amb-fill); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .cap { color: inherit; opacity: .75; }
+
+  .fig {
+    border: 1px solid var(--rule); background: var(--surface);
+    padding: 26px 24px 20px; margin: 0 0 20px; overflow-x: auto;
+  }
+  .fig svg { display: block; width: 100%; height: auto; min-width: 620px; }
+  svg text { font-family: var(--mono); font-size: 12px; fill: var(--ink-2); }
+  svg text.hd { font-size: 13px; font-weight: 600; fill: var(--ink); }
+  svg text.lbl { font-size: 10.5px; letter-spacing: .12em; fill: var(--ink-3); }
+  svg text.rd { fill: var(--wg); font-weight: 600; }
+  svg text.td2 { fill: var(--nx); font-weight: 600; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; }
+  .legend span {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .08em;
+    color: var(--ink-2); display: flex; align-items: center; gap: 7px;
+  }
+  .legend i { width: 13px; height: 13px; display: inline-block; border: 1px solid; }
+  .sw-v { background: var(--nx-fill); border-color: var(--nx); }
+  .sw-p { background: var(--amb-fill); border-color: var(--amb); }
+  .sw-o { background: var(--wg-fill); border-color: var(--wg); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0 0 20px; }
+  .card { border: 1px solid var(--rule); padding: 16px 18px; background: var(--surface); }
+  .card h4 {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 500; margin: 0 0 8px;
+  }
+  .card p { font-size: .92rem; margin: 0; color: var(--ink-2); line-height: 1.7; }
+  .card .big { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; color: var(--ink); display: block; margin-bottom: 4px; }
+
+  a { color: var(--nx); }
+  :focus-visible { outline: 2px solid var(--wg); outline-offset: 2px; }
+</style>
+
+<div class="frame">
+
+<header class="masthead">
+  <div class="doc-id">
+    <span>解説ドキュメント</span>
+    <span>Apache NuttX / netutils / wireguard</span>
+    <span>rev. 2026-09-06</span>
+  </div>
+  <h1>借りたもの、書いたもの</h1>
+  <p class="standfirst">
+    WireGuard の NuttX 移植で、既存ライブラリ <span style="font-family:var(--mono)">wireguard-lwip</span> の
+    どこをそのまま使い、どこを書き直したのか。境界がどこに引かれていて、なぜそこなのかを、
+    実際のコードの呼び出し関係から説明する。
+  </p>
+</header>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">01</span>まず結論</h2>
+  <div class="col">
+    <p>
+      この移植の要点は「WireGuard を実装した」ことではなく、
+      <strong>WireGuard の実装を一行も書かずに済ませた</strong>ことにある。
+      暗号もハンドシェイクも既存のものをそのまま使い、
+      <strong>OS とネットワークスタックに接続する部分だけ</strong>を書いた。
+    </p>
+  </div>
+
+  <div class="cards">
+    <div class="card" style="background:var(--nx-fill);border-color:var(--nx)">
+      <h4>そのまま使った</h4>
+      <span class="big">3,079 行</span>
+      <p>プロトコルと暗号。upstream と <code>cmp</code> でバイト一致。</p>
+    </div>
+    <div class="card" style="background:var(--amb-fill);border-color:var(--amb)">
+      <h4>差し込んだ</h4>
+      <span class="big">186 行</span>
+      <p>OS 依存の 4 関数。ライブラリが要求してくる唯一の接点。</p>
+    </div>
+    <div class="card" style="background:var(--wg-fill);border-color:var(--wg)">
+      <h4>書き直した</h4>
+      <span class="big">2,767 行</span>
+      <p>lwIP netif グルーの置き換え。NuttX の netdev + UDP ソケット。</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <p>
+      比率でいえば <strong>借りたものと書いたものがほぼ半々</strong>。
+      ただし性質がまったく違う。借りた側は<strong>仕様そのもの</strong>で、
+      触れば相互運用性が壊れる。書いた側は<strong>接着剤</strong>で、
+      移植先ごとに必ず書き換わる。この線引きを最初に理解しておくと、あとの話が全部つながる。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">02</span>wireguard-lwip は 3 層でできている</h2>
+  <div class="col">
+    <p>
+      移植元の <a href="https://github.com/smartalock/wireguard-lwip">smartalock/wireguard-lwip</a>
+      (Copyright © 2021 Daniel Hope, BSD-3-Clause) は、
+      組み込み向け TCP/IP スタック lwIP のための WireGuard 実装である。
+      重要なのは、この実装が<strong>移植されることを想定した構造</strong>になっていること。
+    </p>
+  </div>
+
+  <div class="fig">
+    <svg viewBox="0 0 1000 330" role="img" aria-label="wireguard-lwip の三層構造。プロトコルと暗号は OS 非依存、platform.h は 4 関数、wireguardif.c は lwIP 依存">
+      <text class="lbl" x="0" y="14">移植コスト</text>
+
+      <!-- layer 3 -->
+      <rect x="0" y="26" width="700" height="76" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="18" y="54">wireguardif.c / wireguardif.h</text>
+      <text x="18" y="76">lwIP の netif としての登録、udp_pcb、pbuf、タイマ</text>
+      <text x="18" y="94" font-size="11" fill="var(--wg)">lwIP の API を直接呼ぶ = 移植先では成立しない</text>
+      <rect x="716" y="26" width="284" height="76" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="rd" x="858" y="60" text-anchor="middle" font-size="15">全面的に書き直し</text>
+      <text x="858" y="82" text-anchor="middle" font-size="11">→ nuttx-wireguardif.c</text>
+
+      <!-- layer 2 -->
+      <rect x="0" y="112" width="700" height="66" fill="var(--amb-fill)" stroke="var(--amb)"></rect>
+      <text class="hd" x="18" y="140">wireguard-platform.h</text>
+      <text x="18" y="162">「あなたの環境でこの 4 つを実装してください」という宣言だけ</text>
+      <rect x="716" y="112" width="284" height="66" fill="var(--amb-fill)" stroke="var(--amb)"></rect>
+      <text x="858" y="141" text-anchor="middle" font-size="15" fill="var(--amb)" font-weight="600">4 関数を実装</text>
+      <text x="858" y="163" text-anchor="middle" font-size="11">→ nuttx-platform.c (186 行)</text>
+
+      <!-- layer 1 -->
+      <rect x="0" y="188" width="700" height="94" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="18" y="216">wireguard.c &nbsp;/&nbsp; crypto.c &nbsp;/&nbsp; crypto/refc/</text>
+      <text x="18" y="238">Noise ハンドシェイク・鍵スケジュール・トランスポートメッセージ</text>
+      <text x="18" y="256">Curve25519 / ChaCha20-Poly1305 / BLAKE2s</text>
+      <text x="18" y="274" font-size="11" fill="var(--nx)">OS も TCP/IP スタックも参照しない、純粋な C</text>
+      <rect x="716" y="188" width="284" height="94" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="td2" x="858" y="228" text-anchor="middle" font-size="15">変更なし</text>
+      <text x="858" y="250" text-anchor="middle" font-size="11">upstream とバイト一致</text>
+      <text x="858" y="268" text-anchor="middle" font-size="11">(cmp で確認)</text>
+
+      <text x="0" y="308" font-size="12" fill="var(--ink)" font-weight="600">
+        下ほど移植コストが低い。この分離があるからこそ「暗号は触らない」が成立する。
+      </text>
+    </svg>
+    <div class="legend">
+      <span><i class="sw-v"></i>そのまま使う</span>
+      <span><i class="sw-p"></i>4 関数だけ実装</span>
+      <span><i class="sw-o"></i>書き直す</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <p class="cap">なぜこれが重要か</p>
+    <p>
+      暗号ライブラリを自分で書くのは、組み込みでは<strong>ほぼ確実に事故になる</strong>。
+      鍵スケジュールを一箇所間違えれば、動いているように見えて安全ではない実装ができあがる。
+      しかも通信相手は本物の WireGuard なので、間違っていれば<strong>そもそも繋がらない</strong>。
+      この構造のおかげで、移植作業は「暗号が正しいか」ではなく
+      「配線が正しいか」だけの問題に縮んだ。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">03</span>そのまま使った層 — 何が入っているか</h2>
+  <div class="col">
+    <p>
+      ファイル単位の内訳。すべて元の BSD ライセンスヘッダを保持したまま、
+      一文字も変えずにリポジトリに取り込んでいる。
+    </p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>ファイル</th><th>役割</th><th class="n">行</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="m">wireguard.c</td><td>Noise_IKpsk2 ハンドシェイク、鍵スケジュール、リプレイ防止、メッセージ組立と検証</td><td class="n">1,120</td></tr>
+        <tr><td class="m">wireguard.h</td><td>上記の型と関数宣言</td><td class="n">284</td></tr>
+        <tr><td class="m">crypto/refc/x25519.*</td><td>Curve25519 楕円曲線 — 鍵合意</td><td class="n">577</td></tr>
+        <tr><td class="m">crypto/refc/poly1305-donna*</td><td>Poly1305 — メッセージ認証</td><td class="n">277</td></tr>
+        <tr><td class="m">crypto/refc/chacha20*.c/.h</td><td>ChaCha20 と ChaCha20-Poly1305 — 本体の暗号化</td><td class="n">498</td></tr>
+        <tr><td class="m">crypto/refc/blake2s.*</td><td>BLAKE2s — ハッシュと HMAC</td><td class="n">195</td></tr>
+        <tr><td class="m">crypto.c / crypto.h</td><td>上記プリミティブへの振り分け</td><td class="n">128</td></tr>
+        <tr class="tot"><td>合計</td><td>WireGuard プロトコルの全体</td><td class="n">3,079</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>持ってこなかったもの</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>ファイル</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td class="m">wireguardif.c / .h</td><td>lwIP netif グルー。<code>nuttx-wireguardif.c</code> が置き換えるので不要</td></tr>
+        <tr><td class="m">crypto/cortex/</td><td>ARM アセンブラ版 X25519。この移植では選択していない</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>
+      使わないものを持ち込まない判断には実務上の意味がある。
+      <code>apache/nuttx-apps</code> の <code>LICENSE</code> は同梱した第三者コードを
+      個別に列挙する方式なので、<strong>不要なファイルを抱えるとライセンス表記の対象が増える</strong>。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">04</span>4 関数の層 — ライブラリが要求してくる唯一の接点</h2>
+  <div class="col">
+    <p>
+      <code>wireguard-platform.h</code> のコメントには
+      「Your platform integration needs to provide implementations of these functions」
+      と書かれている。つまりこのファイルは<strong>各移植先が埋める前提の空欄</strong>である。
+      埋めるべきものは 4 つしかない。
+    </p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>関数</th><th>ライブラリが何に使うか</th><th>NuttX での実装</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="m">wireguard_sys_now()</td>
+          <td>ハンドシェイク期限・keepalive・rekey のタイマ判定。単調増加ミリ秒</td>
+          <td class="m">clock_gettime(CLOCK_MONOTONIC)</td>
+        </tr>
+        <tr>
+          <td class="m">wireguard_random_bytes()</td>
+          <td>一時鍵の生成。<strong>ここの品質が弱いと暗号ごと壊れる</strong></td>
+          <td class="m">read("/dev/urandom")</td>
+        </tr>
+        <tr>
+          <td class="m">wireguard_tai64n_now()</td>
+          <td>ハンドシェイクに載せるタイムスタンプ。リプレイ攻撃の検出に使う</td>
+          <td class="m">clock_gettime(CLOCK_REALTIME)</td>
+        </tr>
+        <tr>
+          <td class="m">wireguard_is_under_load()</td>
+          <td>高負荷時に cookie で応答して DoS を緩和するかの判定</td>
+          <td class="m">return false</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note amb">
+    <p class="cap">なぜ 4 番目は false でよいのか</p>
+    <p>
+      cookie 機構は、大量のハンドシェイク要求で CPU を枯渇させる攻撃への対抗手段である。
+      これは<strong>インターネットに直接晒されたサーバ</strong>のための機能で、
+      単一のピアに向けて発信する組み込み機器はその形をしていない。
+      実装しないのではなく、<strong>この用途では常に「負荷は高くない」が正しい答え</strong>だと
+      判断している。将来ゲートウェイ用途に広げるなら、ここを実装し直すことになる。
+    </p>
+  </div>
+
+  <div class="col">
+    <p>
+      <strong>この 4 関数に OS 依存が閉じ込められていることが、移植性の全部である。</strong>
+      x86_64 の sim、ARM Cortex-A7 の QEMU、Xtensa LX7 の ESP32-S3、ARM Cortex-M4F の
+      Spresense — 4 つのアーキテクチャすべてで、この層より下は<strong>一行も変わっていない</strong>。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">05</span>書き直した層 — なぜ流用できなかったか</h2>
+  <div class="col">
+    <p>
+      upstream の <code>wireguardif.c</code> は「lwIP の仮想 NIC」として WireGuard を見せるコードである。
+      NuttX は lwIP を使わず<strong>独自の TCP/IP スタックを持つ</strong>ため、
+      このファイルは概念ごと置き換えになった。対応表は次のとおり。
+    </p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>やりたいこと</th><th>lwIP (upstream)</th><th>NuttX (この移植)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>NIC を表す構造体</td><td class="m">struct netif</td><td class="m">struct net_driver_s</td></tr>
+        <tr><td>NIC を登録する</td><td class="m">netif_add()</td><td class="m">netdev_register()</td></tr>
+        <tr><td>パケットバッファ</td><td class="m">pbuf_alloc() / pbuf_free()</td><td class="m">dev-&gt;d_buf (netdev のバッファ)</td></tr>
+        <tr><td>送信の契機</td><td>netif の output コールバック</td><td class="m">devif_poll() → d_txavail</td></tr>
+        <tr><td>受信をスタックに渡す</td><td class="m">ip_input(pbuf, netif)</td><td class="m">ipv4_input(dev)</td></tr>
+        <tr><td>UDP ソケット</td><td class="m">udp_new() / udp_bind() / udp_recv()</td><td class="m">psock_socket() / psock_bind() / psock_recvfrom()</td></tr>
+        <tr><td>周期処理</td><td class="m">sys_timeout()</td><td>専用タスク <code>wg_rx</code> の中でタイマを回す</td></tr>
+        <tr><td>リンク状態</td><td class="m">netif_set_link_up()</td><td class="m">netdev_carrier_on()</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note wg">
+    <p class="cap">見落としやすい非対称</p>
+    <p>
+      lwIP 版は「lwIP の中に住む netif」だが、NuttX 版は
+      <strong>NuttX のネットワークスタックの利用者でもある</strong>。
+      受信したパケットを <code>ipv4_input()</code> で<strong>スタックに注入し返す</strong>ため、
+      TCP スタックの呼び出し深度がまるごと <code>wg_rx</code> タスクのスタックに乗る。
+      これは設計の当然の帰結だが、<strong>スタックサイズの見積もりを難しくした</strong>
+      (実測で 3,392 バイト、既定値 6144)。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">06</span>実際にどう呼んでいるか</h2>
+  <div class="col">
+    <p>
+      「ライブラリを使った」と言うとき、具体的にどの関数を呼んでいるのか。
+      <code>nuttx-wireguardif.c</code> から vendored 側への呼び出しを数えると、
+      <strong>29 種類</strong>あった。役割ごとに整理する。
+    </p>
+  </div>
+
+  <div class="fig">
+    <svg viewBox="0 0 1000 400" role="img" aria-label="自作の nuttx-wireguardif.c から vendored の wireguard.c を呼ぶ関係を、ハンドシェイク・データ・タイマ・鍵の 4 グループで示した図">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+
+      <rect x="0" y="20" width="250" height="360" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="rd" x="125" y="46" text-anchor="middle" font-size="13">nuttx-wireguardif.c</text>
+      <text x="125" y="64" text-anchor="middle" font-size="11">自作 · 2,157 行</text>
+
+      <text class="hd" x="16" y="100">wg_process_udp_packet()</text>
+      <text class="hd" x="16" y="160">wg_process_data_message()</text>
+      <text class="hd" x="16" y="200">wg_encrypt_and_send()</text>
+      <text class="hd" x="16" y="256">wg_run_timers()</text>
+      <text class="hd" x="16" y="330">wg_set_private_key()</text>
+
+      <g color="var(--ink-3)">
+        <line x1="252" y1="105" x2="386" y2="105" stroke="currentColor" marker-end="url(#ar)"></line>
+        <line x1="252" y1="180" x2="386" y2="180" stroke="currentColor" marker-end="url(#ar)"></line>
+        <line x1="252" y1="261" x2="386" y2="261" stroke="currentColor" marker-end="url(#ar)"></line>
+        <line x1="252" y1="335" x2="386" y2="335" stroke="currentColor" marker-end="url(#ar)"></line>
+      </g>
+
+      <rect x="390" y="20" width="610" height="360" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="td2" x="695" y="46" text-anchor="middle" font-size="13">wireguard.c / crypto.c &nbsp;(vendored · 無改変)</text>
+
+      <text class="lbl" x="406" y="80">ハンドシェイク</text>
+      <text x="406" y="100" font-size="11.5">wireguard_get_message_type() · wireguard_check_mac1()</text>
+      <text x="406" y="118" font-size="11.5">wireguard_process_initiation_message()</text>
+      <text x="406" y="136" font-size="11.5">wireguard_create_handshake_initiation() / _response()</text>
+
+      <text class="lbl" x="406" y="168">データ</text>
+      <text x="406" y="188" font-size="11.5">wireguard_decrypt_packet() · wireguard_encrypt_packet()</text>
+      <text x="406" y="206" font-size="11.5">wireguard_check_replay() · get_peer_keypair_for_idx()</text>
+      <text x="406" y="224" font-size="11.5">peer_lookup_by_receiver() / _by_handshake()</text>
+
+      <text class="lbl" x="406" y="252">タイマ・セッション</text>
+      <text x="406" y="272" font-size="11.5">wireguard_expired() ×10 · wireguard_sys_now()</text>
+      <text x="406" y="290" font-size="11.5">wireguard_start_session() · keypair_update() · keypair_destroy()</text>
+
+      <text class="lbl" x="406" y="322">鍵・設定</text>
+      <text x="406" y="342" font-size="11.5">wireguard_device_init() · wireguard_peer_init() · peer_alloc()</text>
+      <text x="406" y="360" font-size="11.5">wireguard_base64_encode() / _decode() · wireguard_x25519()</text>
+    </svg>
+  </div>
+
+  <div class="col">
+    <p>
+      構図としては、<strong>自作側が「いつ・どの順番で」を決め、ライブラリ側が「何を計算するか」を担う</strong>。
+      パケットが届いたら種別を判定してもらい、検証してもらい、復号してもらう。
+      その結果をどこへ流すか、いつ再送するか、どのタスクで動かすかは、こちらの責任である。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">07</span>借りられなかった 4 つ</h2>
+  <div class="col">
+    <p>
+      「OS 依存が隔離されている」構造でも、実際にやると<strong>綺麗に割り切れない箇所</strong>が出る。
+      この移植では 4 つあった。第三者に話すなら、ここは正直に話す価値がある。
+    </p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>必要だった機能</th><th>upstream での状態</th><th>どうしたか</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="m">wireguard_clamp_private_key()</td>
+          <td><code>wireguard.c</code> 内で <span class="red">static</span> — 外から呼べない</td>
+          <td class="m">wg_clamp_private_key() を自前で実装</td>
+        </tr>
+        <tr>
+          <td class="m">wireguard_generate_public_key()</td>
+          <td>同じく <span class="red">static</span></td>
+          <td class="m">wg_derive_public_key() を自前で実装<br><span style="font-size:.85em">(公開されている wireguard_x25519 を使って基点との積を取る)</span></td>
+        </tr>
+        <tr>
+          <td class="m">wireguard_start_handshake()</td>
+          <td><span class="red">wireguardif.c</span> にしかない — 持ってこなかったファイル</td>
+          <td class="m">wg_start_handshake() として書き直し</td>
+        </tr>
+        <tr>
+          <td class="m">peer_lookup_by_allowed_ip()</td>
+          <td>同じく <span class="red">wireguardif.c</span> 側</td>
+          <td>宛先アドレスから送出先ピアを選ぶ処理として自前で実装</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <p class="cap">ここから読み取れること</p>
+    <p>
+      前の 2 つは、ライブラリの作者が
+      <strong>「鍵の生成は netif グルー側でやるもの」と想定していた</strong>ことを示している。
+      実際 upstream には <code>wg genkey</code> に相当する機能がない。
+      後の 2 つも同じで、<strong>プロトコルの外側にある判断はグルー側の仕事</strong>という設計になっている。
+      「4 関数を実装すれば移植完了」ではなく、
+      <strong>「グルーが担っていた責務を全部引き受ける」</strong>のが実際の作業量だった。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">08</span>NuttX の中に <code>lwip/</code> があるのはなぜか</h2>
+  <div class="col">
+    <p>
+      リポジトリを見た人が最初に引っかかる点。
+      <strong>NuttX は lwIP を使わないのに、<code>lwip/</code> というディレクトリがある。</strong>
+    </p>
+    <p>
+      理由は単純で、無改変で取り込んだ <code>wireguard.h</code> が
+      lwIP のヘッダを 4 つ include しているため。ただし使っているのは型だけである。
+    </p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>シム</th><th>供給しているもの</th><th class="n">行</th></tr></thead>
+      <tbody>
+        <tr><td class="m">lwip/arch.h</td><td class="m">u8_t / u16_t / u32_t / s8_t / s16_t / s32_t</td><td class="n">21</td></tr>
+        <tr><td class="m">lwip/ip_addr.h</td><td class="m">ip_addr_t → struct in_addr の別名</td><td class="n">17</td></tr>
+        <tr><td class="m">lwip/netif.h</td><td class="m">struct netif の前方宣言のみ</td><td class="n">17</td></tr>
+        <tr><td class="m">lwip/udp.h</td><td class="m">struct udp_pcb の前方宣言のみ</td><td class="n">15</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note amb">
+    <p class="cap">判断が割れる点 — レビューで相談する予定</p>
+    <p>
+      代案は <code>wireguard.h</code> から include を消してしまうこと。
+      そうすればディレクトリ名の紛らわしさは無くなるが、
+      <strong>vendored ファイルが 1 つ upstream から乖離する</strong>。
+      いまは「プロトコルと暗号は upstream と完全一致させ、差分は再 diff で追える状態を保つ」ことを
+      優先してシムを選んだ。どちらが良いかは <code>dev@nuttx.apache.org</code> で問う。
+    </p>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">09</span>組み上がった姿</h2>
+  <div class="col">
+    <p>借りた部分と書いた部分が、実行時にどう噛み合うか。</p>
+  </div>
+
+  <div class="fig">
+    <svg viewBox="0 0 1000 300" role="img" aria-label="送信と受信のデータ経路。暗号化と復号だけが vendored コードで、残りは自作">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+
+      <text class="lbl" x="0" y="14">TX — 送信</text>
+      <g color="var(--wg)">
+        <rect x="0" y="26" width="160" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="80" y="54" text-anchor="middle">アプリ</text>
+        <line x1="162" y1="49" x2="196" y2="49" stroke="currentColor" marker-end="url(#ar2)"></line>
+        <rect x="200" y="26" width="170" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="285" y="46" text-anchor="middle">devif_poll()</text>
+        <text x="285" y="63" text-anchor="middle" font-size="10.5">NuttX スタック</text>
+        <line x1="372" y1="49" x2="406" y2="49" stroke="currentColor" marker-end="url(#ar2)"></line>
+      </g>
+      <rect x="410" y="26" width="200" height="46" fill="var(--nx-fill)" stroke="var(--nx)" stroke-width="2"></rect>
+      <text class="td2" x="510" y="46" text-anchor="middle">wireguard_encrypt_packet()</text>
+      <text x="510" y="63" text-anchor="middle" font-size="10.5">← 借りたコード</text>
+      <g color="var(--wg)">
+        <line x1="612" y1="49" x2="646" y2="49" stroke="currentColor" marker-end="url(#ar2)"></line>
+        <rect x="650" y="26" width="170" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="735" y="54" text-anchor="middle">psock_sendto()</text>
+        <line x1="822" y1="49" x2="856" y2="49" stroke="currentColor" marker-end="url(#ar2)"></line>
+      </g>
+      <rect x="860" y="26" width="140" height="46" fill="none" stroke="var(--ink-3)" stroke-dasharray="4 3"></rect>
+      <text class="hd" x="930" y="54" text-anchor="middle">ピア</text>
+
+      <line x1="0" y1="106" x2="1000" y2="106" stroke="var(--rule)"></line>
+
+      <text class="lbl" x="0" y="140">RX — 受信 &nbsp;·&nbsp; すべて wg_rx タスクの上</text>
+      <g color="var(--wg)">
+        <rect x="0" y="152" width="160" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="80" y="180" text-anchor="middle">psock_poll()</text>
+        <line x1="162" y1="175" x2="196" y2="175" stroke="currentColor" marker-end="url(#ar2)"></line>
+        <rect x="200" y="152" width="170" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="285" y="180" text-anchor="middle">psock_recvfrom()</text>
+        <line x1="372" y1="175" x2="406" y2="175" stroke="currentColor" marker-end="url(#ar2)"></line>
+      </g>
+      <rect x="410" y="152" width="200" height="46" fill="var(--nx-fill)" stroke="var(--nx)" stroke-width="2"></rect>
+      <text class="td2" x="510" y="172" text-anchor="middle">wireguard_decrypt_packet()</text>
+      <text x="510" y="189" text-anchor="middle" font-size="10.5">← 借りたコード</text>
+      <g color="var(--wg)">
+        <line x1="612" y1="175" x2="646" y2="175" stroke="currentColor" marker-end="url(#ar2)"></line>
+        <rect x="650" y="152" width="170" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+        <text class="hd" x="735" y="180" text-anchor="middle">ipv4_input()</text>
+        <line x1="822" y1="175" x2="856" y2="175" stroke="currentColor" marker-end="url(#ar2)"></line>
+      </g>
+      <rect x="860" y="152" width="140" height="46" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="930" y="180" text-anchor="middle">アプリ</text>
+
+      <text x="0" y="240" font-size="12.5" fill="var(--ink)" font-weight="600">
+        経路の中で借りたコードが担うのは中央の一箱だけ。両側の「運ぶ」「渡す」は全部こちらの実装。
+      </text>
+      <text x="0" y="264" font-size="11.5">
+        ただしハンドシェイク中はこの比率が逆転する — 鍵合意の計算はほぼ全部ライブラリ側にある。
+      </text>
+      <text x="0" y="286" font-size="11.5">
+        つまり「難しいところは借りて、面倒なところを書いた」というのが正確な要約。
+      </text>
+    </svg>
+  </div>
+</section>
+
+<!-- ===================================================== -->
+<section>
+  <h2><span class="n">10</span>第三者に話すなら、何を言うか</h2>
+  <div class="col">
+    <p>
+      この移植を紹介するとき、話す価値があるのは次の 4 点だと考えている。
+      「WireGuard を実装しました」と言ってしまうと、事実として正しくないうえに、
+      <strong>この仕事のいちばん良い判断が伝わらない</strong>。
+    </p>
+  </div>
+
+  <ol>
+    <li>
+      <strong>暗号は書かなかった、というのが設計判断である。</strong>
+      借りられる形になっているライブラリを選び、そこを触らないと決めた。
+      結果として検証すべき対象が「配線が正しいか」だけに縮んだ。
+      相互運用性の担保も、本物の WireGuard 相手に通信できるかどうかで済む。
+    </li>
+    <li>
+      <strong>移植性は 4 関数への隔離が生んだ。</strong>
+      時刻・乱数・タイムスタンプ・負荷判定。この 4 つだけが OS を見ている。
+      だから 4 アーキテクチャで、そして NuttX 12.7.0 と master の両方で、
+      コードを変えずに動いた。設計の主張が実測で裏付けられた形になっている。
+    </li>
+    <li>
+      <strong>「4 関数を書けば移植完了」ではなかった。</strong>
+      lwIP netif グルーが担っていた責務 — 鍵生成、ピア選択、ハンドシェイク開始 —
+      は全部こちらに来た。static だったヘルパは呼べず、書き直しになった。
+      移植の作業量は<strong>ライブラリが公開していない部分の大きさ</strong>で決まる。
+    </li>
+    <li>
+      <strong>難しかったのは暗号ではなく OS の前提だった。</strong>
+      <code>SO_RCVTIMEO</code> が効かない、detach したスレッドが消える、
+      fd がタスクグループにスコープされていて別タスクから使えない。
+      借りたコードは一度も壊れなかった。壊れたのは全部、自分で書いた接着剤の側である。
+    </li>
+  </ol>
+
+  <div class="note wg">
+    <p class="cap">ひとことで言うなら</p>
+    <p style="font-size:1.12rem;line-height:1.65">
+      <strong>WireGuard を移植したのではなく、WireGuard が動く場所を NuttX の中に作った。</strong>
+    </p>
+  </div>
+</section>
+
+<footer style="border-top:1px solid var(--rule);padding-top:20px;font-size:.85rem;color:var(--ink-3)">
+  <p style="margin:0">
+    行数・呼び出し関係はいずれも <code>nuttx_port/apps/netutils/wireguard/</code> の実コードから集計。
+    移植元は <a href="https://github.com/smartalock/wireguard-lwip">smartalock/wireguard-lwip</a>
+    (Copyright © 2021 Daniel Hope, BSD-3-Clause)。
+    OS 差分の先例として <a href="https://github.com/ciniml/WireGuard-ESP32-Arduino">ciniml/WireGuard-ESP32-Arduino</a> を参照した。
+  </p>
+</footer>
+
+</div>
