@@ -220,7 +220,7 @@
   <div class="t-main">
     <p class="eyebrow">Apache NuttX &nbsp;·&nbsp; netutils / wg0</p>
     <h1>WireGuard Port to<br>Apache NuttX</h1>
-    <p class="t-sub">組み込み RTOS に、現代的な VPN を</p>
+    <p class="t-sub">Apache NuttX 上で動く WireGuard VPN の実装。<code>wg0</code> というネットワークデバイスとして見える。</p>
     <p class="t-meta">秋田 賢 &nbsp;/&nbsp; ソニーセミコンダクタソリューションズ</p>
   </div>
   <div class="t-strip">
@@ -240,66 +240,96 @@ ESP32-S3 の実機の上で、家庭用の Wi-Fi 越しに、Windows の公式 W
 <!-- ============ 2 ============ -->
 <section class="slide">
   <p class="eyebrow">Summary</p>
-  <h2>NuttX に VPN がなかった</h2>
-  <div class="body">
-    <table>
-      <thead><tr><th></th><th>従来</th><th>今回</th></tr></thead>
-      <tbody>
-        <tr><td class="h">接続</td><td class="old">シリアルケーブル</td><td class="new">ネットワーク</td></tr>
-        <tr><td class="h">場所</td><td class="old">機器の前</td><td class="new">リモート</td></tr>
-        <tr><td class="h">経路</td><td class="old">平文</td><td class="new">暗号化トンネル</td></tr>
-        <tr><td class="h">道具</td><td class="old">専用</td><td class="new"><code>ssh</code> / <code>telnet</code> / HTTP そのまま</td></tr>
-      </tbody>
-    </table>
+  <h2>NuttX に WireGuard を実装した</h2>
+  <div class="body" style="gap:24px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div style="padding:14px 16px;border:1px solid var(--rule);background:var(--sunk);font-size:16px;line-height:1.5;color:var(--ink-2)">Linux 向けに開発された軽量な VPN プロトコル。組み込み・IoT 分野でも採用が広がっている</div>
+      <div style="padding:14px 16px;border:1px solid var(--rule);background:var(--sunk);font-size:16px;line-height:1.5;color:var(--ink-2)">UDP 上で暗号化トンネルを確立する。Curve25519・ChaCha20-Poly1305・BLAKE2s</div>
+      <div style="padding:14px 16px;border:1px solid var(--rule);background:var(--sunk);font-size:16px;line-height:1.5;color:var(--ink-2)">実装がコンパクト（約 4,000 行）で、マイコン上での動作にも適している</div>
+    </div>
+
+    <svg viewBox="0 0 1128 250" style="width:100%;height:auto" role="img" aria-label="wg0 を NuttX のネットワークデバイスとして登録し、UDP ソケット経由で WireGuard ピアにつなぐ構成図">
+      <defs>
+        <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <rect x="0" y="0" width="640" height="244" fill="var(--sunk)" stroke="var(--rule)"></rect>
+      <text class="lbl" x="16" y="22">NUTTX RTOS</text>
+      <rect x="20" y="32" width="600" height="38" fill="var(--surface)" stroke="var(--rule)"></rect>
+      <text class="hd" x="320" y="56" text-anchor="middle">アプリケーション / NSH</text>
+      <rect x="20" y="80" width="600" height="38" fill="var(--surface)" stroke="var(--rule)"></rect>
+      <text class="hd" x="320" y="104" text-anchor="middle">NuttX ネットワークスタック (BSD socket API)</text>
+      <rect x="20" y="128" width="288" height="52" fill="var(--surface)" stroke="var(--rule)"></rect>
+      <text class="hd" x="164" y="150" text-anchor="middle">eth0 / wlan0</text>
+      <text x="164" y="169" text-anchor="middle" font-size="12">物理 NIC</text>
+      <rect x="332" y="128" width="288" height="52" fill="var(--wg-fill)" stroke="var(--wg)"></rect>
+      <text class="hd" x="476" y="150" text-anchor="middle" fill="var(--wg)">wg0</text>
+      <text x="476" y="169" text-anchor="middle" font-size="12" fill="var(--wg)">WireGuard netdev — 本プロジェクト</text>
+      <rect x="332" y="190" width="288" height="38" fill="var(--surface)" stroke="var(--rule)"></rect>
+      <text x="476" y="214" text-anchor="middle" font-size="13">UDP ソケット (ポート 51820)</text>
+      <line x1="320" y1="70" x2="320" y2="78" stroke="var(--rule)"></line>
+      <line x1="164" y1="118" x2="164" y2="126" stroke="var(--rule)"></line>
+      <line x1="476" y1="118" x2="476" y2="126" stroke="var(--rule)"></line>
+      <line x1="476" y1="180" x2="476" y2="188" stroke="var(--rule)"></line>
+      <line x1="622" y1="209" x2="676" y2="209" stroke="var(--ink-3)" marker-end="url(#b)" color="var(--ink-3)"></line>
+      <rect x="682" y="179" width="190" height="60" fill="none" stroke="var(--rule)" stroke-dasharray="5 4"></rect>
+      <text x="777" y="204" text-anchor="middle" font-size="13">インターネット / LTE /</text>
+      <text x="777" y="223" text-anchor="middle" font-size="13">衛星回線</text>
+      <line x1="874" y1="209" x2="920" y2="209" stroke="var(--ink-3)" marker-end="url(#b)" color="var(--ink-3)"></line>
+      <rect x="926" y="179" width="202" height="60" fill="var(--nx-fill)" stroke="var(--nx)"></rect>
+      <text class="hd" x="1027" y="203" text-anchor="middle">WireGuard ピア</text>
+      <text x="1027" y="224" text-anchor="middle" font-size="12" fill="var(--nx)">Linux, Windows, ...</text>
+    </svg>
+
     <div class="kicker">
-      <p><code>wg0</code> という仮想 NIC が生える。</p>
-      <p>アプリケーションから見れば、ただのネットワークインターフェース。</p>
+      <p>WireGuard を NuttX のネットワークデバイス（<code>wg0</code>）として実装した。</p>
     </div>
   </div>
   <div class="num">2 / 6</div>
   <div class="notes-src">
-何をやったか。WireGuard という VPN プロトコルを Apache NuttX に移植しました。
+何をやったか。WireGuard という VPN プロトコルを Apache NuttX に実装しました。
 ||
-これまで NuttX の機器をデバッグするには、その機器のところまで行ってシリアルケーブルを挿すしかありませんでした。ログを見るのも、コマンドを叩くのも全部それです。NuttX には VPN の実装がなかったので、ほかに安全な遠隔手段がなかったためです。
+WireGuard は Linux 向けに開発された軽量な VPN プロトコルで、組み込み・IoT 分野でも採用が広がっています。UDP 上で暗号化トンネルを確立し、使う暗号アルゴリズムは Curve25519・ChaCha20-Poly1305・BLAKE2s です。実装が約 4,000 行とコンパクトで、マイコン上での動作にも適しています。
 ||
-今回の実装で wg0 という仮想的なネットワークインターフェースが生えます。アプリから見ればただの NIC なので、ssh でも telnet でも HTTP でも、普段使っている道具がそのままトンネルの向こうの機器に届きます。
+Apache NuttX は POSIX 準拠の RTOS で、独自の TCP/IP スタックと BSD ソケット API を持ちますが、現時点では VPN 機能がありません。今回は WireGuard を NuttX のネットワークデバイス、wg0 として実装しました。アプリケーションから見れば普通のネットワークインターフェースで、暗号化された中身を運んでいるのは UDP ポート 51820 のソケットです。通信相手は既存の WireGuard エンドポイントで構いません。
   </div>
 </section>
 
 <!-- ============ 3 ============ -->
 <section class="slide">
   <p class="eyebrow">Motivation</p>
-  <h2>現場に置いたあと、触れない</h2>
+  <h2>NuttX に、リモートからセキュアにアクセスしたい</h2>
   <div class="body">
     <table>
-      <thead><tr><th></th><th>何</th><th>なぜ触れない</th></tr></thead>
+      <thead><tr><th></th><th>何</th><th>ボード / OS</th></tr></thead>
       <tbody>
         <tr>
           <td class="h" style="color:var(--wg);white-space:nowrap">AITRIOS</td>
-          <td>エッジ AI プラットフォームの AI カメラ<span class="sub">ESP32 + NuttX</span></td>
-          <td>天井・屋外の高所<span class="sub">異常の兆候だけで人は出せない</span></td>
+          <td>エッジ AI プラットフォームの AI カメラ</td>
+          <td>ESP32 + NuttX</td>
         </tr>
         <tr>
           <td class="h" style="color:var(--wg);white-space:nowrap">人工衛星</td>
-          <td>ボトムアップ活動<span class="sub">SPRESENSE</span></td>
-          <td>打ち上げ後は物理アクセス不可<span class="sub">ネットワークが唯一の経路</span></td>
+          <td>ボトムアップ活動のプロジェクト</td>
+          <td>SPRESENSE</td>
         </tr>
       </tbody>
     </table>
     <div class="kicker">
-      <p>本来は VPN で解決する話。<span class="red">NuttX にはその選択肢がなかった。</span></p>
-      <p>WireGuard は約 4,000 行 — マイコンに載る。</p>
+      <p><span class="red">NuttX には現時点で VPN 機能が存在しない。</span></p>
+      <p>VPN がない場合の現実的な選択肢は、グローバル IP を晒すか、独自プロトコルを作り込むか、ベンダーのクラウドに乗るか——どれも嬉しくない。</p>
     </div>
   </div>
   <div class="num">3 / 6</div>
   <div class="notes-src">
-なぜやったか。きっかけは GSoC のテーマ一覧でこの題目を見つけたことですが、やりたいと思った理由は仕事の方にあります。
+なぜやったか。きっかけは GSoC のテーマ一覧でこの題目を見つけたことですが、このテーマを選んだ理由は仕事の方にあります。
 ||
 私はソニーセミコンダクタソリューションズで、AITRIOS というエッジ AI プラットフォームに関わっています。そこで使っている AI カメラが ESP32 と NuttX の組み合わせです。それとは別に、ボトムアップの活動で SPRESENSE を使った人工衛星のプロジェクトにも関わっていました。
 ||
-この2つ、まったく違うものに見えて、困りごとが同じでした。現場に置いたあと、触れない。カメラは天井や屋外の高所に設置されることもあるので、異常の兆候だけで人を派遣するのは現実的ではありません。衛星に至っては、打ち上げ後の物理アクセスは不可能です。
+いずれも NuttX の機器で、リモートからセキュアにアクセスしたいと思っていました。NuttX デバイスへの遠隔・安全なアクセスは多くの分野で未解決の課題ですが、NuttX には現時点で VPN 機能が存在しません。
 ||
-そのとき取りうる選択肢は多くありません。グローバル IP を晒してポートを開けるか、独自プロトコルを作り込むか、ベンダーのクラウドに寄せるか。どれも安全性か保守性か独立性のどれかを損ないます。本来は VPN で解決する話なのに、NuttX にはその選択肢がありませんでした。そして WireGuard は約 4,000 行と小さいので、マイコンに載ります。
+VPN がない場合の現実的な選択肢は、グローバル IP を晒すか、独自プロトコルを作り込むか、ベンダーのクラウドに乗るか。どれも嬉しくありません。WireGuard のコンパクトな実装とシンプルな鍵モデルはこうした制約のある環境に適しています。なお WireGuard は Tailscale で使われているプロトコルで、自分は Tailscale のヘビーユーザーでした。
   </div>
 </section>
 
