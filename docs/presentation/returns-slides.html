@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sechack365 Returns - WireGuard on Apache NuttX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<style>
+  :root {
+    --paper: #eef2f3;
+    --surface: #fbfcfd;
+    --ink: #11181d;
+    --muted: #60707c;
+    --quiet: #87939b;
+    --line: #d5dde2;
+    --line-2: #e8edf0;
+    --wg: #8d1f24;
+    --wg-soft: #f5e4e5;
+    --nx: #176c67;
+    --nx-soft: #dff0ee;
+    --blue: #245c9a;
+    --blue-soft: #e3edf7;
+    --gold: #8a650c;
+    --gold-soft: #f5edd8;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --sans: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Meiryo, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  #canvas {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    transform-origin: center center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    overflow: hidden;
+    padding: 58px 72px 62px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .slide.on { display: flex; flex-direction: column; }
+  .slide::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 9px;
+    background: linear-gradient(90deg, var(--wg), var(--nx) 54%, var(--blue));
+  }
+
+  #bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 3px;
+    background: var(--wg);
+    z-index: 4;
+    transition: width .2s ease;
+  }
+  #help {
+    position: fixed;
+    right: 16px;
+    top: 14px;
+    z-index: 10;
+    padding: 5px 9px;
+    background: rgba(238, 242, 243, .9);
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    display: flex;
+    gap: 15px;
+  }
+  #help b { color: var(--muted); font-weight: 600; }
+
+  .num {
+    position: absolute;
+    right: 30px;
+    bottom: 24px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+  }
+
+  .eyebrow {
+    margin: 0 0 14px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+
+  h1, h2, p { margin-top: 0; }
+  h1 {
+    margin-bottom: 24px;
+    max-width: 990px;
+    font-size: 62px;
+    line-height: 1.16;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin-bottom: 28px;
+    max-width: 1020px;
+    font-size: 45px;
+    line-height: 1.22;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+  .lead {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: 23px;
+    line-height: 1.7;
+  }
+  .mono { font-family: var(--mono); letter-spacing: 0; }
+  code {
+    padding: 1px 6px;
+    background: #e8edf0;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: .88em;
+  }
+  strong { font-weight: 800; }
+
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .title-slide { padding: 0; }
+  .title-slide.on { display: grid; grid-template-rows: 1fr auto; }
+  .title-main {
+    padding: 82px 84px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .title-main h1 { font-size: 68px; }
+  .subtitle {
+    color: var(--muted);
+    font-size: 25px;
+    line-height: 1.55;
+  }
+  .speaker {
+    margin-top: 28px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: .08em;
+  }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+    background: #edf2f3;
+  }
+  .strip div {
+    min-height: 98px;
+    padding: 20px 26px;
+    border-right: 1px solid var(--line);
+  }
+  .strip div:last-child { border-right: 0; }
+  .strip b {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 19px;
+  }
+  .strip span {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .05em;
+  }
+
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: stretch;
+  }
+  .panel {
+    min-height: 250px;
+    padding: 28px 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .panel h3 {
+    margin: 0 0 18px;
+    font-size: 27px;
+    line-height: 1.35;
+  }
+  .panel p, .panel li {
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.65;
+  }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel.wg { background: var(--wg-soft); border-color: #ddb9bc; }
+  .panel.nx { background: var(--nx-soft); border-color: #b6d7d3; }
+  .panel.blue { background: var(--blue-soft); border-color: #bfd1e5; }
+  .panel.gold { background: var(--gold-soft); border-color: #e0d1a6; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 21px;
+  }
+  th, td {
+    padding: 17px 18px;
+    border-bottom: 1px solid var(--line-2);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 800; }
+  .old { color: var(--quiet); }
+  .new { color: var(--wg); font-weight: 800; }
+  .sub {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .claim {
+    padding: 22px 28px;
+    border-left: 5px solid var(--wg);
+    background: var(--wg-soft);
+  }
+  .claim.ok { border-left-color: var(--nx); background: var(--nx-soft); }
+  .claim p {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.48;
+    font-weight: 800;
+  }
+  .claim small {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .route {
+    width: 100%;
+    height: auto;
+  }
+  svg text {
+    font-family: var(--sans);
+    fill: var(--ink);
+  }
+  svg .small {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  svg .label {
+    fill: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+  }
+
+  ul.big {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+  }
+  ul.big li {
+    position: relative;
+    padding-left: 31px;
+    font-size: 28px;
+    line-height: 1.42;
+    font-weight: 800;
+  }
+  ul.big li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .68em;
+    width: 16px;
+    height: 3px;
+    background: var(--nx);
+  }
+  ul.big span {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.55;
+  }
+
+  .notes-src { display: none; }
+  #notes {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: none;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 20px 30px 26px;
+    border-top: 2px solid var(--ink);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.85;
+  }
+  #notes.on { display: block; }
+  #notes h4 {
+    margin: 0 0 10px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+  #notes p { max-width: 106ch; margin: 0 0 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="help"><span><b>←→</b> 移動</span><span><b>N</b> 原稿</span><span><b>F</b> 全画面</span></div>
+<div id="stage"><div id="canvas">
+  <div id="bar"></div>
+
+  <section class="slide title-slide">
+    <div class="title-main">
+      <p class="eyebrow">Sechack365 Returns</p>
+      <h1>置いたあと触れない機器へ、<br>もう一度手を伸ばす</h1>
+      <p class="subtitle">WireGuard を Apache NuttX に移植する</p>
+      <p class="speaker">秋田 賢 / Sony Semiconductor Solutions</p>
+    </div>
+    <div class="strip">
+      <div><b>Apache NuttX</b><span>embedded RTOS</span></div>
+      <div><b>WireGuard</b><span>modern VPN</span></div>
+      <div><b>ESP32-S3</b><span>real Wi-Fi demo</span></div>
+      <div><b>260 KiB/s</b><span>TCP over tunnel</span></div>
+    </div>
+    <div class="num">1 / 7</div>
+    <div class="notes-src">
+今日は、WireGuard という VPN を Apache NuttX に移植している話をします。
+||
+ただ、最初に言いたいのはプロトコル名ではなくて、「置いたあと触れない機器に、どうやってもう一度手を伸ばすか」という問題です。組み込みの機器は、机の上で動いたあとに本番が始まります。天井、屋外、現場、あるいは宇宙。そこに行ったあと、ログを見たい、設定を変えたい、でも物理的には触れない。そこに VPN という普通の道を通したい、というのが今回の話です。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Motivation</p>
+    <h2>困りごとは、だいたい現場のあとに来る</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel nx">
+          <h3>AITRIOS の AI カメラ</h3>
+          <p>ESP32 + NuttX。天井や屋外に置かれ、異常の兆候だけで人を出すのは重い。</p>
+        </div>
+        <div class="panel blue">
+          <h3>SPRESENSE と人工衛星</h3>
+          <p>打ち上げ後は物理アクセスできない。ネットワーク越しの保守が前提になる。</p>
+        </div>
+      </div>
+      <div class="claim">
+        <p>開発中に一番ほしくなるのは、特別な魔法ではなく、あとから安全に入れる入口。</p>
+      </div>
+    </div>
+    <div class="num">2 / 7</div>
+    <div class="notes-src">
+動機は、わりと自分の仕事や活動の実感に近いところにあります。AITRIOS というエッジ AI プラットフォームでは、AI カメラの中で ESP32 と NuttX が動いています。こういう機器は、実験室では近くにありますが、使われる場所は天井や屋外だったりします。
+||
+もうひとつ、ボトムアップの活動で SPRESENSE を使った人工衛星のプロジェクトにも関わっていました。こちらはもっと極端で、一度打ち上げたら物理アクセスはできません。
+||
+つまり、机の上で作っているときはシリアルケーブルでなんとかなりますが、現場に置いたあとに本当に困る。ログを見たい、設定を変えたい、簡単なコマンドを打ちたい。そういうときに「安全に入れる普通の入口」が必要になります。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">What VPN Changes</p>
+    <h2>欲しかったのは、専用の遠隔管理ではない</h2>
+    <div class="body">
+      <table>
+        <thead><tr><th></th><th>ケーブル前提</th><th>VPN がある状態</th></tr></thead>
+        <tbody>
+          <tr><td>場所</td><td class="old">機器の前に行く</td><td class="new">ネットワーク越しに届く</td></tr>
+          <tr><td>経路</td><td class="old">平文か、個別に作り込む</td><td class="new">暗号化トンネルを使う</td></tr>
+          <tr><td>道具</td><td class="old">専用手順が増える</td><td class="new"><code>ssh</code> / <code>telnet</code> / HTTP がそのまま使える</td></tr>
+        </tbody>
+      </table>
+      <div class="claim ok">
+        <p><code>wg0</code> が生えると、アプリからは普通のネットワークインターフェースに見える。</p>
+      </div>
+    </div>
+    <div class="num">3 / 7</div>
+    <div class="notes-src">
+VPN があると何がうれしいか。ポイントは、専用の遠隔管理機能をひとつ増やすことではありません。
+||
+WireGuard のトンネルが張れて、NuttX 側に wg0 という仮想ネットワークインターフェースが生えると、アプリからは普通の NIC に見えます。そうすると、既存の telnet、HTTP サーバ、将来的には ssh のような道具を、そのまま安全な経路に乗せられます。
+||
+VPN がない場合は、グローバル IP を晒す、独自プロトコルを作る、ベンダークラウドに乗せる、といった選択になりがちです。それが悪いわけではないですが、NuttX 自体に普通の選択肢として VPN があると、設計の自由度がかなり変わります。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Gap</p>
+    <h2>NuttX には、その道がまだなかった</h2>
+    <div class="body">
+      <svg class="route" viewBox="0 0 1128 250" role="img" aria-label="シリアル接続とVPN接続の比較図">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
+          </marker>
+        </defs>
+        <text class="label" x="0" y="34">BEFORE</text>
+        <rect x="0" y="54" width="210" height="72" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="105" y="98" text-anchor="middle" font-size="22" font-weight="700">PC</text>
+        <line x1="214" y1="90" x2="438" y2="90" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
+        <text class="small" x="326" y="76" text-anchor="middle">serial cable</text>
+        <rect x="448" y="54" width="240" height="72" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="568" y="98" text-anchor="middle" font-size="22" font-weight="700">NuttX board</text>
+        <text class="label" x="0" y="172">TARGET</text>
+        <rect x="0" y="192" width="210" height="72" fill="#dff0ee" stroke="#176c67"></rect>
+        <text x="105" y="236" text-anchor="middle" font-size="22" font-weight="700">PC</text>
+        <rect x="304" y="176" width="470" height="104" fill="#f5e4e5" stroke="#8d1f24" stroke-dasharray="7 5"></rect>
+        <text class="label" x="539" y="204" text-anchor="middle" fill="#8d1f24">ENCRYPTED TUNNEL</text>
+        <text x="539" y="240" text-anchor="middle" font-size="23" font-weight="800">Internet / Wi-Fi / UDP</text>
+        <line x1="214" y1="228" x2="300" y2="228" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
+        <line x1="778" y1="228" x2="864" y2="228" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
+        <rect x="870" y="192" width="258" height="72" fill="#dff0ee" stroke="#176c67"></rect>
+        <text x="999" y="236" text-anchor="middle" font-size="22" font-weight="700">NuttX + wg0</text>
+      </svg>
+      <div class="claim">
+        <p>GSoC のテーマ一覧で見つけたのは、この空白を埋める題目だった。</p>
+      </div>
+    </div>
+    <div class="num">4 / 7</div>
+    <div class="notes-src">
+ところが、NuttX には VPN の選択肢がありませんでした。少なくとも、NuttX の標準的なネットワークスタックに乗る WireGuard 実装はありません。
+||
+GSoC のテーマ一覧を見ていたときに、この空白を埋める題目を見つけました。これは単に「面白そうなプロトコルを移植する」だけではなく、自分が現場で感じていた困りごとにもかなり近い。だから取り組むことにしました。
+||
+WireGuard を選ぶ意味もあります。OpenVPN や IPsec と比べると実装規模が小さく、暗号スイートも固定で、マイコンに載せる対象として現実的です。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Implementation</p>
+    <h2>既存実装を活かし、NuttX の作法でつなぎ直す</h2>
+    <div class="body">
+      <table>
+        <thead><tr><th>部分</th><th>方針</th><th>規模</th></tr></thead>
+        <tbody>
+          <tr><td>WireGuard のプロトコル・暗号</td><td class="new">wireguard-lwip から無改変で流用</td><td class="mono">約 3,000 行</td></tr>
+          <tr><td>OS 依存の 4 関数</td><td>NuttX の POSIX API で実装</td><td class="mono">186 行</td></tr>
+          <tr><td>lwIP netif グルー</td><td class="new">NuttX の <code>netdev</code> として書き直し</td><td class="mono">約 2,700 行</td></tr>
+        </tbody>
+      </table>
+      <div class="claim ok">
+        <p>結果: x86_64 / Cortex-A7 / Xtensa LX7 / Cortex-M4F でコード変更ゼロ。</p>
+        <small>移植元: smartalock/wireguard-lwip。OS 依存が小さく分離されていたのが効いた。</small>
+      </div>
+    </div>
+    <div class="num">5 / 7</div>
+    <div class="notes-src">
+実装は、ゼロから WireGuard を書いたわけではありません。smartalock/wireguard-lwip という lwIP 向けの実装を移植元にしています。
+||
+この実装の良いところは、OS に依存する処理が 4 つの関数に分離されていることです。単調増加時刻、暗号乱数、TAI64N タイムスタンプ、負荷判定。そこは NuttX の POSIX API で実装しました。
+||
+一方で、NuttX は lwIP ではなく独自のネットワークスタックを持っています。なので lwIP の netif まわりはそのまま使えません。ここは NuttX の netdev として書き直しました。wg0 を netdev_register で登録し、その裏側を UDP ソケットで WireGuard のピアにつなぎます。
+||
+この分け方にしたことで、x86_64、Cortex-A7、Xtensa LX7、Cortex-M4F の 4 アーキテクチャで、アプリ側のコード変更なしに動かせています。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Current Status</p>
+    <h2>ESP32-S3 実機で、公式クライアントと話せた</h2>
+    <div class="body">
+      <svg class="route" viewBox="0 0 1128 210" role="img" aria-label="ESP32-S3デモの経路図">
+        <defs>
+          <marker id="arrow-demo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="56" width="225" height="92" fill="#dff0ee" stroke="#176c67"></rect>
+        <text x="112" y="94" text-anchor="middle" font-size="21" font-weight="800">Windows</text>
+        <text class="small" x="112" y="122" text-anchor="middle">official WireGuard client</text>
+        <rect x="318" y="34" width="490" height="136" fill="#f5e4e5" stroke="#8d1f24" stroke-dasharray="7 5"></rect>
+        <text class="label" x="563" y="66" text-anchor="middle">WIREGUARD TUNNEL</text>
+        <text x="563" y="105" text-anchor="middle" font-size="24" font-weight="800">家庭用 Wi-Fi 越し</text>
+        <text class="small" x="563" y="136" text-anchor="middle">telnet → webserver → http://10.10.0.2/</text>
+        <rect x="903" y="56" width="225" height="92" fill="#e3edf7" stroke="#245c9a"></rect>
+        <text x="1015" y="94" text-anchor="middle" font-size="21" font-weight="800">ESP32-S3</text>
+        <text class="small" x="1015" y="122" text-anchor="middle">NuttX / USB disconnected</text>
+        <line x1="228" y1="102" x2="313" y2="102" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-demo)"></line>
+        <line x1="813" y1="102" x2="898" y2="102" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-demo)"></line>
+      </svg>
+      <div class="two">
+        <div class="panel">
+          <h3>確認できたこと</h3>
+          <p>実 Wi-Fi、電源アダプタのみ、Windows 公式クライアントとの相互運用。</p>
+        </div>
+        <div class="panel gold">
+          <h3>数字で見ると</h3>
+          <p>トンネル越し TCP 約 <strong>260 KiB/s</strong>。最長連続動作は <strong>4 時間 28 分</strong>。</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">6 / 7</div>
+    <div class="notes-src">
+現状です。ESP32-S3 の実機で、家庭用 Wi-Fi 越しに Windows の公式 WireGuard クライアントと通信できるところまで確認しました。
+||
+デモでは、トンネル越しに telnet で入って、NuttX のボード上で Web サーバを起動して、ブラウザから http://10.10.0.2/ を開いています。このとき USB は未接続で、電源アダプタだけです。
+||
+性能は、ESP32-S3 実機でトンネル越し TCP が約 260 KiB/s。最長連続動作は 4 時間 28 分です。まだ「日単位で安定」とは言いませんが、止まった原因は WireGuard ではなく Wi-Fi ドライバ側と見ています。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Returns</p>
+    <h2>小さな実装を、上流に返すところまで</h2>
+    <div class="body">
+      <ul class="big">
+        <li>対応実機を広げる<span>Pico 2 W、SPRESENSE、そして NuttX らしいボードへ。</span></li>
+        <li>デモを磨く<span>Community Over Code グラスゴーで、見てすぐ伝わる形にする。</span></li>
+        <li>upstream へマージする<span><code>apache/nuttx-apps</code> の <code>netutils/wireguard</code> として返す。</span></li>
+      </ul>
+      <div class="claim ok">
+        <p>Sechack365 で身についた「手元の違和感を、外に出せる形にする」を、OSS の入口まで持っていく。</p>
+      </div>
+    </div>
+    <div class="num">7 / 7</div>
+    <div class="notes-src">
+これからやることは三つです。対応実機を広げること。Community Over Code グラスゴーに向けて、見てすぐ伝わるデモに磨くこと。そして upstream にマージすることです。
+||
+Returns なので、最後に少しだけ Sechack365 に寄せて言うと、これは自分にとって「手元の違和感を、外に出せる形にする」活動です。現場で感じた困りごとを、コードにして、検証して、最終的には OSS に返す。そこまで行って初めて、次の誰かが普通に使える入口になると思っています。
+||
+ご清聴ありがとうございました。
+    </div>
+  </section>
+</div></div>
+
+<div id="notes"><h4>話すこと</h4><div id="notes-body"></div></div>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById("canvas");
+  var slides = Array.prototype.slice.call(canvas.querySelectorAll(".slide"));
+  var bar = document.getElementById("bar");
+  var notes = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var cur = 0;
+
+  function fit() {
+    var scale = Math.min((window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);
+    canvas.style.transform = "scale(" + scale + ")";
+  }
+
+  function show(index) {
+    cur = Math.max(0, Math.min(slides.length - 1, index));
+    slides.forEach(function (slide, i) {
+      slide.classList.toggle("on", i === cur);
+    });
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    notesBody.textContent = "";
+    var source = slides[cur].querySelector(".notes-src");
+    if (source) {
+      source.textContent.split("||").forEach(function (paragraph) {
+        var text = paragraph.trim();
+        if (!text) { return; }
+        var p = document.createElement("p");
+        p.textContent = text;
+        notesBody.appendChild(p);
+      });
+    }
+    if (location.hash !== "#" + (cur + 1)) {
+      history.replaceState(null, "", "#" + (cur + 1));
+    }
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      show(cur + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      show(cur - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      show(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      show(slides.length - 1);
+    } else if (event.key === "n" || event.key === "N") {
+      event.preventDefault();
+      notes.classList.toggle("on");
+    } else if (event.key === "f" || event.key === "F") {
+      event.preventDefault();
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    }
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (n && n - 1 !== cur) { show(n - 1); }
+  });
+
+  fit();
+  show(parseInt(location.hash.slice(1), 10) - 1 || 0);
+}());
+</script>
+</body>
+</html>
