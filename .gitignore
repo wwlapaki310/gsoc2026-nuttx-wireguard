@@ -7,3 +7,8 @@
 build-output/
 *.uf2
 *.bin
+
+# スライドを画像に起こしたもの (scripts/render-slides.py で作り直せる) と、
+# その際にデッキの隣に一時的に置かれるコピー。
+docs/presentation/renders/
+docs/presentation/.render-*.tmp.html

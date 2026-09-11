@@ -54,6 +54,25 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [short-slides.html](presentation/short-slides.html) | 5 分紹介デッキ 6 枚。`←→` 送り、`N` で発表者ノート |
 | [short-summary.md](presentation/short-summary.md) | その原稿（構成・時間配分・話で補う内容） |
 | [presentation-script.md](presentation/presentation-script.md) | 進行表と想定 Q&A |
+| [returns-slides.html](presentation/returns-slides.html) | Sechack365 Returns 向け 5 枚。`←→` 送り、`N` で発表者ノート |
+| [returns-outline.md](presentation/returns-outline.md) | その構成（スライドごとの中身と出典、文面の方針） |
+
+### スライドを画像にする
+
+デッキは 1280x720 の `#canvas` に 1 枚ずつ `<section class="slide">` を置いた単一 HTML で、
+`deck.html#3` のようにフラグメントでスライドを指定できる。これをヘッドレス Chrome で
+1 枚ずつ PNG にするのが [../scripts/render-slides.py](../scripts/render-slides.py)。
+
+```bash
+python scripts/render-slides.py docs/presentation/returns-slides.html
+python scripts/render-slides.py docs/presentation/slides.html --slides 1-5,9
+python scripts/render-slides.py <deck> --check-overflow      # はみ出しを可視化
+```
+
+出力は `docs/presentation/renders/<デッキ名>/slide-NN.png`（既定で 2 倍解像度 = 2560x1440）。
+`.slide` は `overflow: hidden` なので、収まらない内容は**何も言わずに切り落とされる**。
+`--check-overflow` を付けると、はみ出したスライドにマゼンタの帯と超過ピクセル数が描かれるので、
+レビュー時はこれを付けて回すとよい。生成物は `.gitignore` 済み。
 
 > **収録・登壇時の注意:** `.config`・`kconfig-tweak` の実行画面・ビルドログを画面に出さないこと
 > （Wi-Fi の SSID とパスフレーズが平文で入っている）。`wg showconf` は秘密鍵を表示する。
