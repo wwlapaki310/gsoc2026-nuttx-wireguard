@@ -1,49 +1,49 @@
-# Sechack365 Returns 発表案: 置いたあと触れない機器へ、もう一度手を伸ばす
+# Sechack365 Returns talk: WireGuard for Apache NuttX
 
-HTML デッキ: [returns-slides.html](returns-slides.html)
+HTML deck: [returns-slides.html](returns-slides.html)
 
-想定: Sechack365 Returns の短めの成果共有枠。**7 枚 / 6〜8 分**。
-単なる GSoC 成果報告ではなく、修了生イベント向けに「現場の違和感を OSS の実装に変える」話として組む。
+Audience: Sechack365 Returns alumni event. The deck should feel like a concise project talk,
+not a loose Japanese LT. Use the wording already present in [README.md](../../README.md) and
+[proposal.md](../proposal/proposal.md) as the source of truth.
 
-| 枚 | タイトル | 役割 | 目安 |
+## Core Message
+
+> A WireGuard VPN implementation for Apache NuttX, exposed as a `wg0` network device.
+> Verified on real hardware against real WireGuard peers.
+
+Why it matters:
+
+- Apache NuttX is a POSIX-compliant RTOS designed for resource-constrained environments.
+- NuttX currently has no native, lightweight VPN capability.
+- Remote and secure access to NuttX devices is a real, unsolved problem across edge AI,
+  industrial IoT, satellite and space hardware, and unmanned infrastructure.
+- Without a VPN, the realistic options are to expose a global IP, build a bespoke protocol,
+  or accept a vendor cloud.
+- The upstream goal is to make WireGuard available through `CONFIG_NET_WIREGUARD=y`.
+
+## Slide Structure
+
+| # | Title | Role | Timing |
 |---|---|---|---|
-| 1 | 置いたあと触れない機器へ、もう一度手を伸ばす | 今日の約束を作る | 25 秒 |
-| 2 | 困りごとは、だいたい現場のあとに来る | 動機を仕事・活動に接続 | 70 秒 |
-| 3 | 欲しかったのは、専用の遠隔管理ではない | VPN の価値を一段抽象化 | 70 秒 |
-| 4 | NuttX には、その道がまだなかった | 課題を一文で言う | 50 秒 |
-| 5 | 既存実装を活かし、NuttX の作法でつなぎ直す | 技術的な骨格 | 90 秒 |
-| 6 | ESP32-S3 実機で、公式クライアントと話せた | 成果の証拠 | 70 秒 |
-| 7 | 小さな実装を、上流に返すところまで | Returns らしい着地 | 45 秒 |
+| 1 | WireGuard for Apache NuttX | One-line project identity | 30 sec |
+| 2 | NuttX is used where physical access is expensive. | Context with photos | 70 sec |
+| 3 | Secure remote access is still a real gap. | Motivation from README/proposal | 70 sec |
+| 4 | A regular network interface, backed by an encrypted tunnel. | Explain `wg0` | 60 sec |
+| 5 | Keep the protocol core, replace the network glue. | Implementation strategy | 90 sec |
+| 6 | Verified on real hardware against real WireGuard peers. | Current status | 70 sec |
+| 7 | Make it available to NuttX developers immediately. | Upstream/Returns close | 45 sec |
 
-## タイトルの方針
+## Visual Sources
 
-元の `WireGuard Port to Apache NuttX` は正確だが、聴衆が文脈に入る前のタイトルとしては少し硬い。
-Returns では、最初に問題の絵を見せてから、途中でプロジェクト名を出す。
+- Apache NuttX logo: <https://nuttx.apache.org/>
+- SPRESENSE product photo: <https://developer.spresense.sony-semicon.com/>
+- AITRIOS edge AI device photos: <https://www.aitrios.sony-semicon.com/edge-ai-devices>
 
-採用:
+Downloaded local copies are in [assets](assets/).
 
-> 置いたあと触れない機器へ、もう一度手を伸ばす  
-> WireGuard を Apache NuttX に移植する
+## Text Policy
 
-候補:
-
-- 触れない組み込み機器に、VPN という帰り道を作る
-- NuttX に WireGuard を載せて、現場の機器へ安全に戻る
-- 組み込み RTOS に、あとから入れるための入口を作る
-
-## 話し方の骨格
-
-1. 私がやったのは「NuttX に WireGuard を移植する」こと。
-2. でも本当に話したいのは、現場に置いたあと触れない機器をどう保守するか。
-3. AITRIOS のカメラや SPRESENSE の人工衛星活動で、その問題に現実味があった。
-4. VPN があれば普通の `ssh` / `telnet` / HTTP で入れる。専用管理ツールを増やさなくていい。
-5. NuttX にはその選択肢がなかったので、GSoC のテーマとして取り組んだ。
-6. 既存の wireguard-lwip を活かし、プロトコルと暗号はそのまま、NuttX の netdev としてつなぎ直した。
-7. ESP32-S3 実機、実 Wi-Fi、Windows 公式クライアントで相互運用まで確認した。
-8. これを upstream に返して、誰かの次の現場で普通に使える部品にしたい。
-
-## 原稿トーン
-
-- 技術詳細を削りすぎず、でも「何がすごいか」は先に言う。
-- Sechack365 への接続は、露骨な思い出話ではなく「手元の違和感を外へ出す力」として置く。
-- 最後は「自分の成果」より「次に誰かが使える入口」に重心を移す。
+- Prefer English. Avoid awkward Japanese slide copy.
+- Use project text already written in README/proposal wherever possible.
+- Keep Sechack365 context subtle: close with the idea that a discomfort from real work can
+  become an upstream contribution when shaped, tested, and documented.

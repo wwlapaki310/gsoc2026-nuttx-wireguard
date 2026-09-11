@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sechack365 Returns - WireGuard on Apache NuttX</title>
+<title>Sechack365 Returns - WireGuard for Apache NuttX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;700;800;900&display=swap">
 <style>
   :root {
     --paper: #eef2f3;
     --surface: #fbfcfd;
     --ink: #11181d;
-    --muted: #60707c;
+    --muted: #5c6c78;
     --quiet: #87939b;
     --line: #d5dde2;
     --line-2: #e8edf0;
@@ -25,7 +25,7 @@
     --gold: #8a650c;
     --gold-soft: #f5edd8;
     --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-    --sans: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Meiryo, sans-serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
   * { box-sizing: border-box; }
@@ -80,7 +80,7 @@
     top: 14px;
     z-index: 10;
     padding: 5px 9px;
-    background: rgba(238, 242, 243, .9);
+    background: rgba(238, 242, 243, .92);
     color: var(--quiet);
     font-family: var(--mono);
     font-size: 11px;
@@ -109,29 +109,34 @@
     text-transform: uppercase;
   }
 
-  h1, h2, p { margin-top: 0; }
+  h1, h2, h3, p { margin-top: 0; }
   h1 {
     margin-bottom: 24px;
-    max-width: 990px;
-    font-size: 62px;
-    line-height: 1.16;
+    max-width: 960px;
+    font-size: 66px;
+    line-height: 1.06;
     font-weight: 900;
     letter-spacing: 0;
   }
   h2 {
     margin-bottom: 28px;
-    max-width: 1020px;
-    font-size: 45px;
-    line-height: 1.22;
-    font-weight: 800;
+    max-width: 1060px;
+    font-size: 46px;
+    line-height: 1.12;
+    font-weight: 850;
     letter-spacing: 0;
     text-wrap: balance;
+  }
+  h3 {
+    margin-bottom: 12px;
+    font-size: 25px;
+    line-height: 1.25;
   }
   .lead {
     max-width: 760px;
     color: var(--muted);
     font-size: 23px;
-    line-height: 1.7;
+    line-height: 1.55;
   }
   .mono { font-family: var(--mono); letter-spacing: 0; }
   code {
@@ -152,48 +157,100 @@
   }
 
   .title-slide { padding: 0; }
-  .title-slide.on { display: grid; grid-template-rows: 1fr auto; }
+  .title-slide.on { display: grid; grid-template-columns: 1.05fr .95fr; }
   .title-main {
-    padding: 82px 84px 0;
+    padding: 76px 76px 70px 84px;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  .title-main h1 { font-size: 68px; }
   .subtitle {
     color: var(--muted);
     font-size: 25px;
-    line-height: 1.55;
+    line-height: 1.48;
   }
   .speaker {
-    margin-top: 28px;
+    margin-top: 34px;
     color: var(--quiet);
     font-family: var(--mono);
     font-size: 14px;
     letter-spacing: .08em;
   }
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--line);
+  .hero-media {
+    position: relative;
+    min-width: 0;
+    border-left: 1px solid var(--line);
     background: #edf2f3;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
   }
-  .strip div {
-    min-height: 98px;
-    padding: 20px 26px;
-    border-right: 1px solid var(--line);
+  .hero-tile {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
   }
-  .strip div:last-child { border-right: 0; }
-  .strip b {
+  .hero-tile:last-child { border-bottom: 0; }
+  .hero-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
-    margin-bottom: 5px;
-    font-size: 19px;
   }
-  .strip span {
+  .hero-tile.logo img {
+    object-fit: contain;
+    padding: 58px;
+    background: #fff;
+  }
+  .caption {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    padding: 6px 8px;
+    background: rgba(251, 252, 253, .9);
     color: var(--muted);
     font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: .05em;
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .photo-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .photo {
+    height: 212px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: #f5f7f8;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    padding: 14px;
+  }
+  .photo.fill img {
+    object-fit: cover;
+    padding: 0;
+  }
+  .photo-card .copy {
+    min-height: 160px;
+    padding: 20px 22px;
+  }
+  .photo-card p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.52;
+    margin-bottom: 0;
   }
 
   .two {
@@ -208,15 +265,10 @@
     border: 1px solid var(--line);
     background: #fff;
   }
-  .panel h3 {
-    margin: 0 0 18px;
-    font-size: 27px;
-    line-height: 1.35;
-  }
   .panel p, .panel li {
     color: var(--muted);
     font-size: 20px;
-    line-height: 1.65;
+    line-height: 1.58;
   }
   .panel p:last-child { margin-bottom: 0; }
   .panel.wg { background: var(--wg-soft); border-color: #ddb9bc; }
@@ -264,7 +316,7 @@
   .claim p {
     margin: 0;
     font-size: 25px;
-    line-height: 1.48;
+    line-height: 1.42;
     font-weight: 800;
   }
   .claim small {
@@ -306,14 +358,14 @@
     position: relative;
     padding-left: 31px;
     font-size: 28px;
-    line-height: 1.42;
+    line-height: 1.35;
     font-weight: 800;
   }
   ul.big li::before {
     content: "";
     position: absolute;
     left: 0;
-    top: .68em;
+    top: .62em;
     width: 16px;
     height: 3px;
     background: var(--nx);
@@ -324,7 +376,17 @@
     color: var(--muted);
     font-size: 17px;
     font-weight: 400;
-    line-height: 1.55;
+    line-height: 1.48;
+  }
+
+  .sources {
+    position: absolute;
+    left: 72px;
+    bottom: 24px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .02em;
   }
 
   .notes-src { display: none; }
@@ -342,7 +404,7 @@
     background: var(--surface);
     color: var(--muted);
     font-size: 15px;
-    line-height: 1.85;
+    line-height: 1.8;
   }
   #notes.on { display: block; }
   #notes h4 {
@@ -362,161 +424,160 @@
 </style>
 </head>
 <body>
-<div id="help"><span><b>←→</b> 移動</span><span><b>N</b> 原稿</span><span><b>F</b> 全画面</span></div>
+<div id="help"><span><b>Arrow</b> move</span><span><b>N</b> notes</span><span><b>F</b> fullscreen</span></div>
 <div id="stage"><div id="canvas">
   <div id="bar"></div>
 
   <section class="slide title-slide">
     <div class="title-main">
       <p class="eyebrow">Sechack365 Returns</p>
-      <h1>置いたあと触れない機器へ、<br>もう一度手を伸ばす</h1>
-      <p class="subtitle">WireGuard を Apache NuttX に移植する</p>
-      <p class="speaker">秋田 賢 / Sony Semiconductor Solutions</p>
+      <h1>WireGuard for Apache NuttX</h1>
+      <p class="subtitle">A secure remote-access path for resource-constrained embedded systems.</p>
+      <p class="speaker">Satoru Akita / Sony Semiconductor Solutions</p>
     </div>
-    <div class="strip">
-      <div><b>Apache NuttX</b><span>embedded RTOS</span></div>
-      <div><b>WireGuard</b><span>modern VPN</span></div>
-      <div><b>ESP32-S3</b><span>real Wi-Fi demo</span></div>
-      <div><b>260 KiB/s</b><span>TCP over tunnel</span></div>
+    <div class="hero-media">
+      <div class="hero-tile logo">
+        <img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo">
+        <span class="caption">Apache NuttX</span>
+      </div>
+      <div class="hero-tile">
+        <img src="assets/aitrios-aih-ivrw2.png" alt="Sony AIH-IVRW2 wireless AI camera">
+        <span class="caption">AITRIOS edge AI device</span>
+      </div>
     </div>
     <div class="num">1 / 7</div>
     <div class="notes-src">
-今日は、WireGuard という VPN を Apache NuttX に移植している話をします。
+Today I will talk about WireGuard for Apache NuttX.
 ||
-ただ、最初に言いたいのはプロトコル名ではなくて、「置いたあと触れない機器に、どうやってもう一度手を伸ばすか」という問題です。組み込みの機器は、机の上で動いたあとに本番が始まります。天井、屋外、現場、あるいは宇宙。そこに行ったあと、ログを見たい、設定を変えたい、でも物理的には触れない。そこに VPN という普通の道を通したい、というのが今回の話です。
+The project is a WireGuard VPN implementation for Apache NuttX, exposed as a wg0 network device. The practical goal is simple: enable secure remote access to NuttX-based devices after they have been deployed in the field.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Motivation</p>
-    <h2>困りごとは、だいたい現場のあとに来る</h2>
+    <p class="eyebrow">Project Overview</p>
+    <h2>NuttX is used where physical access is expensive.</h2>
+    <div class="body">
+      <div class="photo-grid">
+        <div class="photo-card">
+          <div class="photo"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo"></div>
+          <div class="copy">
+            <h3>Apache NuttX</h3>
+            <p>A POSIX-compliant RTOS designed for resource-constrained environments, with its own TCP/IP stack and BSD socket interface.</p>
+          </div>
+        </div>
+        <div class="photo-card">
+          <div class="photo"><img src="assets/aitrios-csv26.png" alt="Rayprus CSV26 compact AI camera"></div>
+          <div class="copy">
+            <h3>Edge AI cameras</h3>
+            <p>AITRIOS edge AI devices are deployed in logistics warehouses, retail stores, and traffic monitoring systems.</p>
+          </div>
+        </div>
+        <div class="photo-card">
+          <div class="photo fill"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony Spresense boards"></div>
+          <div class="copy">
+            <h3>SPRESENSE</h3>
+            <p>A compact, low-power microcontroller board used in edge computing and mission-critical applications.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sources">Images: Apache NuttX, Sony Semiconductor Solutions / SPRESENSE, AITRIOS</div>
+    <div class="num">2 / 7</div>
+    <div class="notes-src">
+This slide is mostly context. NuttX is not just a hobby RTOS. It is used in real embedded systems, including edge AI cameras and SPRESENSE-based projects.
+||
+The wording here is intentionally close to the proposal: Apache NuttX is a POSIX-compliant RTOS designed for resource-constrained environments. It powers embedded systems ranging from UAVs and nanosatellites to edge AI cameras running on ESP32.
+||
+For these devices, physical access becomes difficult after deployment. That is where secure remote access starts to matter.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Why This Matters</p>
+    <h2>Secure remote access is still a real gap.</h2>
     <div class="body">
       <div class="two">
         <div class="panel nx">
-          <h3>AITRIOS の AI カメラ</h3>
-          <p>ESP32 + NuttX。天井や屋外に置かれ、異常の兆候だけで人を出すのは重い。</p>
+          <h3>Remote diagnostics</h3>
+          <p>Devices deployed in the field need diagnostics and maintenance without assuming a serial cable or local operator.</p>
         </div>
         <div class="panel blue">
-          <h3>SPRESENSE と人工衛星</h3>
-          <p>打ち上げ後は物理アクセスできない。ネットワーク越しの保守が前提になる。</p>
+          <h3>Firmware updates</h3>
+          <p>Remote and untrusted networks make encrypted tunnels a critical requirement for production devices.</p>
         </div>
       </div>
       <div class="claim">
-        <p>開発中に一番ほしくなるのは、特別な魔法ではなく、あとから安全に入れる入口。</p>
-      </div>
-    </div>
-    <div class="num">2 / 7</div>
-    <div class="notes-src">
-動機は、わりと自分の仕事や活動の実感に近いところにあります。AITRIOS というエッジ AI プラットフォームでは、AI カメラの中で ESP32 と NuttX が動いています。こういう機器は、実験室では近くにありますが、使われる場所は天井や屋外だったりします。
-||
-もうひとつ、ボトムアップの活動で SPRESENSE を使った人工衛星のプロジェクトにも関わっていました。こちらはもっと極端で、一度打ち上げたら物理アクセスはできません。
-||
-つまり、机の上で作っているときはシリアルケーブルでなんとかなりますが、現場に置いたあとに本当に困る。ログを見たい、設定を変えたい、簡単なコマンドを打ちたい。そういうときに「安全に入れる普通の入口」が必要になります。
-    </div>
-  </section>
-
-  <section class="slide">
-    <p class="eyebrow">What VPN Changes</p>
-    <h2>欲しかったのは、専用の遠隔管理ではない</h2>
-    <div class="body">
-      <table>
-        <thead><tr><th></th><th>ケーブル前提</th><th>VPN がある状態</th></tr></thead>
-        <tbody>
-          <tr><td>場所</td><td class="old">機器の前に行く</td><td class="new">ネットワーク越しに届く</td></tr>
-          <tr><td>経路</td><td class="old">平文か、個別に作り込む</td><td class="new">暗号化トンネルを使う</td></tr>
-          <tr><td>道具</td><td class="old">専用手順が増える</td><td class="new"><code>ssh</code> / <code>telnet</code> / HTTP がそのまま使える</td></tr>
-        </tbody>
-      </table>
-      <div class="claim ok">
-        <p><code>wg0</code> が生えると、アプリからは普通のネットワークインターフェースに見える。</p>
+        <p>However, NuttX currently has no native, lightweight VPN capability.</p>
       </div>
     </div>
     <div class="num">3 / 7</div>
     <div class="notes-src">
-VPN があると何がうれしいか。ポイントは、専用の遠隔管理機能をひとつ増やすことではありません。
+The motivation is also taken from the proposal and README.
 ||
-WireGuard のトンネルが張れて、NuttX 側に wg0 という仮想ネットワークインターフェースが生えると、アプリからは普通の NIC に見えます。そうすると、既存の telnet、HTTP サーバ、将来的には ssh のような道具を、そのまま安全な経路に乗せられます。
+Remote and secure access to NuttX devices is a real, unsolved problem across many domains: edge AI and industrial IoT, satellite and space hardware, unmanned infrastructure, and secure device mesh.
 ||
-VPN がない場合は、グローバル IP を晒す、独自プロトコルを作る、ベンダークラウドに乗せる、といった選択になりがちです。それが悪いわけではないですが、NuttX 自体に普通の選択肢として VPN があると、設計の自由度がかなり変わります。
+Without a VPN, the realistic options are to expose a global IP, build a bespoke protocol, or accept a vendor cloud. Each option is unappealing for its own reasons. The missing capability is a standard VPN path that NuttX developers can enable and use.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Gap</p>
-    <h2>NuttX には、その道がまだなかった</h2>
+    <p class="eyebrow">What WireGuard Adds</p>
+    <h2>A regular network interface, backed by an encrypted tunnel.</h2>
     <div class="body">
-      <svg class="route" viewBox="0 0 1128 250" role="img" aria-label="シリアル接続とVPN接続の比較図">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
-          </marker>
-        </defs>
-        <text class="label" x="0" y="34">BEFORE</text>
-        <rect x="0" y="54" width="210" height="72" fill="#fff" stroke="#d5dde2"></rect>
-        <text x="105" y="98" text-anchor="middle" font-size="22" font-weight="700">PC</text>
-        <line x1="214" y1="90" x2="438" y2="90" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
-        <text class="small" x="326" y="76" text-anchor="middle">serial cable</text>
-        <rect x="448" y="54" width="240" height="72" fill="#fff" stroke="#d5dde2"></rect>
-        <text x="568" y="98" text-anchor="middle" font-size="22" font-weight="700">NuttX board</text>
-        <text class="label" x="0" y="172">TARGET</text>
-        <rect x="0" y="192" width="210" height="72" fill="#dff0ee" stroke="#176c67"></rect>
-        <text x="105" y="236" text-anchor="middle" font-size="22" font-weight="700">PC</text>
-        <rect x="304" y="176" width="470" height="104" fill="#f5e4e5" stroke="#8d1f24" stroke-dasharray="7 5"></rect>
-        <text class="label" x="539" y="204" text-anchor="middle" fill="#8d1f24">ENCRYPTED TUNNEL</text>
-        <text x="539" y="240" text-anchor="middle" font-size="23" font-weight="800">Internet / Wi-Fi / UDP</text>
-        <line x1="214" y1="228" x2="300" y2="228" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
-        <line x1="778" y1="228" x2="864" y2="228" stroke="#87939b" stroke-width="3" marker-end="url(#arrow)"></line>
-        <rect x="870" y="192" width="258" height="72" fill="#dff0ee" stroke="#176c67"></rect>
-        <text x="999" y="236" text-anchor="middle" font-size="22" font-weight="700">NuttX + wg0</text>
-      </svg>
-      <div class="claim">
-        <p>GSoC のテーマ一覧で見つけたのは、この空白を埋める題目だった。</p>
+      <table>
+        <thead><tr><th></th><th>Before</th><th>With WireGuard</th></tr></thead>
+        <tbody>
+          <tr><td>Access</td><td class="old">Serial cable or custom path</td><td class="new">Network access through <code>wg0</code></td></tr>
+          <tr><td>Transport</td><td class="old">Plain or application-specific</td><td class="new">Encrypted tunnel over UDP</td></tr>
+          <tr><td>Tools</td><td class="old">Special-purpose workflow</td><td class="new"><code>telnet</code>, HTTP, and existing IP tools</td></tr>
+        </tbody>
+      </table>
+      <div class="claim ok">
+        <p>Applications see <code>wg0</code> as a normal NuttX network device.</p>
       </div>
     </div>
     <div class="num">4 / 7</div>
     <div class="notes-src">
-ところが、NuttX には VPN の選択肢がありませんでした。少なくとも、NuttX の標準的なネットワークスタックに乗る WireGuard 実装はありません。
+The design goal is not to invent another remote-management tool.
 ||
-GSoC のテーマ一覧を見ていたときに、この空白を埋める題目を見つけました。これは単に「面白そうなプロトコルを移植する」だけではなく、自分が現場で感じていた困りごとにもかなり近い。だから取り組むことにしました。
+WireGuard is exposed as a NuttX network device called wg0. From the application side, it behaves like a regular network interface. Routing and existing IP-based tools can work over the encrypted tunnel.
 ||
-WireGuard を選ぶ意味もあります。OpenVPN や IPsec と比べると実装規模が小さく、暗号スイートも固定で、マイコンに載せる対象として現実的です。
+This is why WireGuard is a good fit. It is a modern, lightweight VPN protocol using Curve25519, ChaCha20-Poly1305, and BLAKE2s, while keeping the implementation small enough to run on microcontrollers.
     </div>
   </section>
 
   <section class="slide">
     <p class="eyebrow">Implementation</p>
-    <h2>既存実装を活かし、NuttX の作法でつなぎ直す</h2>
+    <h2>Keep the protocol core, replace the network glue.</h2>
     <div class="body">
       <table>
-        <thead><tr><th>部分</th><th>方針</th><th>規模</th></tr></thead>
+        <thead><tr><th>Part</th><th>Approach</th><th>Size</th></tr></thead>
         <tbody>
-          <tr><td>WireGuard のプロトコル・暗号</td><td class="new">wireguard-lwip から無改変で流用</td><td class="mono">約 3,000 行</td></tr>
-          <tr><td>OS 依存の 4 関数</td><td>NuttX の POSIX API で実装</td><td class="mono">186 行</td></tr>
-          <tr><td>lwIP netif グルー</td><td class="new">NuttX の <code>netdev</code> として書き直し</td><td class="mono">約 2,700 行</td></tr>
+          <tr><td>Protocol and crypto</td><td class="new">Used byte-identical from <code>wireguard-lwip</code></td><td class="mono">3,079 lines</td></tr>
+          <tr><td>Platform hooks</td><td>Implemented with NuttX POSIX APIs</td><td class="mono">186 lines</td></tr>
+          <tr><td>Network glue</td><td class="new">Replaced lwIP <code>netif</code> with NuttX <code>netdev</code></td><td class="mono">2,157 lines</td></tr>
         </tbody>
       </table>
       <div class="claim ok">
-        <p>結果: x86_64 / Cortex-A7 / Xtensa LX7 / Cortex-M4F でコード変更ゼロ。</p>
-        <small>移植元: smartalock/wireguard-lwip。OS 依存が小さく分離されていたのが効いた。</small>
+        <p>Result: the same code runs on x86_64, Cortex-A7, Xtensa LX7, and Cortex-M4F.</p>
+        <small>NuttX has its own TCP/IP stack, so <code>wireguardif.c</code> could not be compiled as-is.</small>
       </div>
     </div>
     <div class="num">5 / 7</div>
     <div class="notes-src">
-実装は、ゼロから WireGuard を書いたわけではありません。smartalock/wireguard-lwip という lwIP 向けの実装を移植元にしています。
+The implementation is built on smartalock/wireguard-lwip.
 ||
-この実装の良いところは、OS に依存する処理が 4 つの関数に分離されていることです。単調増加時刻、暗号乱数、TAI64N タイムスタンプ、負荷判定。そこは NuttX の POSIX API で実装しました。
+The WireGuard protocol core and cryptographic primitives are portable C and can be used as-is. The OS-specific behavior is isolated behind four platform functions: monotonic time, random bytes, TAI64N time, and load detection.
 ||
-一方で、NuttX は lwIP ではなく独自のネットワークスタックを持っています。なので lwIP の netif まわりはそのまま使えません。ここは NuttX の netdev として書き直しました。wg0 を netdev_register で登録し、その裏側を UDP ソケットで WireGuard のピアにつなぎます。
-||
-この分け方にしたことで、x86_64、Cortex-A7、Xtensa LX7、Cortex-M4F の 4 アーキテクチャで、アプリ側のコード変更なしに動かせています。
+The major work is the network integration layer. NuttX does not use lwIP. It has its own TCP/IP stack, so I replaced the lwIP netif glue with NuttX netdev and socket APIs. The wg0 device is registered with netdev_register, and the encrypted transport goes through a UDP socket.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Current Status</p>
-    <h2>ESP32-S3 実機で、公式クライアントと話せた</h2>
+    <p class="eyebrow">Status</p>
+    <h2>Verified on real hardware against real WireGuard peers.</h2>
     <div class="body">
-      <svg class="route" viewBox="0 0 1128 210" role="img" aria-label="ESP32-S3デモの経路図">
+      <svg class="route" viewBox="0 0 1128 210" role="img" aria-label="ESP32-S3 demo path">
         <defs>
           <marker id="arrow-demo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
             <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
@@ -527,8 +588,8 @@ WireGuard を選ぶ意味もあります。OpenVPN や IPsec と比べると実�
         <text class="small" x="112" y="122" text-anchor="middle">official WireGuard client</text>
         <rect x="318" y="34" width="490" height="136" fill="#f5e4e5" stroke="#8d1f24" stroke-dasharray="7 5"></rect>
         <text class="label" x="563" y="66" text-anchor="middle">WIREGUARD TUNNEL</text>
-        <text x="563" y="105" text-anchor="middle" font-size="24" font-weight="800">家庭用 Wi-Fi 越し</text>
-        <text class="small" x="563" y="136" text-anchor="middle">telnet → webserver → http://10.10.0.2/</text>
+        <text x="563" y="105" text-anchor="middle" font-size="24" font-weight="800">Real Wi-Fi / UDP</text>
+        <text class="small" x="563" y="136" text-anchor="middle">telnet -> webserver -> http://10.10.0.2/</text>
         <rect x="903" y="56" width="225" height="92" fill="#e3edf7" stroke="#245c9a"></rect>
         <text x="1015" y="94" text-anchor="middle" font-size="21" font-weight="800">ESP32-S3</text>
         <text class="small" x="1015" y="122" text-anchor="middle">NuttX / USB disconnected</text>
@@ -537,50 +598,50 @@ WireGuard を選ぶ意味もあります。OpenVPN や IPsec と比べると実�
       </svg>
       <div class="two">
         <div class="panel">
-          <h3>確認できたこと</h3>
-          <p>実 Wi-Fi、電源アダプタのみ、Windows 公式クライアントとの相互運用。</p>
+          <h3>Confirmed on ESP32-S3</h3>
+          <p>Real Wi-Fi, official Windows peer, telnet, HTTP, 7 MB transfer, rekey, and recovery from power loss.</p>
         </div>
         <div class="panel gold">
-          <h3>数字で見ると</h3>
-          <p>トンネル越し TCP 約 <strong>260 KiB/s</strong>。最長連続動作は <strong>4 時間 28 分</strong>。</p>
+          <h3>Measured so far</h3>
+          <p>Tunnelled TCP throughput: <strong>260 KiB/s</strong>. Longest observed run: <strong>4 h 28 min</strong>.</p>
         </div>
       </div>
     </div>
     <div class="num">6 / 7</div>
     <div class="notes-src">
-現状です。ESP32-S3 の実機で、家庭用 Wi-Fi 越しに Windows の公式 WireGuard クライアントと通信できるところまで確認しました。
+The tunnel works end to end on hardware, is configurable at runtime, and survives a power cycle. What remains is upstream submission.
 ||
-デモでは、トンネル越しに telnet で入って、NuttX のボード上で Web サーバを起動して、ブラウザから http://10.10.0.2/ を開いています。このとき USB は未接続で、電源アダプタだけです。
+The important point is that the peers are real WireGuard implementations: the Linux kernel module and the official Windows client. Interoperating with another copy of this code would prove much less.
 ||
-性能は、ESP32-S3 実機でトンネル越し TCP が約 260 KiB/s。最長連続動作は 4 時間 28 分です。まだ「日単位で安定」とは言いませんが、止まった原因は WireGuard ではなく Wi-Fi ドライバ側と見ています。
+On ESP32-S3, I confirmed real Wi-Fi, telnet, HTTP, a 7 MB transfer, rekey, and recovery from power loss. The current throughput is about 260 KiB/s over Wi-Fi, tunnelled TCP.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Returns</p>
-    <h2>小さな実装を、上流に返すところまで</h2>
+    <p class="eyebrow">Upstream</p>
+    <h2>Make it available to NuttX developers immediately.</h2>
     <div class="body">
       <ul class="big">
-        <li>対応実機を広げる<span>Pico 2 W、SPRESENSE、そして NuttX らしいボードへ。</span></li>
-        <li>デモを磨く<span>Community Over Code グラスゴーで、見てすぐ伝わる形にする。</span></li>
-        <li>upstream へマージする<span><code>apache/nuttx-apps</code> の <code>netutils/wireguard</code> として返す。</span></li>
+        <li>Add a missing capability<span>The first standard VPN solution for NuttX.</span></li>
+        <li>Submit to <code>apache/nuttx-apps</code><span>So developers can enable WireGuard with <code>CONFIG_NET_WIREGUARD=y</code>.</span></li>
+        <li>Document a reusable porting pattern<span>A bridge from lwIP-based network libraries to NuttX's native stack.</span></li>
       </ul>
       <div class="claim ok">
-        <p>Sechack365 で身についた「手元の違和感を、外に出せる形にする」を、OSS の入口まで持っていく。</p>
+        <p>The goal is not just a demo. The goal is an upstreamable component.</p>
       </div>
     </div>
     <div class="num">7 / 7</div>
     <div class="notes-src">
-これからやることは三つです。対応実機を広げること。Community Over Code グラスゴーに向けて、見てすぐ伝わるデモに磨くこと。そして upstream にマージすることです。
+The upstream goal is the main point of the project.
 ||
-Returns なので、最後に少しだけ Sechack365 に寄せて言うと、これは自分にとって「手元の違和感を、外に出せる形にする」活動です。現場で感じた困りごとを、コードにして、検証して、最終的には OSS に返す。そこまで行って初めて、次の誰かが普通に使える入口になると思っています。
+The contribution is not only adding a missing VPN capability. It also establishes a pattern for porting lwIP-based network libraries to NuttX. Many embedded networking libraries are written for lwIP, but NuttX has its own stack. This project demonstrates one concrete bridge.
 ||
-ご清聴ありがとうございました。
+For a Returns audience, this is the message I want to end with: a small technical discomfort from real work can become an upstream contribution if it is shaped, tested, and documented carefully.
     </div>
   </section>
 </div></div>
 
-<div id="notes"><h4>話すこと</h4><div id="notes-body"></div></div>
+<div id="notes"><h4>Speaker notes</h4><div id="notes-body"></div></div>
 
 <script>
 (function () {
