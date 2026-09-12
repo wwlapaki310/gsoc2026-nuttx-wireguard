@@ -157,6 +157,13 @@
     white-space: nowrap;
   }
   strong { font-weight: 800; }
+  .panel strong, .fact strong, .aside strong, .claim small strong,
+  .photo-card strong { color: var(--ink); }
+  .hl {
+    font-weight: 800;
+    color: var(--nx);
+  }
+  .hl.red { color: var(--wg); }
   a {
     color: var(--blue);
     text-decoration: none;
@@ -453,6 +460,15 @@
   .fact.wg { border-top-color: var(--wg); }
   .fact.nx { border-top-color: var(--nx); }
   .fact.blue { border-top-color: var(--blue); }
+  .fact.gold { border-top-color: var(--gold); }
+  .four {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .four .fact { padding: 17px 18px; }
+  .four .fact p { font-size: 14.5px; line-height: 1.45; }
+  .four .fact b { font-size: 10px; letter-spacing: .12em; }
   .fact p {
     margin: 0;
     color: var(--muted);
@@ -552,6 +568,7 @@
     border-right: 1px solid var(--line-2);
   }
   .shots .photo:last-child { border-right: 0; }
+  .photo.wide { height: 150px; padding: 0; }
   .mini .cap { padding: 11px 14px; }
   .mini b {
     display: block;
@@ -574,6 +591,40 @@
     align-items: start;
   }
   .stack { display: grid; gap: 18px; }
+
+  .demo {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .thumb {
+    position: relative;
+    border: 1px solid var(--line);
+    background: #000;
+    line-height: 0;
+  }
+  .thumb a { border-bottom: 0; display: block; }
+  .thumb img { width: 100%; height: auto; display: block; }
+  .thumb .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 78px;
+    height: 54px;
+    margin: -27px 0 0 -39px;
+    border-radius: 12px;
+    background: rgba(141, 31, 36, .92);
+  }
+  .thumb .play::after {
+    content: "";
+    position: absolute;
+    left: 30px;
+    top: 15px;
+    border-style: solid;
+    border-width: 12px 0 12px 20px;
+    border-color: transparent transparent transparent #fff;
+  }
 
   .notes-src { display: none; }
   #notes {
@@ -641,7 +692,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 7</div>
+    <div class="num">1 / 8</div>
     <div class="notes-src">
 Today I will talk about WireGuard for Apache NuttX.
 ||
@@ -655,21 +706,25 @@ The peers are always real WireGuard implementations: the Linux kernel module and
     <p class="eyebrow">Summary</p>
     <h2>This project implements WireGuard as a NuttX network device.</h2>
     <div class="body">
-      <div class="three">
+      <div class="four">
         <div class="fact nx">
-          <b>What WireGuard is</b>
+          <b>What it is</b>
           <p>A modern, lightweight VPN protocol, originally developed for Linux.</p>
         </div>
         <div class="fact blue">
-          <b>How it protects traffic</b>
-          <p>Encrypted tunnels over UDP: Curve25519, ChaCha20-Poly1305, BLAKE2s.</p>
+          <b>Who made it</b>
+          <p><strong>Jason A. Donenfeld</strong>, an independent security researcher. First released in <span class="hl">2016</span>; in the Linux kernel since <span class="hl">5.6 (2020)</span>.</p>
         </div>
         <div class="fact wg">
-          <b>Why it fits a microcontroller</b>
-          <p>Roughly 4,000 lines &mdash; small enough to run on microcontrollers.</p>
+          <b>How it protects traffic</b>
+          <p>Encrypted tunnels over <strong>UDP</strong>: Curve25519, ChaCha20-Poly1305, BLAKE2s.</p>
+        </div>
+        <div class="fact gold">
+          <b>Where you have met it</b>
+          <p><span class="hl">Tailscale</span> is built on WireGuard. Roughly <strong>4,000 lines</strong> &mdash; small enough for a microcontroller.</p>
         </div>
       </div>
-      <svg class="route" viewBox="0 0 1136 300" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
+      <svg class="route" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
         <defs>
           <marker id="arrow-arch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
             <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
@@ -703,11 +758,13 @@ The peers are always real WireGuard implementations: the Linux kernel module and
         <text class="small" x="1042" y="254" text-anchor="middle">Linux, Windows, ...</text>
       </svg>
     </div>
-    <div class="num">2 / 7</div>
+    <div class="num">2 / 8</div>
     <div class="notes-src">
 First, what this repository actually contains.
 ||
 WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using Curve25519, ChaCha20-Poly1305 and BLAKE2s, while keeping the implementation small enough, roughly 4,000 lines, to run on microcontrollers.
+||
+It is newer than people often assume, and it is not a big-company project. Jason A. Donenfeld, an independent security researcher, started it in 2015 and released it in 2016; it spent four years as an out-of-tree module before being merged into the Linux kernel in 5.6, in March 2020. If you use Tailscale, you are already using WireGuard — Tailscale is built on it.
 ||
 Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface, but it currently has no VPN capability. This project implements WireGuard as a NuttX network device called wg0, so that applications see it as a normal network interface. The encrypted transport underneath is a UDP socket on port 51820, and the peer on the other end can be any existing WireGuard endpoint.
     </div>
@@ -720,14 +777,14 @@ Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket 
       <div class="two">
         <div class="panel dense">
           <div class="logo-row"><img src="assets/asf-logo-wide.svg" alt="The Apache Software Foundation logo"></div>
-          <p>&ldquo;Exists to provide software for the public good.&rdquo;</p>
-          <p>A 501(c)(3) nonprofit organization, founded in 1999.</p>
-          <p>&ldquo;Run almost exclusively by volunteers that provide support for hundreds of projects.&rdquo;</p>
-          <p>Maintains the Apache License 2.0. Its way of working is &ldquo;The Apache Way&rdquo; &mdash; community over code.</p>
+          <p>&ldquo;Exists to provide software for the <span class="hl">public good</span>.&rdquo;</p>
+          <p>A <strong>501(c)(3) nonprofit organization</strong>, founded in <strong>1999</strong>.</p>
+          <p>&ldquo;Run almost exclusively by <strong>volunteers</strong> that provide support for <strong>hundreds of projects</strong>.&rdquo;</p>
+          <p>Maintains the Apache License 2.0. Its way of working is &ldquo;The Apache Way&rdquo; &mdash; <span class="hl">community over code</span>.</p>
         </div>
         <div class="panel dense">
           <div class="logo-row"><img src="assets/community-over-code-logo.svg" alt="Community Over Code logo"></div>
-          <p>&ldquo;The official conference of the Apache Software Foundation (ASF), bringing together the communities behind Apache open source projects.&rdquo;</p>
+          <p>&ldquo;The <span class="hl">official conference</span> of the Apache Software Foundation (ASF), bringing together the communities behind Apache open source projects.&rdquo;</p>
           <p>An annual series for developers, users, contributors, and committers working on ASF projects.</p>
           <p><strong>Glasgow: October 11&ndash;14, 2026.</strong> Sydney: November 18&ndash;19.</p>
         </div>
@@ -738,7 +795,7 @@ Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket 
       </div>
     </div>
     <div class="sources">Quotations: apache.org/foundation, communityovercode.apache.org &middot; Logos: ASF Brand Guidelines</div>
-    <div class="num">3 / 7</div>
+    <div class="num">3 / 8</div>
     <div class="notes-src">
 A little about where this is going.
 ||
@@ -758,19 +815,16 @@ The NuttX International Workshop is co-located with the Glasgow event, and that 
         <div class="stack">
           <div class="claim">
             <p>However, NuttX currently has no native, lightweight VPN capability.</p>
-            <small>Remote and secure access to NuttX devices is a real, unsolved problem across edge AI and industrial IoT, satellite and space hardware, and unmanned infrastructure.</small>
+            <small>Remote and secure access to NuttX devices is a <span class="hl red">real, unsolved problem</span> across edge AI and industrial IoT, satellite and space hardware, and unmanned infrastructure.</small>
           </div>
           <div class="fact wg">
             <b>Without a VPN</b>
-            <p>Expose a global IP, build a bespoke protocol, or accept a vendor cloud &mdash; each unappealing for its own reasons. So I chose this topic.</p>
+            <p>Expose a global IP, build a bespoke protocol, or accept a vendor cloud &mdash; <strong>each unappealing for its own reasons</strong>. <span class="hl">So I chose this topic.</span></p>
           </div>
         </div>
         <div class="mini">
           <div class="photo-card">
-            <div class="shots">
-              <div class="photo"><img src="assets/aitrios-csv26.png" alt="Compact AI camera"></div>
-              <div class="photo"><img src="assets/aitrios-aih-ivrw2.png" alt="Sony AIH-IVRW2 wireless AI camera"></div>
-            </div>
+            <div class="photo wide"><img src="assets/aitrios-signage.jpg" alt="An AITRIOS edge AI device built around the Sony IMX500 intelligent vision sensor"></div>
             <div class="cap">
               <b>AITRIOS edge AI cameras</b>
               <span>ESP32 + NUTTX</span>
@@ -793,7 +847,7 @@ The NuttX International Workshop is co-located with the Glasgow event, and that 
       </div>
     </div>
     <div class="sources">Images: Sony Semiconductor Solutions / SPRESENSE, AITRIOS &middot; CubeSat: ARICA project</div>
-    <div class="num">4 / 7</div>
+    <div class="num">4 / 8</div>
     <div class="notes-src">
 Why this topic. The reason came from my own work, not from a list.
 ||
@@ -814,8 +868,8 @@ As a footnote: the topic itself I found on the Google Summer of Code idea list, 
       <div class="two">
         <div class="panel dense">
           <h3>The reference implementation</h3>
-          <p><a href="https://github.com/smartalock/wireguard-lwip">smartalock/wireguard-lwip</a> implements WireGuard as an lwIP <code>netif</code> &mdash; lwIP&rsquo;s abstraction for a virtual NIC, treated on equal footing with <code>eth0</code> or <code>wlan0</code>.</p>
-          <p>All OS-specific behavior is isolated behind <code>wireguard-platform.h</code>: four functions. The protocol core and the crypto are portable C with no OS dependencies.</p>
+          <p><a href="https://github.com/smartalock/wireguard-lwip">smartalock/wireguard-lwip</a> implements WireGuard as an lwIP <code>netif</code> &mdash; lwIP&rsquo;s abstraction for a <span class="hl">virtual NIC</span>, treated on equal footing with <code>eth0</code> or <code>wlan0</code>.</p>
+          <p>All OS-specific behavior is isolated behind <code>wireguard-platform.h</code>: <span class="hl">four functions</span>. The protocol core and the crypto are <strong>portable C with no OS dependencies</strong>.</p>
         </div>
         <div class="panel dense">
           <h3>What had to be replaced</h3>
@@ -828,11 +882,11 @@ As a footnote: the topic itself I found on the Google Summer of Code idea list, 
         </div>
       </div>
       <div class="claim ok">
-        <p>That was the plan written in the proposal, and that is what the work turned out to be.</p>
-        <small>The contribution is a reusable pattern: how to connect a lwIP-based network component to NuttX&rsquo;s native netdev and socket API.</small>
+        <p>That was the plan written in the proposal, and <span class="hl">that is what the work turned out to be</span>.</p>
+        <small>The contribution is a <strong>reusable pattern</strong>: how to connect a lwIP-based network component to NuttX&rsquo;s native netdev and socket API.</small>
       </div>
     </div>
-    <div class="num">5 / 7</div>
+    <div class="num">5 / 8</div>
     <div class="notes-src">
 Now the technical part. The plan, from the proposal, was not to write WireGuard from scratch.
 ||
@@ -853,12 +907,12 @@ So the plan was: implement the platform header for NuttX, and replace the lwIP A
         <tbody>
           <tr>
             <td>Protocol and crypto<span class="sub"><code>wireguard.c</code>, <code>crypto/</code></span></td>
-            <td>None &mdash; portable C, used as-is</td>
+            <td class="hl">None &mdash; portable C, used as-is</td>
             <td class="mono">3,079 lines<span class="sub">byte-identical to upstream</span></td>
           </tr>
           <tr>
             <td>OS hooks<span class="sub"><code>wireguard-platform.h</code></span></td>
-            <td>Low &mdash; four functions</td>
+            <td class="hl">Low &mdash; four functions</td>
             <td class="mono">186 lines<span class="sub">written for NuttX</span></td>
           </tr>
           <tr>
@@ -870,11 +924,11 @@ So the plan was: implement the platform header for NuttX, and replace the lwIP A
       </table>
       <div class="claim ok">
         <p>The port moved across four architectures without code changes.</p>
-        <small>Isolating the OS hooks is why. x86_64 / ARM Cortex-A7 / Xtensa LX7 / ARM Cortex-M4F.</small>
+        <small><strong>Isolating the OS hooks is why.</strong> x86_64 / ARM Cortex-A7 / Xtensa LX7 / ARM Cortex-M4F.</small>
       </div>
     </div>
     <div class="sources">Vendored from smartalock/wireguard-lwip &middot; Copyright (c) 2021 Daniel Hope (www.floorsense.nz) &middot; BSD-3-Clause</div>
-    <div class="num">6 / 7</div>
+    <div class="num">6 / 8</div>
     <div class="notes-src">
 How it was built. Not from scratch: the port is built on smartalock/wireguard-lwip, a WireGuard implementation for lwIP, BSD-3-Clause.
 ||
@@ -897,7 +951,7 @@ Isolating the OS hooks in that one small file is why the port then moved across 
             <div><b>TX</b> <code>devif_poll()</code> &rarr; encrypt &rarr; <code>psock_sendto()</code></div>
             <div><b>RX</b> <code>psock_poll()</code> &rarr; decrypt &rarr; <code>ipv4_input()</code></div>
           </div>
-          <p>Reception runs in a background task that blocks on <code>psock_poll()</code>. The device is modelled on <code>drivers/net/tun.c</code>.</p>
+          <p>Reception runs in a <strong>background task</strong> that blocks on <code>psock_poll()</code>. The device is modelled on <code>drivers/net/tun.c</code>.</p>
         </div>
         <div class="panel dense">
           <h3>The four OS hooks</h3>
@@ -907,15 +961,15 @@ Isolating the OS hooks in that one small file is why the port then moved across 
             <div><b>wireguard_tai64n_now()</b><i>&rarr;</i>clock_gettime(CLOCK_REALTIME)</div>
             <div><b>wireguard_is_under_load()</b><i>&rarr;</i>return false</div>
           </div>
-          <p style="margin-top:16px">These four are all the reference implementation needs from the platform.</p>
+          <p style="margin-top:16px">These four are <span class="hl">all</span> the reference implementation needs from the platform.</p>
         </div>
       </div>
       <div class="claim">
         <p>The socket is held as a <code>struct socket</code>, not a file descriptor.</p>
-        <small>One place where the plan did not survive: NuttX scopes descriptors per task group and the transmit path runs on an unrelated worker thread, so <code>psock_*()</code> replaced the BSD calls. This ties the port to FLAT builds.</small>
+        <small><strong>One place where the plan did not survive:</strong> NuttX scopes descriptors per task group and the transmit path runs on an unrelated worker thread, so <code>psock_*()</code> replaced the BSD calls. This ties the port to <span class="hl red">FLAT builds</span>.</small>
       </div>
     </div>
-    <div class="num">7 / 7</div>
+    <div class="num">7 / 8</div>
     <div class="notes-src">
 The details. NuttX has its own TCP/IP stack and does not use lwIP, so wg0 is registered with netdev_register, modelled on the TUN driver in drivers/net/tun.c. What looks like a wire underneath is a UDP socket.
 ||
@@ -924,6 +978,40 @@ Transmission goes through devif_poll, then encrypt, then psock_sendto. Reception
 The four OS hooks are all the reference implementation needs from the platform: a monotonic clock, random bytes, a TAI64N timestamp, and a load check that simply returns false.
 ||
 One place where the plan did not survive contact. I had written BSD socket and bind in the proposal. In practice the socket has to be held as a struct socket rather than a file descriptor, and the internal psock functions used instead, because NuttX scopes descriptors per task group and the transmit path runs on an unrelated worker thread. That ties the current implementation to FLAT builds, and it is one of the open questions before upstreaming.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">The Demo</p>
+    <h2>telnet and a web server, both through the tunnel.</h2>
+    <div class="body">
+      <div class="demo">
+        <div class="thumb">
+          <a href="https://www.youtube.com/watch?v=1kyX2av5WG4">
+            <img src="assets/demo-thumb.jpg" alt="The Windows WireGuard client beside a telnet session into NuttX on an ESP32-S3">
+            <span class="play"></span>
+          </a>
+        </div>
+        <div class="panel dense">
+          <h3>What the demo shows</h3>
+          <p><strong>telnet into the board through the tunnel</strong>, and run commands on it.</p>
+          <p>Start a web server on the board, then open it from a browser.</p>
+          <p><span class="hl">USB is disconnected.</span> The board runs on a power adapter alone.</p>
+          <p>The peer is the <strong>official Windows WireGuard client</strong>, over a home Wi-Fi access point.</p>
+        </div>
+      </div>
+      <div class="claim ok">
+        <p class="mono">youtu.be/1kyX2av5WG4</p>
+        <small>ESP32-S3 &middot; real Wi-Fi &middot; a real WireGuard peer.</small>
+      </div>
+    </div>
+    <div class="num">8 / 8</div>
+    <div class="notes-src">
+Finally, what it actually looks like.
+||
+On the left is the official WireGuard client on Windows, showing the handshake and the bytes transferred. On the right is a telnet session into the ESP32-S3, through the tunnel: uname, ifconfig showing wlan0 and wg0 side by side, wg show, and the task list.
+||
+In the video I log in over telnet through the tunnel, run commands, start a web server on the board, and then open it from a browser. The USB cable is disconnected for all of this. The board is running on a power adapter alone, on a home Wi-Fi access point, talking to the official Windows client.
     </div>
   </section>
 
