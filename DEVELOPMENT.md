@@ -202,7 +202,7 @@ nsh> free
 HTTP 200 1080 bytes  "This page is being served by Apache NuttX RTOS running on a real Sony Spresense board ..."
 ```
 
-ESP32 系の `wlan0` は通常の NuttX netdev だが、GS2200M は **`usrsock`**(ソケット API をユーザ空間デーモンにプロキシする方式)なので、WireGuard 実装が「netdev の種類に依存しない」ことの実証にもなった。ただし無変更では動かず、`usrsock` 環境で顕在化するバグを修正している(下記「usrsock 環境で見つかったバグ」、および [docs/development/phase4-log.md](docs/development/phase4-log.md))。トンネル越しの TCP は、`wg0` で復号したパケットがカーネル側の IP スタックに入る一方で telnetd / webserver の `socket()` は usrsock(Wi-Fi モジュール内のスタック)に行ってしまうため、`denyinet on`(`SIOCDENYINETSOCK`)で以後の `socket()` をカーネルに落とす小さなヘルパーを足して成立させた。手順は [docs/development/hardware-verification.md](docs/development/hardware-verification.md) の Spresense 節。無負荷 RTT は 8〜9 ms で ESP32-S3 と同等。
+ESP32 系の `wlan0` は通常の NuttX netdev だが、GS2200M は **`usrsock`**(ソケット API をユーザ空間デーモンにプロキシする方式)なので、WireGuard 実装が「netdev の種類に依存しない」ことの実証にもなった。ただし無変更では動かず、`usrsock` 環境で顕在化するバグを修正している(下記「usrsock 環境で見つかったバグ」、および [docs/development/phase4-log.md](docs/development/phase4-log.md))。トンネル越しの TCP は、`wg0` で復号したパケットがカーネル側の IP スタックに入る一方で telnetd / webserver の `socket()` は usrsock(Wi-Fi モジュール内のスタック)に行ってしまうため、`denyinet on`(`SIOCDENYINETSOCK`)で以後の `socket()` をカーネルに落とす小さなヘルパーを足して成立させた。手順は [docs/development/hardware-verification.md](docs/development/hardware-verification.md) の Spresense 節。無負荷 RTT は 8〜9 ms で ESP32-S3 と同等。ESP32-S3 と同じ ROMFS `rcS` によるヘッドレス運用(電源投入だけで Wi-Fi → wg0 → telnetd)も確認済みで、Wi-Fi の認証情報は `--build-arg WIFI_SSID/WIFI_PASS` で渡す(リポジトリには入らない)。
 
 ### 実機向けクロスビルド(ESP32-WROOM-32 / ESP32-S3 / Sony Spresense)
 

@@ -461,6 +461,26 @@ COPY docker/webserver-demo/header.html docker/webserver-demo/spresense/index.sht
 # (= wg0 で復号したパケットが届く側) に置くために必要。中身のコメント参照。
 COPY docker/spresense-denyinet/ /opt/apps/system/denyinet/
 
+# ヘッドレス運用 (電源を入れるだけで Wi-Fi 接続 -> wg0 -> telnetd) の起動
+# スクリプト。esp32s3 ステージと同じ ROMFS /etc/init.d/rcS 方式。Wi-Fi の
+# 認証情報はビルド引数で渡す:
+#   docker build --target spresense-wifi \
+#     --build-arg WIFI_SSID=<ssid> --build-arg WIFI_PASS=<passphrase> ...
+# 渡さなければ rcS の Wi-Fi 部分は #if 0 のまま (何も焼き込まれない)。
+# 鍵とピアは "wg saveconf" で /mnt/spif/wg0.conf に保存しておくと rcS が
+# 起動時に読む (esp32s3 と同じ)。
+ARG WIFI_SSID=""
+ARG WIFI_PASS=""
+COPY docker/spresense-etc/init.d/rcS docker/spresense-etc/init.d/rc.sysinit \
+     /opt/nuttx/boards/arm/cxd56xx/spresense/src/etc/init.d/
+RUN if [ -n "$WIFI_SSID" ]; then \
+      sed -i -e "s|@WIFI_SSID@|$WIFI_SSID|" -e "s|@WIFI_PASS@|$WIFI_PASS|" \
+             -e 's|^#if 0 /\* WIFI_CREDENTIALS \*/$|#if 1 /* WIFI_CREDENTIALS */|' \
+             /opt/nuttx/boards/arm/cxd56xx/spresense/src/etc/init.d/rcS; \
+    fi && \
+    printf '\nifeq ($(CONFIG_ETC_ROMFS),y)\nRCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS\nendif\n' \
+      >> /opt/nuttx/boards/arm/cxd56xx/spresense/src/Make.defs
+
 # gs2200m デーモンの SIOCDENYINETSOCK 処理は、usock_enable フラグを更新した
 # あと drvreq=true のままドライバの GS2200M_IOC_IFREQ にも転送してしまう。
 # ドライバ側は知らない cmd なので -EINVAL、デーモンは ioctl() の戻り値 -1 を
@@ -520,6 +540,9 @@ RUN ./tools/configure.sh spresense:wifi && \
     kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_CLASSIC && \
     kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_SCRIPT_DISABLE && \
     kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING && \
+    kconfig-tweak --enable CONFIG_FS_ROMFS        && \
+    kconfig-tweak --enable CONFIG_ETC_ROMFS       && \
+    kconfig-tweak --enable CONFIG_BOARDCTL_ROMDISK && \
     make olddefconfig 2>&1 | tail -5
 
 # NOTE: spresense:wifi の httpd は SENDFILE (/mnt をそのまま配信) 設定。

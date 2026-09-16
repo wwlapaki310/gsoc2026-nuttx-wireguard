@@ -1,0 +1,62 @@
+/****************************************************************************
+ * boards/arm/cxd56xx/spresense/src/etc/init.d/rcS
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+#include <nuttx/config.h>
+
+/* Headless bring-up for Spresense + iS110B (GS2200M, a usrsock Wi-Fi
+ * driver). Order matters:
+ *
+ *  1. Start the usrsock daemon and join the AP. "gs2200m" is the daemon
+ *     itself, so it must be backgrounded. The @WIFI_SSID@/@WIFI_PASS@
+ *     placeholders are substituted by the Dockerfile from the WIFI_SSID /
+ *     WIFI_PASS build args, which also turns the "#if 0" below into
+ *     "#if 1"; with no build args the block stays compiled out and the
+ *     board comes up with no Wi-Fi (nothing secret is committed).
+ *  2. Give it a few seconds to associate and pick up a DHCP lease.
+ *  3. Bring wg0 up while the daemon still accepts AF_INET sockets, so its
+ *     UDP socket is offloaded to the Wi-Fi module. A configuration saved
+ *     with "wg saveconf" is loaded first; if there is none, setconf fails
+ *     harmlessly and the Kconfig values are used.
+ *  4. Flip SIOCDENYINETSOCK so every socket opened from here on lands in
+ *     the kernel stack, where packets decrypted by wg0 are delivered.
+ *  5. Start telnetd there. The web server is left to the demo
+ *     ("webserver &" from the telnet session), as on ESP32-S3.
+ */
+
+#if 0 /* WIFI_CREDENTIALS */
+gs2200m @WIFI_SSID@ @WIFI_PASS@ &
+sleep 10
+#endif
+
+#ifdef CONFIG_NET_WIREGUARD
+if [ -f CONFIG_NET_WIREGUARD_CONFIG_PATH ]; then
+  wg setconf CONFIG_NET_WIREGUARD_CONFIG_PATH
+fi
+
+wg
+#endif
+
+#ifdef CONFIG_SYSTEM_DENYINET
+denyinet on
+#endif
+
+#ifdef CONFIG_SYSTEM_TELNETD
+telnetd &
+#endif

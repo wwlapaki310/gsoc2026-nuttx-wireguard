@@ -450,9 +450,38 @@ Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
 
 RTT は無負荷で 8〜9 ms(ESP32-S3 と同等)。初回の検証で 142 ms と出たのは `CONFIG_DEBUG_WIRELESS_WARN/INFO` が AT コマンド 1 本ごとに数十行ログを吐いていた負荷で、ERROR のみに絞ると解消した。
 
-### デモ手順(トンネル越し telnet / HTTP)— 確認済み
+### ヘッドレス運用(電源を入れるだけで telnet 可能)— 確認済み
 
-ESP32-S3 のデモ動画と同じ流れが Spresense でもできる。**シリアルは開きっぱなしにできるターミナル**(Tera Term、または `python -m serial.tools.miniterm COM6 115200`)を使うこと。pyserial で接続を開き直すたびに DTR でボードがリセットされる。
+ESP32-S3 と同じく ROMFS の `/etc/init.d/rcS` で起動時に全部上げる。Wi-Fi の認証情報はリポジトリには入れず、ビルド引数で渡す:
+
+```bash
+docker build --target spresense-wifi   --build-arg WIFI_SSID=<ssid> --build-arg WIFI_PASS=<passphrase>   -t nuttx-wireguard:spresense-wifi .
+```
+
+rcS は `gs2200m <ssid> <pass> &` → `sleep 10` → `wg setconf /mnt/spif/wg0.conf`(あれば)→ `wg` → `denyinet on` → `telnetd &` の順([docker/spresense-etc/init.d/rcS](../../docker/spresense-etc/init.d/rcS))。鍵とピアは**初回だけ**シリアルから入れて保存する:
+
+```
+nsh> wg set private-key <key>
+nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg saveconf
+saved to /mnt/spif/wg0.conf
+```
+
+以後は電源投入(またはシリアルの開閉によるリセット)のたびに約 15 秒で復旧する。起動ログ:
+
+```
+gs2200m [5:50]
+wg0 is up (listen port 51820)
+AF_INET sockets now go to the kernel stack
+telnetd [10:100]
+NuttShell (NSH) NuttX-12.7.0
+```
+
+シリアルを閉じた状態で Windows から `ping 10.10.0.2` → `telnet 10.10.0.2` → telnet セッション内で `webserver &` → ブラウザで `http://10.10.0.2/` まで確認済み(ESP32-S3 のデモ動画と同じ流れ)。
+
+### デモ手順(手動)— 確認済み
+
+rcS を使わない場合の手順。**シリアルは開きっぱなしにできるターミナル**(Tera Term、または `python -m serial.tools.miniterm COM6 115200`)を使うこと。pyserial で接続を開き直すたびに DTR でボードがリセットされる。
 
 ```
 nsh> gs2200m <SSID> <passphrase> &                  # usrsock デーモン (& 必須)。DHCP まで数秒
