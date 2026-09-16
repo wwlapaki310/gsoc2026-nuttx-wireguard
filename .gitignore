@@ -12,3 +12,6 @@ build-output/
 # その際にデッキの隣に一時的に置かれるコピー。
 docs/presentation/renders/
 docs/presentation/.render-*.tmp.html
+
+# Spresense のフラッシュイメージ (docker cp で取り出し直せる)
+*.spk
