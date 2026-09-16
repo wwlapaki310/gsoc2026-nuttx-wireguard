@@ -522,6 +522,9 @@ RUN ./tools/configure.sh spresense:wifi && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM_RANDOM_POOL && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-str CONFIG_NET_WIREGUARD_CONFIG_PATH "/mnt/spif/wg0.conf" && \
+    kconfig-tweak --set-str CONFIG_NET_WIREGUARD_LOCAL_IPADDR "10.11.0.2" && \
+    kconfig-tweak --set-str CONFIG_NET_WIREGUARD_PEER_ALLOWED_IP "10.11.0.1" && \
+    kconfig-tweak --set-val CONFIG_NET_WIREGUARD_PEER_ENDPOINT_PORT 51821 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
     kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
@@ -564,6 +567,12 @@ RUN ./tools/configure.sh spresense:wifi && \
 # するため、電源投入直後の最初の "wg genkey" が毎回同じ鍵になっていた
 # (docs/development/phase4-log.md)。ESP32 系は DEV_URANDOM_ARCH (HW RNG)
 # なので影響なし。
+#
+# NOTE: トンネル側アドレスは ESP32-S3 (10.10.0.2, Windows 側トンネル
+# "nuttx-esp32s3" / port 51820) と衝突しないよう 10.11.0.2 にしてある。
+# Windows 側は別トンネル "nuttx-spresense" (10.11.0.1/24, port 51821) を
+# 立てて、両ボードを同時に別ターミナルから使えるようにする
+# (docs/development/hardware-verification.md)。
 #
 # NOTE: CONFIG_NET_WIREGUARD_CONFIG_PATH は既定の /data/wg0.conf から
 # /mnt/spif/wg0.conf に変更。spresense:wifi が SmartFS をマウントするのは

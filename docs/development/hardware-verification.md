@@ -416,7 +416,7 @@ nsh> gs2200m <SSID> <passphrase> &
 
 ```
 nsh> wg set private-key <key>
-nsh> wg set peer <Windows 側公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg set peer <Windows 側公開鍵> endpoint 192.168.0.216:51821 allowed-ips 10.11.0.1/32 persistent-keepalive 25
 nsh> wg up
 wg0 is up (listen port 51820)
 
@@ -424,27 +424,39 @@ nsh> wg show
 interface: wg0
   public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
   listening port: 51820
-peer: 5J5rgkz5RB0CB1hIZae5V3jQjisRjqOrry7Scca9YjE=
-  endpoint: 192.168.0.216:51820
+peer: <Windows nuttx-spresense の公開鍵>
+  endpoint: 192.168.0.216:51821
   latest handshake: 16 seconds ago
 
 nsh> ifconfig
 wlan0	Link encap:Ethernet HWaddr 14:5a:fc:fa:d9:6d at UP mtu 1500
 	inet addr:192.168.0.115 DRaddr:192.168.0.1 Mask:255.255.255.0
 wg0	Link encap:TUN at RUNNING mtu 1420
-	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+	inet addr:10.11.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
 ```
 
-Windows 側は ESP32-S3 のときと同じトンネルにピアを差し替えるだけ(管理者 PowerShell):
+Windows 側は **ESP32-S3 とは別のトンネル** `nuttx-spresense` を作る。ESP32-S3 用 `nuttx-esp32s3`(10.10.0.1/24、port 51820)と同時に有効化して、2 枚のボードを別ターミナルから同時に使うため、サブネットとリッスンポートを分けている(Spresense 側の `CONFIG_NET_WIREGUARD_LOCAL_IPADDR` も `10.11.0.2`)。`wg genkey` / `wg pubkey` で専用の鍵ペアを作り、この `.conf` を GUI で「ファイルからトンネルをインポート」→ 有効化:
 
-```powershell
-& "C:\Program Files\WireGuard\wg.exe" set nuttx-esp32s3 peer <古い ESP32-S3 の公開鍵> remove
-& "C:\Program Files\WireGuard\wg.exe" set nuttx-esp32s3 peer iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A= allowed-ips 10.10.0.2/32
+```ini
+[Interface]
+PrivateKey = <wg genkey の出力>
+ListenPort = 51821
+Address = 10.11.0.1/24
+
+[Peer]
+PublicKey = iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=   # Spresense の wg show に出る公開鍵
+AllowedIPs = 10.11.0.2/32
 ```
 
+| | ESP32-S3 | Spresense |
+|---|---|---|
+| Windows 側トンネル | `nuttx-esp32s3`: 10.10.0.1/24, port 51820 | `nuttx-spresense`: 10.11.0.1/24, port 51821 |
+| ボードの `wg0` | 10.10.0.2 | 10.11.0.2 |
+| 接続先 | `telnet 10.10.0.2` | `telnet 10.11.0.2` |
+
 ```
-> ping 10.10.0.2
-Reply from 10.10.0.2: bytes=32 time=142ms TTL=128
+> ping 10.11.0.2
+Reply from 10.11.0.2: bytes=32 time=142ms TTL=128
 Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
 ```
 
@@ -462,12 +474,12 @@ rcS は `gs2200m <ssid> <pass> &` → `sleep 10` → `wg setconf /mnt/spif/wg0.c
 
 ```
 nsh> wg set private-key <key>
-nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51821 allowed-ips 10.11.0.1/32 persistent-keepalive 25
 nsh> wg saveconf
 saved to /mnt/spif/wg0.conf
 ```
 
-以後は電源投入(またはシリアルの開閉によるリセット)のたびに約 15 秒で復旧する。起動ログ:
+以後は電源投入(またはシリアルの開閉によるリセット)のたびに約 15 秒で復旧する。**注意:** rcS が `denyinet on` を打った後に手で `wg down` → `wg up` すると、wg0 の UDP ソケットがカーネル側に作られて Wi-Fi に出られず、ハンドシェイクが二度と通らない。ピア設定を変えたら `wg saveconf` してリセットする(rcS が正しい順序で上げ直す)。起動ログ:
 
 ```
 gs2200m [5:50]
@@ -477,7 +489,7 @@ telnetd [10:100]
 NuttShell (NSH) NuttX-12.7.0
 ```
 
-シリアルを閉じた状態で Windows から `ping 10.10.0.2` → `telnet 10.10.0.2` → telnet セッション内で `webserver &` → ブラウザで `http://10.10.0.2/` まで確認済み(ESP32-S3 のデモ動画と同じ流れ)。
+シリアルを閉じた状態で Windows から `ping 10.11.0.2` → `telnet 10.11.0.2` → telnet セッション内で `webserver &` → ブラウザで `http://10.11.0.2/` まで確認済み(ESP32-S3 のデモ動画と同じ流れ)。
 
 ### デモ手順(手動)— 確認済み
 
@@ -486,7 +498,7 @@ rcS を使わない場合の手順。**シリアルは開きっぱなしにで�
 ```
 nsh> gs2200m <SSID> <passphrase> &                  # usrsock デーモン (& 必須)。DHCP まで数秒
 nsh> wg set private-key <key>
-nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51821 allowed-ips 10.11.0.1/32 persistent-keepalive 25
 nsh> wg up                                           # wg0 の UDP ソケットは GS2200M 経由で作られる
 nsh> denyinet on                                     # 以後の AF_INET socket() をカーネルスタックへ
 nsh> telnetd &                                       # カーネル側 TCP:23 で待ち受け (& 必須)
@@ -496,9 +508,9 @@ nsh> webserver &                                     # 同じく TCP:80
 Windows 側:
 
 ```
-> ping 10.10.0.2
-> telnet 10.10.0.2                                    # NSH プロンプトが返る。uname -a / free / ifconfig など
-> start http://10.10.0.2/                             # Spresense 向け文言のデモページ
+> ping 10.11.0.2
+> telnet 10.11.0.2                                    # NSH プロンプトが返る。uname -a / free / ifconfig など
+> start http://10.11.0.2/                             # Spresense 向け文言のデモページ
 ```
 
 ESP32-S3 の動画と同じく、telnet セッションの中から `webserver &` を打ってからブラウザを開いても良い(`denyinet on` は一度打てば以後有効)。

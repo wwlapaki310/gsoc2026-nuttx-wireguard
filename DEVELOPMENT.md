@@ -168,29 +168,29 @@ Sony Spresense メインボードに Wi-Fi Add-on ボード iS110B(GS2200M、v1.
 ```
 nsh> gs2200m <SSID> <passphrase> &        # usrsock デーモン。& が必須
 nsh> wg set private-key <key>
-nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51821 allowed-ips 10.11.0.1/32 persistent-keepalive 25
 nsh> wg up
 wg0 is up (listen port 51820)
 
 nsh> wg show
-peer: 5J5rgkz5RB0CB1hIZae5V3jQjisRjqOrry7Scca9YjE=
-  endpoint: 192.168.0.216:51820
+peer: <Windows nuttx-spresense の公開鍵>
+  endpoint: 192.168.0.216:51821
   latest handshake: 16 seconds ago
 
 nsh> ifconfig
 wlan0	inet addr:192.168.0.115 DRaddr:192.168.0.1 Mask:255.255.255.0   # GS2200M 内蔵 DHCP
 wg0	Link encap:TUN at RUNNING mtu 1420
-	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+	inet addr:10.11.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
 ```
 
 ```
-# Windows 側から
-> ping 10.10.0.2
-Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)   # RTT 141-143 ms
+# Windows 側から (ESP32-S3 用とは別トンネル nuttx-spresense、10.11.0.0/24 / port 51821)
+> ping 10.11.0.2
+Packets: Sent = 3, Received = 3, Lost = 0 (0% loss)   # RTT 11-13 ms
 ```
 
 ```
-# トンネル越し telnet (Windows から telnet 10.10.0.2)
+# トンネル越し telnet (Windows から telnet 10.11.0.2)
 NuttShell (NSH) NuttX-12.7.0
 nsh> uname -a
 NuttX  12.7.0 5d8cdeae-dirty Sep 16 2026 21:09:31 arm spresense

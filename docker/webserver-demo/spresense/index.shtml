@@ -4,7 +4,7 @@
   This page is being served by <b>Apache NuttX RTOS</b> running on a real
   <b>Sony Spresense</b> board (ARM Cortex-M4F, Wi-Fi via a GS2200M
   add-on), reached over a real <b>WireGuard</b> tunnel
-  (<code>wg0</code>, <code>10.10.0.2</code>) &mdash; not a simulator, not a
+  (<code>wg0</code>, <code>10.11.0.2</code>) &mdash; not a simulator, not a
   VM.
   </p>
   <p>
