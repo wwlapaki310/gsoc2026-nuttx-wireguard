@@ -8,6 +8,8 @@
 
 **Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping(4/4)を確認済み。** GS2200M は ESP32 の `wlan0` とは違う `usrsock` プロキシ方式のドライバで、この環境特有のバグ(`wg0` 向け ioctl が usrsock に横取りされる)を1つ修正した。当初「USB デバイスとして列挙されない」としていたのは CP210x ドライバ未インストールによる誤診断で、後日訂正した。
 
+Spresense は **NuttX 12.7.0 と NuttX master(bda22516、2026-09-17)の両方**で同じ手順(ヘッドレス起動 → ハンドシェイク → telnet → HTTP)を実機確認済み。WireGuard 側のソースは同一。master では NuttX 本体側に `CONFIG_RTC_HIRES` の起動回帰があり、`Dockerfile` がビルド時に修正を当てている([docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md))。
+
 ESP32-WROOM-32 のみ、GPIO0 を Low にする経路の故障によりダウンロードモードに入れず、書き込みに到達できていない(ビルド自体はコード変更なしで成功)。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
 Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0 では RP2350/Pico 2 系のボード定義が存在しないため、そのままではビルド対象にできない。Apache NuttX master では `raspberrypi-pico-2` ボードとして USB NSH の起動が確認でき、さらに本リポジトリの WireGuard 実装を移植して `wg` builtin と `wg0` TUN インターフェースの起動まで確認した。その後、公式 Raspberry Pi Pico 2 W 向け Wi-Fi bringup の [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) も試したが、CYW43439 の GSPI 初期化で ready レジスタが `0xffffffff` となり、Wi-Fi 接続前で止まっている。
@@ -391,7 +393,12 @@ Linux 側ピアの設定方法は [docs/phase3-log.md](phase3-log.md) の sim/QE
 ```bash
 docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 docker create --name x nuttx-wireguard:spresense-wifi && docker cp x:/opt/nuttx/nuttx.spk . && docker rm x
+
+# NuttX master で作る場合(2026-09-17 時点 bda22516 で実機確認済み)
+docker build --build-arg NUTTX_REF=master --target spresense-wifi -t nuttx-wireguard:spresense-wifi-master .
 ```
+
+ヘッドレス起動用の Wi-Fi 資格情報は `--build-arg WIFI_SSID=... --build-arg WIFI_PASS=...` で渡す(リポジトリには入れない)。master 版は約 480 KB とやや大きく、`flash_writer` の XMODEM が 921600 bps で `Not ACK, Not NAK` になることがあるので `-b 115200` で書く。
 
 `spresense:wifi` をベースに WireGuard 用 Kconfig を足したもの。ベース config からの変更点は `Dockerfile` の同ステージのコメントに理由込みで書いてあるが、要点は:
 

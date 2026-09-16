@@ -377,6 +377,28 @@ ESP32-S3 のデモ動画(telnet → コマンド → `webserver &` → ブラウ
 
 **upstream に報告すべきもの(GS2200M 側):** (a) `gs2200m_ioctl_ifreq()` が `ifr_name` を見ない、(b) デーモンが `SIOCDENYINETSOCK` をドライバに転送する。ドラフトは [docs/upstream/gs2200m-usrsock-issue-draft.md](../upstream/gs2200m-usrsock-issue-draft.md)。
 
+### 追記 (2026-09-17): NuttX master でも Spresense 実機を通す — RTC_HIRES 起動回帰の特定と修正
+
+upstream に出すには master で動くことが要る。`--build-arg NUTTX_REF=master`(bda22516, 2026-09-17)で `spresense-wifi` を作り直したところ、**ビルドは通るがコンソールに何も出ず NSH に到達しない**。ASSERT も無し、CPU はアイドル。`spresense:nsh` は起動する。
+
+**切り分け:** Kconfig を一つずつ外す bisect(GS2200M、ストレージ、LCD、オーディオ、USB、拡張ボード、ELF、スタックサイズ、`STANDARD_SERIAL` — どれも無関係)の末、`CONFIG_RTC_HIRES` で ON/OFF が切り替わった。`cxd56_bringup.c` に `_err()` のトレースマーカーを入れると、`board_power_setup()` の中の `board_clock_initialize()` の直後で止まっている。
+
+**原因(循環):**
+
+1. master の `sched_processtick.c` は watchdog を `wd_timer(clock_systime_ticks())` で回す(12.7.0 はスケジューラ自身の tick カウンタ)。`CONFIG_RTC_HIRES=y` ではこの値が `clock_systime_timespec()` = RTC 由来
+2. `clock_systime_timespec()` は `g_rtc_enabled` が立つまで `{0, 0}` を返す → 毎 tick `wd_timer(0)`、watchdog が一つも満了しない
+3. cxd56 は `CONFIG_CXD56_RTC_LATEINIT` で外部 RTC の同期待ちを **watchdog の再試行(200 ms × 15)**でやり、そのコールバックで `g_rtc_enabled` を立てる
+
+RTC を有効化する watchdog は RTC が有効になるまで満了しない。おまけに `board_power_control()` が `nxsched_usleep(1)` で絶対 tick 待ちに入るので、起動スレッドはそこで永久に寝る(マーカーが指した場所)。
+
+最初は「`up_rtc_settime()` が `g_rtc_lock` を取ったまま `cxd56_rtc_count()`(同じロック)を呼ぶ再帰スピンロック」を疑ったが、`CONFIG_SPINLOCK` 無しでは `irqsave` の入れ子に落ちるだけで実害なし。SMP/SPINLOCK 構成では本物の問題なので `_nolock` 版を使う一行修正は Dockerfile に残してある。
+
+**修正:** `clock_systime_timespec.c` の RTC 未有効時の分岐で `{0, 0}` の代わりに `clock_ticks2time(ts, clock_get_sched_ticks())` を返す。`cxd56_rtc_initialize()` は元々「RTC 有効化前の経過時間が `clock_systime_timespec()` で得られる」前提で offset を組んでいるので、契約の変更ではなく本来の期待値。Dockerfile の base ステージで、パターンがある時だけ当てる(12.7.0 は無反応)。
+
+**結果(実機):** master で NSH 起動、rcS チェーン(`gs2200m` → `wg setconf` → `denyinet on` → `telnetd`)完走、Windows クライアントとのハンドシェイク約 10 s、トンネル越し telnet と HTTP 200 を確認。sim の回帰スクリプトも master で通る。**WireGuard 側のソースは 12.7.0 と master で一切変えていない。**
+
+upstream 向けのドラフトは [docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md)。ESP32-S3 の master ビルドは、ビルド途中でホストのディスクが一杯になり Docker Desktop の VM ごと落ちたため未完(次回)。
+
 ---
 
 ## トンネル越し telnet で見つかった TCP 特有バグの調査・修正

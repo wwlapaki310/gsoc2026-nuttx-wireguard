@@ -42,6 +42,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [upstream-strategy.md](upstream/upstream-strategy.md) | 提出計画・PR の分割方針・論点 |
 | [dev-list-proposal.md](upstream/dev-list-proposal.md) | `dev@nuttx.apache.org` への投稿ドラフト |
 | [license-appendix-draft.md](upstream/license-appendix-draft.md) | `LICENSE` に追記する著作権表示の案 |
+| [gs2200m-usrsock-issue-draft.md](upstream/gs2200m-usrsock-issue-draft.md) | `apache/nuttx` への報告ドラフト: GS2200M usrsock の ioctl 2 件(未提出) |
+| [rtc-hires-wdog-regression-draft.md](upstream/rtc-hires-wdog-regression-draft.md) | `apache/nuttx` への報告ドラフト: master の `CONFIG_RTC_HIRES` 起動回帰(cxd56、未提出) |
 
 いきなり PR を投げず、先に `dev@` で設計の合意を取る方針。
 
@@ -51,10 +53,11 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 |---|---|
 | [slides.html](presentation/slides.html) | 発表スライド 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧 |
 | [talk-script.md](presentation/talk-script.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
-| [short-slides.html](presentation/short-slides.html) | 5 分紹介デッキ 6 枚。`←→` 送り、`N` で発表者ノート |
+| [short-slides.html](presentation/short-slides.html) | 紹介デッキ 9 枚。Returns 版に Spresense 実機確認と NuttX バージョン（12.7.0 / master）のスライドを足したもの。`←→` 送り、`N` で発表者ノート |
 | [short-summary.md](presentation/short-summary.md) | その原稿（構成・時間配分・話で補う内容） |
 | [presentation-script.md](presentation/presentation-script.md) | 進行表と想定 Q&A |
-| [returns-slides.html](presentation/returns-slides.html) | Sechack365 Returns 向け 5 枚。`←→` 送り、`N` で発表者ノート |
+| [returns-slides.html](presentation/returns-slides.html) | Sechack365 Returns 向け 8 枚（公開済み・凍結）。`←→` 送り、`N` で発表者ノート |
+| [returns-slides.pdf](presentation/returns-slides.pdf) | その PDF 版（`render-slides.py` の 2 倍解像度 PNG から生成） |
 | [returns-outline.md](presentation/returns-outline.md) | その構成（スライドごとの中身と出典、文面の方針） |
 
 ### スライドを画像にする

@@ -51,6 +51,63 @@ RUN git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx.
 # 由来と各ファイルのライセンスは docs/license-appendix-draft.md を参照。
 COPY nuttx_port/apps/netutils/wireguard/ /opt/apps/netutils/wireguard/
 
+# NuttX master (bda22516 時点) で spresense:wifi が NSH まで到達しない回帰の
+# 修正 (12.7.0 にはパターンが無いので何もしない)。
+#
+# sched/sched/sched_processtick.c が watchdog を wd_timer(clock_systime_ticks())
+# で回すようになり、CONFIG_RTC_HIRES=y ではその値が RTC 由来になった。
+# cxd56 は CONFIG_CXD56_RTC_LATEINIT で RTC を watchdog 再試行 (200 ms x 15)
+# 越しに有効化するが、有効化前は clock_systime_timespec() が {0, 0} を返す
+# ため watchdog が一つも満了せず、RTC を有効化する再試行タイマ自身も
+# 満了しない (循環)。同時に board_power_control() の nxsched_usleep(1) も
+# 絶対 tick 待ちなので永遠に寝る。RTC 未有効の間はスケジューラの tick
+# カウンタから時刻を返すようにする。cxd56_rtc_initialize() はもともと
+# 「RTC 有効化前の稼働時間が clock_systime_timespec() で得られる」前提で
+# offset を組み立てているので、この振る舞いが本来の期待値。
+# 経緯は docs/development/phase4-log.md、upstream 向けは
+# docs/upstream/rtc-hires-wdog-regression-draft.md。
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/sched/clock/clock_systime_timespec.c"
+src = open(path).read()
+old = ("  else\n"
+       "    {\n"
+       "      ts->tv_sec = 0;\n"
+       "      ts->tv_nsec = 0;\n"
+       "    }\n"
+       "#elif defined(CONFIG_ALARM_ARCH) || \\\n")
+new = ("  else\n"
+       "    {\n"
+       "      /* RTC not yet enabled: fall back to the scheduler tick counter so\n"
+       "       * that watchdogs (driven by clock_systime_ticks()) keep expiring\n"
+       "       * and RTC late-initialisation can complete.\n"
+       "       */\n"
+       "\n"
+       "      clock_ticks2time(ts, clock_get_sched_ticks());\n"
+       "    }\n"
+       "#elif defined(CONFIG_ALARM_ARCH) || \\\n")
+if old in src:
+    open(path, "w").write(src.replace(old, new, 1))
+    print("clock_systime_timespec.c: patched RTC_HIRES fallback before RTC enable")
+else:
+    print("clock_systime_timespec.c: pattern not present, nothing to patch")
+PYEOF
+
+# 同じく master の cxd56_rtc.c: up_rtc_settime() が g_rtc_lock を取ったまま
+# cxd56_rtc_count() (同じロックを取る) を呼ぶ。CONFIG_SPINLOCK 無しの
+# 単コアではロックが irqsave に落ちるので実害は無いが、SMP/SPINLOCK 構成
+# では再帰スピンロックになる。同じコミットで追加された _nolock 版を使う。
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/arch/arm/src/cxd56xx/cxd56_rtc.c"
+src = open(path).read()
+old = "  g_rtc_save->offset = count - cxd56_rtc_count();\n"
+new = "  g_rtc_save->offset = count - cxd56_rtc_count_nolock();\n"
+if "g_rtc_lock" in src and "cxd56_rtc_count_nolock" in src and old in src:
+    open(path, "w").write(src.replace(old, new, 1))
+    print("cxd56_rtc.c: patched up_rtc_settime() recursive g_rtc_lock")
+else:
+    print("cxd56_rtc.c: pattern not present, nothing to patch")
+PYEOF
+
 # netutils/Kconfig を mkkconfig.sh で再生成 (wireguard を menu に追加)
 RUN cd /opt/apps/netutils && \
     bash /opt/apps/tools/mkkconfig.sh -m "Network Utilities" -o Kconfig

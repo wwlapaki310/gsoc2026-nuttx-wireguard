@@ -62,7 +62,9 @@ VPN がない場合の現実的な選択肢は、グローバル IP を晒すか
 通信相手は常に本物の WireGuard 実装（Linux カーネルモジュールと Windows 公式クライアント）。
 自作同士で通信しても相互運用性の証明にならないため。
 
-NuttX 12.7.0 と `master` の両方で、コード変更なしにビルドが通る。
+NuttX 12.7.0 と `master` の両方で、コード変更なしにビルドが通る。Spresense の上記デモは両方で実機確認済み
+（master は bda22516、2026-09-17）。master では cxd56 の `CONFIG_RTC_HIRES` 起動回帰に対する NuttX 側の修正を
+Dockerfile がビルド時に当てている（[報告ドラフト](docs/upstream/rtc-hires-wdog-regression-draft.md)）。WireGuard 側のコードは同一。
 
 ---
 
@@ -158,7 +160,7 @@ docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
 `--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる（既定は `nuttx-12.7.0`。
-`master` でもビルドが通ることを確認済み）。
+`master` はビルドに加えて Spresense 実機でも確認済み）。
 
 詳細は [docs/development/dev-environment.md](docs/development/dev-environment.md) と [DEVELOPMENT.md](DEVELOPMENT.md)。
 
