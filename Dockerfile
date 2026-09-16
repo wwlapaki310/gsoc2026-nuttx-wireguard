@@ -341,3 +341,166 @@ RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
 RUN ls -lh /opt/nuttx/nuttx.spk
 
 WORKDIR /workspace
+
+# =============================================================================
+# spresense-wifi ステージ: spresense:wifi (実機ビルド用、Spresense + Wi-Fi
+# Add-on ボード iS110B/GS2200M)。ARM Cortex-M4F。
+#
+# GS2200M は ESP32/ESP32-S3 の wlan0 (実 netdev) とは方式が異なり、
+# NET_USRSOCK 経由の usrsock デーモンとしてソケット API をプロキシする。
+# "gs2200m <ssid> <passphrase> &" でデーモンを起動する (& 必須: この
+# コマンド自体がデーモン本体で、フォアグラウンドだと NSH が戻ってこない)。
+# socket()/sendto() など BSD API は透過的に GS2200M 経由になる。
+#
+# ただし netdev 向け ioctl (SIOCSIFADDR/SIOCSIFFLAGS) も usrsock が先に
+# 拾い、GS2200M ドライバは ifr_name を見ずに自分宛てとして処理するため、
+# wg0 の netlib_ifup() が届かなかった。nuttx-wireguardif.c 側で netdev を
+# 直接設定する形に直してある (wg_configure_address() のコメント参照)。
+# 実機検証 2026-09-16: Windows 公式クライアントとの handshake、
+# トンネル越し ping 4/4 (RTT ~142 ms) を確認。
+# =============================================================================
+FROM base AS spresense-wifi
+
+# Backport upstream fix (apache/nuttx PR #2707, merged 2021-01-18) that our
+# pinned nuttx-12.7.0 checkout is missing: _read_data_len() in gs2200m.c
+# issues the SPI read-header request and busy-waits up_udelay(50) *after*
+# the dready() poll loop; upstream moved a shorter (30us) delay to *before*
+# the loop so the module has time to react before the host starts polling.
+# Upstream added it after seeing this ASSERT fire under stress testing.
+# It was not the cause of the boot-time crash seen here (that was a bent
+# connector pin, see below) but the pre-fix ordering is still what our
+# checkout has, so the backport stays.
+RUN python3 - <<'PYEOF'
+import re
+path = "/opt/nuttx/drivers/wireless/gs2200m.c"
+src = open(path).read()
+old = (
+    "  _write_data(dev, hdr, sizeof(hdr));\n"
+    "\n"
+    "  /* Wait for data ready */\n"
+    "\n"
+    "  while (!dev->lower->dready(NULL))\n"
+    "    {\n"
+    "      /* TODO: timeout */\n"
+    "    }\n"
+    "\n"
+    "  /* NOTE: busy wait 50us\n"
+    "   * workaround to avoid an invalid frame response\n"
+    "   */\n"
+    "\n"
+    "  up_udelay(50);\n"
+    "\n"
+    "  /* Read frame response */\n"
+)
+new = (
+    "  _write_data(dev, hdr, sizeof(hdr));\n"
+    "\n"
+    "  /* NOTE: busy wait 30us\n"
+    "   * workaround to avoid an invalid frame response\n"
+    "   */\n"
+    "\n"
+    "  up_udelay(30);\n"
+    "\n"
+    "  /* Wait for data ready */\n"
+    "\n"
+    "  while (!dev->lower->dready(NULL))\n"
+    "    {\n"
+    "      /* TODO: timeout */\n"
+    "    }\n"
+    "\n"
+    "  /* Read frame response */\n"
+)
+assert old in src, "upstream PR #2707 pre-fix pattern not found in gs2200m.c - already patched or source changed"
+open(path, "w").write(src.replace(old, new, 1))
+PYEOF
+
+# Print the raw GS2200M SPI response bytes when this ASSERT is about to
+# fire, instead of dying with a stack dump and no context (this defconfig
+# sets NDEBUG, so ASSERT() carries no file/line). Hardware testing
+# (2026-09-16) traced a persistent boot-time crash here to a bent pin on
+# the iS110B Wi-Fi Add-on board's board-to-board connector: with the
+# connector not fully seated every read comes back as 8 bytes of 0xFF (an
+# idle/floating SPI line) and GPIO37 (dready) reads stuck high - confirmed
+# independent of this driver by reproducing the identical symptom with
+# Sony's own Arduino GS2200-WiFi library. Left in, guarded so it is silent
+# in normal operation, so a reseated board can be re-tested without
+# rebuilding: anything other than "ff ff ff ..." means the connector is
+# seated and the module is answering.
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/drivers/wireless/gs2200m.c"
+src = open(path).read()
+old = "  ASSERT(RD_RESP_OK == res[1]);"
+new = ("  if (RD_RESP_OK != res[1])\n"
+       "    {\n"
+       "      wlerr(\"gs2200m bad res: %02x %02x %02x %02x %02x %02x %02x %02x\"\n"
+       "            \" (n=%d)\\n\", res[0], res[1], res[2], res[3], res[4],\n"
+       "            res[5], res[6], res[7], n);\n"
+       "    }\n"
+       "\n"
+       "  ASSERT(RD_RESP_OK == res[1]);")
+assert old in src, "_read_data_len ASSERT pattern not found - already patched or source changed"
+src = src.replace(old, new, 1)
+open(path, "w").write(src)
+PYEOF
+
+WORKDIR /opt/nuttx
+RUN ./tools/configure.sh spresense:wifi && \
+    kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
+    kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
+    kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
+    kconfig-tweak --enable CONFIG_NET_TUN         && \
+    kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1420 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
+    kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
+    kconfig-tweak --enable CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C && \
+    kconfig-tweak --enable CONFIG_DEBUG_FEATURES && \
+    kconfig-tweak --enable CONFIG_DEBUG_WIRELESS && \
+    kconfig-tweak --enable CONFIG_DEBUG_WIRELESS_ERROR && \
+    kconfig-tweak --disable CONFIG_WL_GS2200M_DISABLE_DHCPC && \
+    make olddefconfig 2>&1 | tail -5
+
+# NOTE: spresense:wifi はデフォルトで CONFIG_NETUTILS_IFCONFIG と
+# CONFIG_NET_SOCKOPTS が無効。CONFIG_NET_TUN_PKTSIZE は ESP32-S3 実機検証
+# (docs/phase4-log.md) で確認済みの 1420 に合わせている (WireGuard 暗号化後
+# 1452 byte になっても 1500 byte フレームに収まる値)。
+#
+# NOTE: Wi-Fi 認証情報 (SSID/passphrase) は Kconfig ではなく "gs2200m <ssid>
+# <passphrase>" の実行時引数で渡す方式のため、esp32/esp32s3 ステージと違って
+# ビルドに焼き込む値自体が存在しない。WireGuard 秘密鍵も同様にビルド後
+# "wg genkey" / "wg set private-key" で実行時に投入する想定 (空がセキュアな
+# デフォルト)。
+#
+# NOTE: 無印 spresense ステージと同じ理由で CONFIG_DEV_URANDOM は
+# ARCH_HAVE_RNG を持たないボードでは software PRNG (xorshift128) にフォール
+# バックする。実機検証で「起動直後の wg genkey が再起動をまたいで同じ鍵を
+# 返す」ことを確認済み (未調査の既知問題)。実 Wi-Fi 経由で鍵を使う前に
+# シードの与え方を確認すること。
+#
+# NOTE: CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C は Wi-Fi Add-on ボード
+# (iS110B) の GS2200M reset/IRQ ピン配置がハードウェアバージョンごとに違う
+# ことに対応するための選択 (boards/arm/cxd56xx/common/src/cxd56_gs2200m.c)。
+# 手元のボード (黄色ドット = v1.0C) に合わせている。別個体を使う場合は
+# シルク印字のドット色 (無印=A/赤=B/黄=C, idy-design.com/product/is110b.html
+# 参照) に合わせて選び直すこと。
+#
+# NOTE: CONFIG_DEBUG_WIRELESS_ERROR を有効にしているのは、上の res[] ダンプ
+# (wlerr) を実際に serial に出すため。wlerr は CONFIG_DEBUG_WIRELESS_ERROR
+# が無いと no-op に展開され、黙って握りつぶされる。WARN/INFO まで有効に
+# すると AT コマンド 1 本ごとに数十行出て console が埋まるので付けない。
+#
+# NOTE: spresense:wifi の既定は CONFIG_WL_GS2200M_DISABLE_DHCPC=y で、
+# drivers/wireless/gs2200m.c の gs2200m_ioctl_assoc_sta() が "10.0.0.2" /
+# "255.255.255.0" / "10.0.0.1" を固定文字列としてハードコードして
+# AT+NSET に投入する (Kconfig 経由ではない)。実ネットワーク (192.168.0.0/24)
+# と食い違い、Wi-Fi 関連付け自体は成功するのに実際には疎通しない状態に
+# なっていた。CONFIG_WL_GS2200M_DISABLE_DHCPC を無効化し、内蔵 DHCP
+# クライアントを使う (デフォルトの n に戻すだけ) ことで、ネットワークが
+# 変わってもリビルド不要になる。
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
+RUN ls -lh /opt/nuttx/nuttx.spk
+
+WORKDIR /workspace

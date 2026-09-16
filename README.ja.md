@@ -57,7 +57,7 @@ VPN がない場合の現実的な選択肢は、グローバル IP を晒すか
 | sim | x86_64 / Linux | Linux カーネル WireGuard | ハンドシェイク・疎通・ランタイム設定・**2 ピア同時セッション**（スクリプト化済み） |
 | QEMU | ARM Cortex-A7 | Linux カーネル WireGuard | NuttX 自身のスケジューラ上での疎通 |
 | **ESP32-S3** | Xtensa LX7 | **Windows 公式クライアント** | **実 Wi-Fi 越し**の telnet・HTTP・7 MB 転送・rekey・電源断からの復帰 |
-| Spresense | ARM Cortex-M4F | — | `wg0` の起動（**コード変更ゼロ**） |
+| **Spresense** + iS110B Wi-Fi Add-on | ARM Cortex-M4F | **Windows 公式クライアント** | **実 Wi-Fi 越し**（`usrsock` 方式の GS2200M ドライバ経由）のハンドシェイク・トンネル越し ping 4/4 |
 
 通信相手は常に本物の WireGuard 実装（Linux カーネルモジュールと Windows 公式クライアント）。
 自作同士で通信しても相互運用性の証明にならないため。

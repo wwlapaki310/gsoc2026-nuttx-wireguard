@@ -4,7 +4,7 @@
 
 実際に手元にある実機(ESP32-WROOM-32、ESP32-S3、Sony Spresense メインボード)で `CONFIG_NET_WIREGUARD=y` のビルドを通し、書き込み・起動・実ネットワーク越しの WireGuard 通信まで確認する。
 
-**結論を先に:** **ESP32-S3 で完全成功。** 実機を Wi-Fi 経由で実際のアクセスポイントに接続し、Windows 上の公式 WireGuard クライアントと実際にハンドシェイクを成立させ、トンネル越しの ping(0% packet loss)まで確認できた。さらに telnetd をトンネル越しに使おうとした際に見つかった「TCP のアプリケーションデータだけがトンネルを通らない」バグ(原因: LPWORK ワーカースレッドから `sendto()` する際にファイルディスクリプタがそのスレッドのタスクグループに属さず `EBADF` になっていた)を特定・修正し、トンネル越し telnet セッションでのコマンド実行まで実機で確認した(詳細は後述の節)。**Spresense (ARM Cortex-M4F) でも実機起動・`wg0` 起動を確認した** — 当初「ハードウェア故障の疑い」としていたが、実際には CP210x ドライバ未インストールが原因の誤診断で、後日訂正した(詳細後述)。ESP32-WROOM-32 のみ、GPIO0 経路の故障により書き込みに到達できていない。
+**結論を先に:** **ESP32-S3 で完全成功。** 実機を Wi-Fi 経由で実際のアクセスポイントに接続し、Windows 上の公式 WireGuard クライアントと実際にハンドシェイクを成立させ、トンネル越しの ping(0% packet loss)まで確認できた。さらに telnetd をトンネル越しに使おうとした際に見つかった「TCP のアプリケーションデータだけがトンネルを通らない」バグ(原因: LPWORK ワーカースレッドから `sendto()` する際にファイルディスクリプタがそのスレッドのタスクグループに属さず `EBADF` になっていた)を特定・修正し、トンネル越し telnet セッションでのコマンド実行まで実機で確認した(詳細は後述の節)。**Spresense (ARM Cortex-M4F) は、iS110B Wi-Fi Add-on を載せて実 Wi-Fi 経由のハンドシェイク・トンネル越し ping まで確認した**(2026-09-16)。その過程で usrsock 環境で `wg0` の ioctl が横取りされてハンドシェイクが始まらないバグを見つけて修正した(詳細後述)。当初「ハードウェア故障の疑い」としていたのは CP210x ドライバ未インストールが原因の誤診断で、後日訂正した。ESP32-WROOM-32 のみ、GPIO0 経路の故障により書き込みに到達できていない。
 
 ---
 
@@ -267,9 +267,89 @@ wg0 is down
 - **実行時設定の価値が実証された。** Spresense ステージは Kconfig に秘密鍵を設定していないため、従来なら鍵を埋めて再ビルド・再書き込みが必要だった。実行時設定により**リビルドなしで鍵を投入して `wg0` を起動**できた
 - `wg down` 後に `ifconfig` から `wg0` が消え、`ps` にも `wg_rx` が残らないことを確認 — teardown が別アーキテクチャでも正しい
 
-**未確認:** Spresense メインボードには Wi-Fi が内蔵されていないため、実ピアとのハンドシェイク・トンネル疎通は依然として検証できない(別売りの GS2200M 拡張モジュールが必要)。ここで確認できたのは「wg0 が上がる」ところまで。
+~~**未確認:** Spresense メインボードには Wi-Fi が内蔵されていないため、実ピアとのハンドシェイク・トンネル疎通は依然として検証できない(別売りの GS2200M 拡張モジュールが必要)。~~ → 下の 2026-09-16 の節で解決。
 
 なお起動時に `cxd56_farapiinitialize: Mismatched version: loader(20585) != Self(20591)` の警告が出るが、NSH の動作および `wg` の動作には影響していない。Sony 提供のローダ/GNSS ファームを更新すれば消えるはず。
+
+### 追記 (2026-09-16): iS110B Wi-Fi Add-on で実 Wi-Fi 疎通 — usrsock 環境のバグを発見・修正
+
+Wi-Fi Add-on ボード iS110B(GS2200M、v1.0C)が届いたので、ESP32-S3 と同じ AP・同じ Windows 公式クライアントを相手に疎通を試みた。**結果: ハンドシェイク成立、トンネル越し ping 4/4(RTT 141〜143 ms)。** 手順は [hardware-verification.md](hardware-verification.md) の Spresense 節にまとめた。ここには、たどり着くまでに踏んだ問題を時系列で残す。
+
+**ステージ追加:** `Dockerfile` に `spresense-wifi` ステージを追加(`spresense:wifi` ベース)。GS2200M は ESP32 の `wlan0` と違い、`CONFIG_NET_USRSOCK` 経由でソケット API をユーザ空間デーモン(`gs2200m` builtin)にプロキシする方式。`net/usrsock` は netdev を登録しないので、`ifconfig` に出る `wlan0` はドライバが自前で見せているもの。
+
+**1. 起動直後の ASSERT、応答が全バイト 0xFF(半日かかった)**
+
+`CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C` を足しても、SPI クロックを 10→4 MHz に落としても、upstream の PR #2707(`_read_data_len()` の遅延位置の修正、12.7.0 に未反映)を当てても、**スタックダンプが1バイトも変わらない**。`CONFIG_NDEBUG=y` のため `ASSERT()` に file/line が付かず、生スタックダンプを `addr2line` にかけて追った関数は残骸で(call trace ではない)、誤った方向に時間を使った。ドライバに `wlerr()` を挿して bisect しようとしたら今度は何も出ない — `wlerr` は `CONFIG_DEBUG_WIRELESS_ERROR` 無しでは no-op に展開される。有効にしてようやく見えたのが:
+
+```
+_read_data_len: gs2200m res: ff ff ff ff ff ff ff ff (n=0)
+```
+
+MISO が浮いている signature。Sony 系の Arduino ライブラリ(jittermaster/GS2200-WiFi の TypeC 対応版、`Init_GS2200_SPI_type(iS110B_TypeC)`)を `arduino-cli` で焼いても `GPIO37=1` / `res: ff ff ...` で完全に同じ → ソフトウェアではないと確定。iS110B のコネクタピンに曲がりがあり、直して挿し直したら:
+
+```
+_read_data_len: gs2200m res: a5 12 00 00 00 13 00 da (n=0)   ← 0x12 = RD_RESP_OK
+_parse_pkt_in_s1: +++++ (msize=16, msg=Serial2WiFi APP|)
+NuttShell (NSH) NuttX-12.7.0
+```
+
+教訓: `res` の生バイトを最初に見ていれば1時間で終わっていた。デバッグ print を挿す前に、そのマクロが有効かを `.config` で確認すること。
+
+**2. 関連付けは成功するのに疎通しない**
+
+`AT+WA` は通って `10.0.0.2:255.255.255.0:10.0.0.1` と出るが、実ネットワークは `192.168.0.0/24`。`CONFIG_NETINIT_IPADDR` を変えても効かない — `gs2200m_ioctl_assoc_sta()` が `CONFIG_WL_GS2200M_DISABLE_DHCPC` 有効時に `"10.0.0.2"` を**固定文字列で** `AT+NSET` に投入している。`spresense:wifi` の既定がこれを有効にしているので、無効化して内蔵 DHCP を使う(`AT+NDHCP=1` → `192.168.0.115` 取得)。
+
+**3. `gs2200m` を実行すると NSH が戻ってこない**
+
+`gs2200m_main()` は `gs2200m_loop()` で usrsock デーモンとして回り続ける設計。`gs2200m <ssid> <pass> &` で起動する。
+
+**4. pyserial の接続オープンでボードがリセットされる**
+
+CP210x の DTR 自動リセット。検証スクリプトで接続を開き直すたびに Wi-Fi 接続も `wg` の staged config も消えていて、「`wg set private-key` したのに `no private key configured`」「さっき `wg up` したのに `wg0 is not up`」と見えた。一連の操作は1接続内で行う。
+
+**5. `wg up` は成功、`wg show` は `transfer: 0 B sent` のまま(本命)**
+
+`persistent-keepalive 5` にして 30 秒待っても 1 バイトも出ない。`wg_run_timers()` を読むと、ハンドシェイク開始は `peer->active` が前提で、これは `wg_ifup()`(`d_ifup` callback)でしか立たない。`wg_ifup()` は `wg_configure_address()` の `netlib_ifup("wg0")` → `SIOCSIFFLAGS` ioctl → `netdev_ifr_ioctl()` → `netdev_ifup()` 経由で呼ばれるはずだった。
+
+`wg up` 時のログにその答えがあった:
+
+```
+gs2200m_ioctl_ifreq: +++ start: cmd=702       ← SIOCSIFADDR
+gs2200m_send_cmd: +++ cmd=AT+NSET=10.10.0.2,255.255.255.0,192.168.0.1
+gs2200m_ioctl_ifreq: +++ start: cmd=71a       ← SIOCSIFFLAGS
+gs2200m_ioctl_ifreq: +++ end:
+```
+
+`wg0` 宛ての ioctl を **GS2200M ドライバが処理している**。`netlib_*()` は使い捨ての `AF_INET` ソケットに ioctl を投げる実装で、`CONFIG_NET_USRSOCK` 環境ではそのソケットが usrsock のもの。`net/netdev/netdev_ioctl.c` の `netdev_ioctl()` は
+
+```c
+if (psock->s_sockif && psock->s_sockif->si_ioctl)
+    ret = psock->s_sockif->si_ioctl(psock, cmd, arg);   /* usrsock → デーモン */
+if (ret != OK && ret != -ENOTTY)
+    return ret;
+```
+
+と usrsock を先に呼び、`OK` か `-ENOTTY` 以外ならそこで打ち切る。`"wg0"` を名前で探す `netdev_ifr_ioctl()` は後段なので届かない。`drivers/wireless/gs2200m.c` の `gs2200m_ioctl_ifreq()` は `ifr_name` を一切見ず:
+
+- `SIOCSIFADDR` / `SIOCSIFNETMASK` → 自分の `d_ipaddr` を上書きして `AT+NSET` → **Wi-Fi 側の IP が `10.10.0.2` に化ける**
+- `SIOCSIFFLAGS` → `switch` に無く `default: -EINVAL` → `netlib_ifup()` は失敗(戻り値は見ていなかった)→ `wg_ifup()` は永遠に呼ばれない
+
+修正は `nuttx-wireguardif.c` の `wg_configure_address()` / `wg_down()`。自前の `struct net_driver_s` なのだから ioctl を経由する必要はなく、`net_lock()` 下で `d_ipaddr` / `d_netmask` を直接書いて `netdev_ifup()` / `netdev_ifdown()` を呼ぶ。これは `netdev_ifr_ioctl()` が内部でやっていることそのものなので、ESP32-S3 のような通常 netdev 環境でも動作は変わらない。`netutils/netlib.h` への依存も無くなった。修正後:
+
+```
+wlan0	inet addr:192.168.0.115 ...        ← 書き換えられなくなった
+wg0	Link encap:TUN at RUNNING mtu 1420  ← carrier on
+  latest handshake: 16 seconds ago
+```
+
+```
+> ping 10.10.0.2
+Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+```
+
+このバグは「usrsock 方式の Wi-Fi ドライバ + 別の netdev を自前登録するアプリ」という組み合わせで初めて顕在化する。GS2200M ドライバ側が `ifr_name` を見て自分宛てでなければ `-ENOTTY` を返すのが筋で、upstream に報告する価値がある。
+
+**副産物:** 起動直後の最初の `wg genkey` が、再起動をまたいで毎回 `KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=` を返す(同一セッション内の 2 回目以降は変わる)。`CONFIG_DEV_URANDOM` = xorshift128 のシードが固定と思われる。今回はテスト用途なので放置したが、デバイス上で本番鍵を作るなら要対処。ESP32-S3 は `DEV_URANDOM_ARCH`(HW RNG)なので該当しない。
 
 ---
 
@@ -477,6 +557,7 @@ dump_task:  10  10  0 100 RR Task - Waiting Semaphore ... 4056  3392  83.6%!   w
 ### 未解決
 
 - ESP32-WROOM-32: 実機のブートモード切り替え(ハードウェア側の問題の疑い、上記の通り ESP32-S3 では再現しなかった)
-- ~~Spresense: USB 列挙が発生しない~~ → **解決。** CP210x ドライバ未インストールによる誤診断だった。実機で NuttX 起動・`wg0` 起動・`wg` の各サブコマンド動作を確認済み。ただし Wi-Fi 非搭載のため実ピアとのハンドシェイクは未確認(GS2200M 拡張モジュールが必要)
+- ~~Spresense: USB 列挙が発生しない~~ → **解決。** CP210x ドライバ未インストールによる誤診断だった
+- ~~Spresense: 実ピアとのハンドシェイク未確認~~ → **解決(2026-09-16)。** iS110B Wi-Fi Add-on 経由で handshake・ping 4/4。残りは Spresense でのトンネル越し TCP、`wg genkey` の決定論的シード、GS2200M ドライバの `ifr_name` 無視の upstream 報告
 - 両方とも、次回は「別の PC で試す」「別のケーブル・電源で試す」など、より切り分けの効く環境で再挑戦する必要がある
 - ESP32-S3 側で長時間 keepalive・再接続・複数 peer など異常系の検証はまだ(sim/QEMU と同様、短時間の handshake + ping のみ確認済み)

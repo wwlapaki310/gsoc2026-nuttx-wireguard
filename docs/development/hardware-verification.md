@@ -6,7 +6,7 @@
 
 さらに、telnetd をトンネル越しに使う実用デモの過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドから `sendto()` する際に fd が `EBADF` になっていた)を発見・修正し、トンネル越し telnet セッションでのコマンド実行(`uname -a`・`uptime`・`free` など)、および `webserver &` で起動した uIP webserver へのトンネル越しブラウザアクセスまで実機で確認済み。詳細・デモ動画は [docs/phase4-log.md](phase4-log.md) と [docs/phase4-summary.md](phase4-summary.md) を参照。
 
-**Sony Spresense (ARM Cortex-M4F) 実機でも `wg0` の起動を確認済み。** `wg genkey` / `wg set private-key` / `wg up` / `wg down` が動作し、Xtensa 以外のアーキテクチャでも成立することを実証した(メインボードに Wi-Fi が無いため、実ピアとのハンドシェイクは未検証)。当初「USB デバイスとして列挙されない」としていたのは CP210x ドライバ未インストールによる誤診断で、後日訂正した。
+**Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping(4/4)を確認済み。** GS2200M は ESP32 の `wlan0` とは違う `usrsock` プロキシ方式のドライバで、この環境特有のバグ(`wg0` 向け ioctl が usrsock に横取りされる)を1つ修正した。当初「USB デバイスとして列挙されない」としていたのは CP210x ドライバ未インストールによる誤診断で、後日訂正した。
 
 ESP32-WROOM-32 のみ、GPIO0 を Low にする経路の故障によりダウンロードモードに入れず、書き込みに到達できていない(ビルド自体はコード変更なしで成功)。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
@@ -18,7 +18,7 @@ Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0
 
 - **Raspberry Pi Pico / Pico 2 (無印)**: ネットワーク機能を持たないため対象外
 - **Raspberry Pi Pico W / Pico 2 W**: Pico W(RP2040) と Pico 2 W(RP2350) はどちらもオンボード Wi-Fi チップとして CYW43439 を使う。NuttX master には CYW43439 系ドライバと RP2350 ボード定義が入っているが、本リポジトリが固定している NuttX 12.7.0 には Pico 2 W をそのまま使うためのボード定義が無い。公式 Raspberry Pi Pico 2 W ボードとしての Wi-Fi bringup は [apache/nuttx#19250](https://github.com/apache/nuttx/pull/19250) で PR 中。こちらでは PR #19250 を試し、USB シリアル経由の NuttX 起動、`wapi`/`wg` builtin、`wg0` 起動まで確認済み。Wi-Fi は `wlan0` 登録後、GSPI 初期化で `0xffffffff` を読み続けて `ifup wlan0` が `-ENODEV` になるため未接続
-- **Sony Spresense**: 当初はプロポーザル上「著者の業務経験」として触れているのみでロードマップ外だったが、実機を保有しているため試験的に対応した。**Spresense 本体には Wi-Fi が内蔵されていない**ため、Wi-Fi 経由の WireGuard 通信には別売りの GS2200M 拡張モジュール(NuttX のボードコンフィグ `wifi`)が必要。今回はビルド・起動確認のみを目標にしている(ネットワーク到達性の検証は対象外)
+- **Sony Spresense**: 当初はプロポーザル上「著者の業務経験」として触れているのみでロードマップ外だったが、実機を保有しているため対応した。**Spresense 本体には Wi-Fi が内蔵されていない**ため、別売りの Wi-Fi Add-on ボード iS110B(GS2200M、NuttX のボードコンフィグ `spresense:wifi`)を載せて実 Wi-Fi 経由の疎通まで確認した
 - **ESP32-S3**: プロポーザル上の当初の実機ターゲット。**実機検証完了**(下記参照)
 
 ---
@@ -376,39 +376,98 @@ Linux 側ピアの設定方法は [docs/phase3-log.md](phase3-log.md) の sim/QE
 
 ---
 
-## Sony Spresense(メインボード単体)
+## Sony Spresense + iS110B Wi-Fi Add-on(確認済み・実 Wi-Fi 疎通成功)
 
 ### 前提条件
 
-- Spresense メインボード単体(拡張ボードなしで動作確認)
-- Windows ホストの場合: `sonydevworld/spresense` リポジトリの `sdk/tools/windows/` から `flash_writer.exe`・`xmodem_writer.exe`・`cxd5602cdc-usb-driver.zip` を取得
+- Spresense メインボード + Wi-Fi Add-on ボード iS110B(GS2200M)。iS110B はメインボードの拡張コネクタに直接載せる(Extension Board は不要)
+- **iS110B のハードウェアバージョンを確認する**: 基板シルクの `REV:1.0` 横のドットが 無印 = v1.0A、赤 = v1.0B、黄 = v1.0C(製造元 [idy-design.com/product/is110b.html](https://idy-design.com/product/is110b.html))。GS2200M の reset/IRQ ピン配置がバージョンごとに違い、NuttX 側で `CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10{A,B,C}` から選ぶ。`Dockerfile` は手元の v1.0C に合わせてある
+- Windows ホスト: Silicon Labs CP210x ドライバ(メインボードの USB シリアル)、`sonydevworld/spresense` の `sdk/tools/windows/flash_writer.exe`
 
-### ビルド(確認済み)
-
-```bash
-docker build --target spresense -t nuttx-wireguard:spresense .
-```
-
-`Dockerfile` の `spresense` ステージは既存の `arm-none-eabi-gcc`(Cortex-M4F 対応)をそのまま使い、新規ツールチェインは不要。`spresense:nsh` はデフォルトで `CONFIG_NET` と `CONFIG_SCHED_WORKQUEUE` が無効なため、これらを明示的に有効化した上で WireGuard 用 Kconfig を追加している。ビルドに成功すると `tools/cxd56/mkspk` が自動的に呼ばれ、書き込み用の `nuttx.spk` が生成される。
-
-### 書き込み(未実施 — ボードが USB デバイスとして認識されていない)
+### ビルド
 
 ```bash
-docker create --name spresenseextract nuttx-wireguard:spresense
-docker cp spresenseextract:/opt/nuttx/nuttx.spk ./nuttx.spk
-docker rm spresenseextract
-
-# Windows ホストから (COM ポート番号は環境に合わせる)
-flash_writer.exe -c COM5 -d nuttx.spk
+docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
+docker create --name x nuttx-wireguard:spresense-wifi && docker cp x:/opt/nuttx/nuttx.spk . && docker rm x
 ```
 
-**既知の問題:** 手元のボードが Windows 上で USB デバイスとして一切列挙されない(電源 LED は点灯するが、COM ポートはおろか「不明なデバイス」としてすら現れない)。ケーブル・USB ポートを変えても変化なし。CDC ドライバのインストールは、そもそも列挙されない状態のため未実施。詳細は [docs/phase4-log.md](phase4-log.md)。
+`spresense:wifi` をベースに WireGuard 用 Kconfig を足したもの。ベース config からの変更点は `Dockerfile` の同ステージのコメントに理由込みで書いてあるが、要点は:
+
+- `CONFIG_WL_GS2200M_DISABLE_DHCPC` を無効化(ベースは有効)。有効だとドライバが `10.0.0.2` を固定文字列で `AT+NSET` に投入し、実ネットワークと合わないまま「関連付けは成功するが疎通しない」状態になる
+- `CONFIG_DEBUG_WIRELESS_ERROR` を有効化し、GS2200M の SPI 応答が期待外だったときに生バイトを出すパッチを当てている(後述の接触不良の切り分け用)
+
+### 書き込み
+
+```
+flash_writer.exe -s -c COM6 -d -b 921600 nuttx.spk
+```
+
+メインボード単体のときと同じ。書き込み後に自動で再起動する。
+
+### 動作確認
+
+**注意:** メインボードの USB シリアルは DTR に反応して**接続を開くたびにボードがリセットされる**(CP210x の自動リセット回路)。pyserial 等で毎回接続を開き直すと、Wi-Fi 接続も `wg` の設定も全部飛ぶ。一連の操作は1つの開きっぱなしの接続内で行うこと。
+
+```
+nsh> gs2200m <SSID> <passphrase> &
+```
+
+`gs2200m` は接続コマンドではなく **usrsock デーモン本体**で、フォアグラウンドで動かすと NSH が戻ってこない。`&` が必須。数秒で `AT+WA` が通り、内蔵 DHCP でアドレスが付く(ログに `192.168.0.115:255.255.255.0:192.168.0.1` のように出る)。
+
+```
+nsh> wg set private-key <key>
+nsh> wg set peer <Windows 側公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg up
+wg0 is up (listen port 51820)
+
+nsh> wg show
+interface: wg0
+  public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+  listening port: 51820
+peer: 5J5rgkz5RB0CB1hIZae5V3jQjisRjqOrry7Scca9YjE=
+  endpoint: 192.168.0.216:51820
+  latest handshake: 16 seconds ago
+
+nsh> ifconfig
+wlan0	Link encap:Ethernet HWaddr 14:5a:fc:fa:d9:6d at UP mtu 1500
+	inet addr:192.168.0.115 DRaddr:192.168.0.1 Mask:255.255.255.0
+wg0	Link encap:TUN at RUNNING mtu 1420
+	inet addr:10.10.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+```
+
+Windows 側は ESP32-S3 のときと同じトンネルにピアを差し替えるだけ(管理者 PowerShell):
+
+```powershell
+& "C:\Program Files\WireGuard\wg.exe" set nuttx-esp32s3 peer <古い ESP32-S3 の公開鍵> remove
+& "C:\Program Files\WireGuard\wg.exe" set nuttx-esp32s3 peer iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A= allowed-ips 10.10.0.2/32
+```
+
+```
+> ping 10.10.0.2
+Reply from 10.10.0.2: bytes=32 time=142ms TTL=128
+Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+```
+
+RTT が ESP32-S3(33〜68 ms)より一桁大きいのは GS2200M の構造(SPI 越しの AT コマンドで TCP/IP をオフロード)によるもの。
+
+### 詰まった点(2026-09-16)
+
+順に書く。どれも切り分けに時間を食ったので、同じ症状を見たら先にここを疑うこと。
+
+1. **起動直後に `ASSERT` で落ちる、`res = ff ff ff ff ff ff ff ff`** — GS2200M からの SPI 応答が全バイト 0xFF(信号線が浮いている)。原因は iS110B のコネクタピンの曲がりによる接触不良。ピン配置 Kconfig(10A/B/C)や SPI クロックを変えても症状が1バイトも変わらないこと、Sony 系の Arduino ライブラリ(jittermaster/GS2200-WiFi、TypeC 対応版)でも同じ結果になることから、ソフトウェアではないと確定した。ピンを直して挿し直したら `res = a5 12 ...`(`0x12` = `RD_RESP_OK`)になり、その場で解決
+2. **`ASSERT` の場所が分からない(`file: :0`)** — `spresense:wifi` は `CONFIG_NDEBUG=y` で、`ASSERT()` にファイル名/行番号が入らない。`CONFIG_ASSERTIONS_FILENAME` は `!NDEBUG` 依存で有効にできない。NuttX の生スタックダンプを `addr2line` にかけても、それは call trace ではなくスタック上の残骸なので信用できない(実際に誤った関数を追いかけて時間を失った)。結局はドライバに `wlerr()` を挿して bisect した
+3. **`wlerr()` を挿しても何も出ない** — `wlerr` は `CONFIG_DEBUG_WIRELESS_ERROR` が無いと no-op マクロ。デフォルト無効なので、有効にするまで挿したデバッグが全部黙って消えていた
+4. **Wi-Fi 関連付けは成功するのに疎通しない** — `CONFIG_WL_GS2200M_DISABLE_DHCPC=y` のとき、ドライバが `"10.0.0.2"` をハードコードで `AT+NSET` する(Kconfig の `NETINIT_IPADDR` は無関係)。無効化して内蔵 DHCP を使う
+5. **`gs2200m` を実行すると NSH が戻ってこない** — デーモン本体なので `&` で起動する
+6. **`wg up` は通るのに `transfer: 0 B sent` のままハンドシェイクが始まらない** — `netlib_ifup("wg0")` の `SIOCSIFFLAGS` が usrsock デーモンに横取りされ `-EINVAL` で捨てられていた(GS2200M ドライバは `ifr_name` を見ない)。同時に `SIOCSIFADDR` で GS2200M 自身の IP が `10.10.0.2` に上書きされてもいた。`wg_configure_address()` を `netdev_ifup()` 直呼びに修正して解決。詳細は [phase4-log.md](phase4-log.md)
 
 ---
 
 ## 既知の未整備事項
 
-- ESP32(無印)・Spresense とも実機への書き込み・起動確認が完了していない(上記参照、詳細は [docs/phase4-log.md](phase4-log.md))
+- ESP32(無印)は実機への書き込みが完了していない(上記参照、詳細は [docs/phase4-log.md](phase4-log.md))。Spresense は解決済み
+- Spresense では ping までの確認。トンネル越し TCP(telnet)・長時間・複数ピアは未実施
+- Spresense の `CONFIG_DEV_URANDOM`(xorshift128)は電源投入直後の最初の `wg genkey` が毎回同じ鍵を返す(シードが固定)。デバイス上で鍵生成するなら要対処
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
 - `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(現在のデフォルト 6144)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
 - ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる

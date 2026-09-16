@@ -74,8 +74,6 @@
 #include <nuttx/net/ip.h>
 #include <nuttx/net/netdev.h>
 
-#include <netutils/netlib.h>
-
 #include "wireguard.h"
 #include "crypto.h"
 #include "nuttx-wireguardif.h"
@@ -1251,8 +1249,19 @@ static void wg_configure_peer(FAR struct wg_netdev_s *priv)
  *
  * Description:
  *   Assign wg0's own tunnel address from Kconfig and bring the interface
- *   up (triggers wg_ifup() via the SIOCSIFFLAGS ioctl, same as running
- *   "ifconfig wg0 up" from NSH).
+ *   up, which runs wg_ifup() and marks the configured peers active.
+ *
+ *   This writes priv->dev directly and calls netdev_ifup() rather than
+ *   going through netlib_set_ipv4addr()/netlib_ifup(). Those helpers issue
+ *   SIOCSIFADDR/SIOCSIFFLAGS on a throwaway AF_INET socket, and with
+ *   CONFIG_NET_USRSOCK that socket belongs to the usrsock daemon, whose
+ *   si_ioctl() runs before netdev_ifr_ioctl() ever looks up "wg0" by name.
+ *   The GS2200M daemon (Spresense Wi-Fi add-on) answers every ifreq as if
+ *   it were its own: SIOCSIFADDR reprogrammed the Wi-Fi module's IP to
+ *   wg0's tunnel address (AT+NSET=10.10.0.2,...) and SIOCSIFFLAGS came
+ *   back -EINVAL, so wg_ifup() never ran, no peer was marked active and
+ *   no handshake was ever sent. Configuring our own net_driver_s in place
+ *   is what netdev_ifr_ioctl() would have done, minus the detour.
  *
  ****************************************************************************/
 
@@ -1260,17 +1269,21 @@ static void wg_configure_address(FAR struct wg_netdev_s *priv)
 {
   struct in_addr addr;
 
+  net_lock();
+
   if (inet_pton(AF_INET, CONFIG_NET_WIREGUARD_LOCAL_IPADDR, &addr) == 1)
     {
-      netlib_set_ipv4addr("wg0", &addr);
+      priv->dev.d_ipaddr = addr.s_addr;
     }
 
   if (inet_pton(AF_INET, CONFIG_NET_WIREGUARD_LOCAL_NETMASK, &addr) == 1)
     {
-      netlib_set_ipv4netmask("wg0", &addr);
+      priv->dev.d_netmask = addr.s_addr;
     }
 
-  netlib_ifup("wg0");
+  netdev_ifup(&priv->dev);
+
+  net_unlock();
 }
 
 /****************************************************************************
@@ -1419,7 +1432,10 @@ int wg_down(void)
 
   work_cancel(WG_TXWORK, &priv->txwork);
 
-  netlib_ifdown("wg0");
+  net_lock();
+  netdev_ifdown(&priv->dev);
+  net_unlock();
+
   netdev_unregister(&priv->dev);
   psock_close(&priv->psock);
 
