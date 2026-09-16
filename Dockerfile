@@ -323,9 +323,16 @@ RUN ./tools/configure.sh spresense:nsh && \
     kconfig-tweak --enable CONFIG_NET_TUN         && \
     kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_CRYPTO          && \
+    kconfig-tweak --enable CONFIG_CRYPTO_RANDOM_POOL && \
+    kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_RANDOM_POOL && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     make olddefconfig 2>&1 | tail -5
 
+# NOTE: CONFIG_CRYPTO_RANDOM_POOL / DEV_URANDOM_RANDOM_POOL の理由は
+# spresense-wifi ステージの同じ NOTE を参照 (xorshift128 の固定シード対策)。
+#
 # NOTE: spresense:nsh は最小構成の NSH config で、デフォルトではネットワーク
 # (CONFIG_NET) 自体が無効。CONFIG_SCHED_WORKQUEUE も無効 (sim/qemu では
 # デフォルトで有効だったため気づかなかった依存関係。drivers/net/tun.c が
@@ -357,7 +364,7 @@ WORKDIR /workspace
 # wg0 の netlib_ifup() が届かなかった。nuttx-wireguardif.c 側で netdev を
 # 直接設定する形に直してある (wg_configure_address() のコメント参照)。
 # 実機検証 2026-09-16: Windows 公式クライアントとの handshake、
-# トンネル越し ping 4/4 (RTT ~142 ms) を確認。
+# トンネル越し ping (RTT 8-9 ms)・telnet・HTTP (デモページ) を確認。
 # =============================================================================
 FROM base AS spresense-wifi
 
@@ -443,6 +450,44 @@ src = src.replace(old, new, 1)
 open(path, "w").write(src)
 PYEOF
 
+# デモ用 uIP webserver のページ (esp32s3 ステージと同じ仕組み、文言だけ
+# Spresense 向け)
+COPY docker/webserver-demo/header.html docker/webserver-demo/spresense/index.shtml \
+     /opt/apps/examples/webserver/httpd-fs/
+
+# "denyinet on|off" builtin。usrsock デーモンに SIOCDENYINETSOCK を送り、
+# 以後の AF_INET socket() をカーネルスタックに落とす。wg0 の UDP ソケットは
+# GS2200M 経由のまま、telnetd / webserver の TCP リスナーだけをカーネル側
+# (= wg0 で復号したパケットが届く側) に置くために必要。中身のコメント参照。
+COPY docker/spresense-denyinet/ /opt/apps/system/denyinet/
+
+# gs2200m デーモンの SIOCDENYINETSOCK 処理は、usock_enable フラグを更新した
+# あと drvreq=true のままドライバの GS2200M_IOC_IFREQ にも転送してしまう。
+# ドライバ側は知らない cmd なので -EINVAL、デーモンは ioctl() の戻り値 -1 を
+# そのまま result に入れて返すため、呼び出し側には EPERM に見える (フラグ
+# 自体は立っている)。LTE の alt1250 デーモンと同じく、デーモン内で完結させる。
+RUN python3 - <<'PYEOF'
+path = "/opt/apps/wireless/gs2200m/gs2200m_main.c"
+src = open(path).read()
+old = ("            /* Allow to create INET socket */\n"
+       "\n"
+       "            priv->usock_enable = TRUE;\n"
+       "          }\n"
+       "        break;\n")
+new = ("            /* Allow to create INET socket */\n"
+       "\n"
+       "            priv->usock_enable = TRUE;\n"
+       "          }\n"
+       "\n"
+       "        /* Handled entirely here; the driver has no IFREQ for it */\n"
+       "\n"
+       "        ret = OK;\n"
+       "        drvreq = false;\n"
+       "        break;\n")
+assert src.count(old) == 1, src.count(old)
+open(path, "w").write(src.replace(old, new, 1))
+PYEOF
+
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh spresense:wifi && \
     kconfig-tweak --enable CONFIG_NETUTILS_IFCONFIG && \
@@ -451,15 +496,55 @@ RUN ./tools/configure.sh spresense:wifi && \
     kconfig-tweak --enable CONFIG_NET_TUN         && \
     kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1420 && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
+    kconfig-tweak --enable CONFIG_CRYPTO          && \
+    kconfig-tweak --enable CONFIG_CRYPTO_RANDOM_POOL && \
+    kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_RANDOM_POOL && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
+    kconfig-tweak --set-str CONFIG_NET_WIREGUARD_CONFIG_PATH "/mnt/spif/wg0.conf" && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
+    kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
+    kconfig-tweak --enable CONFIG_SYSTEM_DENYINET && \
     kconfig-tweak --enable CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C && \
     kconfig-tweak --enable CONFIG_DEBUG_FEATURES && \
     kconfig-tweak --enable CONFIG_DEBUG_WIRELESS && \
     kconfig-tweak --enable CONFIG_DEBUG_WIRELESS_ERROR && \
+    kconfig-tweak --enable CONFIG_DEBUG_NET && \
+    kconfig-tweak --enable CONFIG_DEBUG_NET_ERROR && \
     kconfig-tweak --disable CONFIG_WL_GS2200M_DISABLE_DHCPC && \
+    kconfig-tweak --disable CONFIG_NET_TCP_NO_STACK && \
+    kconfig-tweak --disable CONFIG_NET_UDP_NO_STACK && \
+    kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_SENDFILE && \
+    kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_DIRLIST && \
+    kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_CLASSIC && \
+    kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_SCRIPT_DISABLE && \
+    kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE: spresense:wifi の httpd は SENDFILE (/mnt をそのまま配信) 設定。
+# esp32s3 ステージと同じ組み込みページ (httpd-fs/、%!: インクルード付き) を
+# 出すために CLASSIC + スクリプト有効に切り替えている。
+
+# NOTE: spresense:wifi は usrsock 専用構成で CONFIG_NET_TCP_NO_STACK=y /
+# CONFIG_NET_UDP_NO_STACK=y (カーネル側に TCP/UDP スタックを持たず、ICMP
+# だけ残している)。それでも wg0 が動くのは、wg0 の UDP ソケットが usrsock
+# 経由で GS2200M にオフロードされ、復号後の ICMP はカーネルの ICMP スタック
+# で返せるから。トンネル越しの telnet / HTTP はカーネル側で TCP を受ける
+# 必要があるので (denyinet で socket() をカーネルに落とした上で) 両方の
+# NO_STACK を外す。外さないと socket() が "address family unsupported: 2"
+# (-EAFNOSUPPORT) で失敗し、telnetd / webserver が即終了する。
+
+# NOTE: CONFIG_CRYPTO_RANDOM_POOL + CONFIG_DEV_URANDOM_RANDOM_POOL で
+# /dev/urandom を割り込みタイミング由来のエントロピープールにする。既定の
+# xorshift128 は devurandom_register() で定数 (w=97, x=101) をシードに
+# するため、電源投入直後の最初の "wg genkey" が毎回同じ鍵になっていた
+# (docs/development/phase4-log.md)。ESP32 系は DEV_URANDOM_ARCH (HW RNG)
+# なので影響なし。
+#
+# NOTE: CONFIG_NET_WIREGUARD_CONFIG_PATH は既定の /data/wg0.conf から
+# /mnt/spif/wg0.conf に変更。spresense:wifi が SmartFS をマウントするのは
+# /mnt/spif で、/data は存在しない (wg saveconf が open failed になる)。
 
 # NOTE: spresense:wifi はデフォルトで CONFIG_NETUTILS_IFCONFIG と
 # CONFIG_NET_SOCKOPTS が無効。CONFIG_NET_TUN_PKTSIZE は ESP32-S3 実機検証

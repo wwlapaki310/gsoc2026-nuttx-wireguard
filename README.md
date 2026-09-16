@@ -57,7 +57,7 @@ cycle. What remains is upstream submission.
 | QEMU | ARM Cortex-A7 | Linux kernel WireGuard | Traffic on a real NuttX scheduler |
 | **ESP32-S3** | Xtensa LX7 | **Windows official client** | **Real Wi-Fi**: telnet, HTTP, 7 MB transfer, rekey, recovery from power loss |
 | Raspberry Pi Pico 2 W | ARM Cortex-M33 / RP2350 | - | USB NSH and `wg0` start; Wi-Fi is blocked before DHCP (`CYW43439` GSPI ready reads `0xffffffff`) |
-| **Spresense** + iS110B Wi-Fi add-on | ARM Cortex-M4F | **Windows official client** | **Real Wi-Fi** over a `usrsock` driver (GS2200M): handshake, tunnelled ping 4/4 |
+| **Spresense** + iS110B Wi-Fi add-on | ARM Cortex-M4F | **Windows official client** | **Real Wi-Fi** over a `usrsock` driver (GS2200M): telnet and HTTP through the tunnel |
 
 Peers are always real WireGuard implementations — the Linux kernel module and the official
 Windows client. Interoperating with another copy of this code would prove nothing.
@@ -140,7 +140,7 @@ desktop WireGuard configuration can be dropped in as-is.
 
 ## Development environment
 
-Docker-based, with three build targets.
+Docker-based, with four build targets.
 
 ```bash
 # sim — primary development environment (fast iteration)
@@ -153,6 +153,9 @@ docker run --rm -it nuttx-wireguard:qemu
 
 # ESP32-S3 — real hardware
 docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
+
+# Spresense + iS110B Wi-Fi add-on — real hardware, usrsock Wi-Fi driver
+docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
 Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>` (default

@@ -57,7 +57,7 @@ VPN がない場合の現実的な選択肢は、グローバル IP を晒すか
 | sim | x86_64 / Linux | Linux カーネル WireGuard | ハンドシェイク・疎通・ランタイム設定・**2 ピア同時セッション**（スクリプト化済み） |
 | QEMU | ARM Cortex-A7 | Linux カーネル WireGuard | NuttX 自身のスケジューラ上での疎通 |
 | **ESP32-S3** | Xtensa LX7 | **Windows 公式クライアント** | **実 Wi-Fi 越し**の telnet・HTTP・7 MB 転送・rekey・電源断からの復帰 |
-| **Spresense** + iS110B Wi-Fi Add-on | ARM Cortex-M4F | **Windows 公式クライアント** | **実 Wi-Fi 越し**（`usrsock` 方式の GS2200M ドライバ経由）のハンドシェイク・トンネル越し ping 4/4 |
+| **Spresense** + iS110B Wi-Fi Add-on | ARM Cortex-M4F | **Windows 公式クライアント** | **実 Wi-Fi 越し**（`usrsock` 方式の GS2200M ドライバ経由）の telnet・HTTP |
 
 通信相手は常に本物の WireGuard 実装（Linux カーネルモジュールと Windows 公式クライアント）。
 自作同士で通信しても相互運用性の証明にならないため。
@@ -139,7 +139,7 @@ WireGuard の設定をそのまま持ち込める。
 
 ## 開発環境
 
-Docker ベース。ビルドターゲットは3つ。
+Docker ベース。ビルドターゲットは4つ。
 
 ```bash
 # sim — メイン開発環境（高速なビルド・テストループ）
@@ -152,6 +152,9 @@ docker run --rm -it nuttx-wireguard:qemu
 
 # ESP32-S3 — 実機
 docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
+
+# Spresense + iS110B Wi-Fi Add-on — 実機、usrsock 方式の Wi-Fi ドライバ
+docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
 `--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる（既定は `nuttx-12.7.0`。

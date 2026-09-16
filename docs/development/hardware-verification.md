@@ -448,7 +448,33 @@ Reply from 10.10.0.2: bytes=32 time=142ms TTL=128
 Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
 ```
 
-RTT が ESP32-S3(33〜68 ms)より一桁大きいのは GS2200M の構造(SPI 越しの AT コマンドで TCP/IP をオフロード)によるもの。
+RTT は無負荷で 8〜9 ms(ESP32-S3 と同等)。初回の検証で 142 ms と出たのは `CONFIG_DEBUG_WIRELESS_WARN/INFO` が AT コマンド 1 本ごとに数十行ログを吐いていた負荷で、ERROR のみに絞ると解消した。
+
+### デモ手順(トンネル越し telnet / HTTP)— 確認済み
+
+ESP32-S3 のデモ動画と同じ流れが Spresense でもできる。**シリアルは開きっぱなしにできるターミナル**(Tera Term、または `python -m serial.tools.miniterm COM6 115200`)を使うこと。pyserial で接続を開き直すたびに DTR でボードがリセットされる。
+
+```
+nsh> gs2200m <SSID> <passphrase> &                  # usrsock デーモン (& 必須)。DHCP まで数秒
+nsh> wg set private-key <key>
+nsh> wg set peer <Windows 公開鍵> endpoint 192.168.0.216:51820 allowed-ips 10.10.0.1/32 persistent-keepalive 25
+nsh> wg up                                           # wg0 の UDP ソケットは GS2200M 経由で作られる
+nsh> denyinet on                                     # 以後の AF_INET socket() をカーネルスタックへ
+nsh> telnetd &                                       # カーネル側 TCP:23 で待ち受け (& 必須)
+nsh> webserver &                                     # 同じく TCP:80
+```
+
+Windows 側:
+
+```
+> ping 10.10.0.2
+> telnet 10.10.0.2                                    # NSH プロンプトが返る。uname -a / free / ifconfig など
+> start http://10.10.0.2/                             # Spresense 向け文言のデモページ
+```
+
+ESP32-S3 の動画と同じく、telnet セッションの中から `webserver &` を打ってからブラウザを開いても良い(`denyinet on` は一度打てば以後有効)。
+
+`denyinet` が必要な理由: `CONFIG_NET_USRSOCK` 環境では AF_INET の `socket()` が全部 GS2200M デーモンに行き、Wi-Fi モジュール内蔵の TCP/IP スタックで処理される。トンネル越しの接続は `wg0` で復号されて**カーネル側**の IP スタックに入るので、telnetd / webserver のリスナーもカーネル側に居ないと届かない。`denyinet on` は usrsock の `SIOCDENYINETSOCK` を叩いて、以後の `socket()` をカーネルにフォールバックさせる(既存の wg0 のソケットはそのまま)。あわせて `spresense:wifi` 既定の `CONFIG_NET_TCP_NO_STACK` / `UDP_NO_STACK` を外してカーネル側に TCP/UDP スタックを持たせている。
 
 ### 詰まった点(2026-09-16)
 
@@ -460,14 +486,17 @@ RTT が ESP32-S3(33〜68 ms)より一桁大きいのは GS2200M の構造(SPI �
 4. **Wi-Fi 関連付けは成功するのに疎通しない** — `CONFIG_WL_GS2200M_DISABLE_DHCPC=y` のとき、ドライバが `"10.0.0.2"` をハードコードで `AT+NSET` する(Kconfig の `NETINIT_IPADDR` は無関係)。無効化して内蔵 DHCP を使う
 5. **`gs2200m` を実行すると NSH が戻ってこない** — デーモン本体なので `&` で起動する
 6. **`wg up` は通るのに `transfer: 0 B sent` のままハンドシェイクが始まらない** — `netlib_ifup("wg0")` の `SIOCSIFFLAGS` が usrsock デーモンに横取りされ `-EINVAL` で捨てられていた(GS2200M ドライバは `ifr_name` を見ない)。同時に `SIOCSIFADDR` で GS2200M 自身の IP が `10.10.0.2` に上書きされてもいた。`wg_configure_address()` を `netdev_ifup()` 直呼びに修正して解決。詳細は [phase4-log.md](phase4-log.md)
+7. **`CONFIG_CRYPTO_RANDOM_POOL` を有効にしたら `wg up` がハードフォールト(PC が ASCII 文字列)** — NuttX の `crypto/` が vendored の参照実装と同名の `blake2s_init` / `chacha20poly1305_encrypt` 等をエクスポートしていて、リンク順で別実装が呼ばれていた。`Makefile` / `CMakeLists.txt` で 18 シンボルを `-D` で `wg_` 接頭辞にリネームして解決(vendored ファイルは無変更)。`CONFIG_CRYPTO=y` の環境全般で踏むので upstream 提出前に必須の修正だった
+8. **`denyinet on` が `EPERM`** — gs2200m デーモンが `SIOCDENYINETSOCK` を処理した後、ドライバにも転送して `-EINVAL` を貰い、`ioctl()` の戻り値 `-1` をそのまま返していた。デーモン側を `drvreq = false` に修正(`Dockerfile` でパッチ)
+9. **`denyinet on` 後に telnetd / webserver が即死(`socket address family unsupported: 2`)** — `spresense:wifi` は `CONFIG_NET_TCP_NO_STACK=y` / `UDP_NO_STACK=y` でカーネル側に TCP/UDP スタックが無い。両方外す
+10. **webserver が `/mnt` のディレクトリ一覧を返す** — httpd が `SENDFILE` 設定。`CLASSIC` + スクリプト有効に切り替えて組み込みページを出す
 
 ---
 
 ## 既知の未整備事項
 
 - ESP32(無印)は実機への書き込みが完了していない(上記参照、詳細は [docs/phase4-log.md](phase4-log.md))。Spresense は解決済み
-- Spresense では ping までの確認。トンネル越し TCP(telnet)・長時間・複数ピアは未実施
-- Spresense の `CONFIG_DEV_URANDOM`(xorshift128)は電源投入直後の最初の `wg genkey` が毎回同じ鍵を返す(シードが固定)。デバイス上で鍵生成するなら要対処
+- Spresense はトンネル越し telnet / HTTP まで確認。長時間・複数ピアは未実施
 - ESP32-S3 は基本的な handshake/ping 確認のみ。長時間 keepalive・再接続・複数 peer などの検証はまだ
 - `CONFIG_NET_WIREGUARD_RX_STACKSIZE`(現在のデフォルト 6144)が実機の RAM 制約に対して適切かは未検証(ESP32-S3 では動作確認できたが、他ボードでの余裕は未計測)
 - ピアのエンドポイント・鍵が Kconfig 固定で、実行時に変更できない([code-review-2026-08.md](code-review-2026-08.md) の課題 (D))。対向の IP が変わるとトンネルが張れず、LAN 側からの復旧が必要になる

@@ -2,7 +2,7 @@
 
 このリポジトリの「今どこまで進んでいるか」をまとめたもの。詳細な作業ログやこれからの計画は各ドキュメントにリンクしている。
 
-**現在地を一言で言うと:** **ESP32-S3 実機で、実 Wi-Fi・実ピア(Windows 公式 WireGuard クライアント)との実ハンドシェイクとトンネル越し ping(0% packet loss)、さらにトンネル越し telnet でのコマンド実行・Web サーバーアクセスまで確認した。** sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物のネットワーク環境でも WireGuard 実装が正しく動作することを実証できた(プロポーザル Phase 4 の目標を達成)。その過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドからの `sendto()` が `EBADF` で失敗していた)を発見し、`psock_*()` 内部 API への切り替えで修正済み。**Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイクとトンネル越し ping(4/4)を確認済み** — 2つ目のアーキテクチャ、かつ ESP32 系とは別方式(`usrsock` プロキシ型)の Wi-Fi ドライバでの動作実証になった。この過程で「usrsock 環境では `wg0` 向けの `SIOCSIFFLAGS` ioctl が usrsock デーモンに横取りされて `wg_ifup()` が呼ばれず、ハンドシェイクが一切始まらない」バグを発見し、netdev を直接設定する形に修正済み。ESP32-WROOM-32 のみ、GPIO0 経路の故障で書き込みに到達できていない(詳細は [docs/development/phase4-log.md](docs/development/phase4-log.md))。
+**現在地を一言で言うと:** **ESP32-S3 実機で、実 Wi-Fi・実ピア(Windows 公式 WireGuard クライアント)との実ハンドシェイクとトンネル越し ping(0% packet loss)、さらにトンネル越し telnet でのコマンド実行・Web サーバーアクセスまで確認した。** sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物のネットワーク環境でも WireGuard 実装が正しく動作することを実証できた(プロポーザル Phase 4 の目標を達成)。その過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドからの `sendto()` が `EBADF` で失敗していた)を発見し、`psock_*()` 内部 API への切り替えで修正済み。**Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping・**トンネル越し telnet / HTTP(デモページ)**まで確認済み** — 2つ目のアーキテクチャ、かつ ESP32 系とは別方式(`usrsock` プロキシ型)の Wi-Fi ドライバでの動作実証になった。この過程で「usrsock 環境では `wg0` 向けの `SIOCSIFFLAGS` ioctl が usrsock デーモンに横取りされて `wg_ifup()` が呼ばれず、ハンドシェイクが一切始まらない」バグを発見し、netdev を直接設定する形に修正済み。ESP32-WROOM-32 のみ、GPIO0 経路の故障で書き込みに到達できていない(詳細は [docs/development/phase4-log.md](docs/development/phase4-log.md))。
 
 **デモ動画:** [https://youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet ログイン→コマンド実行→Web サーバー起動→ブラウザアクセスまでの一連の流れ。まとめは [docs/development/phase4-summary.md](docs/development/phase4-summary.md)。
 
@@ -18,7 +18,7 @@
 | Phase 1 | ビルドシステム統合(`CONFIG_NET_WIREGUARD=y` でビルドが通る) | ✅ 完了 |
 | Phase 2 | プラットフォーム層実装 + netdev 統合(`wg0` が `ifconfig` に出る) | ✅ 完了(sim で確認済み) |
 | Phase 3 | ハンドシェイクとトンネル疎通(Midterm) | ✅ sim と QEMU(qemu-armv7a + TAP) の両方で本物の Linux WireGuard ピアとの実ハンドシェイク・ping 疎通を確認 |
-| Phase 4 | NSH コマンド・Kconfig 統合・実機テスト | ✅ `wg` / `wg show` 実装済み。**ESP32-S3 実機で実 Wi-Fi・実ピアとの WireGuard ハンドシェイク・トンネル ping を確認**(0% packet loss)。**トンネル越し telnet で見つかった TCP 特有バグ(`EBADF`)を修正し、コマンド実行まで確認**。**Spresense + iS110B 実機でも実 Wi-Fi 経由のハンドシェイク・トンネル越し ping を確認**(ARM Cortex-M4F、usrsock 方式)。ESP32-WROOM-32 のみ GPIO0 故障で書き込み未達 |
+| Phase 4 | NSH コマンド・Kconfig 統合・実機テスト | ✅ `wg` / `wg show` 実装済み。**ESP32-S3 実機で実 Wi-Fi・実ピアとの WireGuard ハンドシェイク・トンネル ping を確認**(0% packet loss)。**トンネル越し telnet で見つかった TCP 特有バグ(`EBADF`)を修正し、コマンド実行まで確認**。**Spresense + iS110B 実機でも実 Wi-Fi 経由のハンドシェイク・トンネル越し ping・telnet・HTTP を確認**(ARM Cortex-M4F、usrsock 方式)。ESP32-WROOM-32 のみ GPIO0 故障で書き込み未達 |
 | Phase 5 | upstream PR | 🔶 準備中。スタイル準拠・vendored ソースの取り込み・PR 形のディレクトリ構成は完了。残るのは dev@ での設計合意([#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3))と FLAT ビルド前提の扱い([#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))。方針は [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) |
 
 ---
@@ -189,7 +189,20 @@ wg0	Link encap:TUN at RUNNING mtu 1420
 Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)   # RTT 141-143 ms
 ```
 
-ESP32 系の `wlan0` は通常の NuttX netdev だが、GS2200M は **`usrsock`**(ソケット API をユーザ空間デーモンにプロキシする方式)なので、WireGuard 実装が「netdev の種類に依存しない」ことの実証にもなった。ただし無変更では動かず、`usrsock` 環境特有のバグを1つ修正している(下記「まだ確認できていないこと」の直前、および [docs/development/phase4-log.md](docs/development/phase4-log.md) の Spresense 節)。RTT が ESP32-S3 より一桁大きいのは、GS2200M が SPI 越しの AT コマンドで TCP/IP をオフロードする構造による。
+```
+# トンネル越し telnet (Windows から telnet 10.10.0.2)
+NuttShell (NSH) NuttX-12.7.0
+nsh> uname -a
+NuttX  12.7.0 5d8cdeae-dirty Sep 16 2026 21:09:31 arm spresense
+nsh> free
+                 total       used       free    maxused    maxfree  nused  nfree
+      Umem:    1104812      58676    1046136      59032    1045936    121      2
+
+# トンネル越し HTTP (webserver &)
+HTTP 200 1080 bytes  "This page is being served by Apache NuttX RTOS running on a real Sony Spresense board ..."
+```
+
+ESP32 系の `wlan0` は通常の NuttX netdev だが、GS2200M は **`usrsock`**(ソケット API をユーザ空間デーモンにプロキシする方式)なので、WireGuard 実装が「netdev の種類に依存しない」ことの実証にもなった。ただし無変更では動かず、`usrsock` 環境で顕在化するバグを修正している(下記「usrsock 環境で見つかったバグ」、および [docs/development/phase4-log.md](docs/development/phase4-log.md))。トンネル越しの TCP は、`wg0` で復号したパケットがカーネル側の IP スタックに入る一方で telnetd / webserver の `socket()` は usrsock(Wi-Fi モジュール内のスタック)に行ってしまうため、`denyinet on`(`SIOCDENYINETSOCK`)で以後の `socket()` をカーネルに落とす小さなヘルパーを足して成立させた。手順は [docs/development/hardware-verification.md](docs/development/hardware-verification.md) の Spresense 節。無負荷 RTT は 8〜9 ms で ESP32-S3 と同等。
 
 ### 実機向けクロスビルド(ESP32-WROOM-32 / ESP32-S3 / Sony Spresense)
 
@@ -217,13 +230,17 @@ sim/QEMU 向けに書いたプラットフォーム層・netif 統合コード�
 
 修正は、自前の `struct net_driver_s` に `d_ipaddr`/`d_netmask` を直接書いて `netdev_ifup()` / `netdev_ifdown()` を呼ぶ形(`net_lock()` 下)。`netlib` 依存も無くなった。
 
+### vendored crypto と NuttX crypto/ のシンボル衝突(発見・修正済み)
+
+`CONFIG_CRYPTO=y`(例えば `CONFIG_CRYPTO_RANDOM_POOL` を有効にすると連動)の環境では、NuttX 本体の `crypto/` が `blake2s_init` / `blake2s_update` / `blake2s_final` / `chacha20poly1305_encrypt` / `poly1305_update` など、vendored の参照実装と**同名・別シグネチャ**のグローバル関数をエクスポートする。両方がリンクに入り、先に見つかったアーカイブの実装が黙って使われ、Spresense では `wireguard_init()` の中で PC が ASCII 文字列になるハードフォールトになった。`Makefile` / `CMakeLists.txt` で、vendored 側がエクスポートする 18 シンボルを `-D<name>=wg_<name>` でモジュール内だけリネームして解決(vendored ファイルは byte-identical のまま)。`CONFIG_CRYPTO` は珍しくない設定なので、upstream 提出前に必須の修正だった。
+
 ## まだ確認できていないこと
 
 - **長時間・異常系の通信**: 短時間の handshake + ping + telnet(TCP)は確認済みだが、長時間 keepalive・再接続・MTU 境界は未確認([Issue #5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5))。ソークテストは 4 項目(ルータ / ボードの LAN / トンネル / トンネル越し TCP)を独立にサンプルする形に書き直し、止まったときに切り分けられるようにした。到達した最長は **4 時間 28 分**で、そこでの停止は **ESP32-S3 の Wi-Fi ドライバ側のクラッシュ**と特定できた(`start_rt_timer` が NULL リンクを辿る。WireGuard ではない。[phase4-log.md](docs/development/phase4-log.md))。2 回目は 3 時間 36 分で停止したが、**シリアルログにパニックがなく、ネットワークより先に USB ポートが消えている**ため電源断と整合する — 断定はできない。日単位で動くことはまだ言えない
 - **複数ピアの実機動作**: sim では 3 ピアの設定・登録・削除・ファイル往復と、**2 ピアとの同時セッション保持**(`verify-sim-wg-multipeer.sh`)を確認済み。実機で複数ピアと同時にハンドシェイクする検証は未実施
 - ~~**設定永続化の実機動作**~~: **確認済み。** ESP32-S3 実機で、Kconfig では表現できない値(keepalive 33 / 44 の 2 ピア)を `wg saveconf` で保存し、電源を落として入れ直したあとに読み出せることを確認した。読めた値がビルド時の既定値ではなくファイル由来であることを区別できる値を選んである
-- ~~**Spresense の実ピア通信**~~: **確認済み**(iS110B Wi-Fi Add-on 経由、上記)。ただし ping までで、トンネル越し TCP(telnet)・長時間・複数ピアは Spresense では未実施
-- **起動直後の `wg genkey` が決定論的**: Spresense(`CONFIG_DEV_URANDOM` = xorshift128、`ARCH_HAVE_RNG` 無し)では、電源投入直後の最初の `wg genkey` が再起動をまたいで毎回同じ鍵を返す(同一セッション内の2回目以降は変わる)。シードが固定値と思われる。実運用でデバイス上で鍵生成するなら要対処。ESP32-S3 は `DEV_URANDOM_ARCH`(ハードウェア RNG)なので該当しない
+- ~~**Spresense の実ピア通信**~~: **確認済み**(iS110B Wi-Fi Add-on 経由、ping・telnet・HTTP まで)。長時間・複数ピアは Spresense では未実施
+- ~~**起動直後の `wg genkey` が決定論的**~~: **修正済み。** `CONFIG_DEV_URANDOM_XORSHIFT128` は `devurandom_register()` で定数(w=97, x=101)をシードにするため、電源投入直後の最初の `wg genkey` が毎回同じ鍵だった。`CONFIG_CRYPTO_RANDOM_POOL` + `CONFIG_DEV_URANDOM_RANDOM_POOL`(割り込みタイミングからのエントロピープール)に切り替え、再起動ごとに違う鍵が出ることを確認。ESP32-S3 は `DEV_URANDOM_ARCH`(HW RNG)なので元々該当しない
 - **ESP32-WROOM-32 の実機書き込み**: GPIO0 を Low にする経路(BOOT ボタン・DTR トランジスタ)が両方効かず、ダウンロードモードに入れない。ビルドは成功しているため移植性の主張には影響しないが、実機確認には別個体が要る。詳細は [docs/development/phase4-log.md](docs/development/phase4-log.md)
 - **upstream 提出**: スタイル準拠(`checkpatch.sh` 全ファイルクリーン)・`LICENSE` 追記案・`Assisted-by:` タグ運用は対応済み。残るのは **dev@ での設計合意**([Issue #3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)、投稿ドラフトは [docs/upstream/dev-list-proposal.md](docs/upstream/dev-list-proposal.md))と、**FLAT ビルド前提の扱い**([Issue #6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))
 
@@ -296,4 +313,4 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 3. ~~vendored ツリーの整理~~ — **完了**。未使用の `wireguardif.c` / `crypto/cortex/` を外し、Docker の `git clone` 方式から実ファイル同梱に切り替えた(upstream と `cmp` でバイト一致を確認済み)
 4. 長時間 keepalive、再接続、MTU 境界、複数 peer の追加検証(ESP32-S3 実機で)
 5. ESP32-WROOM-32 の実機書き込み問題の切り分け(別個体での再挑戦。[docs/development/phase4-log.md](docs/development/phase4-log.md) 参照)。Spresense 側は解決済み
-6. Spresense でのトンネル越し TCP(telnet)と、起動直後の `wg genkey` が決定論的になる問題(xorshift128 のシード)の対処
+6. GS2200M ドライバ / デーモンの upstream 報告(`ifr_name` を見ない、`SIOCDENYINETSOCK` をドライバに転送する)。ドラフトは [docs/upstream/gs2200m-usrsock-issue-draft.md](docs/upstream/gs2200m-usrsock-issue-draft.md)

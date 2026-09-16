@@ -349,7 +349,33 @@ Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
 
 このバグは「usrsock 方式の Wi-Fi ドライバ + 別の netdev を自前登録するアプリ」という組み合わせで初めて顕在化する。GS2200M ドライバ側が `ifr_name` を見て自分宛てでなければ `-ENOTTY` を返すのが筋で、upstream に報告する価値がある。
 
-**副産物:** 起動直後の最初の `wg genkey` が、再起動をまたいで毎回 `KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=` を返す(同一セッション内の 2 回目以降は変わる)。`CONFIG_DEV_URANDOM` = xorshift128 のシードが固定と思われる。今回はテスト用途なので放置したが、デバイス上で本番鍵を作るなら要対処。ESP32-S3 は `DEV_URANDOM_ARCH`(HW RNG)なので該当しない。
+**副産物:** 起動直後の最初の `wg genkey` が、再起動をまたいで毎回 `KCsDACzp0RA26xvaHPsY2jjxW8P2+FxcEOobWTQ6xkQ=` を返す(同一セッション内の 2 回目以降は変わる)。`drivers/crypto/dev_urandom.c` の `devurandom_register()` が xorshift128 を定数(w=97, x=101)でシードしているのが原因。同日中に `CONFIG_CRYPTO_RANDOM_POOL` + `CONFIG_DEV_URANDOM_RANDOM_POOL` に切り替えて解決した(下記)。
+
+### 追記 (2026-09-16 夜): トンネル越し telnet / HTTP のデモを Spresense でも成立させる
+
+ESP32-S3 のデモ動画(telnet → コマンド → `webserver &` → ブラウザ)を Spresense でも再現するのが目標。結果: **telnet でのコマンド実行、`webserver &` からデモページの HTTP 200 取得まで成功。** 無負荷 RTT 8〜9 ms。ここでも 4 つ詰まった。
+
+**1. `CONFIG_CRYPTO_RANDOM_POOL` を足したら `wg up` がハードフォールト**
+
+`PC: 632e3462`(ASCII "b4.c")、`LR` は `wireguard_init()` の BLAKE2s 呼び出し。`arm-none-eabi-nm` で `libcrypto.a` と wireguard のオブジェクトを突き合わせると、`blake2s` / `blake2s_init` / `blake2s_update` / `blake2s_final` / `chacha20poly1305_encrypt` / `chacha20poly1305_decrypt` / `xchacha20poly1305_encrypt` / `xchacha20poly1305_decrypt` / `poly1305_update` / `poly1305_finish` の 10 個が両方で定義されていた。NuttX 本体の `crypto/blake2s.c` は `blake2s_state` を取り、vendored 側は `blake2s_ctx` を取る。先にリンクされた方が勝ち、もう一方の呼び出し側のスタックが壊れる。
+
+`Makefile` / `CMakeLists.txt` で vendored 側がエクスポートする全 18 シンボル(上の 10 個 + `chacha20` / `chacha20_init` / `hchacha20` / `poly1305_init` / `x25519` / `X25519_BASE_POINT` / `crypto_equal` / `crypto_zero`)を `-D<name>=wg_<name>` でリネーム。プリプロセッサで一貫して置換されるので vendored ファイルは byte-identical のまま。`CONFIG_CRYPTO=y` は普通の設定なので、これは upstream に出す前に必ず踏まれていた。
+
+**2. カーネル側に TCP/UDP スタックが無い**
+
+`denyinet on`(後述)の後で `telnetd &` が `psock_socket: socket address family unsupported: 2` で死ぬ。`spresense:wifi` は `CONFIG_NET_TCP_NO_STACK=y` / `CONFIG_NET_UDP_NO_STACK=y` の usrsock 専用構成で、カーネルには ICMP しか無い(だから ping だけは通っていた)。両方外す。
+
+**3. `denyinet` — トンネル越し TCP を成立させるための小さなヘルパー**
+
+`CONFIG_NET_USRSOCK` では AF_INET の `socket()` が全部 GS2200M デーモンに行き、Wi-Fi モジュール内の TCP/IP で処理される。`wg0` で復号したパケットはカーネル側の IP スタックに入るので、telnetd / webserver のリスナーは**カーネル側**に居なければならない。usrsock には `SIOCDENYINETSOCK`(`DENY_INET_SOCK_ENABLE`)という ioctl があり、以後の AF_INET `socket()` をデーモンが `-ENOTSUP` で拒否してカーネルにフォールバックさせられる(LTE の alt1250 デーモンが使っている機構)。NSH から打てるコマンドが無いので `docker/spresense-denyinet/` に `denyinet on|off` を書いて `apps/system/denyinet` として同梱した。`wg up`(wg0 の UDP は GS2200M 経由で作る)→ `denyinet on` → `telnetd &` / `webserver &` の順。
+
+ただし gs2200m デーモンの `SIOCDENYINETSOCK` 処理は、フラグを更新した後そのままドライバの `GS2200M_IOC_IFREQ` にも転送してしまい、ドライバが知らない cmd なので `-EINVAL`、デーモンは `ioctl()` の戻り値 `-1` をそのまま result に入れるため呼び出し側には `EPERM` に見える(フラグ自体は立っている)。`Dockerfile` でデーモンを `drvreq = false` に直した。
+
+**4. webserver が `/mnt` のディレクトリ一覧を返す**
+
+`spresense:wifi` の httpd は `SENDFILE` + `DIRLIST` 設定。esp32s3 と同じ組み込みページを出すため `CLASSIC` + `SCRIPT` 有効に切り替えた。
+
+**upstream に報告すべきもの(GS2200M 側):** (a) `gs2200m_ioctl_ifreq()` が `ifr_name` を見ない、(b) デーモンが `SIOCDENYINETSOCK` をドライバに転送する。ドラフトは [docs/upstream/gs2200m-usrsock-issue-draft.md](../upstream/gs2200m-usrsock-issue-draft.md)。
 
 ---
 

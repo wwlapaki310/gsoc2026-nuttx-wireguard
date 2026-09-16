@@ -1,0 +1,31 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config SYSTEM_DENYINET
+	tristate "denyinet: route new AF_INET sockets past the usrsock daemon"
+	default n
+	depends on NET_USRSOCK
+	---help---
+		NSH command "denyinet on|off" that issues SIOCDENYINETSOCK to the
+		usrsock daemon. With "on", subsequently created AF_INET sockets
+		fall back to the kernel network stack instead of being offloaded,
+		which lets servers such as telnetd listen on a kernel netdev like
+		wg0 while the tunnel itself keeps using the offloaded UDP socket.
+
+if SYSTEM_DENYINET
+
+config SYSTEM_DENYINET_PROGNAME
+	string "Program name"
+	default "denyinet"
+
+config SYSTEM_DENYINET_PRIORITY
+	int "Task priority"
+	default 100
+
+config SYSTEM_DENYINET_STACKSIZE
+	int "Stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif
