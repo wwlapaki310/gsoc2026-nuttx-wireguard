@@ -34,8 +34,10 @@ Raspberry Pi Pico 2 W は、本リポジトリが固定している NuttX 12.7.0
 ### ビルド
 
 ```bash
-docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
+docker build --target esp32s3 \n  --build-arg WIFI_SSID=<ssid> --build-arg WIFI_PASS=<passphrase> \n  -t nuttx-wireguard:esp32s3 .
 ```
+
+Wi-Fi の認証情報はビルド引数で渡す(`CONFIG_NETINIT_WAPI_SSID/PASSPHRASE` と `CONFIG_NETINIT_DHCPC` を設定する)。渡さなければ defconfig のプレースホルダーのまま。
 
 `esp32` ステージとほぼ同じ構成で、ツールチェインを `xtensa-esp32s3-elf`、ボードを `esp32s3-devkit:wifi` に変更したもの。`esp32s3-devkit:wifi` は NSH + `CONFIG_ESP32S3_WIFI` + WAPI が最初から有効になっている構成。WireGuard 用 Kconfig(`ALLOW_BSD_COMPONENTS`・`NET_TUN`・`NET_SOCKOPTS`・`NET_WIREGUARD`・`DEV_URANDOM_ARCH`)を追加してビルド。
 
@@ -531,6 +533,7 @@ ESP32-S3 の動画と同じく、telnet セッションの中から `webserver &
 8. **`denyinet on` が `EPERM`** — gs2200m デーモンが `SIOCDENYINETSOCK` を処理した後、ドライバにも転送して `-EINVAL` を貰い、`ioctl()` の戻り値 `-1` をそのまま返していた。デーモン側を `drvreq = false` に修正(`Dockerfile` でパッチ)
 9. **`denyinet on` 後に telnetd / webserver が即死(`socket address family unsupported: 2`)** — `spresense:wifi` は `CONFIG_NET_TCP_NO_STACK=y` / `UDP_NO_STACK=y` でカーネル側に TCP/UDP スタックが無い。両方外す
 10. **webserver が `/mnt` のディレクトリ一覧を返す** — httpd が `SENDFILE` 設定。`CLASSIC` + スクリプト有効に切り替えて組み込みページを出す
+11. **ブラウザでページの前後に `225` / `E4` / `1D` / `0` のような数字が出る** — httpd が `HTTP/1.0` で応答しつつ `Transfer-Encoding: chunked` を付けるため、ブラウザがチャンク長をそのまま表示していた(`Invoke-WebRequest` は寛容なので気づかなかった)。`CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING` を両実機ステージで無効化。`Connection: close` なので本文終端は接続クローズで決まり chunked は不要
 
 ---
 

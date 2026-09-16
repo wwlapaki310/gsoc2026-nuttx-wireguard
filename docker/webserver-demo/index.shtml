@@ -3,9 +3,15 @@
   <p>
   This page is being served by <b>Apache NuttX RTOS</b> running on a real
   <b>ESP32-S3</b> board, reached over a real <b>WireGuard</b> tunnel
-  (<code>wg0</code>, <code>10.10.0.2</code>) &mdash; not a simulator, not a
-  VM.
+  &mdash; not a simulator, not a VM.
   </p>
+  <table border="1" cellpadding="4" cellspacing="0">
+    <tr><td>Board</td><td>Freenove ESP32-S3 (esp32s3-devkit)</td></tr>
+    <tr><td>SoC / CPU</td><td>Espressif ESP32-S3, Xtensa LX7 dual-core</td></tr>
+    <tr><td>Wi-Fi</td><td>on-chip radio, native NuttX netdev <code>wlan0</code></td></tr>
+    <tr><td>Tunnel</td><td><code>wg0</code> = <code>10.10.0.2</code>, Windows tunnel <code>nuttx-esp32s3</code> (UDP 51820)</td></tr>
+    <tr><td>OS</td><td>Apache NuttX 12.7.0, FLAT build</td></tr>
+  </table>
   <p>
   WireGuard is ported to NuttX as a native <code>wg0</code> network
   interface: an RTOS device speaking the real protocol to the official

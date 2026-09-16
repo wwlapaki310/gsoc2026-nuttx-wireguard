@@ -235,8 +235,18 @@ COPY docker/esp32s3-etc/init.d/rcS docker/esp32s3-etc/init.d/rc.sysinit \
 RUN printf '\nifeq ($(CONFIG_ETC_ROMFS),y)\nRCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS\nendif\n' \
     >> /opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/Make.defs
 
+# Wi-Fi の認証情報はビルド引数で渡す (spresense-wifi ステージと同じ流儀)。
+# 渡さなければ defconfig のプレースホルダーのまま。
+ARG WIFI_SSID=""
+ARG WIFI_PASS=""
+
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh esp32s3-devkit:wifi && \
+    if [ -n "$WIFI_SSID" ]; then \
+      kconfig-tweak --set-str CONFIG_NETINIT_WAPI_SSID "$WIFI_SSID" && \
+      kconfig-tweak --set-str CONFIG_NETINIT_WAPI_PASSPHRASE "$WIFI_PASS" && \
+      kconfig-tweak --enable CONFIG_NETINIT_DHCPC; \
+    fi && \
     kconfig-tweak --enable CONFIG_ALLOW_BSD_COMPONENTS && \
     kconfig-tweak --enable CONFIG_NET_TUN         && \
     kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1420 && \
@@ -246,6 +256,7 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --enable CONFIG_NETUTILS_WEBSERVER && \
     kconfig-tweak --enable CONFIG_EXAMPLES_WEBSERVER && \
+    kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING && \
     kconfig-tweak --enable CONFIG_FS_ROMFS        && \
     kconfig-tweak --enable CONFIG_ETC_ROMFS       && \
     kconfig-tweak --enable CONFIG_BOARDCTL_ROMDISK && \
@@ -542,7 +553,7 @@ RUN ./tools/configure.sh spresense:wifi && \
     kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_DIRLIST && \
     kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_CLASSIC && \
     kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_SCRIPT_DISABLE && \
-    kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING && \
+    kconfig-tweak --disable CONFIG_NETUTILS_HTTPD_ENABLE_CHUNKED_ENCODING && \
     kconfig-tweak --enable CONFIG_FS_ROMFS        && \
     kconfig-tweak --enable CONFIG_ETC_ROMFS       && \
     kconfig-tweak --enable CONFIG_BOARDCTL_ROMDISK && \
@@ -551,6 +562,12 @@ RUN ./tools/configure.sh spresense:wifi && \
 # NOTE: spresense:wifi の httpd は SENDFILE (/mnt をそのまま配信) 設定。
 # esp32s3 ステージと同じ組み込みページ (httpd-fs/、%!: インクルード付き) を
 # 出すために CLASSIC + スクリプト有効に切り替えている。
+#
+# NOTE: CHUNKED_ENCODING は両実機ステージで無効。httpd は "HTTP/1.0 200 OK"
+# で応答するのに "Transfer-Encoding: chunked" を付けるため、ブラウザ
+# (HTTP/1.0 では chunked を解釈しない) にはチャンク長の 16 進数 ("225",
+# "E4", "1D", "0") が本文として見えていた。KEEPALIVE_DISABLE=y なので
+# 本文の終端は接続クローズで決まり、chunked は不要。
 
 # NOTE: spresense:wifi は usrsock 専用構成で CONFIG_NET_TCP_NO_STACK=y /
 # CONFIG_NET_UDP_NO_STACK=y (カーネル側に TCP/UDP スタックを持たず、ICMP

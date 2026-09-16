@@ -2,15 +2,23 @@
   <h1>Hello from Apache NuttX!</h1>
   <p>
   This page is being served by <b>Apache NuttX RTOS</b> running on a real
-  <b>Sony Spresense</b> board (ARM Cortex-M4F, Wi-Fi via a GS2200M
-  add-on), reached over a real <b>WireGuard</b> tunnel
-  (<code>wg0</code>, <code>10.11.0.2</code>) &mdash; not a simulator, not a
-  VM.
+  <b>Sony Spresense</b> board, reached over a real <b>WireGuard</b> tunnel
+  &mdash; not a simulator, not a VM.
   </p>
+  <table border="1" cellpadding="4" cellspacing="0">
+    <tr><td>Board</td><td>Sony Spresense main board + iS110B Wi-Fi add-on (v1.0C)</td></tr>
+    <tr><td>SoC / CPU</td><td>Sony CXD5602, ARM Cortex-M4F</td></tr>
+    <tr><td>Wi-Fi</td><td>GS2200M module over SPI, <code>usrsock</code> daemon (TCP/IP offloaded to the module)</td></tr>
+    <tr><td>Tunnel</td><td><code>wg0</code> = <code>10.11.0.2</code>, Windows tunnel <code>nuttx-spresense</code> (UDP 51821)</td></tr>
+    <tr><td>OS</td><td>Apache NuttX 12.7.0, FLAT build</td></tr>
+  </table>
   <p>
   WireGuard is ported to NuttX as a native <code>wg0</code> network
   interface: an RTOS device speaking the real protocol to the official
-  Windows client on the other end.
+  Windows client on the other end. This board's Wi-Fi driver is a
+  <code>usrsock</code> proxy rather than a kernel netdev, so the same
+  <code>wg0</code> code is running on two quite different network
+  back-ends.
   </p>
   <p class="clink9">
   telnet in, run <code>webserver &amp;</code>, and load this page from a
