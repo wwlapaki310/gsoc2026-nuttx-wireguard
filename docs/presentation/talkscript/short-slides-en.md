@@ -164,7 +164,7 @@ Finally, the one place where the plan did not survive. The proposal said BSD `so
 
 ## 08 VERIFIED ON 〔85 s〕
 
-**[SLIDE]** a three-row table (sim / QEMU, ESP32-S3, SPRESENSE — architecture, Wi-Fi approach, peer, what was confirmed) / claim: same source on 13.0.1, master and 12.7.0, both boards / "three real bugs"
+**[SLIDE]** a photo of the two boards, top right / a three-row table (sim / QEMU, ESP32-S3, SPRESENSE — architecture, Wi-Fi approach, peer, what was confirmed) / claim: same source on 13.0.1, master and 12.7.0, both boards / "three real bugs"
 
 **[SAY]**
 Where does it actually run.
