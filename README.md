@@ -4,7 +4,9 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 `wg0` network device. Verified on real hardware against real WireGuard peers.
 
 > **Discussion:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
+
 > **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel
+ 
 > **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) — 9 slides, ~10 min ([PDF](docs/presentation/short-slides.pdf), [talk script](docs/presentation/talkscript/short-slides-en.md))
 
 ---
