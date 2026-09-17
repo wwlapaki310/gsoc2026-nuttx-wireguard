@@ -999,18 +999,18 @@ One place where the plan did not survive contact. I had written BSD socket and b
             <td><strong>ESP32-S3</strong><span class="sub">Freenove devkit</span></td>
             <td>Xtensa LX7<span class="sub">on-chip radio, <code>wlan0</code> kernel netdev</span></td>
             <td>Windows official client</td>
-            <td class="mono hl">telnet, HTTP, 7 MB, rekey, 4 h 28 min</td>
+            <td class="mono hl">telnet, HTTP, 7 MB, rekey, 4 h 28 min &middot; 12.7.0 + master</td>
           </tr>
           <tr>
             <td><strong>SPRESENSE</strong><span class="sub">+ iS110B Wi-Fi add-on</span></td>
             <td>ARM Cortex-M4F<span class="sub">GS2200M over SPI, <code>usrsock</code> daemon</span></td>
             <td>Windows official client</td>
-            <td class="mono hl">telnet, HTTP, headless boot (2026-09-16)</td>
+            <td class="mono hl">telnet, HTTP, headless boot &middot; 12.7.0 + master</td>
           </tr>
         </tbody>
       </table>
       <div class="claim ok">
-        <p>Same source on <code>nuttx-12.7.0</code> and <code>master</code> (bda22516, 2026-09-17), both run on SPRESENSE hardware.</p>
+        <p>Same source on <code>nuttx-12.7.0</code> and <code>master</code> (bda22516, 2026-09-17), verified on both boards.</p>
         <small><strong>Three real bugs found and fixed on the way</strong> &mdash; one of them a master-only boot regression, written up for upstream.</small>
       </div>
     </div>
@@ -1022,7 +1022,7 @@ The simulator and QEMU runs are against the Linux kernel WireGuard. The two hard
 ||
 The SPRESENSE result is the newer one. Its Wi-Fi add-on uses a GS2200M module driven as a usrsock daemon: the TCP/IP stack lives inside the module, and the kernel only sees a socket proxy. That is a very different back-end from the ESP32-S3's kernel netdev, and the same wg0 code runs on both. Getting there exposed three real bugs, all fixed.
 ||
-Finally, the same source builds and runs on NuttX 12.7.0 and on current master, which is what the upstream submission will be measured against. Master needed one scheduler fix that I found on this board and have written up for upstream.
+Finally, the same source builds and runs on NuttX 12.7.0 and on current master, which is what the upstream submission will be measured against, and both boards were re-verified on master. Master needed one scheduler fix that I found on SPRESENSE and have written up for upstream; on ESP32-S3 it was only defconfig drift (a new init system and smaller default stacks).
     </div>
   </section>
 

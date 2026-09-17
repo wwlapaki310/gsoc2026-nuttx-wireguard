@@ -10,7 +10,7 @@
     <tr><td>SoC / CPU</td><td>Espressif ESP32-S3, Xtensa LX7 dual-core</td></tr>
     <tr><td>Wi-Fi</td><td>on-chip radio, native NuttX netdev <code>wlan0</code></td></tr>
     <tr><td>Tunnel</td><td><code>wg0</code> = <code>10.10.0.2</code>, Windows tunnel <code>nuttx-esp32s3</code> (UDP 51820)</td></tr>
-    <tr><td>OS</td><td>Apache NuttX 12.7.0, FLAT build</td></tr>
+    <tr><td>OS</td><td>Apache NuttX (@NUTTX_REF@), FLAT build</td></tr>
   </table>
   <p>
   WireGuard is ported to NuttX as a native <code>wg0</code> network

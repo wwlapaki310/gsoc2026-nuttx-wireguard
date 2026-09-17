@@ -8,7 +8,7 @@
 
 **Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping(4/4)を確認済み。** GS2200M は ESP32 の `wlan0` とは違う `usrsock` プロキシ方式のドライバで、この環境特有のバグ(`wg0` 向け ioctl が usrsock に横取りされる)を1つ修正した。当初「USB デバイスとして列挙されない」としていたのは CP210x ドライバ未インストールによる誤診断で、後日訂正した。
 
-Spresense は **NuttX 12.7.0 と NuttX master(bda22516、2026-09-17)の両方**で同じ手順(ヘッドレス起動 → ハンドシェイク → telnet → HTTP)を実機確認済み。WireGuard 側のソースは同一。master では NuttX 本体側に `CONFIG_RTC_HIRES` の起動回帰があり、`Dockerfile` がビルド時に修正を当てている([docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md))。
+ESP32-S3 と Spresense はどちらも **NuttX 12.7.0 と NuttX master(bda22516、2026-09-17)の両方**で同じ手順(ヘッドレス起動 → ハンドシェイク → telnet → HTTP)を実機確認済み。WireGuard 側のソース差分は `CONFIG_NET_WIREGUARD_STACKSIZE` の既定値(4096 固定)だけ。master では NuttX 本体側に cxd56 の `CONFIG_RTC_HIRES` 起動回帰があり `Dockerfile` がビルド時に修正を当てている([docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md))。ESP32-S3 側の defconfig 変化(NxInit、スタック既定 2048、SPIFFS の非互換)への対応は各ボードの「ビルド」節と [phase4-log.md](phase4-log.md) の 2026-09-17 追記を参照。
 
 ESP32-WROOM-32 のみ、GPIO0 を Low にする経路の故障によりダウンロードモードに入れず、書き込みに到達できていない(ビルド自体はコード変更なしで成功)。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
@@ -40,6 +40,14 @@ docker build --target esp32s3 \n  --build-arg WIFI_SSID=<ssid> --build-arg WIFI_
 ```
 
 Wi-Fi の認証情報はビルド引数で渡す(`CONFIG_NETINIT_WAPI_SSID/PASSPHRASE` と `CONFIG_NETINIT_DHCPC` を設定する)。渡さなければ defconfig のプレースホルダーのまま。
+
+NuttX master で作る場合は `--build-arg NUTTX_REF=master` を足す(2026-09-17 時点 bda22516 で実機確認済み)。master の `esp32s3-devkit:wifi` は defconfig が変わっており(NxInit エントリポイント、`DEFAULT_TASK_STACKSIZE=2048`、`SPIFFS_NAME_MAX=32`)、Dockerfile がヘッドレス起動に必要な分を吸収している。**12.7.0 のイメージから master(またはその逆)に書き換えるときは `/data` の SPIFFS を消す**こと — `SPIFFS_NAME_MAX` が違うので旧イメージのままだと書き込みが `EFTYPE` で壊れる:
+
+```bash
+python -m esptool -c esp32s3 -p COM7 erase_region 0x180000 0x100000
+```
+
+保存していた `wg0.conf`(秘密鍵)も消えるので、`wg genkey` からやり直して Windows 側のピア公開鍵を更新する。
 
 `esp32` ステージとほぼ同じ構成で、ツールチェインを `xtensa-esp32s3-elf`、ボードを `esp32s3-devkit:wifi` に変更したもの。`esp32s3-devkit:wifi` は NSH + `CONFIG_ESP32S3_WIFI` + WAPI が最初から有効になっている構成。WireGuard 用 Kconfig(`ALLOW_BSD_COMPONENTS`・`NET_TUN`・`NET_SOCKOPTS`・`NET_WIREGUARD`・`DEV_URANDOM_ARCH`)を追加してビルド。
 

@@ -10,7 +10,7 @@
     <tr><td>SoC / CPU</td><td>Sony CXD5602, ARM Cortex-M4F</td></tr>
     <tr><td>Wi-Fi</td><td>GS2200M module over SPI, <code>usrsock</code> daemon (TCP/IP offloaded to the module)</td></tr>
     <tr><td>Tunnel</td><td><code>wg0</code> = <code>10.11.0.2</code>, Windows tunnel <code>nuttx-spresense</code> (UDP 51821)</td></tr>
-    <tr><td>OS</td><td>Apache NuttX 12.7.0, FLAT build</td></tr>
+    <tr><td>OS</td><td>Apache NuttX (@NUTTX_REF@), FLAT build</td></tr>
   </table>
   <p>
   WireGuard is ported to NuttX as a native <code>wg0</code> network

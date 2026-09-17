@@ -122,6 +122,28 @@ region:
 
 Also applied in the Dockerfile. Worth a one-line PR on its own.
 
+## Not for this issue: what changed on `esp32s3-devkit:wifi` at the same time
+
+Recorded here so the next person does not confuse them with the cxd56 hang.
+None of these is a NuttX bug; they are defconfig policy changes on `master`
+that an application relying on the 12.7.0 behaviour will notice:
+
+- `CONFIG_INIT_ENTRYPOINT="init_main"` / `CONFIG_SYSTEM_NXINIT=y`: the
+  console shell is started by `init.rc` as `sh` (`nsh_system_ctty()`), so
+  `nsh_initialize()` — and with it `rc.sysinit`, `rcS` and
+  `nsh_telnetstart()` — never runs. Boards that relied on `/etc/init.d/rcS`
+  need either `init.rc` entries or `INIT_ENTRYPOINT=nsh_main`.
+- `CONFIG_DEFAULT_TASK_STACKSIZE` 4096 → 2048: any builtin whose Kconfig
+  stack size defaults to `DEFAULT_TASK_STACKSIZE` and touches stdio + a
+  file system now overflows (this port's `wg saveconf` did: garbage errno,
+  then a load/store exception). Fixed on our side with a fixed default.
+- `CONFIG_SPIFFS_NAME_MAX` 128 → 32: a SPIFFS volume written by a 12.7.0
+  image is not readable by a `master` image at the same offset; writes fail
+  with `SPIFFS_ERR_DELETED` (which `spiffs_vfs.c` returns unmapped, -257) or
+  `EFTYPE`. Erasing the storage region and letting SPIFFS re-format fixes
+  it. The unmapped -257 leaking to user space as `errno` may be worth its
+  own small report (`spiffs_map_errno()` is not applied on that path).
+
 ## Before filing
 
 - `git log -S'wd_timer(clock_systime_ticks())' -- sched/sched/sched_processtick.c`

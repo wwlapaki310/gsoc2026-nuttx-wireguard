@@ -397,7 +397,23 @@ RTC を有効化する watchdog は RTC が有効になるまで満了しない�
 
 **結果(実機):** master で NSH 起動、rcS チェーン(`gs2200m` → `wg setconf` → `denyinet on` → `telnetd`)完走、Windows クライアントとのハンドシェイク約 10 s、トンネル越し telnet と HTTP 200 を確認。sim の回帰スクリプトも master で通る。**WireGuard 側のソースは 12.7.0 と master で一切変えていない。**
 
-upstream 向けのドラフトは [docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md)。ESP32-S3 の master ビルドは、ビルド途中でホストのディスクが一杯になり Docker Desktop の VM ごと落ちたため未完(次回)。
+upstream 向けのドラフトは [docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md)。
+
+### 追記 (2026-09-17 朝): ESP32-S3 も master で通す — defconfig の変化に 3 つ引っかかる
+
+ビルド途中でホストの C: が一杯になり Docker Desktop の WSL VM ごと落ちた(`docker_data.vhdx` が 49 GB。bisect 用イメージとビルドキャッシュ)。イメージ整理と `Optimize-VHD` で 22 GB に戻してから再開。
+
+master (bda22516) の `esp32s3-devkit:wifi` はビルドも Wi-Fi 接続も通るが、**電源投入だけでは `wg0` も telnetd も上がらず、`wg saveconf` は壊れる**。WireGuard 側ではなく defconfig 側の変化が 3 つ:
+
+**1. NxInit がエントリポイントになった** — `CONFIG_INIT_ENTRYPOINT="init_main"` + `CONFIG_SYSTEM_NXINIT=y`(Android 風の `/etc/init.d/init.rc`)。init.rc が起動するコンソールの `sh` は `nsh_system_ctty()` で、`nsh_initialize()` を通らない。つまり `rc.sysinit` / `rcS` も `nsh_telnetstart()` も実行されない。12.7.0 と同じ `nsh_main` に戻す(Dockerfile、`CONFIG_SYSTEM_NXINIT=y` のときだけ)。
+
+**2. `DEFAULT_TASK_STACKSIZE` が 4096 → 2048** — `wg` builtin のスタックがこれに追従していたため、`wg saveconf`(stdio + SPIFFS)が 2048 バイトを突き破る。症状はまず errno がゴミ(-135 / -257)、次に `wg` タスクの load/store 例外(`VADDR 70000009`)。`CONFIG_NET_WIREGUARD_STACKSIZE` の既定を `DEFAULT_TASK_STACKSIZE` 依存から **4096 固定**に変更(Kconfig の help に経緯を記載)。telnetd デーモンも 2048 になっていたので Dockerfile で 4096 に。
+
+**3. 12.7.0 で作った SPIFFS が master で読めない** — `CONFIG_SPIFFS_NAME_MAX` が 128 → 32 に変わり、オブジェクトヘッダの寸法が変わる。旧イメージが残った `/data` を master がマウントすると、`echo > /data/x` は通るのに `fopen()` からの書き込みが `SPIFFS_ERR_DELETED`(-257、`spiffs_map_errno()` を通らず素通り)や `EFTYPE`(-135)で失敗し、以後 `echo` も失敗する。`esptool erase_region 0x180000 0x100000` で消して起動し直せば正常(フォーマットし直される)。**12.7.0 と master を行き来するときは `/data` を消す**こと。保存していた秘密鍵は失われるので、ピアの公開鍵を Windows 側で更新する必要がある。
+
+上の 2 は upstream に出す前提で踏んでおいてよかった類(`DEFAULT_TASK_STACKSIZE` に既定を委ねる builtin は、小さい defconfig でそのまま落ちる)。1 と 3 は NuttX 側の方針変更で、こちらはドキュメント対応。
+
+**結果(実機、master bda22516):** 電源投入 → rcS で `wg setconf /data/wg0.conf` → `wg0` up → telnetd 自動起動。Windows クライアントとのハンドシェイク、トンネル越し ping(6〜9 ms)、telnet、`webserver &`、HTTP 200(ボード情報テーブル)。**これで ESP32-S3 と Spresense の両方が 12.7.0 と master の両方で実機確認済み。** WireGuard 側のソース変更は `CONFIG_NET_WIREGUARD_STACKSIZE` の既定値のみ。
 
 ---
 

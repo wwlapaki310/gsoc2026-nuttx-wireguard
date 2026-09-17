@@ -38,7 +38,15 @@ config NET_WIREGUARD_PRIORITY
 
 config NET_WIREGUARD_STACKSIZE
 	int "wg command stack size"
-	default DEFAULT_TASK_STACKSIZE
+	default 4096
+	---help---
+		Stack size of the wg command task. It is not tied to
+		DEFAULT_TASK_STACKSIZE because "wg saveconf" / "wg setconf" go
+		through stdio and the file system: on an ESP32-S3 whose defconfig
+		sets DEFAULT_TASK_STACKSIZE to 2048, writing the configuration to
+		SPIFFS overflowed a 2048-byte stack (garbage errno values, then a
+		load/store exception in the wg task). 4096 was measured with
+		headroom on that board.
 
 config NET_WIREGUARD_RX_STACKSIZE
 	int "WireGuard RX thread stack size"

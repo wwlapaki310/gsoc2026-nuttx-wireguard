@@ -280,6 +280,9 @@ RUN pip3 install --break-system-packages esptool
 # 「トンネル越し telnet で見つかった TCP 特有バグ」節の実演で使用)
 COPY docker/webserver-demo/header.html docker/webserver-demo/index.shtml \
      /opt/apps/examples/webserver/httpd-fs/
+RUN ref=$(sed -n 's/^NuttX ref: //p' /opt/nuttx-ref.txt) && \
+    sha=$(sed -n '2s/ .*//p' /opt/nuttx-ref.txt) && \
+    sed -i "s|@NUTTX_REF@|$ref, $sha|" /opt/apps/examples/webserver/httpd-fs/index.shtml
 
 # ヘッドレス運用 (USB シリアルなし) のための起動スクリプト。
 # apps/nshlib/nsh_init.c は netinit_bringup() の後に /etc/init.d/rcS を
@@ -322,12 +325,24 @@ RUN ./tools/configure.sh esp32s3-devkit:wifi && \
     kconfig-tweak --enable CONFIG_SYSTEM_TELNETD  && \
     make olddefconfig >/dev/null 2>&1 && \
     kconfig-tweak --enable CONFIG_NSH_TELNET      && \
+    kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_STACKSIZE 4096 && \
     kconfig-tweak --set-val CONFIG_SYSTEM_TELNETD_SESSION_STACKSIZE 4096 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
     kconfig-tweak --set-val CONFIG_ESP32S3_SPIFLASH_OP_TASK_STACKSIZE 3072 && \
     kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
+    if grep -q '^CONFIG_SYSTEM_NXINIT=y' .config; then \
+      kconfig-tweak --disable CONFIG_SYSTEM_NXINIT && \
+      kconfig-tweak --set-str CONFIG_INIT_ENTRYPOINT nsh_main; \
+    fi && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE (NuttX master): esp32s3-devkit:wifi の defconfig は NxInit
+# (CONFIG_SYSTEM_NXINIT, Android 風の /etc/init.d/init.rc) をエントリポイントに
+# するようになった。その場合コンソールの sh は nsh_system_ctty() で、
+# nsh_initialize() を通らないため rc.sysinit / rcS も telnetd の自動起動も
+# 走らない (実機で確認: 電源投入後 wg0 も telnetd も上がらない)。12.7.0 と
+# 同じ nsh_main エントリに戻す。12.7.0 では NXINIT が無いので何もしない。
 
 # NOTE: SPI フラッシュ操作タスクのスタックを既定の 768 から 3072 に引き上げている。
 # 実機の ps で 560/704 = 79.5%、もう一方は 80.4% で NuttX の "!" 警告が出ていた。
@@ -522,6 +537,9 @@ PYEOF
 # Spresense 向け)
 COPY docker/webserver-demo/header.html docker/webserver-demo/spresense/index.shtml \
      /opt/apps/examples/webserver/httpd-fs/
+RUN ref=$(sed -n 's/^NuttX ref: //p' /opt/nuttx-ref.txt) && \
+    sha=$(sed -n '2s/ .*//p' /opt/nuttx-ref.txt) && \
+    sed -i "s|@NUTTX_REF@|$ref, $sha|" /opt/apps/examples/webserver/httpd-fs/index.shtml
 
 # "denyinet on|off" builtin。usrsock デーモンに SIOCDENYINETSOCK を送り、
 # 以後の AF_INET socket() をカーネルスタックに落とす。wg0 の UDP ソケットは

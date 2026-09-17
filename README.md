@@ -62,10 +62,11 @@ cycle. What remains is upstream submission.
 Peers are always real WireGuard implementations — the Linux kernel module and the official
 Windows client. Interoperating with another copy of this code would prove nothing.
 
-The port builds unchanged against both NuttX 12.7.0 and `master`, and the Spresense
-demo above was verified on hardware with both (master bda22516, 2026-09-17). On master the
+The port builds against both NuttX 12.7.0 and `master`, and the ESP32-S3 and Spresense
+demos above were verified on hardware with both (master bda22516, 2026-09-17). On master the
 Dockerfile applies one NuttX-side fix for a `CONFIG_RTC_HIRES` boot regression on cxd56
-([draft report](docs/upstream/rtc-hires-wdog-regression-draft.md)); the WireGuard code is the same.
+([draft report](docs/upstream/rtc-hires-wdog-regression-draft.md)) and re-selects the classic
+`nsh_main` entry point on ESP32-S3; the WireGuard code is the same.
 
 ---
 
@@ -162,7 +163,7 @@ docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
 Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>` (default
-`nuttx-12.7.0`; `master` builds and is verified on Spresense).
+`nuttx-12.7.0`; `master` builds and is verified on ESP32-S3 and Spresense).
 
 See [docs/development/dev-environment.md](docs/development/dev-environment.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
 
