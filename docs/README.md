@@ -54,7 +54,9 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [slides.html](presentation/slides.html) | 発表スライド 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧 |
 | [talk-script.md](presentation/talk-script.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
 | [short-slides.html](presentation/short-slides.html) | 紹介デッキ 9 枚。Returns 版に Spresense 実機確認と NuttX バージョン（13.0.1 / master / 12.7.0）のスライドを足したもの。`←→` 送り、`N` で発表者ノート |
-| [short-summary.md](presentation/short-summary.md) | その原稿（構成・時間配分・話で補う内容） |
+| [short-slides.pdf](presentation/short-slides.pdf) | その PDF 版 |
+| [talk-script_short-slides.md](presentation/talk-script_short-slides.md) | その読み上げ台本（日本語。時間配分・枠別の削り方・このデッキ特有の想定質問） |
+| [short-summary.md](presentation/short-summary.md) | 旧 6 枚版の原稿（現在のデッキとは構成が違う。記録として残置） |
 | [presentation-script.md](presentation/presentation-script.md) | 進行表と想定 Q&A |
 | [returns-slides.html](presentation/returns-slides.html) | Sechack365 Returns 向け 8 枚（公開済み・凍結）。`←→` 送り、`N` で発表者ノート |
 | [returns-slides.pdf](presentation/returns-slides.pdf) | その PDF 版（`render-slides.py` の 2 倍解像度 PNG から生成） |

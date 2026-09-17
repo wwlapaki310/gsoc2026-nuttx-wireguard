@@ -1,5 +1,9 @@
 # 5分紹介スライド構成: WireGuard を Apache NuttX へ
 
+> **2026-09-17 注:** [short-slides.html](short-slides.html) は Returns デッキを土台にした 9 枚構成に
+> 作り直した。現在のデッキの台本は [talk-script_short-slides.md](talk-script_short-slides.md)。
+> 以下は旧 6 枚版の原稿で、記録として残している。
+
 短時間の紹介枠・LT 用。**6 枚 / 5 分**。
 この原稿から起こしたデッキ: [short-slides.html](short-slides.html)
 1 枚 = 見出し + 主役の要素ひとつ + 締めの一行。詰め込まない。
