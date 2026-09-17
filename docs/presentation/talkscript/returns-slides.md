@@ -8,7 +8,7 @@ Audience: Sechack365 Returns alumni event。**スライドの文字は英語、�
 本番で読むのはこのファイルの「話すこと」のほうを使う。
 
 本編 27 枚のデッキは [slides.html](../slides.html)、その台本は [talkscript/slides.md](slides.md)。
-5 分の日本語デッキは [short-slides.html](../short-slides.html) / [short-summary.md](short-summary.md)（旧 6 枚版）/ [short-slides.md](short-slides.md)。
+短い版のデッキは [short-slides.html](../short-slides.html)（9 枚）、その台本は [short-slides.md](short-slides.md)。
 
 ## Core Message
 

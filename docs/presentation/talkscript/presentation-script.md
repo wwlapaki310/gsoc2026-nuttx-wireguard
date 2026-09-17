@@ -1,6 +1,6 @@
 # 発表: WireGuard を Apache NuttX に移植する
 
-短い紹介枠なら [`short-summary.md`](short-summary.md)（5 分版）を使ってください。
+短い紹介枠なら [`short-slides.md`](short-slides.md)（9 枚 / 10・8・5 分のルートつき）を使ってください。
 
 スライド本体は [`slides.html`](../slides.html) です。**話す原稿はスライドの中に入っている**ので、
 このファイルには重複して置いていません。以前ここにあった 20 枚分の原稿は、そのまま

@@ -56,9 +56,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 |---|---|---|
 | [slides.html](presentation/slides.html) | [talkscript/slides.md](presentation/talkscript/slides.md) | 本編 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧。台本は時間配分と削る順番つき |
 | [returns-slides.html](presentation/returns-slides.html) / [.pdf](presentation/returns-slides.pdf) | [talkscript/returns-slides.md](presentation/talkscript/returns-slides.md) | Sechack365 Returns 向け 8 枚（公開済み・凍結）。台本側が構成・話すこと・出典の単一の情報源 |
-| [short-slides.html](presentation/short-slides.html) / [.pdf](presentation/short-slides.pdf) | [talkscript/short-slides.md](presentation/talkscript/short-slides.md) | 9 枚。Returns 版に Spresense 実機確認と NuttX 3 バージョン（13.0.1 / master / 12.7.0）を足したもの。台本は 10 / 8 / 5 分のルートつき |
+| [short-slides.html](presentation/short-slides.html) / [.pdf](presentation/short-slides.pdf) | [talkscript/short-slides.md](presentation/talkscript/short-slides.md) / [英語版](presentation/talkscript/short-slides-en.md) | 9 枚。Returns 版に Spresense 実機確認と NuttX 3 バージョン（13.0.1 / master / 12.7.0）を足したもの。台本は 10 / 8 / 5 分のルートつき。英語で話す場合は `-en` を使う |
 | （共通） | [talkscript/presentation-script.md](presentation/talkscript/presentation-script.md) | 進行表と想定 Q&A |
-| （旧） | [talkscript/short-summary.md](presentation/talkscript/short-summary.md) | 旧 6 枚版 short-slides の原稿。記録として残置 |
 
 ### スライドを画像にする
 

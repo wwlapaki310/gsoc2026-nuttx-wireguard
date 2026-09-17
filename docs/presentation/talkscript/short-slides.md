@@ -5,6 +5,7 @@
 **SPRESENSE の実機確認**と **NuttX 3 バージョン(13.0.1 / master / 12.7.0)での検証**を足した版。
 スライドの文字は英語、話すのは日本語。デッキ内の発表者ノート(`N` キー)は英語のまま
 なので、本番で読むのはこちら。PDF 版は [`short-slides.pdf`](../short-slides.pdf)。
+英語で話す場合は [`short-slides-en.md`](short-slides-en.md)。同じ 9 枚・同じ削る順番。
 
 本編 27 枚の台本は [`slides.md`](slides.md)、想定 Q&A は
 [`presentation-script.md`](presentation-script.md) と [`returns-slides.md`](returns-slides.md) 末尾。

@@ -5,6 +5,7 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 
 > **Discussion:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
 > **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel
+> **Slides:** [short-slides.pdf](docs/presentation/short-slides.pdf) — 9 slides, ~10 min ([HTML](docs/presentation/short-slides.html), [talk script](docs/presentation/talkscript/short-slides-en.md))
 
 ---
 
