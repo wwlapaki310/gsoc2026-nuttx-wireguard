@@ -415,6 +415,19 @@ master (bda22516) の `esp32s3-devkit:wifi` はビルドも Wi-Fi 接続も通�
 
 **結果(実機、master bda22516):** 電源投入 → rcS で `wg setconf /data/wg0.conf` → `wg0` up → telnetd 自動起動。Windows クライアントとのハンドシェイク、トンネル越し ping(6〜9 ms)、telnet、`webserver &`、HTTP 200(ボード情報テーブル)。**これで ESP32-S3 と Spresense の両方が 12.7.0 と master の両方で実機確認済み。** WireGuard 側のソース変更は `CONFIG_NET_WIREGUARD_STACKSIZE` の既定値のみ。
 
+### 追記 (2026-09-17 午前): 既定を最新リリース 13.0.1 に切り替え — 12.7.0 / 13.0.1 / master の 3 本で実機確認
+
+「12.7.0 で確認済み」は 6 リリース前(12.8 → 12.13 → 13.0.0 → 13.0.1)の話になっていたので、既定の `NUTTX_REF` を **`nuttx-13.0.1`(cec617df)** に上げた。12.7.0 は `--build-arg NUTTX_REF=nuttx-12.7.0` で今まで通り作れる(README に並記)。
+
+13.0.1 で確認したこと:
+
+- 全ステージ(sim / qemu / esp32 / esp32s3 / spresense / spresense-wifi)がビルドできる。sim の 3 本の回帰スクリプトと QEMU の検証スクリプトが PASS(12.7.0 / 13.0.1 / master の 3 本すべて)
+- QEMU は 2 点直した。(a) 13.0 以降はリンク後処理が Python の `cxxfilt` を要求する。(b) `qemu-armv7a:nsh` が `.text` を flash(0x0)、`.data` を RAM 先頭 0x40000000 に置く構成になり、QEMU が DTB を置く場所(RAM 先頭)と `.data` が衝突して `fdt_get()` が無効 → virtio-net が登録されず `eth0` が出ない。upstream の `full` 構成に倣って `RAM_START=0x40200000` にして先頭 2 MB を DTB に空けた(リンカスクリプトが ROM 領域を使うときだけ。`CONFIG_BOOT_RUNFROMFLASH` は 12.7.0 でも y なので判定に使えず、最初それで 12.7.0 側を壊した)
+- **ESP32-S3・Spresense とも実機で完走**(ヘッドレス起動 → ハンドシェイク 5 s → telnet → HTTP 200、デモページに `nuttx-13.0.1, cec617df`)
+- **`CONFIG_RTC_HIRES` の起動回帰は 13.0.1 のリリースにも入っている**(`sched_processtick.c` が `wd_timer(clock_systime_ticks())` になっている)。Dockerfile のパッチがそのまま当たって起動する。リリースに入った回帰なので upstream 報告の優先度が上がった
+- ESP32-S3 側: 13.0.1 には NxInit は無い(`INIT_ENTRYPOINT=nsh_main`)が、`DEFAULT_TASK_STACKSIZE=2048` と `SPIFFS_NAME_MAX=32` は入っている。SPIFFS は master と同じ形式なので、master で作り直した `/data` はそのまま読めた(鍵の変更なし)
+- Spresense は起動時に `cxd56_farapiinitialize: Mismatched version: loader(20585) != Self(20596)` と出るようになった。ボードの GNSS ローダ FW が SDK より古いという警告で、Wi-Fi / WireGuard には無関係
+
 ---
 
 ## トンネル越し telnet で見つかった TCP 特有バグの調査・修正

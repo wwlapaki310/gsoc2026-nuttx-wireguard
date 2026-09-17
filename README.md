@@ -62,11 +62,12 @@ cycle. What remains is upstream submission.
 Peers are always real WireGuard implementations — the Linux kernel module and the official
 Windows client. Interoperating with another copy of this code would prove nothing.
 
-The port builds against both NuttX 12.7.0 and `master`, and the ESP32-S3 and Spresense
-demos above were verified on hardware with both (master bda22516, 2026-09-17). On master the
-Dockerfile applies one NuttX-side fix for a `CONFIG_RTC_HIRES` boot regression on cxd56
-([draft report](docs/upstream/rtc-hires-wdog-regression-draft.md)) and re-selects the classic
-`nsh_main` entry point on ESP32-S3; the WireGuard code is the same.
+The default build is against the latest NuttX release, **13.0.1**. The same source also
+builds against `master` (bda22516) and against the earlier pin `nuttx-12.7.0`, and the ESP32-S3
+and Spresense demos above were verified on hardware with all three (2026-09-17). On 13.0.x and
+master the Dockerfile applies one NuttX-side fix for a `CONFIG_RTC_HIRES` boot regression on
+cxd56 ([draft report](docs/upstream/rtc-hires-wdog-regression-draft.md)) and, on master,
+re-selects the classic `nsh_main` entry point on ESP32-S3; the WireGuard code is the same.
 
 ---
 
@@ -136,7 +137,7 @@ nsh> wg saveconf          # -> /data/wg0.conf, reloaded at next boot
 The configuration file uses the same INI layout as `wg(8)` (`[Interface]` / `[Peer]`), so a
 desktop WireGuard configuration can be dropped in as-is.
 
-> `CONFIG_LINE_MAX` (`CONFIG_NSH_LINELEN` on 12.7.0) must be at least 160 for runtime
+> `CONFIG_LINE_MAX` (and `CONFIG_NSH_LINELEN` on 12.7.0) must be at least 160 for runtime
 > configuration — a full `wg set peer` line runs to about 134 characters, and NSH silently
 > truncates it at the default.
 
@@ -162,8 +163,17 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
-Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>` (default
-`nuttx-12.7.0`; `master` builds and is verified on ESP32-S3 and Spresense).
+Build against a different NuttX revision with `--build-arg NUTTX_REF=<ref>`. The default is
+`nuttx-13.0.1`; `master` and `nuttx-12.7.0` are also verified on ESP32-S3 and Spresense:
+
+```bash
+docker build --build-arg NUTTX_REF=master       --target esp32s3 -t nuttx-wireguard:esp32s3-master .
+docker build --build-arg NUTTX_REF=nuttx-12.7.0 --target esp32s3 -t nuttx-wireguard:esp32s3-12.7.0 .
+```
+
+On ESP32-S3, erase the SPIFFS region (`esptool erase_region 0x180000 0x100000`) when moving a
+board between 12.7.0 and 13.0.1/master images — the on-flash format differs
+(`CONFIG_SPIFFS_NAME_MAX`), and the saved `wg0.conf` has to be recreated.
 
 See [docs/development/dev-environment.md](docs/development/dev-environment.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
 

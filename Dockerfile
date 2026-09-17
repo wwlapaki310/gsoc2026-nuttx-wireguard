@@ -20,11 +20,13 @@ RUN apt-get update -q && apt-get install -y --no-install-recommends \
 # kconfiglib: NuttX 拡張 Kconfig 構文の解析に必要 (olddefconfig 等)
 RUN pip3 install --break-system-packages kconfiglib
 
-# NuttX を取得する ref。既定は本プロジェクトが検証済みの 12.7.0 だが、
-#   docker build --build-arg NUTTX_REF=master ...
-# とすれば upstream master に対してビルドできる。upstream 提出は master
-# ベースになるため、API のズレを早めに検出するために使う。
-ARG NUTTX_REF=nuttx-12.7.0
+# NuttX を取得する ref。既定は直近のリリース 13.0.1 (実機確認済み)。
+#   docker build --build-arg NUTTX_REF=master ...        # upstream master
+#   docker build --build-arg NUTTX_REF=nuttx-12.7.0 ...  # 以前の固定版
+# の 3 つはいずれも sim / ESP32-S3 / Spresense で動作確認済み (2026-09-17)。
+# upstream 提出は master ベースになるため、API のズレを早めに検出するには
+# master でも回す。以下の「master 向け」の条件付きパッチは 13.0.1 にも当たる。
+ARG NUTTX_REF=nuttx-13.0.1
 
 WORKDIR /opt
 RUN git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx.git nuttx && \
@@ -51,8 +53,8 @@ RUN git clone --depth=1 --branch "${NUTTX_REF}" https://github.com/apache/nuttx.
 # 由来と各ファイルのライセンスは docs/license-appendix-draft.md を参照。
 COPY nuttx_port/apps/netutils/wireguard/ /opt/apps/netutils/wireguard/
 
-# NuttX master (bda22516 時点) で spresense:wifi が NSH まで到達しない回帰の
-# 修正 (12.7.0 にはパターンが無いので何もしない)。
+# NuttX master (bda22516 時点) および 13.0.x で spresense:wifi が NSH まで到達
+# しない回帰の修正 (12.7.0 にはパターンが無いので何もしない)。
 #
 # sched/sched/sched_processtick.c が watchdog を wd_timer(clock_systime_ticks())
 # で回すようになり、CONFIG_RTC_HIRES=y ではその値が RTC 由来になった。
@@ -169,6 +171,10 @@ CMD ["/usr/local/bin/docker-entrypoint.sh"]
 # =============================================================================
 FROM base AS qemu
 
+# NuttX 13.0 以降、qemu-armv7a のリンク後処理 (tools/mkallsyms.py) が
+# cxxfilt を要求する ("Please execute ... pip install pyelftools cxxfilt")。
+RUN pip3 install --break-system-packages cxxfilt
+
 WORKDIR /opt/nuttx
 RUN ./tools/configure.sh qemu-armv7a:nsh && \
     kconfig-tweak --enable CONFIG_NET             && \
@@ -194,7 +200,22 @@ RUN ./tools/configure.sh qemu-armv7a:nsh && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \
+    if grep -q '> ROM' boards/arm/qemu/qemu-armv7a/scripts/dramboot.ld; then \
+      kconfig-tweak --set-val CONFIG_RAM_START  0x40200000 && \
+      kconfig-tweak --set-val CONFIG_RAM_VSTART 0x40200000 && \
+      kconfig-tweak --set-val CONFIG_RAM_SIZE   132120576; \
+    fi && \
     make olddefconfig 2>&1 | tail -5
+
+# NOTE (NuttX 13.0 以降): qemu-armv7a:nsh は .text を flash (0x0) に置き、
+# .data を RAM 先頭 0x40000000 に置く構成になった。QEMU は -kernel の ELF が
+# RAM 先頭より下にあるとき DTB を RAM 先頭 (0x40000000) に置き、qemu_boot.c は
+# そこを fdt_register() するので、.data と DTB が同じ場所を取り合って
+# fdt_get() が無効 → virtio-net が登録されず eth0 が出ない。upstream の
+# `full` 構成と同じく RAM を 0x40200000 から始めて先頭 2 MB を DTB に空ける
+# (12.7.0 は .text も RAM に置くため DTB は元々その下に収まっている。判定は
+# リンカスクリプトが ROM 領域を使っているかどうか。CONFIG_BOOT_RUNFROMFLASH
+# は 12.7.0 でも y なので判定に使えない)。
 
 RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
     (tail -200 /tmp/nuttx-build.log && false)
@@ -452,7 +473,7 @@ WORKDIR /workspace
 FROM base AS spresense-wifi
 
 # Backport upstream fix (apache/nuttx PR #2707, merged 2021-01-18) that our
-# pinned nuttx-12.7.0 checkout is missing: _read_data_len() in gs2200m.c
+# nuttx-12.7.0 checkout is missing: _read_data_len() in gs2200m.c
 # issues the SPI read-header request and busy-waits up_udelay(50) *after*
 # the dready() poll loop; upstream moved a shorter (30us) delay to *before*
 # the loop so the module has time to react before the host starts polling.

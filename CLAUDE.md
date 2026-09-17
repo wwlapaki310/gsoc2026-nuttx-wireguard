@@ -10,7 +10,7 @@ NuttX has its own TCP/IP stack (not lwIP), so `wg0` is a `NET_LL_TUN` netdev reg
 
 ## Development Environment
 
-All NuttX development happens inside Docker. The container clones NuttX 12.7.0 and wireguard-lwip at build time.
+All NuttX development happens inside Docker. The container clones NuttX 13.0.1 (the default `NUTTX_REF`; `master` and `nuttx-12.7.0` are also supported and verified) at build time; the wireguard-lwip sources are vendored in `nuttx_port/`.
 
 **Build the Docker image:**
 ```bash
@@ -68,8 +68,8 @@ make olddefconfig
 ```
 
 Inside the container:
-- `/opt/nuttx/` — NuttX kernel source (nuttx-12.7.0)
-- `/opt/apps/` — NuttX apps source (nuttx-12.7.0); WireGuard code goes in `netutils/wireguard/`
+- `/opt/nuttx/` — NuttX kernel source (`NUTTX_REF`, default nuttx-13.0.1)
+- `/opt/apps/` — NuttX apps source (same ref); WireGuard code goes in `netutils/wireguard/`
 - `/opt/wireguard-lwip/` — Reference implementation to port
 
 ## Architecture

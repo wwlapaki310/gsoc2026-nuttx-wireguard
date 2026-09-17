@@ -8,7 +8,7 @@
 
 **Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping(4/4)を確認済み。** GS2200M は ESP32 の `wlan0` とは違う `usrsock` プロキシ方式のドライバで、この環境特有のバグ(`wg0` 向け ioctl が usrsock に横取りされる)を1つ修正した。当初「USB デバイスとして列挙されない」としていたのは CP210x ドライバ未インストールによる誤診断で、後日訂正した。
 
-ESP32-S3 と Spresense はどちらも **NuttX 12.7.0 と NuttX master(bda22516、2026-09-17)の両方**で同じ手順(ヘッドレス起動 → ハンドシェイク → telnet → HTTP)を実機確認済み。WireGuard 側のソース差分は `CONFIG_NET_WIREGUARD_STACKSIZE` の既定値(4096 固定)だけ。master では NuttX 本体側に cxd56 の `CONFIG_RTC_HIRES` 起動回帰があり `Dockerfile` がビルド時に修正を当てている([docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md))。ESP32-S3 側の defconfig 変化(NxInit、スタック既定 2048、SPIFFS の非互換)への対応は各ボードの「ビルド」節と [phase4-log.md](phase4-log.md) の 2026-09-17 追記を参照。
+ESP32-S3 と Spresense はどちらも **NuttX 13.0.1(既定)・master(bda22516)・12.7.0 の 3 つ**で同じ手順(ヘッドレス起動 → ハンドシェイク → telnet → HTTP)を実機確認済み(2026-09-17)。WireGuard 側のソース差分は `CONFIG_NET_WIREGUARD_STACKSIZE` の既定値(4096 固定)だけ。13.0.x と master では NuttX 本体側に cxd56 の `CONFIG_RTC_HIRES` 起動回帰があり `Dockerfile` がビルド時に修正を当てている([docs/upstream/rtc-hires-wdog-regression-draft.md](../upstream/rtc-hires-wdog-regression-draft.md))。ESP32-S3 側の defconfig 変化(NxInit、スタック既定 2048、SPIFFS の非互換)への対応は各ボードの「ビルド」節と [phase4-log.md](phase4-log.md) の 2026-09-17 追記を参照。
 
 ESP32-WROOM-32 のみ、GPIO0 を Low にする経路の故障によりダウンロードモードに入れず、書き込みに到達できていない(ビルド自体はコード変更なしで成功)。詳しい経緯は同じく [docs/phase4-log.md](phase4-log.md) を参照。
 
@@ -41,7 +41,7 @@ docker build --target esp32s3 \n  --build-arg WIFI_SSID=<ssid> --build-arg WIFI_
 
 Wi-Fi の認証情報はビルド引数で渡す(`CONFIG_NETINIT_WAPI_SSID/PASSPHRASE` と `CONFIG_NETINIT_DHCPC` を設定する)。渡さなければ defconfig のプレースホルダーのまま。
 
-NuttX master で作る場合は `--build-arg NUTTX_REF=master` を足す(2026-09-17 時点 bda22516 で実機確認済み)。master の `esp32s3-devkit:wifi` は defconfig が変わっており(NxInit エントリポイント、`DEFAULT_TASK_STACKSIZE=2048`、`SPIFFS_NAME_MAX=32`)、Dockerfile がヘッドレス起動に必要な分を吸収している。**12.7.0 のイメージから master(またはその逆)に書き換えるときは `/data` の SPIFFS を消す**こと — `SPIFFS_NAME_MAX` が違うので旧イメージのままだと書き込みが `EFTYPE` で壊れる:
+既定は NuttX 13.0.1。`--build-arg NUTTX_REF=master`(bda22516)や `NUTTX_REF=nuttx-12.7.0` でも作れて、3 つとも実機確認済み(2026-09-17)。13.0.1 / master の `esp32s3-devkit:wifi` は defconfig が 12.7.0 から変わっており(`DEFAULT_TASK_STACKSIZE=2048`、`SPIFFS_NAME_MAX=32`、master ではさらに NxInit エントリポイント)、Dockerfile がヘッドレス起動に必要な分を吸収している。**12.7.0 のイメージと 13.0.1/master のイメージの間で書き換えるときは `/data` の SPIFFS を消す**こと — `SPIFFS_NAME_MAX` が違うので旧イメージのままだと書き込みが `EFTYPE` で壊れる(13.0.1 と master の間は互換):
 
 ```bash
 python -m esptool -c esp32s3 -p COM7 erase_region 0x180000 0x100000
@@ -402,11 +402,12 @@ Linux 側ピアの設定方法は [docs/phase3-log.md](phase3-log.md) の sim/QE
 docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 docker create --name x nuttx-wireguard:spresense-wifi && docker cp x:/opt/nuttx/nuttx.spk . && docker rm x
 
-# NuttX master で作る場合(2026-09-17 時点 bda22516 で実機確認済み)
-docker build --build-arg NUTTX_REF=master --target spresense-wifi -t nuttx-wireguard:spresense-wifi-master .
+# 既定は NuttX 13.0.1。master (bda22516) と 12.7.0 も実機確認済み (2026-09-17)
+docker build --build-arg NUTTX_REF=master       --target spresense-wifi -t nuttx-wireguard:spresense-wifi-master .
+docker build --build-arg NUTTX_REF=nuttx-12.7.0 --target spresense-wifi -t nuttx-wireguard:spresense-wifi-12.7.0 .
 ```
 
-ヘッドレス起動用の Wi-Fi 資格情報は `--build-arg WIFI_SSID=... --build-arg WIFI_PASS=...` で渡す(リポジトリには入れない)。master 版は約 480 KB とやや大きく、`flash_writer` の XMODEM が 921600 bps で `Not ACK, Not NAK` になることがあるので `-b 115200` で書く。
+ヘッドレス起動用の Wi-Fi 資格情報は `--build-arg WIFI_SSID=... --build-arg WIFI_PASS=...` で渡す(リポジトリには入れない)。13.0.1 / master 版は約 480 KB とやや大きく、`flash_writer` の XMODEM が 921600 bps で `Not ACK, Not NAK` になることがあるので `-b 115200` で書く。13.0.1 以降は起動時に `cxd56_farapiinitialize: Mismatched version: loader(20585) != Self(20596)` と出るが、これはボード側の GNSS ローダ FW が SDK より古いという警告で、Wi-Fi / WireGuard には影響しない(GNSS を使うなら Sony の手順でローダを更新する)。
 
 `spresense:wifi` をベースに WireGuard 用 Kconfig を足したもの。ベース config からの変更点は `Dockerfile` の同ステージのコメントに理由込みで書いてあるが、要点は:
 

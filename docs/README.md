@@ -53,7 +53,7 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 |---|---|
 | [slides.html](presentation/slides.html) | 発表スライド 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧 |
 | [talk-script.md](presentation/talk-script.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
-| [short-slides.html](presentation/short-slides.html) | 紹介デッキ 9 枚。Returns 版に Spresense 実機確認と NuttX バージョン（12.7.0 / master）のスライドを足したもの。`←→` 送り、`N` で発表者ノート |
+| [short-slides.html](presentation/short-slides.html) | 紹介デッキ 9 枚。Returns 版に Spresense 実機確認と NuttX バージョン（13.0.1 / master / 12.7.0）のスライドを足したもの。`←→` 送り、`N` で発表者ノート |
 | [short-summary.md](presentation/short-summary.md) | その原稿（構成・時間配分・話で補う内容） |
 | [presentation-script.md](presentation/presentation-script.md) | 進行表と想定 Q&A |
 | [returns-slides.html](presentation/returns-slides.html) | Sechack365 Returns 向け 8 枚（公開済み・凍結）。`←→` 送り、`N` で発表者ノート |

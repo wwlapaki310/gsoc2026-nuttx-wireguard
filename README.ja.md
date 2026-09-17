@@ -62,9 +62,10 @@ VPN がない場合の現実的な選択肢は、グローバル IP を晒すか
 通信相手は常に本物の WireGuard 実装（Linux カーネルモジュールと Windows 公式クライアント）。
 自作同士で通信しても相互運用性の証明にならないため。
 
-NuttX 12.7.0 と `master` の両方でビルドが通り、ESP32-S3 と Spresense の上記デモは両方で実機確認済み
-（master は bda22516、2026-09-17）。master では cxd56 の `CONFIG_RTC_HIRES` 起動回帰に対する NuttX 側の修正を
-Dockerfile がビルド時に当て、ESP32-S3 では従来の `nsh_main` エントリポイントに戻している（[報告ドラフト](docs/upstream/rtc-hires-wdog-regression-draft.md)）。WireGuard 側のコードは同一。
+既定のビルドは最新リリースの **NuttX 13.0.1**。同じソースが `master`（bda22516）と以前の固定版 `nuttx-12.7.0` でも
+ビルドでき、ESP32-S3 と Spresense の上記デモは 3 つすべてで実機確認済み（2026-09-17）。13.0.x と master では
+cxd56 の `CONFIG_RTC_HIRES` 起動回帰に対する NuttX 側の修正を Dockerfile がビルド時に当て、master では ESP32-S3 を
+従来の `nsh_main` エントリポイントに戻している（[報告ドラフト](docs/upstream/rtc-hires-wdog-regression-draft.md)）。WireGuard 側のコードは同一。
 
 ---
 
@@ -134,7 +135,7 @@ nsh> wg saveconf          # -> /data/wg0.conf、次回起動時に自動で読�
 設定ファイルは `wg(8)` と同じ INI 形式（`[Interface]` / `[Peer]`）なので、デスクトップの
 WireGuard の設定をそのまま持ち込める。
 
-> ランタイム設定を使うなら `CONFIG_LINE_MAX`（12.7.0 では `CONFIG_NSH_LINELEN`）を 160 以上に
+> ランタイム設定を使うなら `CONFIG_LINE_MAX`（12.7.0 では加えて `CONFIG_NSH_LINELEN`）を 160 以上に
 > すること。`wg set peer` の行は約 134 文字あり、デフォルトでは NSH が**無言で切り詰める**。
 
 ---
@@ -159,8 +160,17 @@ docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .
 docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi .
 ```
 
-`--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる（既定は `nuttx-12.7.0`。
-`master` はビルドに加えて ESP32-S3・Spresense 実機でも確認済み）。
+`--build-arg NUTTX_REF=<ref>` で NuttX のリビジョンを切り替えられる。既定は `nuttx-13.0.1`。
+`master` と `nuttx-12.7.0` も ESP32-S3・Spresense 実機で確認済み:
+
+```bash
+docker build --build-arg NUTTX_REF=master       --target esp32s3 -t nuttx-wireguard:esp32s3-master .
+docker build --build-arg NUTTX_REF=nuttx-12.7.0 --target esp32s3 -t nuttx-wireguard:esp32s3-12.7.0 .
+```
+
+ESP32-S3 を 12.7.0 と 13.0.1/master のイメージ間で行き来させるときは SPIFFS 領域を消す
+（`esptool erase_region 0x180000 0x100000`）。フラッシュ上の形式が `CONFIG_SPIFFS_NAME_MAX` で変わるため、
+保存した `wg0.conf` は作り直しになる。
 
 詳細は [docs/development/dev-environment.md](docs/development/dev-environment.md) と [DEVELOPMENT.md](DEVELOPMENT.md)。
 

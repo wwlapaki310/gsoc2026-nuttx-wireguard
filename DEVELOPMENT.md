@@ -314,4 +314,4 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 4. 長時間 keepalive、再接続、MTU 境界、複数 peer の追加検証(ESP32-S3 実機で)
 5. ESP32-WROOM-32 の実機書き込み問題の切り分け(別個体での再挑戦。[docs/development/phase4-log.md](docs/development/phase4-log.md) 参照)。Spresense 側は解決済み
 6. GS2200M ドライバ / デーモンの upstream 報告(`ifr_name` を見ない、`SIOCDENYINETSOCK` をドライバに転送する)。ドラフトは [docs/upstream/gs2200m-usrsock-issue-draft.md](docs/upstream/gs2200m-usrsock-issue-draft.md)
-7. NuttX master の `CONFIG_RTC_HIRES` 起動回帰(cxd56)の upstream 報告。ESP32-S3・Spresense とも master(bda22516)で実機確認済み。ドラフトは [docs/upstream/rtc-hires-wdog-regression-draft.md](docs/upstream/rtc-hires-wdog-regression-draft.md)
+7. NuttX 13.0.x / master の `CONFIG_RTC_HIRES` 起動回帰(cxd56)の upstream 報告。ESP32-S3・Spresense とも 13.0.1(既定)・master(bda22516)・12.7.0 で実機確認済み。リリース 13.0.1 にも入っている回帰なので早めに。ドラフトは [docs/upstream/rtc-hires-wdog-regression-draft.md](docs/upstream/rtc-hires-wdog-regression-draft.md)

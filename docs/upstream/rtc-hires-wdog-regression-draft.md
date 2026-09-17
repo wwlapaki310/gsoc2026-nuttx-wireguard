@@ -1,8 +1,8 @@
 # CONFIG_RTC_HIRES + late RTC init: issue draft for apache/nuttx
 
 Found while building this repository's `spresense:wifi`-based image against
-NuttX `master` (bda22516, 2026-09-17). The same configuration boots on
-NuttX 12.7.0. Nothing here is specific to WireGuard; the board hangs before
+NuttX `master` (bda22516, 2026-09-17). **The released `nuttx-13.0.1`
+(cec617df) has the same hang**; the same configuration boots on NuttX 12.7.0. Nothing here is specific to WireGuard; the board hangs before
 `nsh_main()` with the stock `spresense:wifi` defconfig. Status: **draft, not
 filed** (2026-09-17).
 
@@ -13,8 +13,8 @@ watchdog never boot (clock_systime_ticks() is 0 until the RTC is up)`
 
 ## Symptom
 
-`spresense:wifi` on `master` prints nothing on the console and never reaches
-NSH. No assertion, no crash dump: the CPU is idle. The same defconfig on
+`spresense:wifi` on `master` (and on `nuttx-13.0.1`) prints nothing on the
+console and never reaches NSH. No assertion, no crash dump: the CPU is idle. The same defconfig on
 `nuttx-12.7.0` boots normally.
 
 Bisected by configuration first (GS2200M, storage, LCD, audio, USB, the
@@ -95,7 +95,7 @@ patch (`sched/clock/clock_systime_timespec.c`):
     }
 ```
 
-With this one change `spresense:wifi` on `master` boots, `/etc/init.d/rcS`
+With this one change `spresense:wifi` on `master` and on `nuttx-13.0.1` boots, `/etc/init.d/rcS`
 runs, the GS2200M associates, and the WireGuard handshake with the Windows
 client completes in ~10 s, followed by telnet and HTTP through the tunnel.
 Verified on hardware (Spresense main board + iS110B v1.0C).

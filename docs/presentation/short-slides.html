@@ -674,7 +674,7 @@
         <div><b>ESP32-S3</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
         <div><b>SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI (GS2200M)</span></div>
         <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
-        <div><b>NuttX 12.7.0 and master</b><span>SAME SOURCE, BOTH VERIFIED ON HARDWARE</span></div>
+        <div><b>NuttX 13.0.1, master, 12.7.0</b><span>SAME SOURCE, ALL VERIFIED ON HARDWARE</span></div>
       </div>
       <p class="speaker">Satoru Akita / Sony Semiconductor Solutions</p>
     </div>
@@ -696,7 +696,7 @@
     <div class="notes-src">
 Today I will talk about WireGuard for Apache NuttX.
 ||
-It is a WireGuard VPN implementation for Apache NuttX, exposed as a wg0 network device. On ESP32-S3 and on SPRESENSE with the iS110B Wi-Fi add-on, the tunnel is up over real Wi-Fi: telnet and a web server through the tunnel on both boards, and the same source builds and runs on NuttX 12.7.0 and on master.
+It is a WireGuard VPN implementation for Apache NuttX, exposed as a wg0 network device. On ESP32-S3 and on SPRESENSE with the iS110B Wi-Fi add-on, the tunnel is up over real Wi-Fi: telnet and a web server through the tunnel on both boards, and the same source builds and runs on NuttX 13.0.1, on master, and on 12.7.0.
 ||
 The peers are always real WireGuard implementations: the Linux kernel module and the official Windows client. Interoperating with another copy of this code would prove nothing.
     </div>
@@ -984,7 +984,7 @@ One place where the plan did not survive contact. I had written BSD socket and b
   <section class="slide verified">
     <style>.verified th, .verified td { padding: 9px 14px; } .verified table { font-size: 19px; } .verified .claim p { font-size: 22px; }</style>
     <p class="eyebrow">Verified On</p>
-    <h2>Two boards, two Wi-Fi driver models, two NuttX versions.</h2>
+    <h2>Two boards, two Wi-Fi driver models, three NuttX versions.</h2>
     <div class="body">
       <table>
         <thead><tr><th>Environment</th><th>Architecture / Wi-Fi</th><th>Peer</th><th>Confirmed</th></tr></thead>
@@ -999,19 +999,19 @@ One place where the plan did not survive contact. I had written BSD socket and b
             <td><strong>ESP32-S3</strong><span class="sub">Freenove devkit</span></td>
             <td>Xtensa LX7<span class="sub">on-chip radio, <code>wlan0</code> kernel netdev</span></td>
             <td>Windows official client</td>
-            <td class="mono hl">telnet, HTTP, 7 MB, rekey, 4 h 28 min &middot; 12.7.0 + master</td>
+            <td class="mono hl">telnet, HTTP, 7 MB, rekey, 4 h 28 min &middot; 13.0.1 / master / 12.7.0</td>
           </tr>
           <tr>
             <td><strong>SPRESENSE</strong><span class="sub">+ iS110B Wi-Fi add-on</span></td>
             <td>ARM Cortex-M4F<span class="sub">GS2200M over SPI, <code>usrsock</code> daemon</span></td>
             <td>Windows official client</td>
-            <td class="mono hl">telnet, HTTP, headless boot &middot; 12.7.0 + master</td>
+            <td class="mono hl">telnet, HTTP, headless boot &middot; 13.0.1 / master / 12.7.0</td>
           </tr>
         </tbody>
       </table>
       <div class="claim ok">
-        <p>Same source on <code>nuttx-12.7.0</code> and <code>master</code> (bda22516, 2026-09-17), verified on both boards.</p>
-        <small><strong>Three real bugs found and fixed on the way</strong> &mdash; one of them a master-only boot regression, written up for upstream.</small>
+        <p>Same source on <code>13.0.1</code>, <code>master</code> and <code>12.7.0</code> &mdash; verified on both boards.</p>
+        <small><strong>Three real bugs found and fixed on the way</strong> &mdash; one of them a boot regression shipped in 13.0.1, written up for upstream.</small>
       </div>
     </div>
     <div class="num">8 / 9</div>
@@ -1022,7 +1022,7 @@ The simulator and QEMU runs are against the Linux kernel WireGuard. The two hard
 ||
 The SPRESENSE result is the newer one. Its Wi-Fi add-on uses a GS2200M module driven as a usrsock daemon: the TCP/IP stack lives inside the module, and the kernel only sees a socket proxy. That is a very different back-end from the ESP32-S3's kernel netdev, and the same wg0 code runs on both. Getting there exposed three real bugs, all fixed.
 ||
-Finally, the same source builds and runs on NuttX 12.7.0 and on current master, which is what the upstream submission will be measured against, and both boards were re-verified on master. Master needed one scheduler fix that I found on SPRESENSE and have written up for upstream; on ESP32-S3 it was only defconfig drift (a new init system and smaller default stacks).
+Finally, the same source builds and runs on the current release, NuttX 13.0.1, on master, which is what the upstream submission will be measured against, and on the older 12.7.0, and both boards were re-verified on all three. 13.0.1 and master needed one scheduler fix that I found on SPRESENSE and have written up for upstream; on ESP32-S3 it was only defconfig drift (a new init system and smaller default stacks).
     </div>
   </section>
 
