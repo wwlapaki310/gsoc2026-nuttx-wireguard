@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sechack365 Returns - WireGuard for Apache NuttX</title>
+<title>WireGuard for Apache NuttX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;700;800;900&display=swap">
@@ -667,7 +667,6 @@
 
   <section class="slide title-slide">
     <div class="title-main">
-      <p class="eyebrow">Sechack365 Returns</p>
       <h1>WireGuard for Apache NuttX</h1>
       <p class="subtitle">A WireGuard VPN implementation for Apache NuttX, exposed as a <code>wg0</code> network device.</p>
       <div class="t-strip">
@@ -706,24 +705,6 @@ The peers are always real WireGuard implementations: the Linux kernel module and
     <p class="eyebrow">Summary</p>
     <h2>This project implements WireGuard as a NuttX network device.</h2>
     <div class="body">
-      <div class="four">
-        <div class="fact nx">
-          <b>What it is</b>
-          <p>A modern, lightweight VPN protocol, originally developed for Linux.</p>
-        </div>
-        <div class="fact blue">
-          <b>Who made it</b>
-          <p><strong>Jason A. Donenfeld</strong>, an independent security researcher. First released in <span class="hl">2016</span>; in the Linux kernel since <span class="hl">5.6 (2020)</span>.</p>
-        </div>
-        <div class="fact wg">
-          <b>How it protects traffic</b>
-          <p>Encrypted tunnels over <strong>UDP</strong>: Curve25519, ChaCha20-Poly1305, BLAKE2s.</p>
-        </div>
-        <div class="fact gold">
-          <b>Where you have met it</b>
-          <p><span class="hl">Tailscale</span> is built on WireGuard. Roughly <strong>4,000 lines</strong> &mdash; small enough for a microcontroller.</p>
-        </div>
-      </div>
       <svg class="route" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
         <defs>
           <marker id="arrow-arch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
@@ -757,16 +738,34 @@ The peers are always real WireGuard implementations: the Linux kernel module and
         <text x="1042" y="232" text-anchor="middle" font-size="18" font-weight="800">WireGuard peer</text>
         <text class="small" x="1042" y="254" text-anchor="middle">Linux, Windows, ...</text>
       </svg>
+      <div class="four">
+        <div class="fact nx">
+          <b>What it is</b>
+          <p>A modern, lightweight VPN protocol, originally developed for Linux.</p>
+        </div>
+        <div class="fact blue">
+          <b>Who made it</b>
+          <p><strong>Jason A. Donenfeld</strong>, an independent security researcher. First released in <span class="hl">2016</span>; in the Linux kernel since <span class="hl">5.6 (2020)</span>.</p>
+        </div>
+        <div class="fact wg">
+          <b>How it protects traffic</b>
+          <p>Encrypted tunnels over <strong>UDP</strong>: Curve25519, ChaCha20-Poly1305, BLAKE2s.</p>
+        </div>
+        <div class="fact gold">
+          <b>Where you have met it</b>
+          <p><span class="hl">Tailscale</span> is built on WireGuard. Roughly <strong>4,000 lines</strong> &mdash; small enough for a microcontroller.</p>
+        </div>
+      </div>
     </div>
     <div class="num">2 / 9</div>
     <div class="notes-src">
 First, what this repository actually contains.
 ||
-WireGuard is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using Curve25519, ChaCha20-Poly1305 and BLAKE2s, while keeping the implementation small enough, roughly 4,000 lines, to run on microcontrollers.
+Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface, but it currently has no VPN capability. This project implements WireGuard as a NuttX network device called wg0, so that applications see it as a normal network interface. The encrypted transport underneath is a UDP socket on port 51820, and the peer on the other end can be any existing WireGuard endpoint.
+||
+So what is WireGuard itself. It is a modern, lightweight VPN protocol originally developed for Linux, and increasingly adopted in embedded and IoT systems. It establishes encrypted tunnels over UDP using Curve25519, ChaCha20-Poly1305 and BLAKE2s, while keeping the implementation small enough, roughly 4,000 lines, to run on microcontrollers.
 ||
 It is newer than people often assume, and it is not a big-company project. Jason A. Donenfeld, an independent security researcher, started it in 2015 and released it in 2016; it spent four years as an out-of-tree module before being merged into the Linux kernel in 5.6, in March 2020. If you use Tailscale, you are already using WireGuard — Tailscale is built on it.
-||
-Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD socket interface, but it currently has no VPN capability. This project implements WireGuard as a NuttX network device called wg0, so that applications see it as a normal network interface. The encrypted transport underneath is a UDP socket on port 51820, and the peer on the other end can be any existing WireGuard endpoint.
     </div>
   </section>
 

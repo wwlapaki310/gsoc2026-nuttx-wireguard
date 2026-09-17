@@ -66,18 +66,18 @@ And the same source runs on three NuttX versions — the current release 13.0.1,
 
 ## 02 SUMMARY 〔80 s〕
 
-**[SLIDE]** four explainer cards for WireGuard + the diagram on NuttX (`wg0` → UDP 51820 → existing WireGuard peer)
+**[SLIDE]** the diagram on NuttX at the top (`wg0` → UDP 51820 → existing WireGuard peer), four explainer cards for WireGuard underneath
 
 **[SAY]**
 First, what is actually in this repository.
 
-WireGuard is a lightweight VPN protocol, originally written for Linux, and it is increasingly used in embedded and IoT work. It builds an encrypted tunnel on top of UDP, with Curve25519, ChaCha20-Poly1305 and BLAKE2s. The implementation is about four thousand lines — compact enough to fit on a microcontroller.
+Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD sockets, but no VPN. So WireGuard is implemented as a NuttX network device, `wg0`. To an application it is an ordinary network interface. What carries the encrypted payload underneath is a UDP socket on port 51820, and the peer can be any existing WireGuard endpoint.
+
+**[BEAT]** — down to the cards.
+
+So what is WireGuard itself. It is a lightweight VPN protocol, originally written for Linux, and it is increasingly used in embedded and IoT work. It builds an encrypted tunnel on top of UDP, with Curve25519, ChaCha20-Poly1305 and BLAKE2s. The implementation is about four thousand lines — compact enough to fit on a microcontroller.
 
 It is newer than people expect, and it is not a big-company product. It was written by Jason Donenfeld, an independent security researcher, who started in 2015 and published in 2016. It lived as an out-of-tree module for four years and only landed in the Linux kernel in March 2020, in 5.6. If you use Tailscale, you are already using WireGuard — Tailscale is built on this protocol.
-
-**[BEAT]** — move to the diagram on the right.
-
-Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack and BSD sockets, but no VPN. So WireGuard is implemented as a NuttX network device, `wg0`. To an application it is an ordinary network interface. What carries the encrypted payload underneath is a UDP socket on port 51820, and the peer can be any existing WireGuard endpoint.
 
 ---
 
