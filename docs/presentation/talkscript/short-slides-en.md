@@ -66,7 +66,7 @@ And the same source runs on three NuttX versions — the current release 13.0.1,
 
 ## 02 SUMMARY 〔80 s〕
 
-**[SLIDE]** the diagram on NuttX at the top (`wg0` → UDP 51820 → existing WireGuard peer), four explainer cards for WireGuard underneath
+**[SLIDE]** the diagram on NuttX at the top (`wg0` → UDP 51820 → existing WireGuard peer), then a "What is WireGuard?" heading over four explainer cards
 
 **[SAY]**
 First, what is actually in this repository.

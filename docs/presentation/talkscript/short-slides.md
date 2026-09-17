@@ -63,7 +63,7 @@ ESP32-S3 と、Wi-Fi アドオンを載せた SPRESENSE の 2 枚の実機で、
 
 ## 02 SUMMARY 〔80 秒〕
 
-**[スライド]** 上に NuttX 上の構成図(`wg0` → UDP 51820 → 既存の WireGuard ピア)、下に WireGuard の説明カード 4 枚
+**[スライド]** 上に NuttX 上の構成図(`wg0` → UDP 51820 → 既存の WireGuard ピア)、下に "What is WireGuard?" の見出し + 説明カード 4 枚
 
 **[話す]**
 まず、このリポジトリに何が入っているか。
