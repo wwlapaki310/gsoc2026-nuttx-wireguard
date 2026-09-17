@@ -15,3 +15,6 @@ docs/presentation/.render-*.tmp.html
 
 # Spresense のフラッシュイメージ (docker cp で取り出し直せる)
 *.spk
+
+# Oversized source photos: the deck ships the downscaled copies in assets/
+docs/presentation/assets/spresense+esp-s3.jpg
