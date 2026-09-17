@@ -5,7 +5,7 @@
 
 > **議論:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
 > **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し
-> **スライド:** [short-slides.pdf](docs/presentation/short-slides.pdf) — 9 枚・約 10 分（[HTML](docs/presentation/short-slides.html)、[台本](docs/presentation/talkscript/short-slides.md)）
+> **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) — 9 枚・約 10 分（[PDF](docs/presentation/short-slides.pdf)、[台本](docs/presentation/talkscript/short-slides.md)）
 
 ---
 
