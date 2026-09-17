@@ -49,7 +49,7 @@ detail — but in a 5-minute slot drop 7 and keep 6.
 
 ## 01 TITLE 〔45 s〕
 
-**[SLIDE]** WireGuard for Apache NuttX / three tiles on the right: NuttX logo, AITRIOS camera, SPRESENSE / achievement strip along the bottom, four items (ESP32-S3, SPRESENSE, real WireGuard peers, NuttX 13.0.1 / master / 12.7.0)
+**[SLIDE]** "Short version · 9 slides, 10 min" above the title / WireGuard for Apache NuttX / three tiles on the right: NuttX logo, AITRIOS camera, SPRESENSE / achievement strip along the bottom, four items (ESP32-S3, SPRESENSE, real WireGuard peers, NuttX 13.0.1 / master / 12.7.0)
 
 **[SAY]**
 Today I want to talk about implementing WireGuard for Apache NuttX. It shows up as a network device called `wg0`.

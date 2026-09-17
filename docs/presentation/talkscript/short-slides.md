@@ -46,7 +46,7 @@
 
 ## 01 タイトル 〔45 秒〕
 
-**[スライド]** WireGuard for Apache NuttX / 右に NuttX ロゴ・AITRIOS カメラ・SPRESENSE の 3 タイル / 下に実績ストリップ 4 項目(ESP32-S3、SPRESENSE、Real WireGuard peers、NuttX 13.0.1 / master / 12.7.0)
+**[スライド]** 見出しの上に "Short version · 9 slides, 10 min" / WireGuard for Apache NuttX / 右に NuttX ロゴ・AITRIOS カメラ・SPRESENSE の 3 タイル / 下に実績ストリップ 4 項目(ESP32-S3、SPRESENSE、Real WireGuard peers、NuttX 13.0.1 / master / 12.7.0)
 
 **[話す]**
 今日は、Apache NuttX に WireGuard を実装した話をします。`wg0` というネットワークデバイスとして見える形で実装しました。
