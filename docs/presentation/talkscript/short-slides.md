@@ -1,13 +1,13 @@
 # 台本: short-slides.html(9 枚)
 
-[`short-slides.html`](short-slides.html) 全 9 枚の読み上げ台本。Returns 向け 8 枚
-([`returns-slides.html`](returns-slides.html) / [`returns-outline.md`](returns-outline.md))を土台に、
+[`short-slides.html`](../short-slides.html) 全 9 枚の読み上げ台本。Returns 向け 8 枚
+([`returns-slides.html`](../returns-slides.html) / [`returns-slides.md`](returns-slides.md))を土台に、
 **SPRESENSE の実機確認**と **NuttX 3 バージョン(13.0.1 / master / 12.7.0)での検証**を足した版。
 スライドの文字は英語、話すのは日本語。デッキ内の発表者ノート(`N` キー)は英語のまま
-なので、本番で読むのはこちら。PDF 版は [`short-slides.pdf`](short-slides.pdf)。
+なので、本番で読むのはこちら。PDF 版は [`short-slides.pdf`](../short-slides.pdf)。
 
-本編 27 枚の台本は [`talk-script.md`](talk-script.md)、想定 Q&A は
-[`presentation-script.md`](presentation-script.md) と [`returns-outline.md`](returns-outline.md) 末尾。
+本編 27 枚の台本は [`slides.md`](slides.md)、想定 Q&A は
+[`presentation-script.md`](presentation-script.md) と [`returns-slides.md`](returns-slides.md) 末尾。
 
 ---
 
@@ -199,12 +199,12 @@ SPRESENSE の結果は新しい方です。Wi-Fi アドオンの GS2200M とい�
 
 ## 想定質問(このデッキ特有のもの)
 
-[`returns-outline.md`](returns-outline.md) 末尾の表に加えて:
+[`returns-slides.md`](returns-slides.md) 末尾の表に加えて:
 
 | Q | A |
 |---|---|
 | SPRESENSE の Wi-Fi は本体に無いのでは | 無い。iS110B という Wi-Fi アドオン(GS2200M)を載せている。ドライバは usrsock 方式で、TCP/IP はモジュール側 |
-| 踏んだ 3 つのバグとは | (1) usrsock が `wg0` 宛の ioctl を横取りしてハンドシェイクが始まらない → netdev を直接設定する形に修正。(2) NuttX 本体の crypto と vendored の crypto でシンボル衝突 → `wg_` プレフィックスで名前空間分離。(3) NuttX 13.0.1 / master で cxd56 が `CONFIG_RTC_HIRES` の循環依存で起動しない → sched 側の 1 箇所修正、upstream 報告予定 — [phase4-log.md](../development/phase4-log.md) 2026-09-16 / 17 |
+| 踏んだ 3 つのバグとは | (1) usrsock が `wg0` 宛の ioctl を横取りしてハンドシェイクが始まらない → netdev を直接設定する形に修正。(2) NuttX 本体の crypto と vendored の crypto でシンボル衝突 → `wg_` プレフィックスで名前空間分離。(3) NuttX 13.0.1 / master で cxd56 が `CONFIG_RTC_HIRES` の循環依存で起動しない → sched 側の 1 箇所修正、upstream 報告予定 — [phase4-log.md](../../development/phase4-log.md) 2026-09-16 / 17 |
 | なぜ 3 バージョンで確認するのか | upstream の PR は master に対して出す。利用者が使うのは直近のリリース(13.0.1)。12.7.0 は当初の固定版で、今も同じ手順で作れることを示すため |
 | 12.7.0 と 13.0.1 で違いは | WireGuard 側のソースは同一。Dockerfile が NuttX 側の差(esp32s3 の init システム・既定スタック・SPIFFS 形式、cxd56 の起動回帰)を吸収している |
 | 2 枚同時に使えるのか | 使える。Windows 側にトンネルを 2 本(10.10.0.0/24 と 10.11.0.0/24、ポート 51820 と 51821)作ってある |

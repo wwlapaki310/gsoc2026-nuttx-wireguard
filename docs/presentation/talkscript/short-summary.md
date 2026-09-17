@@ -1,14 +1,14 @@
 # 5分紹介スライド構成: WireGuard を Apache NuttX へ
 
-> **2026-09-17 注:** [short-slides.html](short-slides.html) は Returns デッキを土台にした 9 枚構成に
-> 作り直した。現在のデッキの台本は [talk-script_short-slides.md](talk-script_short-slides.md)。
+> **2026-09-17 注:** [short-slides.html](../short-slides.html) は Returns デッキを土台にした 9 枚構成に
+> 作り直した。現在のデッキの台本は [short-slides.md](short-slides.md)。
 > 以下は旧 6 枚版の原稿で、記録として残している。
 
 短時間の紹介枠・LT 用。**6 枚 / 5 分**。
-この原稿から起こしたデッキ: [short-slides.html](short-slides.html)
+この原稿から起こしたデッキ: [short-slides.html](../short-slides.html)
 1 枚 = 見出し + 主役の要素ひとつ + 締めの一行。詰め込まない。
 
-本編の 27 枚デッキは [slides.html](slides.html)、その台本は [talk-script.md](talk-script.md)。
+本編の 27 枚デッキは [slides.html](../slides.html)、その台本は [slides.md](slides.md)。
 
 | 枚 | 見出し | 主役 | 目安 |
 |---|---|---|---|
@@ -22,7 +22,7 @@
 削るなら 4。**3 は削らない**（この活動が単なる移植ではない理由）。
 
 **文面の方針:** 想像で書かない。README / proposal にすでにある文面か、口述された内容だけを使う。
-キャッチコピー調の一行は入れない。詳細は [returns-outline.md](returns-outline.md) の Text Policy。
+キャッチコピー調の一行は入れない。詳細は [returns-slides.md](returns-slides.md) の Text Policy。
 
 > 要確認: 人工衛星プロジェクトの正式名称。名前を出すなら「ボトムアップ活動のプロジェクト」を
 > 差し替える。

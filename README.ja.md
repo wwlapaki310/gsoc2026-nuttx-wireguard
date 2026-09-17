@@ -239,7 +239,7 @@ ESP32-S3 を 12.7.0 と 13.0.1/master のイメージ間で行き来させると
 |---|---|
 | [docs/design.html](docs/design.html) | 設計ドキュメント（図表ベース） |
 | [docs/presentation/slides.html](docs/presentation/slides.html) | 発表スライド 27 枚（`N` キーで発表者ノート） |
-| [docs/presentation/talk-script.md](docs/presentation/talk-script.md) | 発表台本（時間配分・削る順番つき） |
+| [docs/presentation/talkscript/slides.md](docs/presentation/talkscript/slides.md) | 発表台本（時間配分・削る順番つき） |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | 現状・ビルド方法・テスト方法 |
 | [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | 提出計画 |
 | [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | 各ボードで何ができて何ができなかったか |

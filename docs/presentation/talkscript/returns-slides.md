@@ -1,21 +1,21 @@
 # Sechack365 Returns talk: WireGuard for Apache NuttX
 
-HTML deck: [returns-slides.html](returns-slides.html) — 8 枚
+HTML deck: [returns-slides.html](../returns-slides.html) — 8 枚
 
 Audience: Sechack365 Returns alumni event。**スライドの文字は英語、話すのは日本語。**
 このファイルが Returns デッキの単一の情報源で、構成・各スライドに載せるもの・話すこと・出典を
 すべてここに書く。デッキ内のスピーカーノート（`N` キー）は英語のまま残してあるので、
 本番で読むのはこのファイルの「話すこと」のほうを使う。
 
-本編 27 枚のデッキは [slides.html](slides.html)、その台本は [talk-script.md](talk-script.md)。
-5 分の日本語デッキは [short-slides.html](short-slides.html) / [short-summary.md](short-summary.md)。
+本編 27 枚のデッキは [slides.html](../slides.html)、その台本は [talkscript/slides.md](slides.md)。
+5 分の日本語デッキは [short-slides.html](../short-slides.html) / [short-summary.md](short-summary.md)（旧 6 枚版）/ [short-slides.md](short-slides.md)。
 
 ## Core Message
 
 > A WireGuard VPN implementation for Apache NuttX, exposed as a `wg0` network device.
 > Verified on real hardware against real WireGuard peers.
 
-（[README.md](../../README.md) 冒頭 / [README.ja.md](../../README.ja.md)「Apache NuttX 上で動く
+（[README.md](../../../README.md) 冒頭 / [README.ja.md](../../../README.ja.md)「Apache NuttX 上で動く
 WireGuard VPN の実装。`wg0` というネットワークデバイスとして見える。実機で、本物の WireGuard
 ピアを相手に検証済み。」）
 
@@ -185,10 +185,10 @@ WireGuard とは — 4 枚のカード
 - **NuttX International Workshop** が Glasgow 2026 に co-located で開かれる。そこで発表する
   （CFP 提出済み）— README.ja.md「発表」/ README.md "Presentation"
 - ゴールは `apache/nuttx-apps` への upstream マージ — README.ja.md「残作業」/
-  [docs/upstream/upstream-strategy.md](../upstream/upstream-strategy.md)
+  [docs/upstream/upstream-strategy.md](../../upstream/upstream-strategy.md)
 
-**ロゴ:** [assets/asf-logo-wide.svg](assets/asf-logo-wide.svg) /
-[assets/community-over-code-logo.svg](assets/community-over-code-logo.svg)
+**ロゴ:** [assets/asf-logo-wide.svg](../assets/asf-logo-wide.svg) /
+[assets/community-over-code-logo.svg](../assets/community-over-code-logo.svg)
 （ASF Brand Guidelines の公式ロゴ。<https://www.apache.org/foundation/press/kit/>）
 
 > 旧 ApacheCon の後継である、という説明は公式サイト上で確認できなかったため書いていない。
@@ -241,7 +241,7 @@ WireGuard とは — 4 枚のカード
 - テーマ自体は Google Summer of Code のテーマ一覧で見つけた
 - **そのプロポーザルは不採択。** それでも作業は続けた — CLAUDE.md / README.ja.md「現状」
 
-> 注意: このプロジェクトを「GSoC のプロジェクト」として紹介しない（[CLAUDE.md](../../CLAUDE.md)）。
+> 注意: このプロジェクトを「GSoC のプロジェクト」として紹介しない（[CLAUDE.md](../../../CLAUDE.md)）。
 > 「テーマを見つけた場所が GSoC の一覧だった」という出自の話にとどめ、主題は仕事上の困りごとに置く。
 
 > 要確認 1: 人工衛星プロジェクトの正式名称。提供された画像が **ARICA（AGU Remote Innovative
@@ -278,7 +278,7 @@ WireGuard とは — 4 枚のカード
 
 ### 5 — THE PLAN（計画）
 
-[proposal.md](../proposal/proposal.md)「3.1 Reference Projects」に書いた計画そのまま。
+[proposal.md](../../proposal/proposal.md)「3.1 Reference Projects」に書いた計画そのまま。
 実装がその通りになっていることをコードで確認済み（`net_driver_s` / `iob_*` / `netdev_register()`）。
 唯一ずれたのがソケットで、それは 7 枚目で触れる。
 
@@ -443,7 +443,7 @@ Copyright (c) 2021 Daniel Hope (www.floorsense.nz) · BSD-3-Clause
 | いつからあるのか | 2015 年開発開始、**2016 年に公開**。4 年間 out-of-tree モジュールとして使われたのち、**2020 年 3 月の Linux 5.6 でマージ**。2018 年に Linus Torvalds が "a work of art" と評したことでも知られる |
 | 安定性は | 最長連続動作は **4 時間 28 分**。停止原因は ESP32-S3 の Wi-Fi ドライバ側と特定済み（WireGuard ではない）— README.ja.md |
 | 実用になるか | 実行時設定（`wg genkey` / `wg set` / `wg setconf`）・設定の永続化・複数ピアまで動作 |
-| 苦労した点 | `ping` は 0% ロスで通るのに TCP のデータだけ届かないバグ。LPWORK ワーカースレッドからの `sendto()` が `EBADF` になっていた — [phase4-log.md](../development/phase4-log.md) |
+| 苦労した点 | `ping` は 0% ロスで通るのに TCP のデータだけ届かないバグ。LPWORK ワーカースレッドからの `sendto()` が `EBADF` になっていた — [phase4-log.md](../../development/phase4-log.md) |
 
 ---
 
@@ -455,7 +455,7 @@ python scripts/render-slides.py docs/presentation/returns-slides.html --check-ov
 
 `.slide` は `overflow: hidden` なので、収まらない内容は無言で切り落とされる。
 `--check-overflow` を付けて回し、マゼンタの帯が出ないことを確認してから本番に使う。
-出力は `renders/returns-slides/slide-NN.png`。詳細は [../README.md](../README.md)。
+出力は `renders/returns-slides/slide-NN.png`。詳細は [../../README.md](../../README.md)。
 
 ---
 
@@ -472,7 +472,7 @@ python scripts/render-slides.py docs/presentation/returns-slides.html --check-ov
 - ARICA CubeSat photo: academist のプロジェクトページ由来（`spresense-satellite.jpg`）。
   **ライセンス未確認** — 上の「要確認 2」を参照
 
-Downloaded local copies are in [assets](assets/).
+Downloaded local copies are in [assets](../assets/).
 
 ## Text Policy
 

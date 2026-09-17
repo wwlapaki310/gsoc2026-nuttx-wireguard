@@ -1,6 +1,6 @@
 # 台本: WireGuard を Apache NuttX に移植する
 
-[`slides.html`](slides.html) 全 27 枚の読み上げ台本。スライド内の発表者ノート(`N` キー)と
+[`slides.html`](../slides.html) 全 27 枚の読み上げ台本。スライド内の発表者ノート(`N` キー)と
 同じ内容だが、こちらは**時間配分・間の取り方・削る順番**を持たせた登壇用。
 
 既存の [`presentation-script.md`](presentation-script.md) は進行表と想定 Q&A だけなので、

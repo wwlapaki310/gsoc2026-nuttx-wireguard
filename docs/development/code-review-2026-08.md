@@ -232,4 +232,4 @@ NuttX の `!` 警告が出ていたため。3072 で 18.6% になる)。ハン�
 
 ## 3. 発表資料
 
-[../presentation/presentation-script.md](../presentation/presentation-script.md) に発表原稿をまとめた。技術的な山場は「ping は通るのに TCP だけ無言で死ぬ」バグの調査過程(`EBADF` / タスクグループとファイルディスクリプタのスコープ)。
+[../presentation/talkscript/presentation-script.md](../presentation/talkscript/presentation-script.md) に発表原稿をまとめた。技術的な山場は「ping は通るのに TCP だけ無言で死ぬ」バグの調査過程(`EBADF` / タスクグループとファイルディスクリプタのスコープ)。

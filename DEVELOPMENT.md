@@ -297,7 +297,7 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 | [docs/development/phase4-log.md](docs/development/phase4-log.md) | Phase 4(ESP32-S3 実機での実ハンドシェイク成功、TCP バグの調査・修正、Spresense + iS110B での実 Wi-Fi 疎通と usrsock バグの調査・修正、ESP32-WROOM-32 書き込み試行)の作業ログ |
 | [docs/development/phase4-summary.md](docs/development/phase4-summary.md) | Phase 4 の成果まとめ・デモ動画リンク |
 | [docs/development/code-review-2026-08.md](docs/development/code-review-2026-08.md) | コード全体のレビュー結果・課題の棚卸し・今後の計画 |
-| [docs/presentation/presentation-script.md](docs/presentation/presentation-script.md) | 発表原稿(スライド構成 + 話す内容 + 想定質問) |
+| [docs/presentation/talkscript/presentation-script.md](docs/presentation/talkscript/presentation-script.md) | 発表原稿(スライド構成 + 話す内容 + 想定質問) |
 | [docs/upstream/license-appendix-draft.md](docs/upstream/license-appendix-draft.md) | upstream 提出用の `LICENSE` 追記案 |
 | [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | 実機検証の手順書(ESP32-S3・Spresense + iS110B は確認済み、ESP32-WROOM-32 は書き込み未達) |
 | [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | apache/nuttx-apps へのマージ戦略 |
