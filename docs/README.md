@@ -44,6 +44,7 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [license-appendix-draft.md](upstream/license-appendix-draft.md) | `LICENSE` に追記する著作権表示の案 |
 | [gs2200m-usrsock-issue-draft.md](upstream/gs2200m-usrsock-issue-draft.md) | `apache/nuttx` への報告ドラフト: GS2200M usrsock の ioctl 2 件(未提出) |
 | [rtc-hires-wdog-regression-draft.md](upstream/rtc-hires-wdog-regression-draft.md) | `apache/nuttx` への報告ドラフト: master の `CONFIG_RTC_HIRES` 起動回帰(cxd56、未提出) |
+| [in-kernel-plan.md](upstream/in-kernel-plan.md) | **カーネル側移行計画**(`drivers/net/` + ioctl 越しの `wg`)。設計・実装順序・テスト戦略・マージ戦略・3 名の専門家レビュー |
 
 いきなり PR を投げず、先に `dev@` で設計の合意を取る方針。
 

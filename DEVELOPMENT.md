@@ -308,6 +308,7 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun   -v ${PWD}/scripts:/w
 
 全体像と根拠は [docs/development/code-review-2026-08.md](docs/development/code-review-2026-08.md) にまとめてある。
 
+0. **カーネル側移行**(`drivers/net/wireguard/` + ioctl 越しの `wg`)。upstream に通る形はこれしかない。計画・順序・テスト・マージ戦略は [docs/upstream/in-kernel-plan.md](docs/upstream/in-kernel-plan.md)(3 名レビュー済み)。先に現行 apps 版のプロトコル逸脱(replay 検査の順序・cookie reply・鍵ゼロ化)を直す(S0.5)
 1. **dev@nuttx.apache.org での設計共有** — スタイル整形と実機ログが揃い、upstream に出す前提が埋まったので、次は設計そのものへの合意取り(`wg0` を lwIP netif ではなく NuttX netdev として実装した判断について)
 2. ~~**実行時設定**~~ — **完了**。`wg genkey` / `wg set` / `wg setconf` / `wg saveconf` で、鍵をビルドに焼き込まずに設定・永続化できる
 3. ~~vendored ツリーの整理~~ — **完了**。未使用の `wireguardif.c` / `crypto/cortex/` を外し、Docker の `git clone` 方式から実ファイル同梱に切り替えた(upstream と `cmp` でバイト一致を確認済み)
