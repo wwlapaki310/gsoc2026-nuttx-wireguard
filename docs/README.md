@@ -8,6 +8,7 @@
 | [upstream/](upstream/) | `apache/nuttx-apps` への提出準備 | PR を出す前に |
 | [presentation/](presentation/) | 発表資料 | 登壇・デモの前に |
 | [proposal/](proposal/) | 当初のプロポーザル（記録） | 当時何を計画していたかを確認するとき |
+| [releases/](releases/) | リリースノート | タグを打ったときの状態と既知の問題を確認するとき |
 
 リポジトリ全体の現状は [../DEVELOPMENT.md](../DEVELOPMENT.md)、
 使い方とビルド方法は [../README.md](../README.md)。
@@ -89,3 +90,9 @@ GSoC 2026 への応募文書。採択されなかったが、当時の計画と�
 |---|---|
 | [proposal.md](proposal/proposal.md) / [proposal.ja.md](proposal/proposal.ja.md) | プロポーザル本体 |
 | [proposal-asf2026.md](proposal/proposal-asf2026.md) | ASF カンファレンス CFP 用 |
+
+## releases/
+
+| | |
+|---|---|
+| [v0.1.0.md](releases/v0.1.0.md) | apps 版（FLAT ビルド）の完成。検証環境・入っているもの・制約・既知の問題・次 |

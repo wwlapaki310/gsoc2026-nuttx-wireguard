@@ -145,7 +145,7 @@ glue 側(現行 apps 版のうちに直す、S0.5):
 
 ### 1.11 落とすもの
 
-- **12.7.0**: カーネル版は 13.x / master 前提。現行 apps 版をタグ `v0-apps-flat` で凍結し README に明記
+- **12.7.0**: カーネル版は 13.x / master 前提。現行 apps 版をタグ `v0.1.0` で凍結し README に明記
 - `CONFIG_NET_WIREGUARD_PRIVATE_KEY` 等の Kconfig 焼き込み(鍵をイメージに置かない)
 - `lwip/` スタブヘッダ、`crypto/refc`、`WG_TXWORK` の `nxsem_tickwait` ポーリング、`"wg0"` 固定名
 
@@ -183,7 +183,7 @@ glue 側(現行 apps 版のうちに直す、S0.5):
 2. T5 が両ボード × 13.0.1 で全項目、両ボード × master で 1〜3
 3. T6 が `qemu-armv7a:knetnsh` で PASS
 4. **apps 版で `saveconf` したファイルを kernel 版の `setconf` が読める**(`scripts/fixtures/wg0.conf`)
-5. タグ `v0-apps-flat`。同じコミットで apps 版 × 12.7.0 のフルラン(sim 3 本 + QEMU + 両実機)の最終ログを残す
+5. タグ `v0.1.0`。同じコミットで apps 版 × 12.7.0 のフルラン(sim 3 本 + QEMU + 両実機)の最終ログを残す
 6. `nuttx_port/apps/netutils/wireguard/` の削除と `WG_IMPL` 既定の切り替えを**一つのコミット**で(build-arg を永久に残さない)
 
 ---
@@ -235,7 +235,7 @@ glue 側(現行 apps 版のうちに直す、S0.5):
 | 制御経路・データパスに触ったとき | **Spresense** で T5 1〜5(usrsock 固有の経路を持つ) | 30 分 |
 | PR 提出前 | ESP32-S3 × 13.0.1 で T5 1〜5 + TE + TT-a/b | 30 分 |
 | リリース相当(PR-K1 提出、レビュー対応後の最終) | 両ボード × {13.0.1, master} で T5 1〜7、TT-c/d、T7 を 1 回 | 半日 + ソーク |
-| 凍結時 1 回だけ | apps 版 × 12.7.0 × 全部(`v0-apps-flat` の証拠) | 半日 |
+| 凍結時 1 回だけ | apps 版 × 12.7.0 × 全部(`v0.1.0` の証拠) | 半日 |
 
 ### 3.5 回帰の基準
 
@@ -353,7 +353,7 @@ Issue / Draft PR で「`drivers/net/` 以外」「ioctl 以外の機構」とな
 
 1. **S2 を最小垂直スライス(鍵 + ピア 1 + up + show)と残りに分割し、PROTECTED 証明を実機より先に**(`sim` に PROTECTED 構成は無い → `qemu-armv7a:knetnsh`)→ §2
 2. **fork ブランチを真実に、Dockerfile は `WG_IMPL=apps|kernel`**、`nuttx_port/` は生成物。カーネル側は 5〜6 ファイルの改変を伴いコピーでは再現しない → §2.1
-3. apps 版引退の完了の定義 6 項目、タグ `v0-apps-flat` → §2.2
+3. apps 版引退の完了の定義 6 項目、タグ `v0.1.0` → §2.2
 4. テスト: T2 を T1 に統合、T3 をリビルド不要に、ioctl 単体(TF)、`wg show` スナップショット diff、conf fixture、testbuild subset、`verify-all.sh`、GitHub Actions → §3.1
 5. 実機カバレッジの階層化(毎 PR は ESP32-S3、Spresense は制御経路を触ったとき)→ §3.4
 6. リスク台帳 10 項目(#9 依存、Windows 側鍵運用、Docker ディスク、rcS の変更、`saveconf` と秘密鍵)→ §5
