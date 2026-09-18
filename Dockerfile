@@ -135,7 +135,10 @@ RUN ./tools/configure.sh sim:nsh && \
     kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
     kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
-    kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_CRYPTO          && \
+    kconfig-tweak --enable CONFIG_CRYPTO_RANDOM_POOL && \
+    kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_RANDOM_POOL && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4 && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
@@ -150,8 +153,10 @@ RUN ./tools/configure.sh sim:nsh && \
 # NOTE: CONFIG_DEV_RANDOM (a hardware TRNG /dev/random) does not work on
 # sim: it depends on ARCH_HAVE_RNG, which the sim architecture does not
 # select, so enabling it here would be silently dropped by olddefconfig.
-# wireguard_random_bytes() needs /dev/urandom, which CONFIG_DEV_URANDOM
-# provides via a software PRNG (xorshift128) with no such dependency.
+# wireguard_random_bytes() needs /dev/urandom. The xorshift128 backend is
+# seeded with constants (same keys on every boot), and CONFIG_NET_WIREGUARD
+# now refuses to build with it, so sim uses the entropy pool
+# (CRYPTO_RANDOM_POOL + DEV_URANDOM_RANDOM_POOL) like the boards do.
 
 RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
     (tail -200 /tmp/nuttx-build.log && false)
@@ -196,7 +201,10 @@ RUN ./tools/configure.sh qemu-armv7a:nsh && \
     kconfig-tweak --set-val CONFIG_NET_TUN_PKTSIZE 1500 && \
     kconfig-tweak --enable CONFIG_NET_SOCKOPTS    && \
     kconfig-tweak --enable CONFIG_DEV_URANDOM     && \
-    kconfig-tweak --enable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_CRYPTO          && \
+    kconfig-tweak --enable CONFIG_CRYPTO_RANDOM_POOL && \
+    kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128 && \
+    kconfig-tweak --enable CONFIG_DEV_URANDOM_RANDOM_POOL && \
     kconfig-tweak --enable CONFIG_NET_WIREGUARD   && \
     kconfig-tweak --set-val CONFIG_NSH_LINELEN 160 && \
     kconfig-tweak --set-val CONFIG_LINE_MAX 160 && \

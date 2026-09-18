@@ -55,6 +55,9 @@
 #define WIREGUARD_MAX_PEERS CONFIG_NET_WIREGUARD_MAX_PEERS
 #define WIREGUARD_MAX_SRC_IPS CONFIG_NET_WIREGUARD_MAX_SRC_IPS
 
+// Anti-replay window for received data packets, in 64-bit words
+#define WIREGUARD_REPLAY_WORDS (CONFIG_NET_WIREGUARD_REPLAY_WINDOW / 64)
+
 // Per device limit on accepting (valid) initiation requests - per peer
 #define MAX_INITIATIONS_PER_SECOND	(2)
 

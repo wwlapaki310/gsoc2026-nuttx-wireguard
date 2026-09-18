@@ -271,6 +271,7 @@ docker run --rm --cap-add=NET_ADMIN --device=/dev/net/tun \
 | `verify-qemu-wireguard.sh` | 同上を QEMU / ARM Cortex-A7 の実 NuttX スケジューラ上で |
 | `verify-sim-wg-runtime.sh` | **鍵をビルドに含めない**状態から `wg genkey` → `set` → `up` で実トンネルを張る。`wg down` で本当に止まること、保存したファイルから復元して再び通ることまで |
 | `verify-sim-wg-multipeer.sh` | 2つの Linux ピアと**同時に**セッションを保持できること(両方の handshake epoch が非ゼロであることで判定) |
+| `verify-sim-wg-replay.sh` | 否定系: 捕獲した正規パケットを偽の送信元から再送しても endpoint が動かない(replay 検査が endpoint 更新より先)、閾値超えの initiation 洪水に cookie reply で応じる。v0.1.0 のコードではこの両方が FAIL する |
 
 ```bash
 # 実行時設定と永続化

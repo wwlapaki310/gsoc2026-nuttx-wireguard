@@ -51,7 +51,8 @@ static void wg_usage(void)
     "  saveconf [file]         write it to a file so it survives a reboot\n"
     "  setconf <file>          load a wg(8) format configuration file\n"
     "  genkey                  print a new private key\n"
-    "  pubkey <private-key>    print the matching public key\n"
+    "  pubkey                  read a private key from stdin and print\n"
+    "                          the matching public key\n"
     "\n"
     "  set private-key <key>\n"
     "  set peer <public-key> [endpoint <addr:port>]\n"
@@ -228,13 +229,31 @@ int main(int argc, FAR char *argv[])
 
   if (argc >= 2 && strcmp(argv[1], "pubkey") == 0)
     {
-      if (argc < 3)
+      char priv[WG_KEY_STRLEN + 2];
+      FAR const char *src = NULL;
+
+      /* Like wg(8), the private key is read from stdin so that it does not
+       * end up in the shell history or in "ps" output. The argument form
+       * is kept for scripts that pipe nothing in.
+       */
+
+      if (argc >= 3)
         {
-          fprintf(stderr, "wg: pubkey needs a private key\n");
+          src = argv[2];
+        }
+      else if (fgets(priv, sizeof(priv), stdin) != NULL)
+        {
+          priv[strcspn(priv, "\r\n")] = '\0';
+          src = priv;
+        }
+
+      if (src == NULL || src[0] == '\0')
+        {
+          fprintf(stderr, "wg: pubkey needs a private key on stdin\n");
           return 1;
         }
 
-      if (wg_pubkey(argv[2], key, sizeof(key)) < 0)
+      if (wg_pubkey(src, key, sizeof(key)) < 0)
         {
           fprintf(stderr, "wg: not a valid base64 key\n");
           return 1;

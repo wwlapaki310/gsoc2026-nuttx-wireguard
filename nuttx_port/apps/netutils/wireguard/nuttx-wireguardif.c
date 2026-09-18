@@ -153,6 +153,15 @@ struct wg_netdev_s
 
   uint64_t peer_rx_bytes[WIREGUARD_MAX_PEERS];
   uint64_t peer_tx_bytes[WIREGUARD_MAX_PEERS];
+
+  /* Handshake-initiation rate, for the under-load decision (5.4.7). The
+   * count is reset whenever a full second has passed since the window
+   * started, so this is a coarse per-second bucket rather than a sliding
+   * window; that is enough to bound the DH work a flood can cause.
+   */
+
+  uint32_t init_window_start;
+  uint32_t init_count;
 };
 
 /* Configuration staged by "wg set" before "wg up".
@@ -336,8 +345,16 @@ static bool wg_derive_public_key(FAR uint8_t *public_key,
 static FAR struct wireguard_peer *
   wg_peer_for_dest(FAR struct wg_netdev_s *priv, in_addr_t dest)
 {
+  FAR struct wireguard_peer *best = NULL;
+  uint32_t best_mask = 0;
   int x;
   int y;
+
+  /* Longest-prefix match, as cryptokey routing requires: a peer carrying
+   * 0.0.0.0/0 must not capture traffic for a host that another peer lists
+   * as /32, whichever of the two was configured first. Masks are in
+   * network byte order, so compare them host-order to rank prefix length.
+   */
 
   for (x = 0; x < WIREGUARD_MAX_PEERS; x++)
     {
@@ -352,17 +369,25 @@ static FAR struct wireguard_peer *
         {
           FAR struct wireguard_allowed_ip *allowed =
               &peer->allowed_source_ips[y];
+          uint32_t mask;
 
-          if (allowed->valid &&
-              (dest & allowed->mask.s_addr) ==
+          if (!allowed->valid ||
+              (dest & allowed->mask.s_addr) !=
               (allowed->ip.s_addr & allowed->mask.s_addr))
             {
-              return peer;
+              continue;
+            }
+
+          mask = ntohl(allowed->mask.s_addr);
+          if (best == NULL || mask > best_mask)
+            {
+              best = peer;
+              best_mask = mask;
             }
         }
     }
 
-  return NULL;
+  return best;
 }
 
 /****************************************************************************
@@ -535,6 +560,88 @@ static void wg_send_handshake_response(FAR struct wg_netdev_s *priv,
 }
 
 /****************************************************************************
+ * Name: wg_source_addr_port
+ *
+ * Description:
+ *   Serialise the outer UDP source (address and port, both in network byte
+ *   order) into the byte string that cookies are computed over. The only
+ *   requirement is that the responder uses the same encoding when it
+ *   creates a cookie reply and when it later checks mac2 - both are done
+ *   here, so the layout is a private convention.
+ *
+ ****************************************************************************/
+
+static void wg_source_addr_port(FAR uint8_t *out, in_addr_t addr,
+                                uint16_t port)
+{
+  uint16_t nport = htons(port);
+
+  memcpy(out, &addr, sizeof(addr));
+  memcpy(out + sizeof(addr), &nport, sizeof(nport));
+}
+
+#define WG_SRC_ADDR_PORT_LEN (sizeof(in_addr_t) + sizeof(uint16_t))
+
+/****************************************************************************
+ * Name: wg_under_load
+ *
+ * Description:
+ *   Count one handshake initiation and report whether the device is now
+ *   under load (5.4.7): more than CONFIG_NET_WIREGUARD_LOAD_THRESHOLD
+ *   initiations in the current one-second bucket. The vendored core does
+ *   not call wireguard_is_under_load() itself; this glue makes the
+ *   decision because it is the only place that sees the packet rate.
+ *
+ ****************************************************************************/
+
+static bool wg_under_load(FAR struct wg_netdev_s *priv)
+{
+  uint32_t now = wireguard_sys_now();
+
+  if (now - priv->init_window_start >= 1000)
+    {
+      priv->init_window_start = now;
+      priv->init_count = 0;
+    }
+
+  priv->init_count++;
+  return priv->init_count > CONFIG_NET_WIREGUARD_LOAD_THRESHOLD;
+}
+
+/****************************************************************************
+ * Name: wg_send_cookie_reply
+ *
+ * Description:
+ *   Answer an initiation that arrived while under load and carried no
+ *   valid mac2 with a cookie reply (5.4.7), so that a peer that is really
+ *   there can retry with mac2 and a flood from forged sources gets nothing
+ *   but a cheap MAC per packet.
+ *
+ ****************************************************************************/
+
+static void wg_send_cookie_reply(FAR struct wg_netdev_s *priv,
+                                 FAR const uint8_t *mac1,
+                                 uint32_t sender_index,
+                                 in_addr_t addr, uint16_t port)
+{
+  struct message_cookie_reply reply;
+  uint8_t src[WG_SRC_ADDR_PORT_LEN];
+  struct sockaddr_in to;
+
+  wg_source_addr_port(src, addr, port);
+  wireguard_create_cookie_reply(&priv->wg, &reply, mac1, sender_index,
+                                src, sizeof(src));
+
+  memset(&to, 0, sizeof(to));
+  to.sin_family = AF_INET;
+  to.sin_addr.s_addr = addr;
+  to.sin_port = htons(port);
+
+  psock_sendto(&priv->psock, &reply, sizeof(reply), 0,
+               (FAR struct sockaddr *)&to, sizeof(to));
+}
+
+/****************************************************************************
  * Name: wg_inject_plaintext
  *
  * Description:
@@ -624,9 +731,14 @@ static void wg_process_data_message(FAR struct wg_netdev_s *priv,
       return;
     }
 
+  /* The receive-side limit is the counter of packets received on this
+   * keypair (replay_counter, kept by wireguard_check_replay()), not the
+   * number we have sent with it.
+   */
+
   if (!keypair->receiving_valid ||
       wireguard_expired(keypair->keypair_millis, REJECT_AFTER_TIME) ||
-      keypair->sending_counter >= REJECT_AFTER_MESSAGES)
+      keypair->replay_counter >= REJECT_AFTER_MESSAGES)
     {
       keypair_destroy(keypair);
       return;
@@ -648,8 +760,22 @@ static void wg_process_data_message(FAR struct wg_netdev_s *priv,
       return;
     }
 
-  /* Packet authenticated - update peer's known endpoint from the outer
-   * UDP/IP source, per the protocol spec.
+  /* Authenticated, but not yet known to be fresh. The replay window has
+   * to be consulted before anything about the peer is updated - the
+   * endpoint in particular. A captured, authenticated packet (a keepalive
+   * will do) resent from another address must not move the endpoint, or
+   * the peer's traffic is redirected to the sender until the real peer
+   * speaks again. This is the order the Linux implementation uses
+   * (counter_validate() before wg_socket_set_peer_endpoint_from_skb()).
+   */
+
+  if (!wireguard_check_replay(keypair, nonce))
+    {
+      return;
+    }
+
+  /* Packet authenticated and fresh - update peer's known endpoint from the
+   * outer UDP/IP source, per the protocol spec.
    */
 
   peer->ip.s_addr = addr;
@@ -698,8 +824,7 @@ static void wg_process_data_message(FAR struct wg_netdev_s *priv,
                 }
             }
 
-          if (src_ok && totlen <= pktlen &&
-              wireguard_check_replay(keypair, nonce))
+          if (src_ok && totlen <= pktlen)
             {
               wg_inject_plaintext(priv, priv->plainbuf, totlen);
             }
@@ -716,10 +841,10 @@ static void wg_process_data_message(FAR struct wg_netdev_s *priv,
  *   Equivalent to wireguardif_network_rx() in upstream wireguardif.c.
  *   Caller must already hold the network lock.
  *
- *   Cookie/mac2 handling is intentionally omitted: wireguard_is_under_load()
- *   is hard-wired to false on this platform (see nuttx-platform.c), so
- *   upstream's mac2/cookie-reply path is unreachable dead code here. It can
- *   be revisited if this platform ever wants DoS-load signalling.
+ *   Order of checks on an initiation, per 5.4.7: mac1 (cheap, proves the
+ *   sender knows our public key) -> if under load, mac2 (proves the sender
+ *   holds a cookie we recently issued to that address) -> only then the
+ *   Diffie-Hellman work in wireguard_process_initiation_message().
  *
  ****************************************************************************/
 
@@ -737,19 +862,36 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
           FAR struct message_handshake_initiation *msg =
               (FAR struct message_handshake_initiation *)data;
 
-          if (len == sizeof(*msg) &&
-              wireguard_check_mac1(&priv->wg, data,
-                                   sizeof(*msg) -
-                                   (2 * WIREGUARD_COOKIE_LEN),
-                                   msg->mac1))
+          if (len != sizeof(*msg) ||
+              !wireguard_check_mac1(&priv->wg, data,
+                                    sizeof(*msg) -
+                                    (2 * WIREGUARD_COOKIE_LEN),
+                                    msg->mac1))
             {
-              peer = wireguard_process_initiation_message(&priv->wg, msg);
-              if (peer != NULL)
+              break;
+            }
+
+          if (wg_under_load(priv))
+            {
+              uint8_t src[WG_SRC_ADDR_PORT_LEN];
+
+              wg_source_addr_port(src, addr, port);
+              if (!wireguard_check_mac2(&priv->wg, data,
+                                        sizeof(*msg) - WIREGUARD_COOKIE_LEN,
+                                        src, sizeof(src), msg->mac2))
                 {
-                  peer->ip.s_addr = addr;
-                  peer->port = port;
-                  wg_send_handshake_response(priv, peer);
+                  wg_send_cookie_reply(priv, msg->mac1, msg->sender,
+                                       addr, port);
+                  break;
                 }
+            }
+
+          peer = wireguard_process_initiation_message(&priv->wg, msg);
+          if (peer != NULL)
+            {
+              peer->ip.s_addr = addr;
+              peer->port = port;
+              wg_send_handshake_response(priv, peer);
             }
         }
         break;
@@ -780,11 +922,28 @@ static void wg_process_udp_packet(FAR struct wg_netdev_s *priv,
         break;
 
       case MESSAGE_COOKIE_REPLY:
+        {
+          FAR struct message_cookie_reply *msg =
+              (FAR struct message_cookie_reply *)data;
 
-        /* Unreachable: peers never receive a cookie reply because we never
-         * ask for one (wireguard_is_under_load() is always false).
-         */
+          /* The peer is under load and wants our next initiation to carry
+           * mac2. Store the cookie (the core checks it against the mac1 of
+           * the initiation we sent) and retry at once; the cookie is only
+           * good for COOKIE_SECRET_MAX_AGE, and the retry that
+           * wg_run_timers() would make on REKEY_TIMEOUT is a long wait for
+           * something the peer has just asked us to do.
+           */
 
+          if (len == sizeof(*msg))
+            {
+              peer = peer_lookup_by_handshake(&priv->wg, msg->receiver);
+              if (peer != NULL &&
+                  wireguard_process_cookie_message(&priv->wg, peer, msg))
+                {
+                  wg_start_handshake(priv, peer);
+                }
+            }
+        }
         break;
 
       case MESSAGE_TRANSPORT_DATA:
@@ -1129,9 +1288,39 @@ static int wg_ifup(FAR struct net_driver_s *dev)
 static int wg_ifdown(FAR struct net_driver_s *dev)
 {
   FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev->d_private;
+  int x;
 
   netdev_carrier_off(dev);
   priv->bifup = false;
+
+  /* Taking the interface down ends every session: the three keypairs and
+   * the in-progress handshake of each peer are wiped (this is what the
+   * Linux implementation does on dev down), and the endpoint falls back
+   * to the configured one so a peer that roamed while we were up is not
+   * chased at a stale address after the next up.
+   */
+
+  for (x = 0; x < WIREGUARD_MAX_PEERS; x++)
+    {
+      FAR struct wireguard_peer *peer = &priv->wg.peers[x];
+
+      if (!peer->valid)
+        {
+          continue;
+        }
+
+      keypair_destroy(&peer->curr_keypair);
+      keypair_destroy(&peer->prev_keypair);
+      keypair_destroy(&peer->next_keypair);
+      crypto_zero(&peer->handshake, sizeof(peer->handshake));
+      peer->handshake.valid = false;
+      peer->handshake_mac1_valid = false;
+      peer->active = false;
+      peer->send_handshake = false;
+      peer->ip = peer->connect_ip;
+      peer->port = peer->connect_port;
+    }
+
   return OK;
 }
 
@@ -1174,17 +1363,27 @@ static void wg_add_peer(FAR struct wg_netdev_s *priv,
                              cfg->keepalive :
                              CONFIG_NET_WIREGUARD_PEER_KEEPALIVE;
 
+  /* An allowed-ips entry is only usable when both halves parsed. Marking
+   * it valid regardless would leave ip = 0 / mask = 0, which matches every
+   * destination and routes all traffic to this peer.
+   */
+
   if (inet_pton(AF_INET, cfg->allowed_ip, &addr) == 1)
     {
+      struct in_addr mask;
+
       peer->allowed_source_ips[0].ip = addr;
+      if (inet_pton(AF_INET, cfg->allowed_mask, &mask) == 1)
+        {
+          peer->allowed_source_ips[0].mask = mask;
+          peer->allowed_source_ips[0].valid = true;
+        }
     }
 
-  if (inet_pton(AF_INET, cfg->allowed_mask, &addr) == 1)
+  if (!peer->allowed_source_ips[0].valid)
     {
-      peer->allowed_source_ips[0].mask = addr;
+      nerr("ERROR: peer has no usable allowed-ips entry\n");
     }
-
-  peer->allowed_source_ips[0].valid = true;
 
   if (strlen(cfg->endpoint_ip) > 0 &&
       inet_pton(AF_INET, cfg->endpoint_ip, &addr) == 1)
@@ -1318,15 +1517,48 @@ int wg_initialize(void)
       return -EINVAL;
     }
 
+  /* Prove the entropy source works before any key derived from it exists.
+   * wireguard_random_bytes() zero-fills when /dev/urandom cannot be read,
+   * and a device brought up in that state would generate all-zero
+   * ephemeral keys and handshake nonces. Refuse instead.
+   */
+
+  {
+    uint8_t probe[WIREGUARD_PRIVATE_KEY_LEN];
+    uint8_t acc = 0;
+    size_t i;
+
+    wireguard_random_bytes(probe, sizeof(probe));
+    for (i = 0; i < sizeof(probe); i++)
+      {
+        acc |= probe[i];
+      }
+
+    crypto_zero(probe, sizeof(probe));
+    if (acc == 0)
+      {
+        crypto_zero(private_key, sizeof(private_key));
+        nerr("ERROR: /dev/urandom is not usable; refusing to bring up wg0\n");
+        return -EIO;
+      }
+  }
+
   memset(priv, 0, sizeof(*priv));
 
   wireguard_init();
 
+  /* wireguard_device_init() keeps its own copy of the key; the stack copy
+   * has no further use and is wiped whether or not the call succeeded.
+   */
+
   if (!wireguard_device_init(&priv->wg, private_key))
     {
+      crypto_zero(private_key, sizeof(private_key));
       nerr("ERROR: wireguard_device_init failed\n");
       return -EINVAL;
     }
+
+  crypto_zero(private_key, sizeof(private_key));
 
   ret = psock_socket(AF_INET, SOCK_DGRAM, 0, &priv->psock);
   if (ret < 0)
@@ -1438,6 +1670,13 @@ int wg_down(void)
 
   netdev_unregister(&priv->dev);
   psock_close(&priv->psock);
+
+  /* Nothing references the device any more: wipe the private key, every
+   * peer's static-static DH result and whatever session material ifdown
+   * left behind, rather than leaving it in .bss until the next up.
+   */
+
+  crypto_zero(&priv->wg, sizeof(priv->wg));
 
   priv->registered = false;
   return OK;

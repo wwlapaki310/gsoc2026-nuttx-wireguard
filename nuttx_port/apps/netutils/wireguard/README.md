@@ -8,10 +8,13 @@ same thing.
 
 ## Which files are ours and which are not
 
-**Third party, taken unmodified from
+**Third party, from
 [wireguard-lwip](https://github.com/smartalock/wireguard-lwip)**
 (BSD-3-Clause, Copyright (c) 2021 Daniel Hope). These keep their original
-license headers and are byte-identical to upstream:
+license headers. `crypto.c` and `crypto/refc/*` are byte-identical to
+upstream; `wireguard.c` / `wireguard.h` carry two small, marked patches
+listed in [PATCHES.md](PATCHES.md) (initiation rate-limit direction, wider
+anti-replay window):
 
 | File | Contents |
 |---|---|
@@ -54,9 +57,10 @@ supply just those, in about fifteen lines each.
 The alternative is to patch those includes out of `wireguard.h`. That would
 remove a directory whose name is misleading inside a NuttX app, at the cost
 of making a second vendored file diverge from upstream. Keeping the shims
-was chosen so the protocol and crypto sources stay byte-identical and easy
-to re-diff against upstream, but this is worth settling in review rather
-than assuming.
+was chosen so the protocol and crypto sources stay as close to upstream as
+possible and easy to re-diff (the two deliberate changes are in
+[PATCHES.md](PATCHES.md)), but this is worth settling in review rather than
+assuming.
 
 ## What was deliberately left out
 

@@ -186,6 +186,7 @@ See [docs/development/dev-environment.md](docs/development/dev-environment.md) a
 |---|---|
 | `scripts/verify-sim-wg-runtime.sh` | A tunnel configured entirely at runtime reaches a live Linux peer, survives save/restore, and rejects bad input |
 | `scripts/verify-sim-wg-multipeer.sh` | Two Linux WireGuard interfaces hold sessions with `wg0` at the same time |
+| `scripts/verify-sim-wg-replay.sh` | What must *not* work: a replayed authentic packet from a forged source does not move the peer endpoint; an initiation flood past the load threshold draws cookie replies, and the real peer's tunnel survives both |
 
 ---
 
@@ -196,7 +197,7 @@ laid out exactly as it would be submitted to `apache/nuttx-apps`.
 
 | | Lines | Origin |
 |---|---:|---|
-| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip), BSD-3-Clause, **byte-identical to upstream** |
+| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip), BSD-3-Clause; crypto byte-identical, protocol core with two marked patches ([PATCHES.md](nuttx_port/apps/netutils/wireguard/PATCHES.md)) |
 | `nuttx-wireguardif.c` | 2,157 | Written for NuttX |
 | `wg_main.c` | 344 | The `wg` NSH command |
 | `nuttx-wireguardif.h` | 266 | |

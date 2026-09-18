@@ -320,9 +320,14 @@ static void wireguard_kdf3(uint8_t *tau1, uint8_t *tau2, uint8_t *tau3, const ui
 bool wireguard_check_replay(struct wireguard_keypair *keypair, uint64_t seq) {
 	// Implementation of packet replay window - as per RFC2401
 	// Adapted from code in Appendix C at https://tools.ietf.org/html/rfc2401
-	uint32_t diff;
+	uint64_t diff;
 	bool result = false;
-	size_t ReplayWindowSize = sizeof(keypair->replay_bitmap) * CHAR_BIT; // 32 bits
+	// NuttX patch 2: the window was a single uint32_t (32 packets), which drops
+	// legitimate traffic as soon as Wi-Fi retransmission or a slow receive
+	// thread reorders more than that. The bitmap is now an array of words
+	// (WIREGUARD_REPLAY_WORDS x 64 bits); the algorithm is the same RFC 2401
+	// sliding window, with bit i of the window at word i/64, bit i%64.
+	const uint64_t ReplayWindowSize = WIREGUARD_REPLAY_WORDS * 64;
 
 	// WireGuard data packet counter starts from 0 but algorithm expects packet numbers to start from 1
 	seq++;
@@ -332,13 +337,26 @@ bool wireguard_check_replay(struct wireguard_keypair *keypair, uint64_t seq) {
 			// new larger sequence number
 			diff = seq - keypair->replay_counter;
 			if (diff < ReplayWindowSize) {
-				// In window
-				keypair->replay_bitmap <<= diff;
+				// In window: shift the whole bitmap left by diff bits
+				size_t word_shift = (size_t)(diff / 64);
+				unsigned bit_shift = (unsigned)(diff % 64);
+				int i;
+				for (i = WIREGUARD_REPLAY_WORDS - 1; i >= 0; i--) {
+					uint64_t v = 0;
+					if ((size_t)i >= word_shift) {
+						v = keypair->replay_bitmap[i - word_shift] << bit_shift;
+						if (bit_shift != 0 && (size_t)i > word_shift) {
+							v |= keypair->replay_bitmap[i - word_shift - 1] >> (64 - bit_shift);
+						}
+					}
+					keypair->replay_bitmap[i] = v;
+				}
 				// set bit for this packet
-				keypair->replay_bitmap |= 1;
+				keypair->replay_bitmap[0] |= 1;
 			} else {
 				// This packet has a "way larger"
-				keypair->replay_bitmap = 1;
+				memset(keypair->replay_bitmap, 0, sizeof(keypair->replay_bitmap));
+				keypair->replay_bitmap[0] = 1;
 			}
 			keypair->replay_counter = seq;
 			// larger is good
@@ -346,11 +364,13 @@ bool wireguard_check_replay(struct wireguard_keypair *keypair, uint64_t seq) {
 		} else {
 			diff = keypair->replay_counter - seq;
 			if (diff < ReplayWindowSize) {
-				if (keypair->replay_bitmap & ((uint32_t)1 << diff)) {
+				uint64_t bit = (uint64_t)1 << (diff % 64);
+				size_t word = (size_t)(diff / 64);
+				if (keypair->replay_bitmap[word] & bit) {
 					// already seen
 				} else {
 					// mark as seen
-					keypair->replay_bitmap |= ((uint32_t)1 << diff);
+					keypair->replay_bitmap[word] |= bit;
 					// out of order but good
 					result = true;
 				}
@@ -495,7 +515,7 @@ void wireguard_start_session(struct wireguard_peer *peer, bool initiator) {
 		wireguard_kdf2(new_keypair.receiving_key, new_keypair.sending_key, handshake->chaining_key, NULL, 0);
 	}
 
-	new_keypair.replay_bitmap = 0;
+	memset(new_keypair.replay_bitmap, 0, sizeof(new_keypair.replay_bitmap));
 	new_keypair.replay_counter = 0;
 
 	new_keypair.last_tx = 0;
@@ -611,7 +631,9 @@ struct wireguard_peer *wireguard_process_initiation_message(struct wireguard_dev
 
 					// Check that timestamp is increasing and we haven't had too many initiations (should only get one per peer every 5 seconds max?)
 					replay = (memcmp(t, peer->greatest_timestamp, WIREGUARD_TAI64N_LEN) <= 0); // tai64n is big endian so we can use memcmp to compare
-					rate_limit = (peer->last_initiation_rx - now) < (1000 / MAX_INITIATIONS_PER_SECOND);
+					// NuttX patch 1: the subtraction was reversed upstream ((last - now) wraps to a
+					// huge unsigned value whenever last < now), so the limit never applied.
+					rate_limit = (peer->last_initiation_rx != 0) && ((now - peer->last_initiation_rx) < (1000 / MAX_INITIATIONS_PER_SECOND));
 
 					if (!replay && !rate_limit) {
 						// Success! Copy everything to peer

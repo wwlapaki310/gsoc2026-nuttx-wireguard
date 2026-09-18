@@ -181,6 +181,7 @@ ESP32-S3 を 12.7.0 と 13.0.1/master のイメージ間で行き来させると
 |---|---|
 | `scripts/verify-sim-wg-runtime.sh` | 実行時だけで設定したトンネルが実際の Linux ピアに届き、保存・復元を経ても動き、不正な入力を拒否すること |
 | `scripts/verify-sim-wg-multipeer.sh` | 2 つの Linux WireGuard インターフェースが `wg0` と同時にセッションを保持すること |
+| `scripts/verify-sim-wg-replay.sh` | **動いてはいけない**こと: 偽の送信元から再送した正規パケットで endpoint が動かない、閾値を超えた initiation 洪水に cookie reply で応じる、その間も本物のピアのトンネルが生きている |
 
 ---
 
@@ -191,7 +192,7 @@ ESP32-S3 を 12.7.0 と 13.0.1/master のイメージ間で行き来させると
 
 | | 行数 | 由来 |
 |---|---:|---|
-| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)（BSD-3-Clause）**upstream とバイト一致** |
+| `wireguard.c`, `crypto/` | 3,079 | [smartalock/wireguard-lwip](https://github.com/smartalock/wireguard-lwip)（BSD-3-Clause）。暗号はバイト一致、プロトコル本体は印付きのパッチ 2 件（[PATCHES.md](nuttx_port/apps/netutils/wireguard/PATCHES.md)） |
 | `nuttx-wireguardif.c` | 2,157 | NuttX 向けに新規作成 |
 | `wg_main.c` | 344 | `wg` NSH コマンド |
 | `nuttx-wireguardif.h` | 266 | |

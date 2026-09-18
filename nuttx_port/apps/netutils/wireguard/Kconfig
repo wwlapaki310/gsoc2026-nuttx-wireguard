@@ -7,11 +7,21 @@ config NET_WIREGUARD
 	bool "WireGuard VPN support"
 	default n
 	depends on NET && NET_UDP && NET_TUN && NET_SOCKOPTS && ALLOW_BSD_COMPONENTS
+	depends on DEV_URANDOM && (DEV_URANDOM_ARCH || DEV_URANDOM_RANDOM_POOL)
 	---help---
 		Enable WireGuard VPN support for NuttX. Implements WireGuard as a
 		"wg0" network device backed by a UDP socket (see NET_LL_TUN).
 		Requires UDP and CONFIG_NET_TUN (for the NET_LL_TUN link type;
 		the /dev/tun character device itself is not used).
+
+		Key material comes from /dev/urandom, so its backend has to be a
+		real one: a hardware RNG (DEV_URANDOM_ARCH) or the entropy pool
+		(DEV_URANDOM_RANDOM_POOL, which needs CRYPTO_RANDOM_POOL). The
+		xorshift128 and congruential backends are seeded with constants
+		and hand out the same "random" bytes on every boot; with those the
+		private key printed by "wg genkey" and every ephemeral handshake
+		key would be predictable, so this option refuses to build with
+		them selected.
 
 		The vendored wireguard-lwip sources (wireguard.c, crypto/) are
 		BSD-3-Clause licensed, same as NET_TUN's tun.c, hence the
@@ -93,7 +103,9 @@ config NET_WIREGUARD_MAX_PEERS
 			8 peers 10652 bytes
 
 		Most of that is the three key pairs each peer keeps so that rekeying
-		can overlap with traffic still using the old keys.
+		can overlap with traffic still using the old keys. Those figures
+		predate the wider anti-replay window; add 3 * REPLAY_WINDOW / 8
+		bytes per peer on top (768 bytes at the default of 2048).
 
 		1 is right for a device that dials home to a single server. Raise it
 		to terminate several tunnels, for example a gateway reached by more
@@ -111,6 +123,34 @@ config NET_WIREGUARD_MAX_SRC_IPS
 config NET_WIREGUARD_LISTEN_PORT
 	int "UDP listen port"
 	default 51820
+
+config NET_WIREGUARD_REPLAY_WINDOW
+	int "Anti-replay window (packets)"
+	default 2048
+	range 64 8192
+	---help---
+		Size of the sliding window used to reject replayed data packets,
+		in packets. Must be a multiple of 64. Packets that arrive more than
+		this many counters behind the newest one seen are dropped even if
+		they are genuine, so the window has to cover the reordering that
+		Wi-Fi retransmission and a busy receive thread produce; 32 (the
+		reference implementation's size) drops real traffic. Linux uses
+		8192. Each peer keeps three windows (one per key pair), so the cost
+		is 3 * window / 8 bytes of RAM per peer: 768 bytes at the default.
+
+config NET_WIREGUARD_LOAD_THRESHOLD
+	int "Handshake initiations per second before cookies are required"
+	default 4
+	range 1 1000
+	---help---
+		Above this many handshake initiations in one second the device
+		considers itself under load and answers further initiations that
+		carry no valid mac2 with a cookie reply instead of doing the
+		Diffie-Hellman work (WireGuard whitepaper 5.4.7). Anyone who knows
+		this device's public key can produce a valid mac1, so without this
+		an initiation flood costs the sender nothing and the receiver two
+		X25519 operations each. The Linux implementation switches at 4096
+		queued handshakes; a microcontroller reaches its limit far sooner.
 
 config NET_WIREGUARD_CONFIG_PATH
 	string "Default configuration file"

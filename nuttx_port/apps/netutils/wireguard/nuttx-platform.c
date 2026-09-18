@@ -69,8 +69,18 @@ uint32_t wireguard_sys_now(void)
 {
   struct timespec ts;
 
+  uint32_t ms;
+
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (uint32_t)((uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+  ms = (uint32_t)((uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+
+  /* Several timestamps in the protocol core and the netdev glue use zero
+   * to mean "never" (cookie_millis, last_initiation_rx, last_tx ...), so
+   * a real reading must not be zero - which it is for the first
+   * millisecond after boot and again at every 2^32 ms wrap.
+   */
+
+  return ms == 0 ? 1 : ms;
 }
 
 /****************************************************************************
@@ -170,10 +180,11 @@ void wireguard_tai64n_now(FAR uint8_t *output)
  *   Report whether the device should answer handshake initiations with
  *   cookie replies instead of processing them, as a DoS mitigation.
  *
- *   Always false here: the cookie mechanism exists to protect servers
- *   fielding large volumes of handshakes, which is not the shape of a
- *   single-peer embedded device. See the note in wg_process_udp_packet()
- *   about the mac2/cookie path this makes unreachable.
+ *   The vendored protocol core never calls this itself; the load decision
+ *   is made in the netdev glue (wg_under_load() in nuttx-wireguardif.c),
+ *   which is the only place that sees the initiation rate, and the cookie
+ *   exchange is driven from there. This function exists to satisfy the
+ *   platform interface and is not consulted.
  *
  * Returned Value:
  *   Always false.
