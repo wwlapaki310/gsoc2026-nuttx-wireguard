@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WireGuard for Apache NuttX &mdash; Community Over Code Glasgow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;700;800;900&display=swap">
+<style>
+  :root {
+    --paper: #eef2f3;
+    --surface: #fbfcfd;
+    --ink: #11181d;
+    --muted: #5c6c78;
+    --quiet: #87939b;
+    --line: #d5dde2;
+    --line-2: #e8edf0;
+    --wg: #8d1f24;
+    --wg-soft: #f5e4e5;
+    --nx: #176c67;
+    --nx-soft: #dff0ee;
+    --blue: #245c9a;
+    --blue-soft: #e3edf7;
+    --gold: #8a650c;
+    --gold-soft: #f5edd8;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  #canvas {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    transform-origin: center center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    overflow: hidden;
+    padding: 58px 72px 62px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .slide.on { display: flex; flex-direction: column; }
+  .slide::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 9px;
+    background: linear-gradient(90deg, var(--wg), var(--nx) 54%, var(--blue));
+  }
+
+  #bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 3px;
+    background: var(--wg);
+    z-index: 4;
+    transition: width .2s ease;
+  }
+  #help {
+    position: fixed;
+    right: 16px;
+    top: 14px;
+    z-index: 10;
+    padding: 5px 9px;
+    background: rgba(238, 242, 243, .92);
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    display: flex;
+    gap: 15px;
+  }
+  #help b { color: var(--muted); font-weight: 600; }
+
+  .num {
+    position: absolute;
+    right: 30px;
+    bottom: 24px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+  }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: .015em;
+    text-transform: uppercase;
+  }
+  .title-slide .eyebrow {
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .18em;
+  }
+
+  h1, h2, h3, p { margin-top: 0; }
+  h1 {
+    margin-bottom: 24px;
+    max-width: 960px;
+    font-size: 66px;
+    line-height: 1.06;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 28px;
+    line-height: 1.34;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  h3 {
+    margin-bottom: 12px;
+    font-size: 25px;
+    line-height: 1.25;
+  }
+  .lead {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: 23px;
+    line-height: 1.55;
+  }
+  .mono { font-family: var(--mono); letter-spacing: 0; }
+  code {
+    padding: 1px 6px;
+    background: #e8edf0;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: .88em;
+    white-space: nowrap;
+  }
+  strong { font-weight: 800; }
+  .panel strong, .fact strong, .aside strong, .claim small strong,
+  .photo-card strong { color: var(--ink); }
+  .hl {
+    font-weight: 800;
+    color: var(--nx);
+  }
+  .hl.red { color: var(--wg); }
+  a {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(36, 92, 154, .35);
+  }
+
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .title-slide { padding: 0; }
+  .title-slide.on {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    grid-template-rows: 100%;
+  }
+  .title-main {
+    padding: 76px 76px 70px 84px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 25px;
+    line-height: 1.48;
+  }
+  .t-strip {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .t-strip b {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+  }
+  .t-strip span {
+    display: block;
+    margin-top: 4px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .07em;
+  }
+  .speaker {
+    margin-top: 30px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: .08em;
+  }
+  .hero-media {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-left: 1px solid var(--line);
+    background: #fff;
+    display: grid;
+    grid-template-rows: .88fr 1fr 1fr;
+  }
+  .hero-tile {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-tile:last-child { border-bottom: 0; }
+  .hero-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 26px;
+    display: block;
+  }
+  .hero-tile.logo img { padding: 40px; }
+  .caption {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    padding: 5px 8px;
+    background: rgba(255, 255, 255, .92);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .photo-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .photo {
+    height: 205px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: hidden;
+    background: #fff;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .photo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+  }
+  .photo.fill {
+    padding: 0;
+  }
+  .photo.fill img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+  }
+  .photo-card .copy {
+    min-height: 160px;
+    padding: 20px 22px;
+  }
+  .photo-card p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.52;
+    margin-bottom: 0;
+  }
+
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: stretch;
+  }
+  .panel {
+    min-height: 250px;
+    padding: 28px 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .panel p, .panel li {
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.58;
+  }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel.wg { background: var(--wg-soft); border-color: #ddb9bc; }
+  .panel.nx { background: var(--nx-soft); border-color: #b6d7d3; }
+  .panel.blue { background: var(--blue-soft); border-color: #bfd1e5; }
+  .panel.gold { background: var(--gold-soft); border-color: #e0d1a6; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 21px;
+  }
+  th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-2);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 800; }
+  .old { color: var(--quiet); }
+  .new { color: var(--wg); font-weight: 800; }
+  .sub {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .claim {
+    padding: 20px 28px;
+    border-left: 5px solid var(--wg);
+    background: var(--wg-soft);
+  }
+  .claim.ok { border-left-color: var(--nx); background: var(--nx-soft); }
+  .claim p {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.42;
+    font-weight: 800;
+  }
+  .claim small {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .route {
+    width: 100%;
+    height: auto;
+  }
+  svg text {
+    font-family: var(--sans);
+    fill: var(--ink);
+  }
+  svg .small {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  svg .label {
+    fill: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+  }
+
+  ul.big {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+  }
+  ul.big li {
+    position: relative;
+    padding-left: 31px;
+    font-size: 28px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+  ul.big li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .62em;
+    width: 16px;
+    height: 3px;
+    background: var(--nx);
+  }
+  ul.big span {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.48;
+  }
+
+  .sources {
+    position: absolute;
+    left: 72px;
+    right: 150px;
+    bottom: 22px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .02em;
+  }
+
+  .three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .fact {
+    padding: 19px 21px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--quiet);
+    background: #fff;
+  }
+  .fact.wg { border-top-color: var(--wg); }
+  .fact.nx { border-top-color: var(--nx); }
+  .fact.blue { border-top-color: var(--blue); }
+  .fact.gold { border-top-color: var(--gold); }
+  .four {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .four .fact { padding: 17px 18px; }
+  .four .fact p { font-size: 14.5px; line-height: 1.45; }
+  .four .fact b { font-size: 10px; letter-spacing: .12em; }
+  .fact p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .fact b {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .logo-panel {
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .logo-panel img {
+    width: 100%;
+    max-height: 190px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .panel.dense p {
+    margin-bottom: 9px;
+    font-size: 16px;
+    line-height: 1.48;
+  }
+  .logo-row {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .logo-row img {
+    height: 56px;
+    width: auto;
+    max-width: 100%;
+    display: block;
+  }
+  .aside {
+    padding: 12px 16px;
+    border-left: 3px solid var(--line);
+    color: var(--quiet);
+    font-size: 15px;
+    line-height: 1.52;
+  }
+  .aside p { margin: 0; }
+  .aside strong { color: var(--muted); font-weight: 700; }
+
+  .flow div {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-2);
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .flow div:last-child { border-bottom: 0; }
+  .flow b {
+    display: inline-block;
+    width: 34px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+  }
+  .hooks {
+    display: grid;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .hooks div { color: var(--muted); }
+  .hooks b { color: var(--ink); font-weight: 600; }
+  .hooks i { padding: 0 7px; color: var(--quiet); font-style: normal; }
+
+  .mini {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .shots .photo {
+    height: 96px;
+    padding: 8px;
+    border-right: 1px solid var(--line-2);
+  }
+  .shots .photo:last-child { border-right: 0; }
+  .photo.wide { height: 150px; padding: 0; }
+  .mini .cap { padding: 11px 14px; }
+  .mini b {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+  .mini span {
+    display: block;
+    margin-top: 3px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .stack { display: grid; gap: 18px; }
+
+  .demo {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .thumb {
+    position: relative;
+    border: 1px solid var(--line);
+    background: #000;
+    line-height: 0;
+  }
+  .thumb a { border-bottom: 0; display: block; }
+  .thumb img { width: 100%; height: auto; display: block; }
+  .thumb .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 78px;
+    height: 54px;
+    margin: -27px 0 0 -39px;
+    border-radius: 12px;
+    background: rgba(141, 31, 36, .92);
+  }
+  .thumb .play::after {
+    content: "";
+    position: absolute;
+    left: 30px;
+    top: 15px;
+    border-style: solid;
+    border-width: 12px 0 12px 20px;
+    border-color: transparent transparent transparent #fff;
+  }
+
+  .notes-src { display: none; }
+  #notes {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: none;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 20px 30px 26px;
+    border-top: 2px solid var(--ink);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  #notes.on { display: block; }
+  #notes h4 {
+    margin: 0 0 10px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+  #notes p { max-width: 106ch; margin: 0 0 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="help"><span><b>Arrow</b> move</span><span><b>N</b> notes</span><span><b>F</b> fullscreen</span></div>
+<div id="stage"><div id="canvas">
+  <div id="bar"></div>
+
+  <section class="slide title-slide">
+    <div class="title-main">
+      <p class="eyebrow">Community Over Code &middot; Glasgow 2026</p>
+      <h1>WireGuard for Apache NuttX</h1>
+      <p class="subtitle">A WireGuard VPN implemented as a <code>wg0</code> network device &mdash; on real hardware, and inside a real NuttX kernel build.</p>
+      <div class="t-strip">
+        <div><b>ESP32-S3 &amp; SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
+        <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
+        <div><b>rv-virt knetnsh64</b><span>RUNS IN A REAL KERNEL BUILD (BUILD_KERNEL)</span></div>
+        <div><b>NuttX 13.0.1 / master / 12.7.0</b><span>ONE SOURCE</span></div>
+      </div>
+      <p class="speaker">Satoru Akita / Sony Semiconductor Solutions</p>
+    </div>
+    <div class="hero-media">
+      <div class="hero-tile logo">
+        <img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo">
+        <span class="caption">Apache NuttX</span>
+      </div>
+      <div class="hero-tile">
+        <img src="assets/aitrios-aih-ivrw2.png" alt="Sony AIH-IVRW2 wireless AI camera">
+        <span class="caption">AITRIOS edge AI device (ESP32)</span>
+      </div>
+      <div class="hero-tile">
+        <img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards">
+        <span class="caption">SPRESENSE</span>
+      </div>
+    </div>
+    <div class="num">1 / 24</div>
+    <div class="notes-src">
+Today I will talk about bringing WireGuard to Apache NuttX.
+||
+It is a WireGuard VPN implemented as a wg0 network device. The tunnel is up over real Wi-Fi on ESP32-S3 and on SPRESENSE, the peers are always real WireGuard implementations &mdash; the Linux kernel module and the official Windows client &mdash; and the same source builds on three NuttX versions. Later in the talk it also runs inside a real kernel build, which is the harder and more interesting half.
+||
+But the point of this talk is not that it works. It is what "works" hid, and what pushing it into the kernel forced into the open.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Summary</p>
+    <h2>This project implements WireGuard as a NuttX network device.</h2>
+    <div class="body">
+      <svg class="route" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
+        <defs>
+          <marker id="arrow-arch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="660" height="292" fill="#f5f7f8" stroke="#d5dde2"></rect>
+        <text class="label" x="22" y="24">NUTTX RTOS</text>
+        <rect x="24" y="34" width="612" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="330" y="62" text-anchor="middle" font-size="19" font-weight="700">Application / NSH</text>
+        <rect x="24" y="88" width="612" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="330" y="116" text-anchor="middle" font-size="19" font-weight="700">NuttX network stack (BSD socket API)</text>
+        <rect x="24" y="142" width="294" height="60" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="171" y="167" text-anchor="middle" font-size="19" font-weight="700">eth0 / wlan0</text>
+        <text class="small" x="171" y="188" text-anchor="middle">physical NIC</text>
+        <rect x="342" y="142" width="294" height="60" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="489" y="167" text-anchor="middle" font-size="19" font-weight="800" fill="#8d1f24">wg0</text>
+        <text class="small" x="489" y="188" text-anchor="middle" fill="#8d1f24">WireGuard netdev &mdash; this project</text>
+        <rect x="342" y="216" width="294" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="489" y="244" text-anchor="middle" font-size="17" font-weight="700">UDP socket (port 51820)</text>
+        <line x1="330" y1="78" x2="330" y2="86" stroke="#87939b" stroke-width="2"></line>
+        <line x1="171" y1="132" x2="171" y2="140" stroke="#87939b" stroke-width="2"></line>
+        <line x1="489" y1="132" x2="489" y2="140" stroke="#87939b" stroke-width="2"></line>
+        <line x1="489" y1="202" x2="489" y2="214" stroke="#87939b" stroke-width="2"></line>
+        <line x1="640" y1="238" x2="710" y2="238" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-arch)"></line>
+        <rect x="716" y="206" width="186" height="64" fill="#fbfcfd" stroke="#d5dde2" stroke-dasharray="7 5"></rect>
+        <text class="small" x="809" y="232" text-anchor="middle">Internet / LTE /</text>
+        <text class="small" x="809" y="252" text-anchor="middle">satellite link</text>
+        <line x1="906" y1="238" x2="942" y2="238" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-arch)"></line>
+        <rect x="948" y="206" width="188" height="64" fill="#dff0ee" stroke="#176c67"></rect>
+        <text x="1042" y="232" text-anchor="middle" font-size="18" font-weight="800">WireGuard peer</text>
+        <text class="small" x="1042" y="254" text-anchor="middle">Linux, Windows, ...</text>
+      </svg>
+      <p class="lead">Packets routed to <code>wg0</code> are encrypted and sent as UDP; UDP arriving on the port is decrypted and delivered as if it had arrived on <code>wg0</code>. The peer can be any existing WireGuard endpoint &mdash; interoperating with another copy of this code would prove nothing.</p>
+    </div>
+    <div class="num">2 / 24</div>
+    <div class="notes-src">
+Here is the whole idea in one picture.
+||
+Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface: applications see an ordinary interface, and underneath, the encrypted transport is a UDP socket. The peer on the other end is a real WireGuard endpoint &mdash; Linux, Windows, or another gateway.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">The ASF and Community Over Code</p>
+    <h2>Apache NuttX is an ASF project.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel dense">
+          <div class="logo-row"><img src="assets/asf-logo-wide.svg" alt="The Apache Software Foundation logo"></div>
+          <p>&ldquo;Exists to provide software for the <span class="hl">public good</span>.&rdquo;</p>
+          <p>A <strong>501(c)(3) nonprofit</strong>, founded in <strong>1999</strong>, run almost entirely by <strong>volunteers</strong> across <strong>hundreds of projects</strong>.</p>
+          <p>Its way of working is &ldquo;The Apache Way&rdquo; &mdash; <span class="hl">community over code</span>.</p>
+        </div>
+        <div class="panel dense">
+          <div class="logo-row"><img src="assets/community-over-code-logo.svg" alt="Community Over Code logo"></div>
+          <p>The <span class="hl">official conference</span> of the ASF, for the developers, users, contributors and committers behind Apache projects.</p>
+          <p><strong>Glasgow: October 2026</strong>, with the <strong>NuttX International Workshop</strong> co-located.</p>
+        </div>
+      </div>
+      <div class="claim ok">
+        <p>The code is headed for <code>apache/nuttx</code> and <code>apache/nuttx-apps</code>.</p>
+        <small>So this is not just a port that runs &mdash; it is a contribution meant to be merged, and reviewed, by this community.</small>
+      </div>
+    </div>
+    <div class="sources">Quotations: apache.org/foundation, communityovercode.apache.org &middot; Logos: ASF Brand Guidelines</div>
+    <div class="num">3 / 24</div>
+    <div class="notes-src">
+A word on where this is going.
+||
+The ASF is a nonprofit that exists to provide software for the public good, run by volunteers across hundreds of projects. NuttX is one of them. Community Over Code is its official conference, and the NuttX International Workshop is co-located with Glasgow.
+||
+I mention this because it changes what "done" means. The goal is not a demo that runs on my desk. It is code that this community can merge and maintain &mdash; community over code.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Why This Topic</p>
+    <h2>How do you reach a device you left in the field?</h2>
+    <div class="body">
+      <p class="lead">I wanted secure remote access to the NuttX devices I work with. NuttX has <span class="hl red">no native, lightweight VPN</span>. Every alternative is unappealing:</p>
+      <div class="two">
+        <div class="panel wg">
+          <p><strong>Expose a global IP</strong> &mdash; open a port, point SSH or HTTP at the internet, and get scanned and brute-forced.</p>
+        </div>
+        <div class="panel wg">
+          <p><strong>Build a bespoke protocol</strong> &mdash; reinvent authenticated encryption, and own every bug in it forever.</p>
+        </div>
+      </div>
+      <div class="claim">
+        <p>Remote, secure access to edge devices is a real, unsolved problem &mdash; edge AI, industrial IoT, satellite and remote installations.</p>
+      </div>
+    </div>
+    <div class="num">4 / 24</div>
+    <div class="notes-src">
+Why work on this at all.
+||
+I wanted to reach the NuttX devices I work with, securely, after they are installed. Today your options are to expose a global IP and get scanned, to build a bespoke protocol and own its bugs, or to accept a vendor cloud. None is good. And this is not niche &mdash; it is the same problem across edge AI cameras, industrial IoT, and remote or satellite-linked equipment.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Why It Matters</p>
+    <h2>The ordinary way of working, extended to the MCU.</h2>
+    <div class="body">
+      <ul class="big">
+        <li>Maintenance <span>ssh / telnet into a field device, pull logs, update firmware &mdash; with your usual tools.</span></li>
+        <li>Data collection <span>pull the cloud into the device's network, instead of bending the device to a cloud.</span></li>
+        <li>Zero trust to the edge <span>an authenticated, encrypted tunnel that reaches all the way to the microcontroller.</span></li>
+        <li>Interop <span>the peer can be Linux, Windows, or an existing WireGuard server &mdash; not a bespoke protocol.</span></li>
+      </ul>
+    </div>
+    <div class="num">5 / 24</div>
+    <div class="notes-src">
+It is not that you can do new things. It is that the things you already wanted to do become ordinary.
+||
+Maintenance with the usual tools. Pulling the cloud into the device's network rather than the other way around. Zero trust that does not stop at a gateway but reaches the MCU. And because it is standard WireGuard, the other end can be anything &mdash; that interoperability is itself the value.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">The Plan</p>
+    <h2>Don't write it from scratch.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel nx">
+          <h3>The reference</h3>
+          <p><code>smartalock/wireguard-lwip</code> implements WireGuard as an lwIP netif. All OS-specific behaviour is isolated behind <code>wireguard-platform.h</code> &mdash; <strong>four functions</strong>. The protocol core and crypto are portable C. BSD-licensed, consistent with NuttX.</p>
+        </div>
+        <div class="panel">
+          <h3>What had to change</h3>
+          <p>NuttX does not use lwIP. It has its own TCP/IP stack; headers like <code>lwip/netif.h</code> do not exist here. So the plan is simple to state: <span class="hl">keep the protocol core, replace the network glue.</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="num">6 / 24</div>
+    <div class="notes-src">
+Writing a crypto stack from scratch would be a mistake. So I started from an existing implementation.
+||
+wireguard-lwip implements WireGuard as an lwIP netif, and crucially it isolates everything OS-specific behind one header with four functions. The protocol and the crypto are portable C. NuttX does not use lwIP, though &mdash; it has its own stack. So the whole job is: keep the protocol core untouched, and replace the network glue.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Design Decision</p>
+    <h2>A NuttX netdev, not an lwIP netif.</h2>
+    <div class="body">
+      <table>
+        <tr><th>Concept</th><th>lwIP</th><th>NuttX</th></tr>
+        <tr><td>NIC abstraction</td><td class="old">struct netif</td><td class="new">struct net_driver_s</td></tr>
+        <tr><td>Buffers</td><td class="old">pbuf</td><td class="new">iob</td></tr>
+        <tr><td>Registration</td><td class="old">netif_add()</td><td class="new">netdev_register()</td></tr>
+        <tr><td>Send trigger</td><td class="old">callback</td><td class="new">devif_poll()</td></tr>
+      </table>
+      <div class="claim ok">
+        <p><code>wg0</code> is a <code>NET_LL_TUN</code> netdev, and its wire is a UDP socket.</p>
+      </div>
+    </div>
+    <div class="num">7 / 24</div>
+    <div class="notes-src">
+The single most important porting decision.
+||
+Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. netif becomes net_driver_s, pbuf becomes iob, netif_add becomes netdev_register, and the send callback becomes NuttX's devif_poll. wg0 is registered as a TUN-type netdev, and the "wire" underneath it is a UDP socket.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">How It Was Built</p>
+    <h2>Keep the protocol core, replace the glue.</h2>
+    <div class="body">
+      <table>
+        <tr><th>Layer</th><th>Porting cost</th><th>In this port</th></tr>
+        <tr><td>Protocol &amp; crypto</td><td class="old">None &mdash; portable C, as-is</td><td class="new">3,079 lines byte-identical to upstream</td></tr>
+        <tr><td>OS hooks</td><td class="old">Low &mdash; four functions</td><td class="new">clock, /dev/urandom, TAI64N, load</td></tr>
+        <tr><td>Network glue</td><td class="old">The actual work</td><td class="new">netdev + UDP socket + RX task</td></tr>
+      </table>
+      <div class="claim ok">
+        <p>It worked: <code>wg genkey / set / setconf</code> at run time &mdash; no rebuild to change keys or peers.</p>
+        <small>And that is exactly where the interesting part begins &mdash; because working was the easy part.</small>
+      </div>
+    </div>
+    <div class="num">8 / 24</div>
+    <div class="notes-src">
+The result of the first version.
+||
+The protocol and crypto came across byte-identical &mdash; over three thousand lines unchanged. The four OS hooks are small. The real work was the network glue. And it worked: you can generate a key, set peers, load a config, all at run time, no rebuild. So far, a success story. The rest of the talk is about what that success hid.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Part 2 &middot; The pattern</p>
+    <h2>Every hard bug had the same shape.</h2>
+    <div class="body">
+      <div class="claim">
+        <p>A shallow test passes. A deeper one fails.</p>
+        <small>And because the shallow test passed, you trust that area and spend hours looking somewhere else. That loop repeated all the way through this project &mdash; and it did not stop at the apps version.</small>
+      </div>
+    </div>
+    <div class="num">9 / 24</div>
+    <div class="notes-src">
+This is the heart of the talk.
+||
+Every difficult bug in this project had the same shape. A shallow test passes; a deeper one fails. Worse, the passing shallow test convinces you that area is fine, so you search everywhere else for hours. The next slides are instances of that pattern &mdash; five in the apps version, and then two more when I pushed it into the kernel.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Pitfall 1 / 7</p>
+    <h2>A return code of 0 that did nothing.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel">
+          <p><code>setsockopt(SO_RCVTIMEO)</code> returns <strong>0 &mdash; success.</strong></p>
+          <p>But <code>recvfrom()</code> still <span class="hl red">blocks forever.</span> The timeout was accepted and ignored.</p>
+        </div>
+        <div class="panel wg">
+          <p><strong>A perfect chicken-and-egg:</strong></p>
+          <p>timer never fires &rarr; no handshake initiation is sent &rarr; the peer stays silent &rarr; <code>recvfrom()</code> never returns.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">10 / 24</div>
+    <div class="notes-src">
+The first taste: a success return with no effect.
+||
+Setting a receive timeout returned zero, success. But recvfrom still blocked forever &mdash; the option was accepted and silently ignored. That produced a perfect deadlock: the timer never fired, so no initiation was sent, so the peer never replied, so recvfrom never returned to let the timer fire.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Pitfall 2 / 7</p>
+    <h2>Created successfully. Did not survive.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel">
+          <p>The RX thread was started with <code>pthread_create()</code> + <code>pthread_detach()</code>.</p>
+          <p>When the <code>wg</code> command exited, the thread <span class="hl red">stopped</span> &mdash; not even visible in <code>ps</code>.</p>
+        </div>
+        <div class="panel nx">
+          <p>A <code>usleep()</code> right after create made the thread's <code>printf</code> appear &mdash; so it <strong>was</strong> created.</p>
+          <p>POSIX says a detached thread lives on independently. Here its lifecycle was tied to the launcher.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">11 / 24</div>
+    <div class="notes-src">
+The second: a lifecycle assumption that did not hold.
+||
+The receive thread was created detached. When the launching command exited, the thread stopped &mdash; it did not even show up in ps. A short sleep after creation let its printf run, so it really was created. POSIX says a detached thread should live independently, but here its life was bound to the command. Remember this &mdash; the kernel version fixes it structurally, by owning the thread in the driver.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Pitfall 3 / 7 &middot; the good one</p>
+    <h2>ping works. TCP dies.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel">
+          <p>Same tunnel: <code>ping</code> is <strong>0% loss.</strong> A telnet 3-way handshake even <strong>completes</strong> &mdash; then the connection dies.</p>
+          <p class="mono" style="font-size:16px;margin-top:14px">wg_encrypt_and_send: psock_sendto<br>ret=-1 errno=9 &nbsp;<span class="hl red">EBADF</span></p>
+        </div>
+        <div class="panel nx">
+          <p>Sends that <strong>worked</strong> ran in the <code>wg_rx</code> task's own context. Sends from another task got EBADF.</p>
+          <p><strong>Cause:</strong> fds are scoped to the <span class="hl">task group</span>, not global.</p>
+          <p><strong>Fix:</strong> the fd-less internal API &mdash; <code>psock_*()</code> on a <code>struct socket</code>, usable from any task.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">12 / 24</div>
+    <div class="notes-src">
+My favourite bug in the project.
+||
+On the same tunnel, ping was perfect and even a TCP handshake completed &mdash; then the connection died. Instrumenting the send path showed EBADF, bad file descriptor. The sends that worked all happened inside the receive task itself &mdash; handshake replies, keepalives, the ping echo, the SYN-ACK. Sends from any other task failed.
+||
+The cause: in NuttX, file descriptors are scoped to the task group, not to the whole system, and not global. The fix was to stop going through fds entirely and use NuttX's internal socket API, which operates on a struct socket &mdash; just memory &mdash; usable from any task. This is exactly why the kernel version holds the socket as a struct socket.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Pitfall 4 / 7</p>
+    <h2>&ldquo;No real impact&rdquo; was 10&times;.</h2>
+    <div class="body">
+      <div class="claim">
+        <p>The fd-less fix broke <code>poll()</code> too. Stopgap: poll every 50&nbsp;ms.</p>
+        <small>Assumption: &ldquo;it just wakes the CPU when idle.&rdquo; Wrong &mdash; arriving packets waited up to 50&nbsp;ms, and that capped <span class="hl red">throughput by 10&times;.</span></small>
+      </div>
+      <div class="claim ok">
+        <p>Fix: hook <code>psock_poll()</code> with a callback and a semaphore &mdash; real blocking wait.</p>
+      </div>
+    </div>
+    <div class="num">13 / 24</div>
+    <div class="notes-src">
+The fourth: an assumption I did not measure.
+||
+The fd-less fix also broke poll, which is fd-based, so as a stopgap I polled the socket every fifty milliseconds. I assumed the only cost was waking the CPU when idle. Wrong. Every arriving packet waited up to fifty milliseconds, and that alone capped throughput &mdash; about ten times slower than it should be. I measured "no impact" and it was ten x. The real fix was a proper blocking wait: a callback on psock_poll and a semaphore.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Pitfall 5 / 7</p>
+    <h2>sim passes. Hardware freezes.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel">
+          <p>Config persistence via <code>wg showconf &gt; /data/wg0.conf</code> froze the board &mdash; only on the <strong>SPIFFS of real hardware</strong>, never in sim.</p>
+        </div>
+        <div class="panel wg">
+          <p>The <code>wg_rx</code> task calls <code>ipv4_input()</code> on <strong>its own stack</strong> &mdash; the whole TCP depth rides on it, plus reply encryption.</p>
+          <p>Default <strong>3072 B</strong> was a number nobody had measured. Found with <code>CONFIG_STACK_COLORATION</code> + <code>ps</code>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">14 / 24</div>
+    <div class="notes-src">
+The fifth, and it comes back later: stacks nobody measured.
+||
+Persisting the config by redirecting into a file froze the board, but only on real hardware's flash filesystem, never in sim. The cause was the receive task's stack. It calls into the IP stack on its own stack, so the whole TCP call depth lands there, and for packets it answers immediately, the reply encryption too. The default 3072 bytes was a number nobody had measured. Stack coloration plus ps found it. Hold that thought.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Part 3 &middot; Going deeper</p>
+    <h2>Into the kernel.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel">
+          <h3>The limit of version 1</h3>
+          <p>It lives in <code>apps/</code> and leans on <code>psock_*</code> internals. Fine for a FLAT build &mdash; but it cannot be a first-class in-tree driver, and it does not fit <span class="hl red">PROTECTED / KERNEL</span> builds, where apps and kernel are separated.</p>
+        </div>
+        <div class="panel nx">
+          <h3>The move</h3>
+          <p>Put the device <span class="hl">in the kernel</span> &mdash; <code>drivers/net/wireguard/</code> &mdash; and drive it from a small user-space <code>wg</code> command over <strong>ioctl</strong>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">15 / 24</div>
+    <div class="notes-src">
+This is the additional work since the first version, and the part that makes it mergeable.
+||
+Version one lives in apps and reaches into socket internals. That is fine for a flat build, but it can never be a proper in-tree driver, and it does not fit the protected and kernel builds where user space and kernel are separated. So I moved the device into the kernel, under drivers/net/wireguard, and drove it from a tiny user-space wg command through ioctl.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">The Kernel Design</p>
+    <h2>A kernel netdev, an ioctl ABI, a write-only key.</h2>
+    <div class="body">
+      <ul class="big">
+        <li>Kernel netdev <span><code>netdev_lowerhalf</code> owning a UDP socket, a receive kernel thread, timers and cookies &mdash; the lifecycle problems of v1 fixed structurally.</span></li>
+        <li>Flat, pointer-free ioctl ABI <span><code>SIOCS/GWGIF</code>, <code>SIOCS/D/GWGPEER</code> &mdash; no pointers, because in PROTECTED / KERNEL the kernel copies the caller's struct directly.</span></li>
+        <li>Private key is write-only <span>set it, never read it back; key material never leaves the kernel.</span></li>
+        <li>NuttX's own crypto <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored.</span></li>
+      </ul>
+    </div>
+    <div class="num">16 / 24</div>
+    <div class="notes-src">
+The shape of the real driver.
+||
+wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receive kernel thread &mdash; so the socket-ownership and thread-lifecycle problems from part two are gone by construction. Configuration is a flat, pointer-free ioctl ABI, pointer-free because the kernel copies the caller's structure directly. The private key is write-only: you set it, you never read it back. And the crypto is NuttX's own, nothing vendored.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Two more bugs &middot; same shape</p>
+    <h2>Deeper depth, same failure.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel wg">
+          <h3>A bug in NuttX's own crypto</h3>
+          <p><code>chacha20poly1305</code> put the counter in the wrong nonce bytes. Counter 0 matches, so <strong>the handshake succeeds and every data packet after the first fails.</strong> No in-tree caller had ever exercised it. Two-line fix, going upstream as a separate <code>crypto:</code> PR.</p>
+        </div>
+        <div class="panel wg">
+          <h3>A BUILD_KERNEL-only crash</h3>
+          <p><code>wg_set_if()</code> snapshotted peers into a <strong>6&nbsp;KB array on the stack</strong>; the kernel stack is 3&nbsp;KB &rarr; overflow &rarr; heap corruption &rarr; panic. <span class="hl red">sim (FLAT, big stacks) never hit it.</span> Moved to the heap.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">17 / 24</div>
+    <div class="notes-src">
+And the same pattern held at kernel depth &mdash; twice.
+||
+First, a bug in NuttX's own ChaCha20-Poly1305: the counter went into the wrong bytes of the nonce. For counter zero the two layouts are identical, so the handshake completes and then every data packet after the first fails to decrypt. Shallow passes, deep fails. There was no in-tree caller, so it had never been exercised. A two-line fix, and it is going upstream as its own crypto PR &mdash; porting into the project found a latent bug in the project.
+||
+Second, a crash that only happened in a kernel build. Setting the key snapshotted the peers into a six-kilobyte array on the stack, and the kernel stack is three kilobytes &mdash; overflow, heap corruption, panic. On sim, with large task stacks, it never showed. Exactly the stack lesson from part two, one level deeper. Moved to the heap.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Verification</p>
+    <h2>Three independent kinds of proof.</h2>
+    <div class="body">
+      <table>
+        <tr><th>Tier</th><th>Environment</th><th>Confirmed</th></tr>
+        <tr><td>Compiles in CI</td><td class="old">sim:wireguard defconfig</td><td>the config NuttX CI builds</td></tr>
+        <tr><td>Real hardware</td><td class="old">ESP32-S3, SPRESENSE &middot; real Wi-Fi</td><td class="new">Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
+        <tr><td>Real kernel build</td><td class="old">rv-virt knetnsh64 &middot; QEMU</td><td class="new">BUILD_KERNEL + virtio-net tunnel to Linux; wg is a separate ELF across the syscall boundary</td></tr>
+      </table>
+    </div>
+    <div class="num">18 / 24</div>
+    <div class="notes-src">
+The credibility slide.
+||
+Three independent kinds of proof. One: it compiles in the configuration NuttX's CI builds. Two: it runs on real hardware &mdash; two boards, over real Wi-Fi, against the Linux kernel and Windows clients, with telnet, HTTP, a seven-megabyte transfer, rekeying, and recovery from a power cycle. Three: it runs in a real kernel build &mdash; rv-virt's knetnsh64 in QEMU, a full tunnel to Linux kernel WireGuard over virtio-net, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary. Three different ways to be wrong, all green.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">The Demo</p>
+    <h2>An ordinary host at the other end of the tunnel.</h2>
+    <div class="body">
+      <div class="two">
+        <div class="photo"><img src="assets/demo-thumb.jpg" alt="Demo: ESP32-S3 reached over the tunnel"></div>
+        <div class="panel">
+          <p>telnet into the board <strong>through the tunnel</strong> and run commands. Start a web server on the board and open it in a browser.</p>
+          <p>USB unplugged &mdash; the board runs on a power adapter alone. The peer is the <strong>official Windows WireGuard client</strong>, over home Wi-Fi.</p>
+          <p class="mono" style="font-size:15px;margin-top:12px">youtu.be/1kyX2av5WG4</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">19 / 24</div>
+    <div class="notes-src">
+The point of the demo is that there is nothing special to see.
+||
+I telnet into the board through the tunnel and run commands, and I start a web server on the board and open it in a browser. The USB cable is unplugged; the board is on a power adapter. The peer is the official Windows client over home Wi-Fi. The board is just an ordinary host at the far end of an encrypted tunnel &mdash; which is exactly the goal.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Production Readiness</p>
+    <h2>From a demo to something operable.</h2>
+    <div class="body">
+      <table>
+        <tr><th></th><th>Before</th><th>After</th></tr>
+        <tr><td>Keys</td><td class="old">baked into Kconfig; rebuild to change</td><td class="new">runtime genkey / set / setconf; never in the build artifact</td></tr>
+        <tr><td>When it stops</td><td class="old">guesswork</td><td class="new">sample ROUTER / LAN / TUN / TCP every minute &mdash; say whose fault it is</td></tr>
+      </table>
+      <div class="claim ok">
+        <p>Four independent signals answer one question: when the tunnel goes quiet, is it me?</p>
+      </div>
+    </div>
+    <div class="num">20 / 24</div>
+    <div class="notes-src">
+Moving from "it works in a demo" to "you could run it."
+||
+Keys are no longer baked into the build &mdash; you generate and set them at run time, and they never end up in the firmware image. And for long runs I sample four independent signals every minute &mdash; is the router side alive, is the board on the network, is WireGuard carrying, is the application data flowing &mdash; so when it goes quiet I can say which layer failed instead of guessing.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Portability</p>
+    <h2>The &ldquo;four functions&rdquo; bet, checked.</h2>
+    <div class="body">
+      <table>
+        <tr><th>Target</th><th>Code change</th><th>Result</th></tr>
+        <tr><td>x86_64 (sim)</td><td class="old">none</td><td class="new">tunnel</td></tr>
+        <tr><td>ARM Cortex-A7 (QEMU)</td><td class="old">none</td><td class="new">tunnel</td></tr>
+        <tr><td>Xtensa LX7 (ESP32-S3)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi</td></tr>
+        <tr><td>ARM Cortex-M4F (SPRESENSE)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi (GS2200M)</td></tr>
+      </table>
+    </div>
+    <div class="num">21 / 24</div>
+    <div class="notes-src">
+The design decision from the start, validated.
+||
+Isolating the OS behind a few functions was a bet. Here is the check: four architectures &mdash; x86, ARM Cortex-A7, Xtensa on the ESP32, and Cortex-M4F on SPRESENSE &mdash; with no code change to move between them. The bet paid off.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Contributing Back</p>
+    <h2>The Apache Way.</h2>
+    <div class="body">
+      <ul class="big">
+        <li>A small <code>crypto:</code> PR first <span>the ChaCha20-Poly1305 nonce fix &mdash; a bug fixed <em>for</em> the project, on its own.</span></li>
+        <li>Then the driver PR <span><code>net/wireguard</code> &mdash; the kernel device, ABI, and its documentation.</span></li>
+        <li>Then the command PR <span><code>apps/system/wg</code> &mdash; the ioctl client.</span></li>
+        <li>Design shared on <code>dev@nuttx.apache.org</code> <span>checkpatch / nxstyle clean, PR-shaped, licensed &mdash; community over code.</span></li>
+      </ul>
+    </div>
+    <div class="num">22 / 24</div>
+    <div class="notes-src">
+Closing the loop with this room's values.
+||
+The contribution is staged: a small crypto PR first, for the nonce fix, because that stands on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. The design goes to the dev list first, the code is style-clean and PR-shaped, and the licensing is handled. Community over code.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Takeaways</p>
+    <h2>Three things to carry out.</h2>
+    <div class="body">
+      <ul class="big">
+        <li>Shallow tests pass, deep tests fail <span>design tests for depth &mdash; sustained data, real hardware, a real kernel build &mdash; not just &ldquo;it handshook.&rdquo;</span></li>
+        <li>A clean OS-abstraction bet pays off <span>four architectures, three versions, no changes.</span></li>
+        <li>Porting into a project can improve the project <span>two upstream bugs found and fixed on the way in.</span></li>
+      </ul>
+    </div>
+    <div class="num">23 / 24</div>
+    <div class="notes-src">
+Three things to take away.
+||
+First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it &mdash; two bugs in NuttX itself, found and fixed on the way in.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Thank you</p>
+    <h2>WireGuard for Apache NuttX</h2>
+    <div class="body">
+      <div class="two">
+        <div class="panel nx">
+          <p><strong>Demo:</strong> youtu.be/1kyX2av5WG4</p>
+          <p><strong>Heading upstream:</strong> <code>apache/nuttx</code>, <code>apache/nuttx-apps</code></p>
+        </div>
+        <div class="panel">
+          <p>Satoru Akita / Sony Semiconductor Solutions</p>
+          <p class="mono" style="font-size:15px">Questions welcome.</p>
+        </div>
+      </div>
+    </div>
+    <div class="num">24 / 24</div>
+    <div class="notes-src">
+Thank you. I am happy to take questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
+    </div>
+  </section>
+
+</div></div>
+
+<div id="notes"><h4>Speaker notes</h4><div id="notes-body"></div></div>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById("canvas");
+  var slides = Array.prototype.slice.call(canvas.querySelectorAll(".slide"));
+  var bar = document.getElementById("bar");
+  var notes = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var cur = 0;
+
+  function fit() {
+    var scale = Math.min((window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);
+    canvas.style.transform = "scale(" + scale + ")";
+  }
+
+  function show(index) {
+    cur = Math.max(0, Math.min(slides.length - 1, index));
+    slides.forEach(function (slide, i) {
+      slide.classList.toggle("on", i === cur);
+    });
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    notesBody.textContent = "";
+    var source = slides[cur].querySelector(".notes-src");
+    if (source) {
+      source.textContent.split("||").forEach(function (paragraph) {
+        var text = paragraph.trim();
+        if (!text) { return; }
+        var p = document.createElement("p");
+        p.textContent = text;
+        notesBody.appendChild(p);
+      });
+    }
+    if (location.hash !== "#" + (cur + 1)) {
+      history.replaceState(null, "", "#" + (cur + 1));
+    }
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      show(cur + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      show(cur - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      show(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      show(slides.length - 1);
+    } else if (event.key === "n" || event.key === "N") {
+      event.preventDefault();
+      notes.classList.toggle("on");
+    } else if (event.key === "f" || event.key === "F") {
+      event.preventDefault();
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    }
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (n && n - 1 !== cur) { show(n - 1); }
+  });
+
+  fit();
+  show(parseInt(location.hash.slice(1), 10) - 1 || 0);
+}());
+</script>
+</body>
+</html>
