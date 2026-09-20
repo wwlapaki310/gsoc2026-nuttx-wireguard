@@ -14,8 +14,8 @@
 
 | 場所 | ブランチ | HEAD | 中身 |
 |---|---|---|---|
-| `C:\Users\wwlap\workspace\nuttx`(fork `wwlapaki310/nuttx`) | `net-wireguard` | `17dd30765b` | 統合点・ABI ヘッダ・driver・crypto shim・protocol core・sim:wireguard defconfig(wip コミット 8 本) |
-| `C:\Users\wwlap\workspace\nuttx-apps`(fork `wwlapaki310/nuttx-apps`) | `system-wg` | `89382b55` | `apps/system/wg`(ioctl クライアント) |
+| `C:\Users\wwlap\workspace\nuttx`(fork `wwlapaki310/nuttx`) | `net-wireguard` | `d5f59c9d06` | **機能単位 2 コミットに整頓済み**: (a) `213cd66095` crypto/chachapoly nonce 単独 → (b) `d5f59c9d06` net/wireguard(統合点・ABI・driver・crypto shim・protocol core・sim:wireguard defconfig・Documentation)。Signed-off-by / SPDX 済み |
+| `C:\Users\wwlap\workspace\nuttx-apps`(fork `wwlapaki310/nuttx-apps`) | `system-wg` | `24b3f311` | `apps/system/wg`(ioctl クライアント、1 コミット、reword + `wg_x25519.c/.h` に MIT SPDX ヘッダ付与) |
 | `gsoc2026-nuttx-wireguard` | `main` | `3cbf1bd`(push 済み) | `scripts/kdev.sh`、`scripts/kernel/verify-*.sh`、ドラフト各種 |
 
 両 fork とも **upstream には未 push**(役割分担: upstream への push/PR は本人)。
@@ -39,14 +39,17 @@
 
 これで upstream ドラフトは 4 本: RTC_HIRES(#9)、GS2200M(#10)、chachapoly nonce(この件)、それと WireGuard 本体。
 
+## 済み(2026-09-20 追加分)
+
+- ~~fork のコミット整頓~~ **完了**: nuttx を 2 コミット(chachapoly 単独 → net/wireguard)、apps を 1 コミットに。Signed-off-by / Co-Authored-By 付与。squash 後に再ビルド(`BUILD_EXIT=0`)・runtime・replay 全 PASS で退行なしを確認。presquash バックアップタグ `backup/net-wireguard-presquash` / `backup/system-wg-presquash`
+- ~~`wg_x25519.c` の第三者扱い~~ **完了**: `wg_x25519.c` / `.h` に NuttX 標準ブロック + `SPDX-License-Identifier: MIT` + `SPDX-FileCopyrightText` + MIT 全文
+- ~~Documentation~~ **完了**: `Documentation/components/drivers/special/net/wireguard.rst`(+ index.rst の toctree)、`Documentation/applications/system/wg/index.rst`。いずれも nuttx リポジトリ側、commit (b) に同梱
+
 ## 残タスク
 
 1. **S4a 実行時**: `qemu-armv7a:knetnsh`/`knsh` を QEMU で起動し、ROMFS 上の `wg` ELF で set→up→Linux ピアとハンドシェイク→ping(BUILD_KERNEL の実行時証明)。ビルドは通ったので次は TAP + ROMFS 配線
-2. **fork のコミット整頓**: wip 8 本を機能単位に(a) chachapoly 修正 単独、(b) ABI + driver + crypto + defconfig + Documentation、(c) apps/system/wg。squash して Signed-off-by / SPDX 整備
-3. **`wg_x25519.c` の第三者ファイル扱い**: SPDX + LICENSE 追記、または pubkey 導出を別方式に
-4. **Documentation**: `Documentation/components/drivers/special/net/wireguard.rst`、`Documentation/applications/system/wg/index.rst`
-5. **実機(T5)**: Wi-Fi 復旧後。kernel 版イメージを ESP32-S3 / Spresense に焼いて runtime 確認(現状は apps 版 v0.1.1 が入っている)
-6. **push + PR**: 本人が実施。順序は plan §4.1(#9 → chachapoly → dev@/Issue → PR-K1 → PR-A1)
+2. **実機(T5)**: Wi-Fi 復旧後。kernel 版イメージを ESP32-S3 / Spresense に焼いて runtime 確認(現状は apps 版 v0.1.1 が入っている)
+3. **push + PR**: 本人が実施。順序は plan §4.1(#9 → chachapoly → dev@/Issue → PR-K1 → PR-A1)
 
 ## 開発ループ(再開用)
 
