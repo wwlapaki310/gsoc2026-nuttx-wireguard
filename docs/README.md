@@ -46,8 +46,9 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [gs2200m-usrsock-issue-draft.md](upstream/gs2200m-usrsock-issue-draft.md) | `apache/nuttx` への報告ドラフト: GS2200M usrsock の ioctl 2 件(未提出) |
 | [rtc-hires-wdog-regression-draft.md](upstream/rtc-hires-wdog-regression-draft.md) | `apache/nuttx` への報告ドラフト: master の `CONFIG_RTC_HIRES` 起動回帰(cxd56、未提出) |
 | [chachapoly-nonce-draft.md](upstream/chachapoly-nonce-draft.md) | `apache/nuttx` への報告ドラフト: `crypto/chachapoly` の u64 nonce が counter を誤った位置に置く(WireGuard で発覚、fork では修正済み・未提出) |
-| [in-kernel-status.md](upstream/in-kernel-status.md) | カーネル移行の**実装状況メモ**(2026-09-20: sim 完動・BUILD_KERNEL 通過・残タスク) |
+| [in-kernel-status.md](upstream/in-kernel-status.md) | カーネル移行の**実装状況メモ**(2026-09-20: sim 完動・rv-virt:knetnsh64 で実カーネルビルド完全トンネル・残タスクは実機のみ) |
 | [in-kernel-plan.md](upstream/in-kernel-plan.md) | **カーネル側移行計画**(`drivers/net/` + ioctl 越しの `wg`)。設計・実装順序・テスト戦略・マージ戦略・3 名の専門家レビュー |
+| [in-kernel-review-brief.md](upstream/in-kernel-review-brief.md) | **他 LLM / レビュアーに渡す自己完結ブリーフ**。目的・設計判断・ABI・検証状況・変更規模・番号付きレビュー論点を1枚に(Issue からリンクして相互レビューに使う) |
 
 いきなり PR を投げず、先に `dev@` で設計の合意を取る方針。
 
