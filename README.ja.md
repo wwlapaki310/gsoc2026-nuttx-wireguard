@@ -1,11 +1,29 @@
 # WireGuard の Apache NuttX への移植
 
 [Apache NuttX](https://nuttx.apache.org/) 上で動く WireGuard VPN の実装。`wg0` という
-ネットワークデバイスとして見える。実機で、本物の WireGuard ピアを相手に検証済み。
+ネットワークデバイスとして見え、既存の WireGuard ピアと相互接続する。
+
+> ### 2つの実装 — まずこれを読む
+>
+> 本作業は2つの形で存在し、検証範囲が異なる。**混同しないこと。**
+>
+> | | **apps / FLAT — `v0.1.1`(凍結)** | **カーネル内 — upstream 提出対象** |
+> |---|---|---|
+> | 置き場所 | `nuttx_port/apps/netutils/wireguard/`(以下の README 本体) | `drivers/net/wireguard/` + `apps/system/wg`(ローカル fork) |
+> | 設定手段 | `wg` NSH コマンドが直接 | `wg` コマンドが **ioctl ABI** 越しに |
+> | 検証済み | **実機**(ESP32-S3・Spresense)実 Wi-Fi、Linux/Windows ピア相手 | **sim** + **実カーネルビルド**(rv-virt `knetnsh64`、BUILD_KERNEL)、Linux カーネル WireGuard 相手 |
+> | 残り | —(凍結) | **カーネル版の実機**、その後 push + PR |
+>
+> upstream に出すのはカーネル版。現状は
+> [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md)、計画は
+> [in-kernel-plan.md](docs/upstream/in-kernel-plan.md)、自己完結レビューブリーフは
+> [in-kernel-review-brief.md](docs/upstream/in-kernel-review-brief.md)、発表資料は
+> [アウトライン](docs/presentation/coc-glasgow-outline.md) /
+> [デッキ](docs/presentation/coc-glasgow-slides.html)。**以下の各節は特記なき限り apps(FLAT)版**の説明。
 
 > **議論:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
-> **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し
-> **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) — 9 枚・約 10 分（[PDF](docs/presentation/short-slides.pdf)、[台本](docs/presentation/talkscript/short-slides.md)）
+> **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し(apps 版)
+> **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html)（apps 版・9 枚）・[coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html)（カーネル版・Community Over Code）
 
 ---
 
@@ -37,10 +55,12 @@ VPN がない場合の現実的な選択肢は、グローバル IP を晒すか
 
 ---
 
-## 現状
+## 現状（apps / FLAT 版）
 
-トンネルは実機でエンドツーエンドに動き、実行時に設定でき、電源を落としても設定が残る。
-残っているのは upstream への提出。
+本節は **apps `v0.1.1`** 版(凍結)。トンネルは実機でエンドツーエンドに動き、実行時に設定でき、
+電源を落としても設定が残る。**これは upstream 提出対象ではない** — 提出対象はカーネル版で、
+その現状・残タスクは
+[docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md) にある。
 
 | | |
 |---|---|

@@ -1,13 +1,32 @@
 # WireGuard for Apache NuttX
 
 A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), exposed as a
-`wg0` network device. Verified on real hardware against real WireGuard peers.
+`wg0` network device, interoperating with stock WireGuard peers.
+
+> ### Two implementations — read this first
+>
+> This work exists in two forms, verified in different ways. **Keep them distinct.**
+>
+> | | **apps / FLAT — `v0.1.1` (frozen)** | **in-kernel — upstream submission target** |
+> |---|---|---|
+> | Where | `nuttx_port/apps/netutils/wireguard/` (this README below) | `drivers/net/wireguard/` + `apps/system/wg` (ioctl client), in local forks |
+> | Configured by | the `wg` NSH command directly | the `wg` command over an **ioctl ABI** |
+> | Verified | **real hardware** (ESP32-S3, Spresense) over real Wi-Fi vs Linux/Windows peers | **sim** + a **real kernel build** (rv-virt `knetnsh64`, BUILD_KERNEL) vs Linux kernel WireGuard |
+> | Still ahead | — (frozen) | the **kernel driver on real hardware**; then push + PRs |
+>
+> The in-kernel version is what goes upstream. Its live status is
+> [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md), the plan is
+> [in-kernel-plan.md](docs/upstream/in-kernel-plan.md), a self-contained review brief is
+> [in-kernel-review-brief.md](docs/upstream/in-kernel-review-brief.md), and the conference talk
+> covers it ([outline](docs/presentation/coc-glasgow-outline.md) /
+> [deck](docs/presentation/coc-glasgow-slides.html)). **The sections below describe the apps
+> (FLAT) version** unless they say otherwise.
 
 > **Discussion:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
 
-> **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel
+> **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel (apps version)
  
-> **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) — 9 slides, ~10 min ([PDF](docs/presentation/short-slides.pdf), [talk script](docs/presentation/talkscript/short-slides-en.md))
+> **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) (apps version, 9 slides) · [coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html) (in-kernel, Community Over Code)
 
 ---
 
@@ -38,10 +57,12 @@ peer on the other end can be any existing WireGuard endpoint.
 
 ---
 
-## Status
+## Status (apps / FLAT version)
 
-The tunnel works end to end on hardware, is configurable at runtime, and survives a power
-cycle. What remains is upstream submission.
+This section is the **apps `v0.1.1`** version (frozen). The tunnel works end to end on
+hardware, is configurable at runtime, and survives a power cycle. This is *not* the upstream
+submission target — that is the in-kernel version, whose status and remaining work are in
+[docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md).
 
 | | |
 |---|---|
@@ -138,7 +159,9 @@ nsh> wg saveconf          # -> /data/wg0.conf, reloaded at next boot
 ```
 
 The configuration file uses the same INI layout as `wg(8)` (`[Interface]` / `[Peer]`), so a
-desktop WireGuard configuration can be dropped in as-is.
+desktop WireGuard configuration is a close starting point — within the implemented subset
+(IPv4 only; the `[Interface]`/`[Peer]` keys the `wg` command accepts). Keys outside that subset
+are not silently honoured.
 
 > `CONFIG_LINE_MAX` (and `CONFIG_NSH_LINELEN` on 12.7.0) must be at least 160 for runtime
 > configuration — a full `wg set peer` line runs to about 134 characters, and NSH silently
@@ -190,10 +213,14 @@ See [docs/development/dev-environment.md](docs/development/dev-environment.md) a
 
 ---
 
-## Source layout
+## Source layout (apps version)
 
-Everything lives under [`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard),
-laid out exactly as it would be submitted to `apache/nuttx-apps`.
+The **apps (FLAT)** version lives entirely under
+[`nuttx_port/apps/netutils/wireguard/`](nuttx_port/apps/netutils/wireguard), laid out as it
+would be submitted to `apache/nuttx-apps`. The **in-kernel** version (the upstream target)
+lives in separate local forks — `drivers/net/wireguard/` and the ioctl ABI in a fork of
+`apache/nuttx`, and `apps/system/wg` in a fork of `apache/nuttx-apps`; see
+[in-kernel-status.md](docs/upstream/in-kernel-status.md) for its branches, HEADs, and layout.
 
 | | Lines | Origin |
 |---|---:|---|
@@ -242,14 +269,18 @@ CYW43439 driver on RP2350 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx
 
 ## Documentation
 
-| | |
-|---|---|
-| [docs/design.html](docs/design.html) | Design document — figures and tables |
-| [docs/presentation/slides.html](docs/presentation/slides.html) | Presentation deck (27 slides; press `N` for speaker notes) |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Current state, how to build and test |
-| [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | Submission plan |
-| [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | What each board did and did not do |
-| [docs/development/phase4-log.md](docs/development/phase4-log.md) | Bring-up log, including the failures |
+| | | Version |
+|---|---|---|
+| [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md) | Live status of the upstream submission | **in-kernel** |
+| [docs/upstream/in-kernel-plan.md](docs/upstream/in-kernel-plan.md) | Kernel-migration plan (design, order, tests, merge strategy) | **in-kernel** |
+| [docs/upstream/in-kernel-review-brief.md](docs/upstream/in-kernel-review-brief.md) | Self-contained review brief (design, ABI, verification, open questions) | **in-kernel** |
+| [docs/presentation/coc-glasgow-slides.html](docs/presentation/coc-glasgow-slides.html) | Community Over Code deck (`N` for notes) | **in-kernel** |
+| [docs/design.html](docs/design.html) | Design document — figures and tables | apps |
+| [docs/presentation/slides.html](docs/presentation/slides.html) | Presentation deck (27 slides; `N` for notes) | apps |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Current state, how to build and test | apps |
+| [docs/upstream/upstream-strategy.md](docs/upstream/upstream-strategy.md) | Submission plan (originally apps; being updated for in-kernel) | apps |
+| [docs/development/hardware-verification.md](docs/development/hardware-verification.md) | What each board did and did not do | apps |
+| [docs/development/phase4-log.md](docs/development/phase4-log.md) | Bring-up log, including the failures | apps |
 
 ---
 
