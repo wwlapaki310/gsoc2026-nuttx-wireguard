@@ -65,8 +65,9 @@ apps/system/wg  --ioctl(AF_INET)-->  net/netdev/netdev_ioctl.c
 2. **フラット固定長・ポインタなしの ioctl ABI**（`include/nuttx/net/wireguard.h`）。理由:
    PROTECTED/KERNEL ビルドではカーネルが呼び出し側の構造体を直接読み書きするため、
    構造体内にポインタがあると検証できない。可変長（allowed-ips 等）は上限固定の配列。
-3. **秘密鍵は write-only**。`SIOCSWGIF` は受け取るが `SIOCGWGIF` は返さない。鍵素材が
-   一度設定されたらカーネル外に出ない。公開鍵は導出して返す。
+3. **秘密鍵は write-only**。`SIOCSWGIF` は受け取るが `SIOCGWGIF` は**返さない**(公開鍵は
+   導出して返す)。ただし秘密鍵は設定ファイル(ユーザー側、下の point 6 の正本)にも存在するため、
+   「鍵素材がカーネル外に一切出ない」わけではない。正確には**get ioctl が秘密鍵を返さない**。
 4. **`net_ioctl_arglen()` には登録しない**。usrsock デーモンに横取りされないよう、
    WireGuard ioctl は `netdev_ioctl.c` から直接ディスパッチする。
 5. **crypto は NuttX 純正を使う**（vendored しない）。ただし `wg` コマンドのオフライン
@@ -104,13 +105,13 @@ apps/system/wg  --ioctl(AF_INET)-->  net/netdev/netdev_ioctl.c
    越しに **別 ELF** としてロードされ、driver は **syscall 境界越し**に叩かれる。
    qemu-armv7a:knsh の BUILD_KERNEL ビルドも通る（apps/kernel シンボル分離の証拠）。
 
-### 発見・修正した NuttX 本体のバグ（2件）
+### 発見・修正したバグ（2件。内訳: **既存 NuttX 本体が1件、新規ドライバが1件**）
 
-- **`crypto/chachapoly.c` の u64 nonce 配置**: counter を nonce の bytes 0..7 に置いていたが
+- **[既存 NuttX 本体] `crypto/chachapoly.c` の u64 nonce 配置**: counter を nonce の bytes 0..7 に置いていたが
   RFC 8439 / WireGuard は bytes 4..11。counter 0 は一致するのでハンドシェイクは通るが
   データ2個目以降が全滅。in-tree に利用者がおらず未検出だった。→ `memcpy(...+4, ...)`。
   これは **WireGuard driver PR とは別の `crypto:` PR** として先に出す。
-- **BUILD_KERNEL スタックオーバーフロー**: `wg_set_if()` が鍵変更時に
+- **[新規ドライバ] BUILD_KERNEL スタックオーバーフロー**: `wg_set_if()` が鍵変更時に
   `struct wg_peer_s saved[WG_MAX_PEERS]`（`sizeof=1512`、4ピアで 6048B）を **スタックに**
   確保。BUILD_KERNEL の kernel stack は 3072B で溢れてヒープ破損 → panic。sim（FLAT、
   大きいタスクスタック）では露見せず。→ `kmm_malloc`/`kmm_free` でヒープへ。

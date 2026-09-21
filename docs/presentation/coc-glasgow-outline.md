@@ -4,6 +4,18 @@ Production deck skeleton. **English, ~20–30 min, ~30 slides.** Built by
 deepening `short-slides.html` and folding in the newer kernel-migration
 work and the debugging war stories from `slides.html`.
 
+> **Source of truth:** the built deck is `coc-glasgow-slides.html`; this
+> file is its outline. Both must keep these corrections (from the Codex
+> reviews on issues #11/#12) and must not regress on regeneration:
+> (a) the detached-thread pitfall is *my misconception*, not a NuttX POSIX
+> violation; (b) the private key is write-only only in that *the get ioctl
+> never returns it* — it still lives in the user-side config file, so
+> "never leaves the kernel" is wrong; (c) real-hardware runs were the
+> **apps v0.1.1 (FLAT)** version, the **kernel driver** is verified on sim +
+> rv-virt (BUILD_KERNEL) with hardware still ahead — never conflate them;
+> (d) of the two bugs, only the chachapoly nonce is a pre-existing NuttX
+> bug; the stack overflow is in the new driver.
+
 - Author line: **Satoru Akita / Sony Semiconductor Solutions**
 - Spine of the talk: **"shallow tests pass, deep tests fail."** Every hard
   bug in this project had that same shape — including two found by pushing
@@ -85,7 +97,7 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 ### 13. Pitfall — the detached thread that didn't survive `[reuse s16]`
 - RX thread started with `pthread_create()` + `pthread_detach()`. When the `wg` command exits, the thread stops — not even in `ps`.
 - A `usleep()` right after create makes its `printf` appear → it *was* created.
-- *note:* POSIX says a detached thread lives on; here lifecycle was tied to the launcher. Foreshadows the kernel redesign.
+- *note:* my misconception — I read `detach` as "outlives the command." `detach` only controls when the thread's resources are reclaimed, not whether it survives its launcher exiting. Not a NuttX POSIX violation. Foreshadows the kernel redesign, which owns the thread in the driver.
 
 ### 14. Pitfall — ping works, TCP dies → `EBADF` `[reuse s17–20]`
 - Same tunnel: ping is 0% loss, telnet's 3-way handshake completes, then the connection dies.
@@ -115,8 +127,8 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 ### 18. The kernel design `[NEW]`
 - `wg0` is now a `netdev_lowerhalf` device in the kernel: UDP socket + a **RX kernel thread**, timers, cookie handling.
 - A **flat, pointer-free ioctl ABI** (`include/nuttx/net/wireguard.h`): `SIOCS/GWGIF`, `SIOCS/D/GWGPEER`. Pointer-free because in PROTECTED/KERNEL the kernel copies the caller's struct directly.
-- **Private key is write-only** — set it, never read it back; key material never leaves the kernel.
-- Crypto is NuttX's own `crypto/` (BLAKE2s / ChaCha20-Poly1305 / Curve25519).
+- **Private key is write-only** — the get ioctl never returns the private key (it still lives in the config file on the user side, so "never leaves the kernel" is too strong).
+- Kernel-side crypto is NuttX's own `crypto/` (BLAKE2s / ChaCha20-Poly1305 / Curve25519) — nothing vendored on the kernel side; the only vendored code is the user-space MIT `wg_x25519.c` for offline genkey/pubkey.
 - *note:* the shape of the real driver. Contrast with v1: socket now *kernel-owned* (recall Pitfall 3), lifecycle owned by the driver (recall Pitfall 2).
 
 ### 19. Two more bugs — the same shape `[NEW]`  ← key slide
@@ -124,11 +136,12 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 - **(b) A BUILD_KERNEL-only crash.** `wg_set_if()` snapshotted peers into a **6 KB array on the stack**; the kernel stack is 3 KB → overflow → heap corruption → panic. **sim (FLAT, big stacks) never hit it.** Moved to the heap.
 - *note:* the punchline. Same thesis, now at kernel depth — and porting into the project **found and fixed a latent bug in the project itself.** Great for this audience.
 
-### 20. Verification, now three tiers `[NEW+reuse s12]`
-- ① `sim:wireguard` — the config CI compiles.
-- ② **Real hardware + real peers** — ESP32-S3 & Spresense over real Wi-Fi, Linux/Windows peers, telnet/HTTP/7 MB transfer/rekey/power-cycle recovery.
-- ③ **Real kernel build** — `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) in QEMU, bidirectional tunnel to Linux kernel WireGuard, with `wg` loaded as a **separate ELF** across the syscall boundary.
-- *note:* the strongest slide for credibility. Three independent kinds of proof.
+### 20. Verification — be precise about which implementation `[NEW+reuse s12]`
+- ① **kernel driver, local build** — `sim:wireguard` defconfig builds clean (the config CI compiles).
+- ② **kernel driver, BUILD_KERNEL** — `rv-virt:knetnsh64` (virtio-net) in QEMU, bidirectional tunnel to Linux kernel WireGuard, `wg` a **separate ELF** across the syscall boundary.
+- ③ **apps v0.1.1 (FLAT), real hardware** — ESP32-S3 & Spresense over real Wi-Fi, Linux/Windows peers, telnet/HTTP/7 MB/rekey/power-cycle. *This was the apps version, not the kernel driver.*
+- Remaining: the **kernel driver on real hardware**.
+- *note:* the credibility slide — but keep the implementations distinct. Hardware runs were the apps/FLAT version; the kernel driver is proven on sim + rv-virt, hardware still ahead.
 
 ---
 
@@ -145,8 +158,8 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 - *note:* "demo" → "operable." Shows engineering maturity.
 
 ### 23. The portability bet paid off `[reuse s26]`
-- "Isolate the OS in four functions" — checked: x86_64 (sim), ARM Cortex-A7 (QEMU), Xtensa LX7 (ESP32-S3), ARM Cortex-M4F (Spresense) — **no code change** to move across them.
-- *note:* the design decision from slide 8/9 validated across 4 architectures.
+- "Isolate the OS in four functions" — checked with the **apps (FLAT) implementation**: x86_64 (sim), ARM Cortex-A7 (QEMU), Xtensa LX7 (ESP32-S3), ARM Cortex-M4F (Spresense) — **no code change** to move across them. The kernel driver adds sim + rv-virt (BUILD_KERNEL) on top.
+- *note:* the design decision from slide 8/9 validated across 4 architectures — with the apps version; label it so, don't conflate with the kernel driver.
 
 ### 24. Contributing back — The Apache Way `[NEW+reuse s27]`
 - Upstreaming plan: a small `crypto:` PR (the nonce fix) first, then the driver PR (`net/wireguard`), then the `apps/system/wg` PR; design shared on `dev@nuttx.apache.org`.
@@ -155,8 +168,8 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 
 ### 25. Takeaways `[reuse s28]`
 - **Shallow tests pass, deep tests fail** — design your tests for depth (sustained data, real hardware, a real kernel build), not just "it handshook."
-- A clean OS-abstraction bet pays off — 4 architectures, 3 versions, no changes.
-- **Porting into a project can improve the project** — two upstream bugs found and fixed.
+- A clean OS-abstraction bet pays off — 4 architectures (apps/FLAT), no changes.
+- **Porting into a project can improve the project** — a latent bug in NuttX's own crypto, found and fixed on the way in (the upstream `crypto:` PR); plus a BUILD_KERNEL bug in my own driver that only a kernel build surfaced. Count them precisely: one pre-existing NuttX bug, one in the new driver.
 - *note:* three things to carry out of the room. End on the contribution.
 
 ### 26. Thanks / links
