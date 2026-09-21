@@ -87,33 +87,59 @@ while True:
 PY
 flood_pid=$!
 
-# Cycle down/up under the flood. Each command must return (no hang): we
-# check the sim is still producing a prompt after each cycle.
+# Cycle down/up under the flood. After each command send a unique echo
+# sentinel: it only prints once NSH has finished the command, so a complete,
+# in-order run of every sentinel proves each down and up returned (no hang).
+cyc_start="$(wc -l </tmp/nuttx.out)"
 for i in $(seq 1 "${CYCLES}"); do
-  send "wg down"
-  send "wg up"
+  send "wg down";  send "echo D${i}_$?"
+  send "echo D${i}mark"
+  send "wg up";    send "echo U${i}mark"
   if ! kill -0 "${nuttx_pid}" 2>/dev/null; then
     fail "sim died during cycle ${i}"
   fi
 done
-echo "PASS: ${CYCLES} down/up cycles under flood completed, sim alive"
-
-# The sim must still be responsive: ask for wg show and expect fresh output.
-before="$(wc -l </tmp/nuttx.out)"
-send "wg show"
 sleep 1
-if [ "$(wc -l </tmp/nuttx.out)" -le "${before}" ]; then
-  fail "sim unresponsive after cycles (ifdown hang?)"
-fi
-echo "PASS: sim responsive after cycles"
 
-# Stop the flood and confirm the tunnel still works.
-kill "${flood_pid}" 2>/dev/null; flood_pid=""
-sleep 3
-if ! ping -c 3 -W 3 10.10.0.2 >/dev/null 2>&1; then
-  echo "--- wgtest0 ---"; wg show wgtest0
-  fail "tunnel broken after down/up stress"
+cyc_out="$(tail -n +"$((cyc_start + 1))" /tmp/nuttx.out | sed 's/\x1b\[K//g')"
+
+# Every command completed: all 2*CYCLES sentinels present, in order.
+missing=0
+for i in $(seq 1 "${CYCLES}"); do
+  echo "${cyc_out}" | grep -q "D${i}mark" || { echo "missing D${i}mark"; missing=1; }
+  echo "${cyc_out}" | grep -q "U${i}mark" || { echo "missing U${i}mark"; missing=1; }
+done
+[ "${missing}" -eq 0 ] || fail "a down/up command did not complete (hang)"
+echo "PASS: all ${CYCLES} down and up commands completed (sentinels in order)"
+
+# Every command succeeded: the wg client printed no error for down/up.
+if echo "${cyc_out}" | grep -qiE "wg: (up|down):|must be down|still stopping|Bad|error"; then
+  echo "${cyc_out}" | grep -iE "wg: (up|down):|must be down|still stopping|Bad|error" | head
+  fail "a down/up command reported an error"
 fi
-echo "PASS: tunnel carries traffic after down/up stress"
+echo "PASS: no down/up command reported an error"
+
+# Explicit down state: with wg0 down the tunnel must NOT carry traffic.
+send "wg down"; send "echo DOWNCHK"
+sleep 1
+if ping -c 2 -W 2 10.10.0.2 >/dev/null 2>&1; then
+  fail "tunnel still carried traffic while wg0 was down"
+fi
+echo "PASS: wg0 down really stops the tunnel"
+
+# Explicit up recovery: bring it back and confirm traffic returns. Poll,
+# since the re-handshake after an idle period can take a few seconds.
+kill "${flood_pid}" 2>/dev/null; flood_pid=""
+send "wg up"; send "echo UPCHK"
+recovered=0
+for _ in $(seq 1 12); do
+  sleep 2
+  if ping -c 1 -W 2 10.10.0.2 >/dev/null 2>&1; then recovered=1; break; fi
+done
+if [ "${recovered}" -ne 1 ]; then
+  echo "--- wgtest0 ---"; wg show wgtest0
+  fail "tunnel did not recover after up"
+fi
+echo "PASS: wg0 up recovers the tunnel"
 
 echo "PASS: sim WireGuard down/up lifecycle under load verified"

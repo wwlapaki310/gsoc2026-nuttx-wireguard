@@ -45,13 +45,18 @@ register (drivers_initialize)      wg_ifup                       wg_ifdown
 - **`wg_ifdown`** clears `bifup`, drops carrier, sets `running=false`, and waits for the RX
   thread to actually exit before touching the socket or the semaphore. The thread checks
   `running` in both its outer loop and its inner drain loop and posts `rxdone` as its last act,
-  so it leaves within a poll period; `wg_ifdown` retries the bounded wait and only then closes
-  the socket, clears `rxpid`, destroys `rxdone`, wipes every peer's session keys
-  (`wg_peer_clear_sessions`), resets endpoints, and drains the RX queue. The net lock is released
-  while waiting (so the thread can take it to finish). On the unexpected event that the wait
-  still times out, it does **not** close the socket from under a live thread — it leaves the
-  interface stopping (`rxpid` set) and returns an error; `wg_ifup` then refuses to re-up until
-  the stop completes.
+  so it leaves within a poll period; `wg_ifdown` (via `wg_rx_teardown`) retries the bounded wait
+  and only then closes the socket, clears `rxpid`, destroys `rxdone`, then `wg_down_finish` wipes
+  every peer's session (`wg_peer_clear_sessions`), resets endpoints, and drains the RX queue. The
+  net lock is released while waiting (so the thread can take it to finish). On the unexpected
+  event that the wait still times out, it does **not** close the socket from under a live thread:
+  it returns an error, so the netdev layer keeps `IFF_UP` set and the interface is left
+  *stopping*. Recovery is a **repeated `ifdown`** — while `IFF_UP` is set, `netdev_ifdown` calls
+  `wg_ifdown` again, which reaps the now-exited thread and finishes teardown, clearing `IFF_UP`;
+  a subsequent `ifup` then comes up cleanly. (`wg_ifup` is not reached while stopping, since
+  `netdev_ifup` skips it while `IFF_UP` is set; a leftover `rxpid` there is only a defensive
+  `-EBUSY`.) A test build option `CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL` forces this path so the
+  recovery can be exercised deterministically (`verify-sim-wg-stop-recovery.sh`).
 
 ## Data path
 
@@ -87,12 +92,19 @@ buffer (an earlier RX/TX aliasing bug was fixed by giving RX its own `rxbuf`).
   switch; the RX thread takes it around datagram processing and around `wg_run_timers`; TX runs
   in the upper half's net-locked context. So configuration changes, inbound processing, timer
   work, and outbound send never touch `priv->wg` concurrently.
-- **Sends are non-blocking (`MSG_DONTWAIT`)** so a send never drops `net_lock` mid-way. This
-  matters: a blocking UDP send releases the network lock while it waits for a write buffer
-  (`udp_sendto_buffered`), which would let another `net_lock` holder overwrite the shared
-  `cryptbuf` or mutate the keypair while a send is in flight. Non-blocking keeps each send atomic
-  under `net_lock`; on back pressure the datagram is dropped (peer/stack retransmit). Fixed after
-  a design review (fork `a5d2a07b73`).
+- **Send atomicity vs a lock-dropping send.** A blocking UDP send releases the network lock while
+  it waits for a write buffer (`udp_sendto_buffered`), which would let another `net_lock` holder
+  overwrite the shared `cryptbuf` while a send is in flight. Two things guard this:
+  - `wg_sendto` uses `MSG_DONTWAIT`, so on **buffered UDP** (sim, ethernet, virtio-net) the send
+    never blocks and stays atomic under `net_lock`. **This is not universal:** `usrsock` (e.g.
+    Spresense GS2200M) strips `MSG_DONTWAIT` and waits for the daemon, and unbuffered UDP has its
+    own completion wait, both of which drop `net_lock`.
+  - So the data path (`wg_send_data`, the only user of the shared `cryptbuf`) also takes a
+    `sending` flag around the buffer: a re-entrant data send while one is in flight is dropped
+    (the stack retransmits). This closes the `cryptbuf` race on **all** backends. The send
+    counter is incremented during encryption *before* the send, so a dropped re-entrant send
+    cannot reuse a nonce. Handshake messages build into their own local buffers and are
+    unaffected. (Fixes from the design review, forks `a5d2a07b73` and later.)
 - **`priv->rxlock`** (spinlock, IRQ-save) guards only the short critical sections that add to or
   remove from `priv->rxqueue`, since that queue is touched from the thread, the upper half, and
   `wg_ifdown`. It is a leaf lock (never taken while blocking, never nests another lock).
