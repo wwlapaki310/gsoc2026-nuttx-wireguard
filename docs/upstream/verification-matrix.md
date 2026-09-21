@@ -51,6 +51,10 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 |---|---|---|---|
 | ChaCha20-Poly1305 u64-nonce counter in the wrong bytes (handshake OK, data ≥ packet 2 fails) | **pre-existing NuttX** `crypto/chachapoly.c` | T1 (sim, data beyond the first packet) | `memcpy(le_nonce_array + 4, ...)`; goes upstream as a separate `crypto:` PR |
 | 6 KB `wg_peer_s` snapshot on the 3 KB kernel stack → heap corruption/panic | **new driver** `wg_set_if()` | T6 (BUILD_KERNEL only; sim's larger stacks hid it) | move the snapshot to `kmm_malloc`/`kmm_free` |
+| Blocking send drops net_lock mid-transmit → shared `cryptbuf` could be overwritten | **new driver** `wg_send_data` | design review (Codex, #12) | `MSG_DONTWAIT` (buffered UDP) + a `sending` re-entrancy guard on `cryptbuf` (all backends) |
+| `wg_ifdown` could close the socket from under a still-running RX thread; a timed-out stop had no recovery | **new driver** `wg_ifdown` | design review (Codex, #12) | RX loop re-checks `running`; `wg_rx_teardown` waits for the thread; repeated ifdown reaps a stopping interface |
+
+Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inbound flood, per-command assertions) and `verify-sim-wg-stop-recovery.sh` (deliberate stop timeout + recovery, needs the debug Kconfig). Both PASS; regression (T1/TF/TR/TN/T3) unaffected. **Honest scope: the sim exercises buffered UDP, not the usrsock blocking path, so the `sending` guard's effect on usrsock rests on the code (usrsock strips `MSG_DONTWAIT` and waits) rather than a usrsock runtime test.**
 
 ## Honest remainder before a merge-ready submission
 
