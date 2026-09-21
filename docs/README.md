@@ -52,6 +52,7 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [in-kernel-design.md](upstream/in-kernel-design.md) | **実装に対応した設計説明**(実コードから)。アクター・ライフサイクル・データ経路・所有・ロック(net_lock がプロトコル状態を直列化)・ABI 更新規約・時刻/乱数・ビルド種別ごとの検証範囲 |
 | [verification-matrix.md](upstream/verification-matrix.md) | **カーネル版の検証マトリクス**(正直版)。計画 §3 の T0〜T8 / TF・TV・TR・TN・TZ・TE・TT を テストID・対象 SHA・構成・結果・ログ・未実施理由に対応づけ。「スクリプトがある」と「テストが通った」を区別 |
 | [reproduce.md](upstream/reproduce.md) | **新規 clone からの再現手順**(固定 SHA・コンテナ作成・ツールチェーン・ビルド/テストコマンド・期待結果)。fork 未 push という制約も明示 |
+| [wg-operation.md](upstream/wg-operation.md) | **利用者向け設定・運用**。対応/無視/拒否する設定キー、Linux 側込みの最小相互接続例、cryptokey routing、鍵ファイルの扱い、再起動時の読込み、確認・切り分け表 |
 | [review-request.md](upstream/review-request.md) | **相互レビューの依頼テンプレート**。Issue コメント文面 + 他 LLM への投げ文(Web 閲覧可/不可の2種)+ 運用ループ |
 
 いきなり PR を投げず、先に `dev@` で設計の合意を取る方針。
