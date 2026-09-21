@@ -56,7 +56,12 @@ bidirectional traffic against Linux kernel WireGuard on sim.
 
 - Confirm against RFC 8439 test vectors expressed as a u64 counter, and
   add such a vector to `crypto/testmngr.c` (there is currently no
-  chacha20poly1305 KAT there).
+  chacha20poly1305 KAT there). **Done as a standalone runner:**
+  `scripts/kernel/chachapoly_kat.c` (+ `verify-sim-wg-kat.sh`) checks
+  counters 0/1/2 against a pyca/cryptography reference, round-trips
+  decryption, and rejects forged tags, run against `crypto/chachapoly.c`;
+  it fails on the bytes-0..7 layout. These vectors are ready to move into
+  `crypto/testmngr.c` with this PR.
 - Decide whether `xchacha20poly1305_*` (24-byte nonce, used by WireGuard
   cookie replies) needs the same review; its nonce is passed as bytes, so
   it is likely unaffected, but it is equally untested.

@@ -16,10 +16,10 @@ are listed as such, not omitted.
 
 | Status | Tests |
 |---|---|
-| PASS (run) | T0 (partial), T1, **TF**, TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), T8 (partial) |
+| PASS (run) | T0 (partial), T1, **TF**, **TV** (chachapoly KAT), TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), T8 (partial) |
 | BUILD-ONLY | qemu-armv7a:knsh (BUILD_KERNEL build) |
 | NOT RUN against kernel version | T4 runtime, T5 (hardware) |
-| NOT IMPLEMENTED | TV (KAT), TZ, TE, TT, T7 |
+| NOT IMPLEMENTED | TV extras (X25519/BLAKE2s/handshake KATs), TZ, TE, TT, T7 |
 
 The kernel driver's **protocol/crypto correctness** is covered by T1 + TR against a real Linux
 kernel WireGuard peer, and its **kernel/user separation at runtime** by T6 (a full tunnel in a
@@ -33,7 +33,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | **T1** | runtime-config tunnel to Linux kernel WG; handshake/ping; down/up; `saveconf`/`setconf` round-trip; on-device genkey; pubkey == wg(8) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-runtime.sh` (2026-09-20, all PASS) | `wg show` snapshot-diff against a pinned `expected/wg-show.txt` not yet added |
 | **T3** | two peers holding sessions at once | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-multipeer.sh`: two Linux WireGuard interfaces hold sessions with wg0 at once; traffic through each, both handshaken | — |
 | **TF** | ioctl unit negatives (all-zero key, self-pubkey, bad endpoint, allowed-ips overlap, peer limit+1, cidr > 32, up with no key, malformed base64 key) → all rejected, `wg show` unchanged | sim | **PASS** | `scripts/kernel/verify-sim-wg-ioctl.sh` (all cases PASS) | low-order-point and undersized-buffer cases not separately exercised |
-| **TV** | KAT: X25519, ChaCha20-Poly1305, XChaCha20-Poly1305, BLAKE2s, HKDF intermediates, full handshake | sim C test | **NOT IMPLEMENTED** | — | no KAT added. Directly relevant to the chachapoly nonce fix — a u64-counter ChaCha20-Poly1305 vector belongs in `crypto/testmngr.c` (see [chachapoly-nonce-draft.md](chachapoly-nonce-draft.md)) |
+| **TV** | KAT for the u64-counter ChaCha20-Poly1305 (the nonce fix); X25519/BLAKE2s/full-handshake KATs still open | C test vs NuttX `crypto/` | **PASS (chachapoly)** | `scripts/kernel/chachapoly_kat.c` + `verify-sim-wg-kat.sh`: counters 0/1/2 match pyca/cryptography reference, decrypt round-trips, forged tags rejected — run against `crypto/chachapoly.c` | catches the bytes-0..7 nonce bug (counters ≥ 1 differ). X25519, BLAKE2s, HKDF-intermediate and full-handshake KATs not yet added; the chachapoly vectors are ready to move into `crypto/testmngr.c` for the `crypto:` PR |
 | **TR** | replay/spoof: (a) resent keepalive from a forged source does not move endpoint; (b) resent initiation → one reply; (c) out-of-window counter; (d) type/length fuzzing | sim, tap | **PASS (partial: a, b)** | `scripts/kernel/verify-sim-wg-replay.sh` (2026-09-20, all PASS): replay does not move endpoint; initiation flood past the load threshold draws cookie replies; tunnel survives | (c) out-of-window counter and (d) fuzzing not separately exercised |
 | **TN** | negative interop: wrong peer pubkey, PSK mismatch → does not connect (with a correct-key positive control) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-negotiation.sh` (all PASS) | the "peer under cookie load" case is covered by TR's flood instead |
 | **T4** | QEMU ARM Cortex-A7 runtime (T1 equivalent) | qemu-armv7a | **NOT RUN (runtime)** | — | virtio-net was not wired on qemu-armv7a in this environment; the equivalent runtime proof was done on rv-virt instead (see T6) |
@@ -54,11 +54,12 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 
 ## Honest remainder before a merge-ready submission
 
-- **Write and run** TV (KAT — including the u64-counter ChaCha20-Poly1305 vector that the
-  nonce fix needs).
+- **Extend TV**: the u64-counter ChaCha20-Poly1305 KAT is done and run; still to add are X25519,
+  BLAKE2s, HKDF-intermediate and full-handshake KATs, and to land the chachapoly vectors in
+  `crypto/testmngr.c` with the `crypto:` PR.
 - **Run** TZ (zeroization), TE (entropy), TT (TAI64N/reboot), T7 (soak) against the kernel
   version.
 - **Hardware (T5)** for the kernel driver once Wi-Fi is back.
-- TF, TN, and T3 are now covered by sim scripts (above). The remainder does not change what has
-  been shown (T1 + TF + TR + TN + T3 + T6), but the items above are required by the plan's own
-  §3.4 cadence before PR-K1.
+- TF, TV (chachapoly), TN, and T3 are now covered by sim scripts/tests. The remainder does not
+  change what has been shown (T1 + TF + TV + TR + TN + T3 + T6), but the items above are required
+  by the plan's own §3.4 cadence before PR-K1.
