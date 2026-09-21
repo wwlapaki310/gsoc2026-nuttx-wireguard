@@ -786,7 +786,7 @@ I mention this because it changes what "done" means. The goal is not a demo that
     <p class="eyebrow">Why This Topic</p>
     <h2>How do you reach a device you left in the field?</h2>
     <div class="body">
-      <p class="lead">I wanted secure remote access to the NuttX devices I work with. NuttX has <span class="hl red">no native, lightweight VPN</span>. Every alternative is unappealing:</p>
+      <p class="lead">I wanted secure remote access to my NuttX devices, but NuttX has <span class="hl red">no native, lightweight VPN</span>. It is a real, unsolved problem across edge AI, industrial IoT and remote installations &mdash; and every alternative is unappealing:</p>
       <div class="two">
         <div class="panel wg">
           <p><strong>Expose a global IP</strong> &mdash; open a port, point SSH or HTTP at the internet, and get scanned and brute-forced.</p>
@@ -794,9 +794,6 @@ I mention this because it changes what "done" means. The goal is not a demo that
         <div class="panel wg">
           <p><strong>Build a bespoke protocol</strong> &mdash; reinvent authenticated encryption, and own every bug in it forever.</p>
         </div>
-      </div>
-      <div class="claim">
-        <p>Remote, secure access to edge devices is a real, unsolved problem &mdash; edge AI, industrial IoT, satellite and remote installations.</p>
       </div>
     </div>
     <div class="num">4 / 24</div>
@@ -946,7 +943,7 @@ Setting a receive timeout returned zero, success. But recvfrom still blocked for
         </div>
         <div class="panel nx">
           <p>A <code>usleep()</code> right after create made the thread's <code>printf</code> appear &mdash; so it <strong>was</strong> created.</p>
-          <p>POSIX says a detached thread lives on independently. Here its lifecycle was tied to the launcher.</p>
+          <p>My mistake: I read <code>detach</code> as &ldquo;outlives the command.&rdquo; It only controls <strong>when the thread's resources are reclaimed</strong> &mdash; not whether it survives its launcher exiting.</p>
         </div>
       </div>
     </div>
@@ -954,7 +951,7 @@ Setting a receive timeout returned zero, success. But recvfrom still blocked for
     <div class="notes-src">
 The second: a lifecycle assumption that did not hold.
 ||
-The receive thread was created detached. When the launching command exited, the thread stopped &mdash; it did not even show up in ps. A short sleep after creation let its printf run, so it really was created. POSIX says a detached thread should live independently, but here its life was bound to the command. Remember this &mdash; the kernel version fixes it structurally, by owning the thread in the driver.
+The receive thread was created detached. When the launching command exited, the thread stopped &mdash; it did not even show up in ps. A short sleep after creation let its printf run, so it really was created. My mistake was reading detach as "it will outlive the command" &mdash; detach only controls when the thread's resources are reclaimed, not whether it survives its launcher exiting. So when the command exited, the thread went with it. That is why the kernel version owns the thread in the driver instead.
     </div>
   </section>
 
@@ -1054,17 +1051,17 @@ Version one lives in apps and reaches into socket internals. That is fine for a 
     <h2>A kernel netdev, an ioctl ABI, a write-only key.</h2>
     <div class="body">
       <ul class="big">
-        <li>Kernel netdev <span><code>netdev_lowerhalf</code> owning a UDP socket, a receive kernel thread, timers and cookies &mdash; the lifecycle problems of v1 fixed structurally.</span></li>
+        <li>Kernel netdev <span><code>netdev_lowerhalf</code> owning a UDP socket, a receive kernel thread, timers and cookies &mdash; the driver owns the socket and thread, so v1's launcher-lifetime dependency is gone.</span></li>
         <li>Flat, pointer-free ioctl ABI <span><code>SIOCS/GWGIF</code>, <code>SIOCS/D/GWGPEER</code> &mdash; no pointers, because in PROTECTED / KERNEL the kernel copies the caller's struct directly.</span></li>
-        <li>Private key is write-only <span>set it, never read it back; key material never leaves the kernel.</span></li>
-        <li>NuttX's own crypto <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored.</span></li>
+        <li>Private key is write-only <span>the get ioctl never returns the private key.</span></li>
+        <li>Kernel crypto is NuttX's own <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored on the kernel side.</span></li>
       </ul>
     </div>
     <div class="num">16 / 24</div>
     <div class="notes-src">
 The shape of the real driver.
 ||
-wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receive kernel thread &mdash; so the socket-ownership and thread-lifecycle problems from part two are gone by construction. Configuration is a flat, pointer-free ioctl ABI, pointer-free because the kernel copies the caller's structure directly. The private key is write-only: you set it, you never read it back. And the crypto is NuttX's own, nothing vendored.
+wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receive kernel thread &mdash; so the socket-ownership and launcher-lifetime problems from part two go away by design. Configuration is a flat, pointer-free ioctl ABI, pointer-free because the kernel copies the caller's structure directly. The private key is write-only: the get ioctl never hands it back &mdash; though it still lives in the config file on the user side. The kernel-side crypto is NuttX's own; the only vendored code is a small MIT X25519 in the user-space command, for offline key generation.
     </div>
   </section>
 
@@ -1098,17 +1095,20 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
     <h2>Three independent kinds of proof.</h2>
     <div class="body">
       <table>
-        <tr><th>Tier</th><th>Environment</th><th>Confirmed</th></tr>
-        <tr><td>Compiles in CI</td><td class="old">sim:wireguard defconfig</td><td>the config NuttX CI builds</td></tr>
-        <tr><td>Real hardware</td><td class="old">ESP32-S3, SPRESENSE &middot; real Wi-Fi</td><td class="new">Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
-        <tr><td>Real kernel build</td><td class="old">rv-virt knetnsh64 &middot; QEMU</td><td class="new">BUILD_KERNEL + virtio-net tunnel to Linux; wg is a separate ELF across the syscall boundary</td></tr>
+        <tr><th>Environment</th><th>Implementation</th><th>Confirmed</th></tr>
+        <tr><td>sim:wireguard defconfig</td><td class="old">kernel driver &middot; local build</td><td>builds clean (the config CI compiles)</td></tr>
+        <tr><td>rv-virt knetnsh64 &middot; QEMU</td><td class="new">kernel driver &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> a separate ELF across the syscall boundary</td></tr>
+        <tr><td>ESP32-S3, SPRESENSE &middot; real Wi-Fi</td><td class="old">apps v0.1.1 &middot; FLAT</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
       </table>
+      <div class="claim"><p>Running the <span class="hl red">kernel driver on real hardware</span> is the remaining step.</p></div>
     </div>
     <div class="num">18 / 24</div>
     <div class="notes-src">
-The credibility slide.
+Be precise about which implementation was verified where.
 ||
-Three independent kinds of proof. One: it compiles in the configuration NuttX's CI builds. Two: it runs on real hardware &mdash; two boards, over real Wi-Fi, against the Linux kernel and Windows clients, with telnet, HTTP, a seven-megabyte transfer, rekeying, and recovery from a power cycle. Three: it runs in a real kernel build &mdash; rv-virt's knetnsh64 in QEMU, a full tunnel to Linux kernel WireGuard over virtio-net, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary. Three different ways to be wrong, all green.
+The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
+||
+The real-hardware runs &mdash; two boards, real Wi-Fi, Linux and Windows peers, telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; were the earlier apps version, on a FLAT build. Running the kernel driver on the boards is the one step still ahead.
     </div>
   </section>
 
@@ -1158,6 +1158,7 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
     <p class="eyebrow">Portability</p>
     <h2>The &ldquo;four functions&rdquo; bet, checked.</h2>
     <div class="body">
+      <p class="lead">The apps (FLAT) implementation, moved across four architectures with <span class="hl">no code change</span>:</p>
       <table>
         <tr><th>Target</th><th>Code change</th><th>Result</th></tr>
         <tr><td>x86_64 (sim)</td><td class="old">none</td><td class="new">tunnel</td></tr>
@@ -1165,12 +1166,13 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
         <tr><td>Xtensa LX7 (ESP32-S3)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi</td></tr>
         <tr><td>ARM Cortex-M4F (SPRESENSE)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi (GS2200M)</td></tr>
       </table>
+      <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim and rv-virt (BUILD_KERNEL) on top.</div>
     </div>
     <div class="num">21 / 24</div>
     <div class="notes-src">
 The design decision from the start, validated.
 ||
-Isolating the OS behind a few functions was a bet. Here is the check: four architectures &mdash; x86, ARM Cortex-A7, Xtensa on the ESP32, and Cortex-M4F on SPRESENSE &mdash; with no code change to move between them. The bet paid off.
+Isolating the OS behind a few functions was a bet. Here is the check, with the apps FLAT implementation: four architectures &mdash; x86, ARM Cortex-A7, Xtensa on the ESP32, and Cortex-M4F on SPRESENSE &mdash; with no code change to move between them. The kernel driver then adds sim and the rv-virt kernel build on top. The bet paid off.
     </div>
   </section>
 
@@ -1200,14 +1202,14 @@ The contribution is staged: a small crypto PR first, for the nonce fix, because 
       <ul class="big">
         <li>Shallow tests pass, deep tests fail <span>design tests for depth &mdash; sustained data, real hardware, a real kernel build &mdash; not just &ldquo;it handshook.&rdquo;</span></li>
         <li>A clean OS-abstraction bet pays off <span>four architectures, three versions, no changes.</span></li>
-        <li>Porting into a project can improve the project <span>two upstream bugs found and fixed on the way in.</span></li>
+        <li>Porting into a project can improve the project <span>a latent bug in NuttX's own crypto, found and fixed on the way in &mdash; and a kernel build surfaced a bug in my own driver that sim never would.</span></li>
       </ul>
     </div>
     <div class="num">23 / 24</div>
     <div class="notes-src">
 Three things to take away.
 ||
-First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it &mdash; two bugs in NuttX itself, found and fixed on the way in.
+First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it. One bug was in NuttX's own crypto &mdash; that fix goes upstream on its own. The other was in my new driver, and only a real kernel build surfaced it; sim never would have.
     </div>
   </section>
 
