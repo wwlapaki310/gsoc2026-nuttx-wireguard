@@ -1,5 +1,11 @@
 # upstream (apache/nuttx-apps) マージ戦略
 
+> **対象版: apps / FLAT(履歴)。** この文書は **apps 版**を `apache/nuttx-apps` に出す前提の
+> 旧マージ戦略。**現行の提出対象はカーネル版**で、その計画は
+> [in-kernel-plan.md](in-kernel-plan.md)、状況は [in-kernel-status.md](in-kernel-status.md)、
+> 検証は [verification-matrix.md](verification-matrix.md)。カーネル版は `apache/nuttx`(driver +
+> ABI)と `apache/nuttx-apps`(`apps/system/wg`)の両方に出す。以下は履歴として残す。
+
 ## この文書の位置づけ
 
 `apps/netutils/wireguard/` を最終的に `apache/nuttx-apps` にマージすることを見据え、NuttX 公式の Contributing Guide・Inviolables・C Coding Standard を実際に確認した上で、現状のコードとのギャップと段階的な進め方をまとめたもの。参照した一次情報:

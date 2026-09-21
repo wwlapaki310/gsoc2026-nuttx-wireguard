@@ -1,5 +1,10 @@
 # 開発ステータス
 
+> **対象版: apps / FLAT(`v0.1.1`、凍結)。** この文書は apps 版の状態を記録したもの。
+> **upstream 提出対象のカーネル版**の現状は
+> [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md)、検証状況は
+> [verification-matrix.md](docs/upstream/verification-matrix.md) を参照。
+
 このリポジトリの「今どこまで進んでいるか」をまとめたもの。詳細な作業ログやこれからの計画は各ドキュメントにリンクしている。
 
 **現在地を一言で言うと:** **ESP32-S3 実機で、実 Wi-Fi・実ピア(Windows 公式 WireGuard クライアント)との実ハンドシェイクとトンネル越し ping(0% packet loss)、さらにトンネル越し telnet でのコマンド実行・Web サーバーアクセスまで確認した。** sim・QEMU の仮想ネットワークだけでなく、本物のシリコン・本物のネットワーク環境でも WireGuard 実装が正しく動作することを実証できた(プロポーザル Phase 4 の目標を達成)。その過程で「TCP のアプリケーションデータだけがトンネルを通らない」バグ(LPWORK ワーカースレッドからの `sendto()` が `EBADF` で失敗していた)を発見し、`psock_*()` 内部 API への切り替えで修正済み。**Sony Spresense (ARM Cortex-M4F) + iS110B Wi-Fi Add-on ボードでも、実 Wi-Fi 経由で Windows 公式クライアントとのハンドシェイク・トンネル越し ping・**トンネル越し telnet / HTTP(デモページ)**まで確認済み** — 2つ目のアーキテクチャ、かつ ESP32 系とは別方式(`usrsock` プロキシ型)の Wi-Fi ドライバでの動作実証になった。この過程で「usrsock 環境では `wg0` 向けの `SIOCSIFFLAGS` ioctl が usrsock デーモンに横取りされて `wg_ifup()` が呼ばれず、ハンドシェイクが一切始まらない」バグを発見し、netdev を直接設定する形に修正済み。ESP32-WROOM-32 のみ、GPIO0 経路の故障で書き込みに到達できていない(詳細は [docs/development/phase4-log.md](docs/development/phase4-log.md))。

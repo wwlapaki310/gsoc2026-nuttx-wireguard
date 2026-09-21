@@ -1,7 +1,10 @@
 # カーネル側移行計画: `drivers/net/wireguard.c` + `wg` クライアント
 
-最終更新: 2026-09-18(v2、3 名の専門家レビューを反映。§6)。状態: **計画(未着手)**。
-関連 Issue: [#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)(dev@)、[#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5)(長時間)、[#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6)(FLAT 前提)、[#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)(RTC_HIRES)、[#10](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/10)(usrsock ioctl)。
+最終更新: 2026-09-18(v2、3 名の専門家レビューを反映。§6)。状態: **多くが実装済み**(この文書は
+当初の *計画*)。**計画と実装済み/検証済みを混同しないこと** — 実際に何が動き何が未了かは
+[in-kernel-status.md](in-kernel-status.md)(現状)と [verification-matrix.md](verification-matrix.md)
+(テスト別の正直な状態)が正本。本書に書いた保証・テストは、それらで裏が取れているものだけが「済み」。
+関連 Issue: [#3](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/3)(dev@)、[#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5)(長時間)、[#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6)(FLAT 前提)、[#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)(RTC_HIRES)、[#10](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/10)(usrsock ioctl)、[#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11)(移行追跡)、[#12](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/12)(文書・再現・証拠)。
 
 ## 0. 結論
 
