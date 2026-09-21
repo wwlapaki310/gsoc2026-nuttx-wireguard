@@ -63,8 +63,11 @@ bash scripts/kdev.sh sync                                # applies each fork's d
 ```bash
 bash scripts/kdev.sh configure                           # sim:nsh + NET_WIREGUARD + SYSTEM_WG
 bash scripts/kdev.sh build                               # expect BUILD_EXIT=0 and an nuttx binary
-bash scripts/kdev.sh test kernel/verify-sim-wg-runtime.sh 40
-bash scripts/kdev.sh test kernel/verify-sim-wg-replay.sh 40
+bash scripts/kdev.sh test kernel/verify-sim-wg-runtime.sh 40    # T1
+bash scripts/kdev.sh test kernel/verify-sim-wg-ioctl.sh 60      # TF (ioctl negatives)
+bash scripts/kdev.sh test kernel/verify-sim-wg-replay.sh 40     # TR (replay/cookie)
+bash scripts/kdev.sh test kernel/verify-sim-wg-negotiation.sh 80  # TN (negative interop)
+bash scripts/kdev.sh test kernel/verify-sim-wg-multipeer.sh 80    # T3 (two peers at once)
 ```
 
 Expected: each `verify-*` script ends with its `PASS: …` terminal line (they run under
@@ -105,6 +108,7 @@ so each command is sent with a leading newline.
 ## What this does and does not establish
 
 See [verification-matrix.md](verification-matrix.md) for the full, honest status. In short: the
-above reproduces **T1, TR, and T6** (protocol/crypto correctness on sim against Linux, and a
-full tunnel in a real kernel build). It does **not** cover TF, TV (KAT), TN, TZ, TE, TT, T7, or
-hardware (T5) — those are not yet implemented or not yet run against the kernel version.
+above reproduces **T1, TF, TR, TN, T3, and T6** (protocol/crypto correctness and ioctl/negative
+validation on sim against Linux, and a full tunnel in a real kernel build). It does **not** cover
+TV (KAT), TZ, TE, TT, T7, or hardware (T5) — those are not yet implemented or not yet run against
+the kernel version.
