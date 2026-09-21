@@ -49,6 +49,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [in-kernel-status.md](upstream/in-kernel-status.md) | カーネル移行の**実装状況メモ**(2026-09-20: sim 完動・rv-virt:knetnsh64 で実カーネルビルド完全トンネル・残タスクは実機のみ) |
 | [in-kernel-plan.md](upstream/in-kernel-plan.md) | **カーネル側移行計画**(`drivers/net/` + ioctl 越しの `wg`)。設計・実装順序・テスト戦略・マージ戦略・3 名の専門家レビュー |
 | [in-kernel-review-brief.md](upstream/in-kernel-review-brief.md) | **他 LLM / レビュアーに渡す自己完結ブリーフ**。目的・設計判断・ABI・検証状況・変更規模・番号付きレビュー論点を1枚に(Issue からリンクして相互レビューに使う) |
+| [verification-matrix.md](upstream/verification-matrix.md) | **カーネル版の検証マトリクス**(正直版)。計画 §3 の T0〜T8 / TF・TV・TR・TN・TZ・TE・TT を テストID・対象 SHA・構成・結果・ログ・未実施理由に対応づけ。「スクリプトがある」と「テストが通った」を区別 |
+| [reproduce.md](upstream/reproduce.md) | **新規 clone からの再現手順**(固定 SHA・コンテナ作成・ツールチェーン・ビルド/テストコマンド・期待結果)。fork 未 push という制約も明示 |
 | [review-request.md](upstream/review-request.md) | **相互レビューの依頼テンプレート**。Issue コメント文面 + 他 LLM への投げ文(Web 閲覧可/不可の2種)+ 運用ループ |
 
 いきなり PR を投げず、先に `dev@` で設計の合意を取る方針。
