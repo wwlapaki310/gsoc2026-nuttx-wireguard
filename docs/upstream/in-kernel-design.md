@@ -42,11 +42,16 @@ register (drivers_initialize)      wg_ifup                       wg_ifdown
   listen port on `INADDR_ANY`; arms handshakes for peers that have a configured endpoint;
   then starts the `wg_rx` thread. Every failure path unwinds what it created (close the socket,
   clear `running`) before returning the errno.
-- **`wg_ifdown`** clears `bifup`, drops carrier, sets `running=false`, and waits on `rxdone`
-  (up to `WG_STOP_WAIT_MSECS`) for the thread to finish its current iteration and post it — the
-  net lock is released while waiting because the thread needs it. Then it closes the socket,
-  clears every peer's session keys and handshake state (`wg_peer_clear_sessions`), resets
-  endpoints to the configured ones, and frees anything left in the RX queue.
+- **`wg_ifdown`** clears `bifup`, drops carrier, sets `running=false`, and waits for the RX
+  thread to actually exit before touching the socket or the semaphore. The thread checks
+  `running` in both its outer loop and its inner drain loop and posts `rxdone` as its last act,
+  so it leaves within a poll period; `wg_ifdown` retries the bounded wait and only then closes
+  the socket, clears `rxpid`, destroys `rxdone`, wipes every peer's session keys
+  (`wg_peer_clear_sessions`), resets endpoints, and drains the RX queue. The net lock is released
+  while waiting (so the thread can take it to finish). On the unexpected event that the wait
+  still times out, it does **not** close the socket from under a live thread — it leaves the
+  interface stopping (`rxpid` set) and returns an error; `wg_ifup` then refuses to re-up until
+  the stop completes.
 
 ## Data path
 
@@ -82,9 +87,19 @@ buffer (an earlier RX/TX aliasing bug was fixed by giving RX its own `rxbuf`).
   switch; the RX thread takes it around datagram processing and around `wg_run_timers`; TX runs
   in the upper half's net-locked context. So configuration changes, inbound processing, timer
   work, and outbound send never touch `priv->wg` concurrently.
+- **Sends are non-blocking (`MSG_DONTWAIT`)** so a send never drops `net_lock` mid-way. This
+  matters: a blocking UDP send releases the network lock while it waits for a write buffer
+  (`udp_sendto_buffered`), which would let another `net_lock` holder overwrite the shared
+  `cryptbuf` or mutate the keypair while a send is in flight. Non-blocking keeps each send atomic
+  under `net_lock`; on back pressure the datagram is dropped (peer/stack retransmit). Fixed after
+  a design review (fork `a5d2a07b73`).
 - **`priv->rxlock`** (spinlock, IRQ-save) guards only the short critical sections that add to or
   remove from `priv->rxqueue`, since that queue is touched from the thread, the upper half, and
-  `wg_ifdown`.
+  `wg_ifdown`. It is a leaf lock (never taken while blocking, never nests another lock).
+- **Lock order:** `net_lock` is the single ordering lock; `rxlock` is a leaf spinlock taken only
+  for the queue. No lock is acquired while another is held except `rxlock` under nothing. The RX
+  thread never holds `net_lock` across a blocking call (it drops it before `psock_recvfrom`);
+  `wg_ifdown` drops `net_lock` only while waiting for the thread to exit.
 
 ## ABI update semantics and constraints
 
@@ -119,10 +134,26 @@ buffer (an earlier RX/TX aliasing bug was fixed by giving RX its own `rxbuf`).
 The `net_lock`/`rxlock` scheme above is designed to be build-type independent, but only FLAT
 (sim) and one KERNEL vehicle (rv-virt) have actually been run; see the matrix for the rest.
 
+## Design-review fixes (2026-09-21, fork `a5d2a07b73`)
+
+A review (Codex, issue #12) surfaced two real concurrency defects, both fixed and covered above:
+non-blocking sends (the `net_lock`-drop-mid-send window) and a reliable `wg_ifdown` stop with a
+re-up guard (the close-under-a-live-thread window). A lifecycle stress test
+(`scripts/kernel/verify-sim-wg-downup.sh`: 25 down/up cycles under an inbound flood) and the full
+functional regression (T1/TF/TR/TN/T3) pass with the fixes. **Honest limitation:** both defects
+are races that the sim did not trip deterministically — the pre-fix driver also passed the stress
+test — so the fixes rest on the code analysis above, not on a demonstrated pre-fix failure.
+
 ## Open items a reviewer may want to probe
 
+- **TAI64N across reboot/time-rollback** — the handshake timestamp uses the monotonic (since-boot)
+  clock, so a board that reboots can be rejected by the responder until its clock passes the last
+  value seen. A design decision (RTC / persistence / rollback detection) is still open; tracked
+  separately (see the TAI64N issue).
 - No `TZ` (zeroization) evidence yet: sessions are cleared on `wg_ifdown` (`wg_peer_clear_sessions`)
-  and `wg_set_if` re-inits the device, but a `gcore` check for lingering key bytes is not done.
-- Concurrency is argued from `net_lock`; a review of every `priv->wg` access confirming it holds
-  net_lock (especially any path reachable without it) is worthwhile.
-- Repeated `down`/`up` and endpoint churn (plan T7) are not soak-tested.
+  and `wg_set_if` re-inits the device, but a `gcore` check for lingering key bytes is not done,
+  and whether the *static* private key should also be wiped on down (it is kept for re-up) is a
+  design question.
+- Concurrency is now argued from `net_lock` **plus non-blocking sends**; a full audit confirming
+  every `priv->wg` access holds net_lock remains worthwhile.
+- Repeated `down`/`up` and endpoint churn (plan T7) have a stress test now but not a long soak.

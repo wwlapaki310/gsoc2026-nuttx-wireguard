@@ -68,6 +68,7 @@ bash scripts/kdev.sh test kernel/verify-sim-wg-ioctl.sh 60      # TF (ioctl nega
 bash scripts/kdev.sh test kernel/verify-sim-wg-replay.sh 40     # TR (replay/cookie)
 bash scripts/kdev.sh test kernel/verify-sim-wg-negotiation.sh 80  # TN (negative interop)
 bash scripts/kdev.sh test kernel/verify-sim-wg-multipeer.sh 80    # T3 (two peers at once)
+bash scripts/kdev.sh test kernel/verify-sim-wg-downup.sh 150      # down/up lifecycle under flood
 
 # TV: the ChaCha20-Poly1305 u64-counter KAT (needs the .c copied in too)
 docker cp scripts/kernel/chachapoly_kat.c wgdev:/tmp/
