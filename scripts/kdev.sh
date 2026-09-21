@@ -25,7 +25,7 @@ case "${1:-}" in
     (cd "$APPS_FORK"  && git diff --binary "$(git merge-base HEAD upstream/master)") > /tmp/apps.patch
     docker cp /tmp/nuttx.patch "$C":/tmp/nuttx.patch
     docker cp /tmp/apps.patch  "$C":/tmp/apps.patch
-    dx 'cd /opt/nuttx && git checkout -q -- . && rm -rf drivers/net/wireguard include/nuttx/net/wireguard.h boards/sim/sim/sim/configs/wireguard && if [ -s /tmp/nuttx.patch ]; then git apply /tmp/nuttx.patch; fi && git status --short | head -20'
+    dx 'cd /opt/nuttx && git checkout -q -- . && rm -rf drivers/net/wireguard include/nuttx/net/wireguard.h boards/sim/sim/sim/configs/wireguard Documentation/components/drivers/special/net/wireguard.rst Documentation/applications/system/wg && if [ -s /tmp/nuttx.patch ]; then git apply /tmp/nuttx.patch; fi && git status --short | head -20'
     dx 'cd /opt/apps && git checkout -q -- . && rm -rf system/wg && if [ -s /tmp/apps.patch ]; then git apply /tmp/apps.patch; fi && rm -rf netutils/wireguard && (cd netutils && bash ../tools/mkkconfig.sh -m "Network Utilities" -o Kconfig >/dev/null) && (cd system && bash ../tools/mkkconfig.sh -m "System Libraries and NSH Add-Ons" -o Kconfig >/dev/null) && git status --short | head'
     ;;
   configure)
