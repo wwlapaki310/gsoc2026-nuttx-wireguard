@@ -25,8 +25,8 @@ case "${1:-}" in
     (cd "$APPS_FORK"  && git diff --binary "$(git merge-base HEAD upstream/master)") > /tmp/apps.patch
     docker cp /tmp/nuttx.patch "$C":/tmp/nuttx.patch
     docker cp /tmp/apps.patch  "$C":/tmp/apps.patch
-    dx 'cd /opt/nuttx && git checkout -q -- . && rm -rf drivers/net/wireguard include/nuttx/net/wireguard.h boards/sim/sim/sim/configs/wireguard && ([ -s /tmp/nuttx.patch ] && git apply /tmp/nuttx.patch || true) && git status --short | head -20'
-    dx 'cd /opt/apps && git checkout -q -- . && rm -rf system/wg && ([ -s /tmp/apps.patch ] && git apply /tmp/apps.patch || true) && rm -rf netutils/wireguard && (cd netutils && bash ../tools/mkkconfig.sh -m "Network Utilities" -o Kconfig >/dev/null) && (cd system && bash ../tools/mkkconfig.sh -m "System Libraries and NSH Add-Ons" -o Kconfig >/dev/null) && git status --short | head'
+    dx 'cd /opt/nuttx && git checkout -q -- . && rm -rf drivers/net/wireguard include/nuttx/net/wireguard.h boards/sim/sim/sim/configs/wireguard && if [ -s /tmp/nuttx.patch ]; then git apply /tmp/nuttx.patch; fi && git status --short | head -20'
+    dx 'cd /opt/apps && git checkout -q -- . && rm -rf system/wg && if [ -s /tmp/apps.patch ]; then git apply /tmp/apps.patch; fi && rm -rf netutils/wireguard && (cd netutils && bash ../tools/mkkconfig.sh -m "Network Utilities" -o Kconfig >/dev/null) && (cd system && bash ../tools/mkkconfig.sh -m "System Libraries and NSH Add-Ons" -o Kconfig >/dev/null) && git status --short | head'
     ;;
   configure)
     dx 'cd /opt/nuttx && make distclean >/dev/null 2>&1; ./tools/configure.sh sim:nsh >/dev/null && \
@@ -35,7 +35,7 @@ case "${1:-}" in
       make olddefconfig >/dev/null 2>&1; grep -E "^CONFIG_(NET_WIREGUARD|SYSTEM_WG|CRYPTO_CURVE25519|NETDEV_IOCTL|DEV_URANDOM)" .config'
     ;;
   build)
-    dx 'cd /opt/nuttx && make -j$(nproc) >/tmp/build.log 2>&1; rc=$?; grep -E "error|warning: .*(wireguard|wg_)" /tmp/build.log | grep -v "^ *$" | head -40; echo "BUILD_EXIT=$rc"; ls -la nuttx 2>/dev/null | cut -c1-60'
+    dx 'cd /opt/nuttx && make -j$(nproc) >/tmp/build.log 2>&1; rc=$?; grep -E "error|warning: .*(wireguard|wg_)" /tmp/build.log | grep -v "^ *$" | head -40; echo "BUILD_EXIT=$rc"; ls -la nuttx 2>/dev/null | cut -c1-60; exit $rc'
     ;;
   style)
     dx 'cd /opt/nuttx && ./tools/checkpatch.sh -f drivers/net/wireguard/*.c drivers/net/wireguard/*.h include/nuttx/net/wireguard.h 2>&1 | tail -40; cd /opt/apps && ../nuttx/tools/checkpatch.sh -f system/wg/*.c 2>&1 | tail -20'
@@ -46,7 +46,7 @@ case "${1:-}" in
     ;;
   test)
     docker cp "$(dirname "$0")/$2" "$C":/tmp/t.sh
-    dx "bash /tmp/t.sh 2>&1 | sed 's/\x1b\[K//g' | grep -vE '^\s*\$' | tail -${3:-30}"
+    dx "bash /tmp/t.sh >/tmp/t.out 2>&1; rc=\$?; sed 's/\x1b\[K//g' /tmp/t.out | grep -vE '^\s*\$' | tail -${3:-30}; exit \$rc"
     ;;
   *)
     sed -n 2,12p "$0"; exit 1;;
