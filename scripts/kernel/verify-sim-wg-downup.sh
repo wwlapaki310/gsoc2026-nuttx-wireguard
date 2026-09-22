@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
-# Lifecycle stress for the ifdown-stop and non-blocking-send fixes:
+# Lifecycle stress for device locking and queued UDP output:
 # repeatedly bring wg0 down and up while a sustained inbound flood hits the
 # listen port and a real Linux peer keeps sending. This is the reproduction
 # case for
 #   - ifdown closing the socket while the RX thread is still draining a
 #     flood (the thread now re-checks running in its inner loop and ifdown
 #     waits for it to leave before closing), and
-#   - a blocking send releasing the network lock mid-transmit under buffer
-#     pressure (sends are now MSG_DONTWAIT, atomic under net_lock).
+#   - TX/RX protocol-state races (all use d_lock; the socket worker sends
+#     immutable copies outside the lock).
 #
-# Pass = every down/up completes (no hang), the sim never dies, and the
-# tunnel still carries traffic at the end.
+# Pass = every command completes successfully, in order, and each cycle
+# stops and restores tunnel traffic. This does not emulate usrsock stalls.
 #
 # Topology as in verify-sim-wg-runtime.sh.
 set -euo pipefail
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd /opt/nuttx
 CYCLES="${1:-25}"
 
@@ -33,7 +34,9 @@ nuttx_pid=$!
 flood_pid=""
 cleanup() {
   set +e
+  [ -n "${flood_pid}" ] && kill -CONT "${flood_pid}" 2>/dev/null
   [ -n "${flood_pid}" ] && kill "${flood_pid}" 2>/dev/null
+  [ -n "${flood_pid}" ] && wait "${flood_pid}" 2>/dev/null
   ip link del wgtest0 2>/dev/null
   printf "poweroff\n" >&3 2>/dev/null; sleep 1
   kill "${nuttx_pid}" 2>/dev/null; wait "${nuttx_pid}" 2>/dev/null
@@ -45,6 +48,32 @@ exec 3>/tmp/nuttx.in
 sleep 2
 send() { printf "%s\n" "$1" >&3; sleep 0.5; }
 fail() { echo "FAIL: $1"; sed -n "1,200p" /tmp/nuttx.out; exit 1; }
+
+tags=()
+checked() {
+  local tag="WGCHK_$1" command="$2" rc=2
+  tags+=("${tag}")
+  send "${command}"
+  # Expand $? on the target, not in this host shell.
+  send "echo ${tag}:\$?"
+  for _ in $(seq 1 60); do
+    rc=0
+    python3 "${script_dir}/nsh-status.py" /tmp/nuttx.out "${tags[@]}" || rc=$?
+    [ "${rc}" -eq 0 ] && return 0
+    [ "${rc}" -eq 1 ] && fail "${command}: failed, duplicate or out-of-order result"
+    kill -0 "${nuttx_pid}" 2>/dev/null || fail "sim died during ${command}"
+    sleep 0.2
+  done
+  fail "${command}: no completed result line"
+}
+
+await_tunnel() {
+  for _ in $(seq 1 20); do
+    if ping -c 1 -W 1 10.10.0.2 >/dev/null 2>&1; then return 0; fi
+    sleep 1
+  done
+  fail "tunnel did not recover"
+}
 
 if ! ip link show tap0 >/dev/null 2>&1; then fail "tap0 not created"; fi
 ip addr add 10.0.0.1/24 dev tap0 2>/dev/null || true
@@ -66,6 +95,7 @@ wg set wgtest0 private-key /tmp/linux.key listen-port 51821 \
   peer "${NPUB}" allowed-ips 10.10.0.2/32 endpoint 10.0.0.2:51820 persistent-keepalive 5
 ip addr add 10.10.0.1/24 dev wgtest0; ip link set wgtest0 up
 sleep 4
+await_tunnel
 
 # Sustained flood: valid-mac1 initiations + garbage, from a forged source,
 # as fast as possible, so the RX thread always has work while we cycle.
@@ -87,59 +117,27 @@ while True:
 PY
 flood_pid=$!
 
-# Cycle down/up under the flood. After each command send a unique echo
-# sentinel: it only prints once NSH has finished the command, so a complete,
-# in-order run of every sentinel proves each down and up returned (no hang).
-cyc_start="$(wc -l </tmp/nuttx.out)"
+# Check each target-side status, then the actual tunnel state.
 for i in $(seq 1 "${CYCLES}"); do
-  send "wg down";  send "echo D${i}_$?"
-  send "echo D${i}mark"
-  send "wg up";    send "echo U${i}mark"
-  if ! kill -0 "${nuttx_pid}" 2>/dev/null; then
-    fail "sim died during cycle ${i}"
+  checked "D${i}" "wg down"
+  if ping -c 1 -W 1 10.10.0.2 >/dev/null 2>&1; then
+    fail "cycle ${i}: traffic passed while down"
   fi
+  checked "U${i}" "wg up"
+  # Lifecycle completion is measured under load. Pause the unauthenticated
+  # flood for the recovery probe: availability during a sustained DoS is a
+  # different property from a correct down/up transition.
+  kill -STOP "${flood_pid}"
+  await_tunnel
+  kill -CONT "${flood_pid}"
+  echo "PASS: cycle ${i}: down stopped traffic, up restored traffic"
 done
-sleep 1
-
-cyc_out="$(tail -n +"$((cyc_start + 1))" /tmp/nuttx.out | sed 's/\x1b\[K//g')"
-
-# Every command completed: all 2*CYCLES sentinels present, in order.
-missing=0
-for i in $(seq 1 "${CYCLES}"); do
-  echo "${cyc_out}" | grep -q "D${i}mark" || { echo "missing D${i}mark"; missing=1; }
-  echo "${cyc_out}" | grep -q "U${i}mark" || { echo "missing U${i}mark"; missing=1; }
-done
-[ "${missing}" -eq 0 ] || fail "a down/up command did not complete (hang)"
-echo "PASS: all ${CYCLES} down and up commands completed (sentinels in order)"
-
-# Every command succeeded: the wg client printed no error for down/up.
-if echo "${cyc_out}" | grep -qiE "wg: (up|down):|must be down|still stopping|Bad|error"; then
-  echo "${cyc_out}" | grep -iE "wg: (up|down):|must be down|still stopping|Bad|error" | head
-  fail "a down/up command reported an error"
-fi
-echo "PASS: no down/up command reported an error"
-
-# Explicit down state: with wg0 down the tunnel must NOT carry traffic.
-send "wg down"; send "echo DOWNCHK"
-sleep 1
-if ping -c 2 -W 2 10.10.0.2 >/dev/null 2>&1; then
-  fail "tunnel still carried traffic while wg0 was down"
-fi
-echo "PASS: wg0 down really stops the tunnel"
-
-# Explicit up recovery: bring it back and confirm traffic returns. Poll,
-# since the re-handshake after an idle period can take a few seconds.
+echo "PASS: all ${CYCLES} down/up pairs returned success in order"
 kill "${flood_pid}" 2>/dev/null; flood_pid=""
-send "wg up"; send "echo UPCHK"
-recovered=0
-for _ in $(seq 1 12); do
-  sleep 2
-  if ping -c 1 -W 2 10.10.0.2 >/dev/null 2>&1; then recovered=1; break; fi
-done
-if [ "${recovered}" -ne 1 ]; then
-  echo "--- wgtest0 ---"; wg show wgtest0
-  fail "tunnel did not recover after up"
+checked "DFINAL" "wg down"
+if ping -c 1 -W 1 10.10.0.2 >/dev/null 2>&1; then
+  fail "traffic passed while down"
 fi
-echo "PASS: wg0 up recovers the tunnel"
-
+checked "UFINAL" "wg up"
+await_tunnel
 echo "PASS: sim WireGuard down/up lifecycle under load verified"

@@ -2,22 +2,37 @@
 # Deliberately time out the ifdown stop and confirm the stopping state is
 # recovered. Requires a build with CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL=y,
 # which makes the first RX thread sleep past the stop timeout once.
+# With argument "output", use CONFIG_NET_WIREGUARD_DEBUG_TX_STALL=y and
+# CONFIG_SYSTEM_PING=y instead (leave DEBUG_STOP_STALL disabled).
 #
 #   up            -> tunnel works (thread 1)
 #   down          -> thread 1 stalls; the stop wait times out; ifdown reports
 #                    the failure and leaves the interface "stopping"
-#   up            -> reaps the now-exited thread 1 and comes back up (thread 2)
+#   down          -> reaps the now-exited thread 1
+#   up            -> comes back up (thread 2)
 #   ping          -> the tunnel is carried again
 #
-# Pass = the down reports the timeout, the later up succeeds, the tunnel
+# Pass = down reports the timeout, repeated down and then up succeed, the tunnel
 # recovers, and the sim never dies.
 set -euo pipefail
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+mode="${1:-stop}"
+case "${mode}" in
+  stop) option=CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL ;;
+  output) option=CONFIG_NET_WIREGUARD_DEBUG_TX_STALL ;;
+  *) echo "usage: $0 [stop|output]"; exit 2 ;;
+esac
 cd /opt/nuttx
 
-if ! grep -q "^CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL=y" .config; then
-  echo "SKIP: build without CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL=y"
-  exit 0
+if ! grep -q "^${option}=y" .config; then
+  echo "SKIP: build without ${option}=y"
+  exit 77
+fi
+
+if [ "${mode}" = output ] && ! grep -q '^CONFIG_SYSTEM_PING=y' .config; then
+  echo "SKIP: output mode requires CONFIG_SYSTEM_PING=y"
+  exit 77
 fi
 
 if ! command -v wg >/dev/null 2>&1; then
@@ -31,9 +46,12 @@ rm -f /tmp/nuttx.in /tmp/nuttx.out
 mkfifo /tmp/nuttx.in
 /opt/nuttx/nuttx </tmp/nuttx.in >/tmp/nuttx.out 2>&1 &
 nuttx_pid=$!
+ping_pid=""
 
 cleanup() {
   set +e
+  [ -n "${ping_pid}" ] && kill "${ping_pid}" 2>/dev/null
+  [ -n "${ping_pid}" ] && wait "${ping_pid}" 2>/dev/null
   ip link del wgtest0 2>/dev/null
   printf "poweroff\n" >&3 2>/dev/null; sleep 1
   kill "${nuttx_pid}" 2>/dev/null; wait "${nuttx_pid}" 2>/dev/null
@@ -45,6 +63,35 @@ exec 3>/tmp/nuttx.in
 sleep 2
 send() { printf "%s\n" "$1" >&3; sleep 0.6; }
 fail() { echo "FAIL: $1"; sed -n "1,200p" /tmp/nuttx.out; exit 1; }
+
+diagnostics() {
+  sed 's/\x1b\[[0-9;]*[[:alpha:]]//g; s/\r//g; s/^nsh> //' /tmp/nuttx.out
+}
+
+tags=()
+checked() {
+  local tag="WGCHK_$1" command="$2" expected="${3:-0}" rc
+  tags+=("${tag}=${expected}")
+  send "${command}"
+  send "echo ${tag}:\$?"
+  for _ in $(seq 1 60); do
+    rc=0
+    python3 "${script_dir}/nsh-status.py" /tmp/nuttx.out "${tags[@]}" || rc=$?
+    [ "${rc}" -eq 0 ] && return 0
+    [ "${rc}" -eq 1 ] && fail "unexpected status/order for ${command}"
+    sleep 0.2
+  done
+  fail "no completed result for ${command}"
+}
+
+await_marker() {
+  for _ in $(seq 1 300); do
+    grep -qF "$1" /tmp/nuttx.out && return 0
+    kill -0 "${nuttx_pid}" 2>/dev/null || fail "sim exited"
+    sleep 0.2
+  done
+  fail "missing marker: $1"
+}
 
 if ! ip link show tap0 >/dev/null 2>&1; then fail "tap0 not created"; fi
 ip addr add 10.0.0.1/24 dev tap0 2>/dev/null || true
@@ -75,44 +122,61 @@ poll_ping() {
   done
   return 1
 }
-poll_ping 10.10.0.2 10 || fail "tunnel did not come up initially"
-echo "PASS: tunnel up before the stall"
-
-# down: the first RX thread stalls past the stop timeout, so d_ifdown returns
-# an error. netdev keeps IFF_UP set and the wg client prints an error -- the
-# socket is NOT closed from under the live thread.
-before="$(wc -l </tmp/nuttx.out)"
-send "wg down"
-sleep 6                                   # let ifdown's bounded wait time out
-if ! tail -n +"$((before + 1))" /tmp/nuttx.out | sed 's/\x1b\[K//g' | grep -qi "wg: down:"; then
-  fail "ifdown did not report the stop timeout"
+if [ "${mode}" = output ]; then
+  # The first non-empty transport datagram is held by the socket worker.
+  ping -c 60 -i 0.2 -W 1 10.10.0.2 >/tmp/stall-ping.log 2>&1 &
+  ping_pid=$!
+  await_marker "wg test: output stall entered"
+  checked SHOW "wg show"
+  checked UPDATE "wg set peer ${linux_pub} persistent-keepalive 10"
+  # Drive upper-half TX while the worker retains a different ciphertext.
+  send "ping -c 8 -i 100 -W 100 10.10.0.1 &"
+  sleep 3
+  if grep -qF "wg test: output stall left" /tmp/nuttx.out; then
+    fail "ioctl/TX checks missed the stalled-send window"
+  fi
+  echo "PASS: query/update completed while output was stalled"
+else
+  poll_ping 10.10.0.2 10 || fail "tunnel did not come up initially"
+  echo "PASS: tunnel up before the stall"
 fi
-if ! kill -0 "${nuttx_pid}" 2>/dev/null; then fail "sim died on timed-out down"; fi
-echo "PASS: ifdown reported the stop timeout (interface left stopping, IFF_UP set)"
 
-# Let the stalled thread finish and exit. Recovery is a repeated down: with
-# IFF_UP still set, netdev calls d_ifdown again, which reaps the now-exited
-# thread and completes teardown, clearing IFF_UP.
-sleep 6
-before="$(wc -l </tmp/nuttx.out)"
-send "wg down"
-sleep 2
-if tail -n +"$((before + 1))" /tmp/nuttx.out | sed 's/\x1b\[K//g' | grep -qi "wg: down:"; then
-  fail "repeated down did not reap the stopping interface"
+if [ "${mode}" = stop ]; then
+  # The first caller releases d_lock while waiting. A second down must
+  # return EBUSY, not become another consumer of rxdone.
+  send "wg down &"
+  checked DBUSY "wg down" 1
+  if ! diagnostics | grep -qxE "wg: down: (Unknown error 16|Device or resource busy)"; then
+    fail "concurrent down did not return EBUSY"
+  fi
+  for _ in $(seq 1 60); do
+    diagnostics | grep -qxE "wg: down: (Unknown error 110|Connection timed out)" && break
+    sleep 0.2
+  done
+  echo "PASS: concurrent down was excluded from the reap wait"
+else
+  checked DSTOP "wg down" 1
 fi
-echo "PASS: repeated down reaped the stalled thread (interface fully down)"
+if ! diagnostics | grep -qxE "wg: down: (Unknown error 110|Connection timed out)"; then
+  fail "down failed for a reason other than ETIMEDOUT"
+fi
+kill -0 "${nuttx_pid}" 2>/dev/null || fail "sim died on timed-out down"
+echo "PASS: down reported ETIMEDOUT with the worker still owned"
+checked KEYBUSY "wg set private-key ${npriv}" 1
+checked UPBUSY "wg up" 1
 
-# Now a normal up must succeed and the tunnel must come back.
-before="$(wc -l </tmp/nuttx.out)"
-send "wg up"
-sleep 1
-if tail -n +"$((before + 1))" /tmp/nuttx.out | sed 's/\x1b\[K//g' | grep -qi "wg: up:"; then
-  fail "up failed after recovery"
+if [ "${mode}" = output ]; then
+  await_marker "wg test: output stall left"
+  grep -qF "wg test: output owned 4" /tmp/nuttx.out || fail "TX queue was not saturated"
+  echo "PASS: retained ciphertext passed the driver integrity assertion"
+else
+  sleep 3
 fi
+
+checked REAP "wg down"
+checked UP "wg up"
 if ! poll_ping 10.10.0.2 12; then
-  echo "--- wgtest0 ---"; wg show wgtest0
   fail "tunnel did not recover after the stopping state"
 fi
-echo "PASS: tunnel recovered after stop timeout"
-
-echo "PASS: sim WireGuard stop-timeout recovery verified"
+echo "PASS: repeated down reaped the worker; up restored traffic"
+echo "PASS: sim WireGuard ${mode}-stall recovery verified"

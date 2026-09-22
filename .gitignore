@@ -18,3 +18,7 @@ docs/presentation/.render-*.tmp.html
 
 # Oversized source photos: the deck ships the downscaled copies in assets/
 docs/presentation/assets/spresense+esp-s3.jpg
+
+# Codex/agent local validation artefacts and tooling caches
+output/
+.playwright-cli/

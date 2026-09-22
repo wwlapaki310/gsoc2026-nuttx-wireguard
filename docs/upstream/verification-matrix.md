@@ -1,10 +1,15 @@
 # In-kernel WireGuard — verification matrix
 
+**2026-09-22 concurrency follow-up:** the uncommitted revision on `66b7403c8a`
+has a separate [validation record](locking-followup.md), including lifecycle and fault
+tests. The historical matrix below does not certify that revision's KERNEL/PROTECTED or
+hardware behaviour; those reruns are still outstanding.
+
 Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the **in-kernel
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
 are listed as such, not omitted.
 
-- Target under test: fork `net-wireguard` HEAD **`677c8f54fe`** (nuttx) + fork `system-wg`
+- Target under test: fork `net-wireguard` HEAD **`66b7403c8a`** (nuttx) + fork `system-wg`
   HEAD **`24b3f311`** (nuttx-apps), base upstream/master `c95c546c`.
 - Runner: the `wgdev` container (`nuttx-wireguard:sim-master`) + a local RISC-V toolchain and
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
@@ -51,8 +56,8 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 |---|---|---|---|
 | ChaCha20-Poly1305 u64-nonce counter in the wrong bytes (handshake OK, data ≥ packet 2 fails) | **pre-existing NuttX** `crypto/chachapoly.c` | T1 (sim, data beyond the first packet) | `memcpy(le_nonce_array + 4, ...)`; goes upstream as a separate `crypto:` PR |
 | 6 KB `wg_peer_s` snapshot on the 3 KB kernel stack → heap corruption/panic | **new driver** `wg_set_if()` | T6 (BUILD_KERNEL only; sim's larger stacks hid it) | move the snapshot to `kmm_malloc`/`kmm_free` |
-| Blocking send drops net_lock mid-transmit → shared `cryptbuf` could be overwritten | **new driver** `wg_send_data` | design review (Codex, #12) | `MSG_DONTWAIT` (buffered UDP) + a `sending` re-entrancy guard on `cryptbuf` (all backends) |
-| `wg_ifdown` could close the socket from under a still-running RX thread; a timed-out stop had no recovery | **new driver** `wg_ifdown` | design review (Codex, #12) | RX loop re-checks `running`; `wg_rx_teardown` waits for the thread; repeated ifdown reaps a stopping interface |
+| Blocking send drops the lock mid-transmit → shared `cryptbuf` / live keypair could be corrupted | **new driver** send path | design review (Codex, #12) | **final design (queued output):** protocol state under the device `d_lock`; datagrams encrypted into an immutable bounded queue; only the RX thread sends, outside `d_lock` and without live-state refs. Backend-independent. See [locking-followup.md](locking-followup.md) |
+| `wg_ifdown` could close the socket from under a still-running RX thread; a timed-out stop had no recovery | **new driver** `wg_ifdown` | design review (Codex, #12) | RX loop re-checks `running`; the stop releases `d_lock` while waiting; `reaping` excludes a second waiter; a repeated ifdown reaps a stopping interface |
 
 Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inbound flood, per-command assertions) and `verify-sim-wg-stop-recovery.sh` (deliberate stop timeout + recovery, needs the debug Kconfig). Both PASS; regression (T1/TF/TR/TN/T3) unaffected. **Honest scope: the sim exercises buffered UDP, not the usrsock blocking path, so the `sending` guard's effect on usrsock rests on the code (usrsock strips `MSG_DONTWAIT` and waits) rather than a usrsock runtime test.**
 

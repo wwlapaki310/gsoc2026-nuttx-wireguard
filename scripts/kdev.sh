@@ -30,7 +30,7 @@ case "${1:-}" in
     ;;
   configure)
     dx 'cd /opt/nuttx && make distclean >/dev/null 2>&1; ./tools/configure.sh sim:nsh >/dev/null && \
-      for o in NET NET_IPv4 NET_UDP NET_TCP NET_ICMP NET_ICMP_SOCKET SIM_NETDEV NETUTILS_IFCONFIG NETUTILS_PING ALLOW_BSD_COMPONENTS NET_SOCKOPTS DEV_URANDOM CRYPTO CRYPTO_RANDOM_POOL DEV_URANDOM_RANDOM_POOL NET_WIREGUARD SYSTEM_WG; do kconfig-tweak --enable CONFIG_$o >/dev/null; done; \
+      for o in NET NET_IPv4 NET_UDP NET_TCP NET_ICMP NET_ICMP_SOCKET SIM_NETDEV NETUTILS_IFCONFIG NETUTILS_PING SYSTEM_PING ALLOW_BSD_COMPONENTS NET_SOCKOPTS DEV_URANDOM CRYPTO CRYPTO_RANDOM_POOL DEV_URANDOM_RANDOM_POOL NET_WIREGUARD SYSTEM_WG; do kconfig-tweak --enable CONFIG_$o >/dev/null; done; \
       kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128; kconfig-tweak --set-val CONFIG_NSH_LINELEN 160; kconfig-tweak --set-val CONFIG_LINE_MAX 160; kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4; kconfig-tweak --set-str CONFIG_SYSTEM_WG_CONFIG_PATH /tmp/wg0.conf; \
       make olddefconfig >/dev/null 2>&1; grep -E "^CONFIG_(NET_WIREGUARD|SYSTEM_WG|CRYPTO_CURVE25519|NETDEV_IOCTL|DEV_URANDOM)" .config'
     ;;
@@ -46,6 +46,7 @@ case "${1:-}" in
     ;;
   test)
     docker cp "$(dirname "$0")/$2" "$C":/tmp/t.sh
+    docker cp "$(dirname "$0")/kernel/nsh-status.py" "$C":/tmp/nsh-status.py
     dx "bash /tmp/t.sh >/tmp/t.out 2>&1; rc=\$?; sed 's/\x1b\[K//g' /tmp/t.out | grep -vE '^\s*\$' | tail -${3:-30}; exit \$rc"
     ;;
   *)

@@ -1,5 +1,10 @@
 # カーネル移行 実装状況メモ
 
+**2026-09-22 追記:** `66b7403c8a` 上の未コミット再設計については
+[並行性修正・検証記録](locking-followup.md) と [設計文書](in-kernel-design.md) を参照。
+以下は従来版の記録です。今回の変更後の KERNEL/PROTECTED・実機検証は未実施で、
+過去の PASS をそのまま新実装の証拠にはしていません。TAI64N (#14) も未解決です。
+
 最終更新: 2026-09-20。計画本体は [in-kernel-plan.md](in-kernel-plan.md)、追跡は
 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11)。
 
@@ -21,7 +26,7 @@ qemu-armv7a:knsh の BUILD_KERNEL ビルドも成功(apps/kernel 分離がクリ
 
 | 場所 | ブランチ | HEAD | 中身 |
 |---|---|---|---|
-| `C:\Users\wwlap\workspace\nuttx`(fork `wwlapaki310/nuttx`) | `net-wireguard` | `677c8f54fe` | **機能単位 2 コミットに整頓済み**: (a) `213cd66095` crypto/chachapoly nonce 単独 → (b) `677c8f54fe` net/wireguard(統合点・ABI・driver・crypto shim・protocol core・sim:wireguard defconfig・Documentation。**BUILD_KERNEL スタックオーバーフロー修正込み**)。Signed-off-by / SPDX 済み |
+| `C:\Users\wwlap\workspace\nuttx`(fork `wwlapaki310/nuttx`) | `net-wireguard` | `66b7403c8a` | **機能単位 2 コミットに整頓済み**: (a) `213cd66095` crypto/chachapoly nonce 単独 → (b) `66b7403c8a` net/wireguard(統合点・ABI・driver・crypto shim・protocol core・sim:wireguard defconfig・Documentation。**BUILD_KERNEL スタックオーバーフロー修正込み**)。Signed-off-by / SPDX 済み |
 | `C:\Users\wwlap\workspace\nuttx-apps`(fork `wwlapaki310/nuttx-apps`) | `system-wg` | `24b3f311` | `apps/system/wg`(ioctl クライアント、1 コミット、reword + `wg_x25519.c/.h` に MIT SPDX ヘッダ付与) |
 | `gsoc2026-nuttx-wireguard` | `main` | `3cbf1bd`(push 済み) | `scripts/kdev.sh`、`scripts/kernel/verify-*.sh`、ドラフト各種 |
 
@@ -54,7 +59,7 @@ rv-virt:knetnsh64 のブリングアップ中に `wg set private-key` で NuttX 
 確保していたこと。`sizeof(wg_peer_s)=1512`、4 ピアで **6048 bytes** となり、
 BUILD_KERNEL の kernel stack(3072 bytes)を溢れて隣接ヒープを破壊していた。
 sim(FLAT、大きいタスクスタック)では露見しなかった。`saved` を
-`kmm_malloc`/`kmm_free` でヒープに移して解決(driver コミット `677c8f54fe` に同梱)。
+`kmm_malloc`/`kmm_free` でヒープに移して解決(driver コミット `66b7403c8a` に同梱)。
 カーネルドライバが数 KB のスタックを要求しないための正しい修正で、upstream にも価値がある。
 
 ## 済み(2026-09-20 追加分)
