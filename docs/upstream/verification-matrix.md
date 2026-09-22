@@ -1,9 +1,12 @@
 # In-kernel WireGuard — verification matrix
 
-**2026-09-22 concurrency follow-up:** the uncommitted revision on `66b7403c8a`
-has a separate [validation record](locking-followup.md), including lifecycle and fault
-tests. The historical matrix below does not certify that revision's KERNEL/PROTECTED or
-hardware behaviour; those reruns are still outstanding.
+**2026-09-22 concurrency follow-up:** the queued-output revision (now
+`66b7403c8a`) has a separate [validation record](locking-followup.md), including lifecycle
+and fault tests. **2026-09-23:** that revision was **re-verified on the real kernel build**
+— `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) tunnels bidirectionally to a Linux kernel
+WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED** (a distinct
+MPU build, not exercised anywhere yet) and **real hardware (T5)** reruns are still
+outstanding, as are SMP, stack measurement, and sustained-flood availability.
 
 Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the **in-kernel
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
