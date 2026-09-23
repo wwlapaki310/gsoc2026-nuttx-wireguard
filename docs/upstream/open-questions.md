@@ -23,12 +23,31 @@ Sources: [in-kernel-review-brief.md §7](in-kernel-review-brief.md) ·
 4. **Private key write-only + config file as source of truth.** The get ioctl never returns the
    key; it lives in the user-side config file. Open: acceptable for backup/migration, or add a
    Kconfig-gated read-back for debugging?
-5. **Vendored `wg_x25519.c` (MIT) in the `wg` command.** For offline genkey/pubkey. *Position:*
-   kept because userspace can't call `crypto/` in PROTECTED. Open: could NuttX's own
-   `CRYPTO_CURVE25519` be exposed to userspace and remove it?
+5. **Vendored `wg_x25519.c` (MIT) in the `wg` command.** For offline genkey/pubkey (one call:
+   `x25519(pub, priv, base, 1)` for `wg pubkey`). *Position:* **kept.** Investigated 2026-09-23:
+   the kernel already ships `crypto/curve25519.c` and the in-kernel driver calls it directly
+   (`wg_crypto.c` → `curve25519()`/`curve25519_generate_public()`), but that path is *in-kernel
+   only*. The `/dev/crypto` cryptodev ABI has **no** asymmetric op for X25519/Curve25519 — its
+   `CRK_*` list stops at `MOD_EXP`, `DSA`, `DH`, `RSA`, `ECDSA_SECP256R1` — so under
+   PROTECTED/KERNEL there is no syscall surface a userspace `wg pubkey` could use, and linking the
+   kernel symbol only "works" in FLAT (defeating the migration's purpose). Vendoring a small,
+   self-contained userspace X25519 also matches upstream `wireguard-tools`, which vendors its own
+   `curve25519.c`. Its nxstyle non-conformance is expected third-party formatting (kept verbatim
+   under MIT). Open (larger, separate work): add a `CRK_CURVE25519` cryptodev op upstream so any
+   future userspace WG tooling could share the kernel implementation — not a blocker for this PR.
 6. **crypto nonce fix as a separate `crypto:` PR.** Order and granularity; add a u64-counter KAT
-   to `crypto/testmngr.c`. Open: does `xchacha20poly1305` (cookie path, 24-byte nonce) need the
-   same review? (Likely unaffected — nonce is passed as bytes — but untested.)
+   to `crypto/testmngr.c`. **xchacha resolved 2026-09-23:** `xchacha20poly1305_encrypt/decrypt`
+   does *not* take a byte nonce end-to-end — it splits the 24-byte nonce into an HChaCha20 subkey
+   (`nonce[0:16]`) and a u64 remainder (`nonce[16:24]`, read `le64toh`) that it hands to the same
+   `chacha20poly1305_encrypt(..., h_nonce, subkey)`. So the u64→IV-bytes-`[4:12]` fix covers the
+   cookie path too — **no separate xchacha fix is needed** — and the resulting 96-bit IV
+   (`0x00000000 || nonce[16:24]`) is the standard XChaCha20-Poly1305 construction (verified by
+   inspection). Before the fix xchacha was equally broken (remainder landed in IV bytes `[0:8]`);
+   the shared fix repairs both. The driver *does* exercise this path (cookie replies:
+   `wg_noise.c` uses `wg_xaead_encrypt`/`decrypt`), and TR draws cookie replies under an
+   initiation flood. Remaining KAT gap: HChaCha20 subkey derivation and a full XChaCha20-Poly1305
+   vector — add the canonical `draft-irtf-cfrg-xchacha` test vector next to the chachapoly KAT for
+   the `crypto:` PR.
 7. **Defaults & caps:** anti-replay window 2048, `MAX_PEERS`, `MAX_AIPS`, and the static memory
    they cost (~1.5 KB + 3 replay windows per peer). Open: right defaults/limits?
 8. **Is the verification enough?** sim + rv-virt (BUILD_KERNEL) + hardware (apps) — plus the

@@ -11,8 +11,20 @@
  * 0, 1 and 2 — a counter placed in bytes 0..7 (the bug fixed in this tree)
  * produces different ciphertext at counters >= 1 and fails here.
  *
- * Reference values were produced with pyca/cryptography's ChaCha20Poly1305
- * using nonce = b"\x00\x00\x00\x00" + counter.to_bytes(8, "little").
+ * It also covers XChaCha20-Poly1305 (the WireGuard cookie path,
+ * wg_xaead_*), which reuses the same fixed chacha20poly1305_encrypt() via a
+ * 24-byte nonce split into an HChaCha20 subkey (nonce[0:16]) and a u64
+ * remainder (nonce[16:24]). The u64 lands in bytes 4..11 of the inner
+ * 96-bit nonce, i.e. 0x00000000 || nonce[16:24] — the standard XChaCha
+ * construction — so the same nonce fix repairs the cookie path, and this
+ * vector proves HChaCha20 + the split end to end.
+ *
+ * Reference values: the ChaCha20-Poly1305 vectors were produced with
+ * pyca/cryptography's ChaCha20Poly1305 using
+ * nonce = b"\x00\x00\x00\x00" + counter.to_bytes(8, "little"); the
+ * XChaCha20-Poly1305 vector with libsodium (PyNaCl
+ * crypto_aead_xchacha20poly1305_ietf_encrypt), key 80..9f, nonce 40..57 —
+ * its ciphertext prefix matches the draft-irtf-cfrg-xchacha test vector.
  *
  * This is a standalone runner for verification; the same vectors are meant
  * to go into crypto/testmngr.c as part of the crypto: nonce-fix PR.
@@ -83,6 +95,29 @@ static const struct vec_s g_vecs[] =
        "e33935d15c5ad1622be463752d854713f274ef7a8fe78079" },
 };
 
+/* XChaCha20-Poly1305 (cookie path). key = 80..9f, 24-byte nonce = 40..57,
+ * same ad and plaintext as above. Expected ct||tag from libsodium.
+ */
+
+static const uint8_t g_xkey[32] =
+{
+  0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+  0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
+  0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+  0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f
+};
+
+static const uint8_t g_xnonce[24] =
+{
+  0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+  0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+  0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57
+};
+
+static const char g_xct_hex[] =
+  "bd6d179d3e83d43b9576579493c0e939572a1700252bfaccbed2902c21396cbb"
+  "731c7f1b0b4aa644a8d50d95afe27fb7d5fe6e0539a2d3ad";
+
 static void unhex(const char *hex, uint8_t *out, size_t n)
 {
   size_t i;
@@ -144,12 +179,52 @@ int main(void)
         }
     }
 
+  /* XChaCha20-Poly1305 (WireGuard cookie path): one AEAD vector that also
+   * exercises HChaCha20 and the 24-byte-nonce split.
+   */
+
+  {
+    uint8_t expect[CTLEN];
+    uint8_t ct[CTLEN];
+    uint8_t pt[PTLEN];
+    int ok;
+
+    unhex(g_xct_hex, expect, CTLEN);
+
+    xchacha20poly1305_encrypt(ct, (const uint8_t *)g_pt, PTLEN,
+                              g_ad, sizeof(g_ad), g_xnonce, g_xkey);
+    if (memcmp(ct, expect, CTLEN) != 0)
+      {
+        printf("FAIL: xchacha20poly1305 encrypt\n");
+        fails++;
+      }
+
+    ok = xchacha20poly1305_decrypt(pt, expect, CTLEN, g_ad, sizeof(g_ad),
+                                   g_xnonce, g_xkey);
+    if (ok != 1 || memcmp(pt, g_pt, PTLEN) != 0)
+      {
+        printf("FAIL: xchacha20poly1305 decrypt (ret=%d)\n", ok);
+        fails++;
+      }
+
+    unhex(g_xct_hex, expect, CTLEN);
+    expect[CTLEN - 1] ^= 0x01;
+    ok = xchacha20poly1305_decrypt(pt, expect, CTLEN, g_ad, sizeof(g_ad),
+                                   g_xnonce, g_xkey);
+    if (ok == 1)
+      {
+        printf("FAIL: xchacha20poly1305 forged tag accepted\n");
+        fails++;
+      }
+  }
+
   if (fails == 0)
     {
-      printf("PASS: chacha20poly1305 u64-counter KAT (counters 0,1,2) (TV)\n");
+      printf("PASS: chacha20poly1305 u64-counter KAT (counters 0,1,2) + "
+             "xchacha20poly1305 (cookie path) (TV)\n");
       return 0;
     }
 
-  printf("FAIL: %d chacha20poly1305 KAT check(s) failed\n", fails);
+  printf("FAIL: %d AEAD KAT check(s) failed\n", fails);
   return 1;
 }

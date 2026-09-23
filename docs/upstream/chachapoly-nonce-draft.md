@@ -55,15 +55,30 @@ bidirectional traffic against Linux kernel WireGuard on sim.
 ## Before filing
 
 - Confirm against RFC 8439 test vectors expressed as a u64 counter, and
-  add such a vector to `crypto/testmngr.c` (there is currently no
-  chacha20poly1305 KAT there). **Done as a standalone runner:**
+  add such a vector to `crypto/testmngr.c` (there was no chacha20poly1305
+  KAT there). **Done, both as a standalone runner and in `testmngr.c`:**
   `scripts/kernel/chachapoly_kat.c` (+ `verify-sim-wg-kat.sh`) checks
   counters 0/1/2 against a pyca/cryptography reference, round-trips
   decryption, and rejects forged tags, run against `crypto/chachapoly.c`;
-  it fails on the bytes-0..7 layout. These vectors are ready to move into
-  `crypto/testmngr.c` with this PR.
-- Decide whether `xchacha20poly1305_*` (24-byte nonce, used by WireGuard
-  cookie replies) needs the same review; its nonce is passed as bytes, so
-  it is likely unaffected, but it is equally untested.
+  it fails on the bytes-0..7 layout. The **same vectors are now added to
+  `crypto/testmngr.c`/`testmngr.h`** (`test_chacha20poly1305`,
+  `chacha20poly1305_tv_template`), wired into `crypto_test()` under
+  `CONFIG_CRYPTO_ALGTEST`. Verified 2026-09-23: an ALGTEST sim build boots
+  with `up_cryptoinitialize: crypto test OK`. (Fold this into the
+  `crypto:` commit when assembling the PR; it currently lives in the fork
+  working tree next to unrelated in-progress work.)
+- `xchacha20poly1305_*` (24-byte nonce, WireGuard cookie replies) **is
+  affected the same way and is repaired by the same fix** (checked
+  2026-09-23). It does not take a byte nonce end-to-end: it derives an
+  HChaCha20 subkey from `nonce[0:16]` and reads a u64 remainder from
+  `nonce[16:24]` (`le64toh`) that it hands to the same
+  `chacha20poly1305_encrypt(..., h_nonce, subkey)`. So the remainder lands
+  in the inner nonce's bytes 4..11 only after the fix, giving the standard
+  `0x00000000 || nonce[16:24]` XChaCha nonce; before the fix it landed in
+  bytes 0..7 and broke interop too. The KAT runner now includes an
+  XChaCha20-Poly1305 vector (libsodium / PyNaCl, draft-irtf-cfrg-xchacha
+  prefix) that also exercises HChaCha20 — add it to `crypto/testmngr.c`
+  alongside the chachapoly vectors. No separate xchacha code change is
+  needed.
 - This is a small, self-contained fix and belongs in a `crypto:` PR ahead
   of the WireGuard driver PR that depends on it.

@@ -213,6 +213,26 @@ See [docs/development/dev-environment.md](docs/development/dev-environment.md) a
 
 ---
 
+## Repositories
+
+WireGuard for NuttX spans **three repositories**. Upstreaming needs changes in two different
+Apache projects — the kernel and the apps tree — so there are two forks; the development
+scaffolding (scripts, docs, the wiki, the apps `v0.1.1` hardware track) belongs in neither, so
+it lives in a third, tracking repo.
+
+| Repository | Role | Upstream target | Branch |
+|---|---|---|---|
+| **gsoc2026-nuttx-wireguard** (this repo) | Tracking, dev tooling, docs, the apps `v0.1.1` hardware track | — (not submitted) | `main` |
+| **wwlapaki310/nuttx** (fork) | Kernel driver: `drivers/net/wireguard/`, the ioctl ABI, the `crypto/chachapoly` nonce fix, the `sim:wireguard` defconfig, docs | **apache/nuttx** | `net-wireguard` |
+| **wwlapaki310/nuttx-apps** (fork) | Userspace command: `apps/system/wg` | **apache/nuttx-apps** | `system-wg` |
+
+Only the two forks go upstream; this repo's `main` is not a submission target. The forks are
+not yet pushed — pushing, rebasing onto `master`, and opening the PRs are done by hand. The
+[Repositories wiki page](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/wiki/Repositories)
+has the fork branches, the commit split, the `kdev.sh` dev loop, and a relationship diagram.
+
+---
+
 ## Source layout (apps version)
 
 The **apps (FLAT)** version lives entirely under
