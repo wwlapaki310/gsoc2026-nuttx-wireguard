@@ -47,6 +47,10 @@ case "${1:-}" in
   test)
     docker cp "$(dirname "$0")/$2" "$C":/tmp/t.sh
     docker cp "$(dirname "$0")/kernel/nsh-status.py" "$C":/tmp/nsh-status.py
+    # KAT runners are compiled inside the container against crypto/ sources.
+    for f in "$(dirname "$0")"/kernel/*.c; do
+      [ -e "$f" ] && docker cp "$f" "$C":/tmp/"$(basename "$f")"
+    done
     dx "bash /tmp/t.sh >/tmp/t.out 2>&1; rc=\$?; sed 's/\x1b\[K//g' /tmp/t.out | grep -vE '^\s*\$' | tail -${3:-30}; exit \$rc"
     ;;
   *)
