@@ -44,9 +44,24 @@ Verified: `sim:wireguard` builds clean, and T1
 down/up and `setconf`) passes, including "configuration survived a down/up
 cycle through a file".
 
-**Not yet done:** every acceptance check below. The change is reasoned error
-handling plus a regression run, not fault-injection evidence, and the
-filesystem durability question is untouched.
+**Fault injection added:** `scripts/kernel/verify-sim-wg-keyfile-faults.sh`
+makes the temporary path a directory so the save cannot open it, and asserts,
+via `nsh-status.py` exit codes and the interface public key in `wg show`:
+
+- `wg set private-key` exits **1** and says the running key is not stored;
+- the device holds the new key while the file still holds the old one — the
+  divergence the warning is about — and `setconf` brings the old key back,
+  proving the **previous configuration survived** the failed save;
+- `saveconf` under the same fault exits **1** and leaves the file intact;
+- both recover once the fault is removed.
+
+All five checks pass. Together with the T1 regression this covers the
+open-failure and failed-replacement cases.
+
+**Still not done:** ENOSPC/short write and close/flush failure injection, two
+concurrent writers, interruption at each replacement boundary, and the
+filesystem durability question — SmartFS `rename`/overwrite semantics and
+power-cut behaviour are still unaudited, so no power-loss claim is made.
 
 ## Required work
 

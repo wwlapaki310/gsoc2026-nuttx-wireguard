@@ -98,3 +98,63 @@ Packets: Sent = 6, Received = 6, Lost = 0 (0% loss)
 - `cxd56_farapiinitialize` reports a loader/`Self` version mismatch and the
   board still boots and tunnels; that does not make the mismatch harmless for
   other features (e.g. GNSS).
+
+## Cache-free reproducible build
+
+Added 2026-09-27, after the early-boot cause was isolated. The 2026-09-26
+image above was built on a Docker-cached tree; this recipe reproduces an
+equivalent, booting image from clean checkouts, so the cache is no longer
+part of the story.
+
+```sh
+git clone --depth=1 --branch nuttx-13.0.1 https://github.com/apache/nuttx.git      nx13
+git clone --depth=1 --branch nuttx-13.0.1 https://github.com/apache/nuttx-apps.git apps13
+
+# 1. the driver: git diff c95c546c..HEAD of the net-wireguard fork
+#    (applies to 13.0.1 with no rejects; includes the mm/iob default)
+git -C nx13 apply nuttx-driver.patch
+
+# 2. REQUIRED for cxd56 to reach NSH: the CONFIG_RTC_HIRES fallback (#9).
+#    Without it the board hangs right after cxd56_farapiinitialize.
+git -C nx13 apply clock-rtchires.patch
+
+cp -r <system-wg fork>/system/wg apps13/system/wg
+
+cd nx13 && ./tools/configure.sh -a ../apps13 spresense:wifi
+kconfig-tweak --enable  CONFIG_ALLOW_BSD_COMPONENTS
+kconfig-tweak --enable  CONFIG_CRYPTO
+kconfig-tweak --enable  CONFIG_CRYPTO_RANDOM_POOL
+kconfig-tweak --enable  CONFIG_CRYPTO_CURVE25519
+kconfig-tweak --enable  CONFIG_DEV_URANDOM
+kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128
+kconfig-tweak --enable  CONFIG_DEV_URANDOM_RANDOM_POOL
+kconfig-tweak --enable  CONFIG_NET_WIREGUARD
+kconfig-tweak --enable  CONFIG_SYSTEM_WG
+kconfig-tweak --set-val CONFIG_IOB_NCHAINS 8
+kconfig-tweak --set-str CONFIG_SYSTEM_WG_CONFIG_PATH "/mnt/spif/wg0.conf"
+kconfig-tweak --set-val CONFIG_NSH_LINELEN 160
+kconfig-tweak --set-val CONFIG_LINE_MAX 160
+kconfig-tweak --enable  CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C
+kconfig-tweak --disable CONFIG_WL_GS2200M_DISABLE_DHCPC
+kconfig-tweak --enable  CONFIG_DEBUG_FEATURES
+kconfig-tweak --enable  CONFIG_DEBUG_WIRELESS_ERROR
+make olddefconfig && make -j"$(nproc)"     # -> nuttx.spk, 430 KB
+```
+
+Result (`hw-images/spresense-kernel-wg-13-clockfix.spk`): boots to NSH and
+tunnels — `ping 10.11.0.2` 6/6, 78 ms then 5-10 ms.
+
+### Early-boot cause
+
+The hang seen on the first fresh-clone attempts is the known cxd56
+`CONFIG_RTC_HIRES` regression ([#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)),
+not a property of the build cache and not WireGuard: `up_rtc_settime()` runs
+before the RTC is enabled, `clock_systime_timespec()` returns `{0,0}`, so the
+watchdog that would complete RTC late-initialisation never expires. The
+earlier fresh tree lacked the fallback only because that patch step silently
+failed to match, which is why a plain no-WireGuard control hung too.
+
+Tested in isolation: the `cxd56_rtc.c` recursive-lock change alone does **not**
+fix the hang; the `clock_systime_timespec.c` fallback does. The working image
+also carries the `gs2200m.c` PR #2707 timing backport and that `cxd56_rtc.c`
+change; neither was shown to be necessary for boot, and both are kept.

@@ -60,6 +60,17 @@ attributed to the supplied test report and commit `76ccf2f`.
    tree also changes `cxd56_rtc.c`, `clock_systime_timespec.c`, and `gs2200m.c`
    (including SPI timing). Preserve those diffs and compare toolchain/config/
    source/build cleanliness before claiming a specific build-cache cause.
+
+   **Resolved 2026-09-27 — this review's caution was correct and the earlier
+   "build-cache quirk" claim was wrong.** Diffing the working tree against
+   pristine 13.0.1 identified the missing change as the `CONFIG_RTC_HIRES`
+   fallback in `clock_systime_timespec.c`, i.e. the already-known cxd56
+   regression [#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9);
+   the first fresh trees lacked it only because that patch step silently failed
+   to match. A fresh clone plus that one change boots and tunnels (ping 6/6).
+   Tested in isolation, the `cxd56_rtc.c` recursive-lock change alone does not
+   fix the hang. Recipe and hashes:
+   [evidence/spresense-kernel-2026-09-26.md](evidence/spresense-kernel-2026-09-26.md#cache-free-reproducible-build).
 3. **farapi warning:** its presence in a working image shows it is not sufficient
    to prevent this tested boot/tunnel. It does not prove the mismatch harmless
    for every feature, including GNSS.
