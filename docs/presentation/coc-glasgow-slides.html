@@ -1109,7 +1109,7 @@ Be precise about which implementation was verified where.
 ||
 The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
 ||
-And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so that run also proves the usrsock egress path the queued-output design was built for &mdash; on hardware, not just in code. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
+And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. Be precise about what that shows: functional usrsock interoperability. It is not a fault test &mdash; it does not force a blocked send, a concurrent reconfiguration, a stop timeout or IOB exhaustion, so concurrency fault testing and reboot-time persistence stay on the remaining-work list. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
     </div>
   </section>
 
