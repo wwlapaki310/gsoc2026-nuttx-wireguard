@@ -22,3 +22,6 @@ docs/presentation/assets/spresense+esp-s3.jpg
 # Codex/agent local validation artefacts and tooling caches
 output/
 .playwright-cli/
+
+# Built firmware images may embed Wi-Fi credentials; never commit
+hw-images/

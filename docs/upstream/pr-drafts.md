@@ -78,8 +78,17 @@ Against a real Linux kernel WireGuard peer unless noted (see the
 - **Real kernel build** — `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) tunnels bidirectionally
   to Linux kernel WireGuard over a host TAP, with `wg` loaded as a separate ELF across the
   syscall boundary. `qemu-armv7a:knsh` also builds under BUILD_KERNEL.
+- **Real hardware** — flashed to an **ESP32-S3** (`esp32s3-devkit:wifi`, FLAT) and tunnels to the
+  Windows official WireGuard client over real Wi-Fi (`ping` 4/4, runtime `wg genkey`/`set`/`up`).
+  The driver also cross-builds for `spresense:wifi` (Cortex-M4F); a Spresense *runtime* check is
+  blocked by an unrelated cxd56/master early-boot hang (a plain `spresense:wifi` hangs the same
+  way), so the usrsock/GS2200M egress path is not yet exercised on hardware.
 - **Crypto KATs** — ChaCha20-Poly1305 (u64 counter), XChaCha20-Poly1305 (cookie path, incl.
   HChaCha20), X25519 (RFC 7748), BLAKE2s-256, against NuttX's `crypto/` sources.
+
+A build-config fix was needed for boards that default `CONFIG_IOB_NCHAINS=0`: the driver's
+`netpkt_queue_t rxqueue` is `struct iob_queue_s`, which only exists for `IOB_NCHAINS > 0`.
+`mm/iob/Kconfig` now carries `default IOB_NBUFFERS if NET_WIREGUARD`.
 
 A BUILD_KERNEL-only bug was found and fixed during bring-up: `wg_set_if()` placed a
 ~6 KB `struct wg_peer_s` snapshot on the 3 KB kernel stack (sim's larger stacks hid it) — moved
@@ -91,9 +100,10 @@ to `kmm_malloc`/`kmm_free`.
   resets on reboot; a responder that requires an increasing timestamp then rejects reconnection
   until uptime passes the last value. This is a pre-merge item under investigation (RTC /
   persistence / rollback design). Reproduction and diagnostics are documented.
-- **Not yet exercised**: real hardware for the kernel driver; PROTECTED (MPU) build; SMP;
-  representative on-device stack measurement; sustained-flood availability; zeroization/entropy
-  cold-boot/soak tests.
+- **Done on hardware**: ESP32-S3 over real Wi-Fi (FLAT). **Not yet exercised**: the
+  usrsock/GS2200M egress path on Spresense (blocked by the cxd56 boot hang above); PROTECTED (MPU)
+  build; SMP; representative on-device stack measurement; sustained-flood availability;
+  zeroization/entropy cold-boot/soak tests.
 
 ### Commit structure
 
