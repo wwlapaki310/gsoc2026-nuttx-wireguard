@@ -13,6 +13,7 @@ out as such. Verified status per test: [verification-matrix.md](verification-mat
 | `drivers/net/wireguard/wireguard.c` | the `netdev_lowerhalf` device: socket, RX thread, timers, TX/RX, the five ioctls |
 | `drivers/net/wireguard/wg_noise.c` | protocol core (handshake, key schedule, anti-replay, cookie), ported from wireguard-lwip |
 | `drivers/net/wireguard/wg_crypto.c` | thin layer over NuttX `crypto/` (BLAKE2s, ChaCha20-Poly1305, Curve25519) |
+| `drivers/net/wireguard/wg_tai64n.c` | realtime timestamp allocation with a same-boot high-water mark |
 | `include/nuttx/net/wireguard.h` | the flat, pointer-free ioctl ABI |
 | `net/netdev/netdev_ioctl.c` | dispatches the `SIOC*WG*` commands to `dev->d_ioctl` (not registered in `net_ioctl_arglen()`) |
 
@@ -146,9 +147,13 @@ returns a timeout rather than forcibly closing its socket.
 
 ## Time and randomness
 
-- TAI64N (`wg_tai64n`) is built from the **monotonic** system clock, truncated to tick
-  resolution. This is insufficient across reboot: a peer may reject a restarted initiator's
-  lower timestamp. RTC/persistence/rollback policy remains a pre-merge blocker in issue #14.
+- TAI64N (`wg_tai64n`) uses **CLOCK_REALTIME**, truncated to tick resolution, with a
+  mutex-protected, system-wide high-water mark to prevent equal/backward values within
+  one boot. The timestamp lock never takes device locks; callers take `d_lock` first.
+  Timestamp acquisition failure aborts initiation. Protocol timers remain monotonic.
+  Reboot protection requires the platform to restore a sufficiently advanced realtime
+  clock; the high-water mark is not persistent. RTC-less/persistence/reboot-rollback policy
+  remains a pre-merge blocker in issue #14. See [TAI64N design](tai64n-design.md).
 - Key material and nonces require a real RNG: `NET_WIREGUARD` depends on `CRYPTO_RANDOM_POOL` or
   `DEV_URANDOM_ARCH`, and the constant-seeded software PRNGs are refused in Kconfig.
 
@@ -184,10 +189,10 @@ Current revision results and remaining gaps: [locking-followup.md](locking-follo
 
 ## Open items a reviewer may want to probe
 
-- **TAI64N across reboot/time-rollback** — the handshake timestamp uses the monotonic (since-boot)
-  clock, so a board that reboots can be rejected by the responder until its clock passes the last
-  value seen. A design decision (RTC / persistence / rollback detection) is still open; tracked
-  separately (see the TAI64N issue).
+- **TAI64N across reboot/time-rollback** — realtime and a same-boot high-water mark replace
+  the incorrect uptime timestamp, but a reset/rolled-back realtime clock after reboot can
+  still be rejected. Durable reservation and unsupported-platform policy remain open;
+  see [the partial correction and persistence proposal](tai64n-design.md), issue #14.
 - No `TZ` (zeroization) evidence yet: sessions are cleared on `wg_ifdown` (`wg_peer_clear_sessions`)
   and `wg_set_if` re-inits the device, but a `gcore` check for lingering key bytes is not done,
   and whether the *static* private key should also be wiped on down (it is kept for re-up) is a

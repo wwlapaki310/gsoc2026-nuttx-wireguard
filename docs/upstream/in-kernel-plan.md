@@ -143,7 +143,7 @@ glue 側(現行 apps 版のうちに直す、S0.5):
 ### 1.10 時刻
 
 - `sys_now` は `clock_systime_ticks()` + `TICK2MSEC`(`CLOCK_MONOTONIC` 経由でも RTC_HIRES に依存しないが、明示する。#9 の回帰が WireGuard に波及しない根拠)
-- **TAI64N の単調性**: WireGuard の replay 防止は「initiator の timestamp が単調」を要求する。RTC 無し / エポックに戻るボードは再起動後の initiation を相手(Linux/Windows)が黙って捨て、**ボードが initiator の構成では再起動で繋がらなくなる**(現行 T5-7 が通っているのは Windows 側が initiator になっているから)。`wg_platform.c` は `max(CLOCK_REALTIME, 永続化した最終値 + 1)` を返し、秒単位で丸めた最終値を `wg0.conf` と同じ領域に保存。ナノ秒は tick 粒度に切り捨て(細粒度は指紋)
+- **TAI64N の単調性 (#14)**: WireGuard の responder は、同じピアからの initiation の timestamp が増加することを要求する。2026-09-23 の部分修正では `wg_tai64n.c` が `CLOCK_REALTIME` と同一起動中の最大発行値を使い、ナノ秒を tick 粒度に丸める。RTCなし・再起動をまたぐ時計の巻き戻りは未解決。旧案の「最終値を秒に丸めて設定ファイル付近に保存」だけでは、送信と保存の間の電源断や同一秒内の発行を保護できない。次段階は**使用前に上限を永続化する範囲予約**を検討するが、保存先・耐電源断保証・更新失敗時の停止・APIは未実装。詳細と保証範囲は [TAI64N design](tai64n-design.md)、再現結果は [reboot test](tai64n-reboot.md)。Linux側からの initiation が問題を隠すため、接続成功だけで判断しない。
 - responder 側の `greatest_timestamp` は RAM(再起動で消える)。Linux も同じ。明記するに留める
 
 ### 1.11 落とすもの
