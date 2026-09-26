@@ -22,6 +22,32 @@ divergence therefore matters for restart and subsequent save operations.
 This is independent of whether the write-only key ABI is accepted upstream.
 It is also separate from the durable timestamp design in #14.
 
+## Fix applied 2026-09-27 (findings 1 and 2)
+
+In the `system-wg` fork, `system/wg/wg_main.c`:
+
+- `wg_record_private_key` now returns `int`. `fopen`, write (`ferror`),
+  `fclose` and the replacement are all checked, and the temporary file is
+  removed on every failure path.
+- `wg set private-key` no longer reports success when the device accepted the
+  key but it could not be persisted: it prints that the running key will be
+  lost on restart and exits nonzero.
+- New `wg_replace_file()` is shared by the key recorder and `saveconf`. It
+  tries `rename()` first, so the previous file survives a failed replacement.
+  Only if that is rejected does it fall back to unlink-then-rename — kept
+  because a target filesystem may refuse to rename onto an existing name —
+  and if that retry fails it reports that the original is gone and where the
+  new content was left, instead of deleting both.
+
+Verified: `sim:wireguard` builds clean, and T1
+(`verify-sim-wg-runtime.sh`, which drives `set private-key`, `saveconf`,
+down/up and `setconf`) passes, including "configuration survived a down/up
+cycle through a file".
+
+**Not yet done:** every acceptance check below. The change is reasoned error
+handling plus a regression run, not fault-injection evidence, and the
+filesystem durability question is untouched.
+
 ## Required work
 
 - Propagate open/write/flush/close/rename failures; never report fully saved

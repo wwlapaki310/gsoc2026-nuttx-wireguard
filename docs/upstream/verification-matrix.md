@@ -23,8 +23,12 @@ Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
 are listed as such, not omitted.
 
-- Target under test: fork `net-wireguard` HEAD **`66b7403c8a`** (nuttx) + fork `system-wg`
-  HEAD **`24b3f311`** (nuttx-apps), base upstream/master `c95c546c`.
+- Target under test: fork `net-wireguard` HEAD **`944e59802c`** (nuttx) + fork `system-wg`
+  HEAD **`3272db33`** (nuttx-apps), base upstream/master `c95c546c`. The sim and rv-virt runs
+  below, and the 2026-09-26 hardware runs, were made on the preceding `66b7403c8a` /
+  `24b3f311`; the two newer commits add the `IOB_NCHAINS` guard + AEAD KATs and the
+  configuration-save fix, and are covered by a build and a T1 rerun, not by a hardware rerun.
+  Codex's TAI64N work remains uncommitted in the nuttx fork and is in none of the above.
 - Runner: the `wgdev` container (`nuttx-wireguard:sim-master`) + a local RISC-V toolchain and
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
 - Legend: **PASS** = run and passed; **BUILD-ONLY** = compiles/links, not run; **NOT RUN** =
@@ -71,7 +75,8 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 |---|---|---|---|
 | ChaCha20-Poly1305 u64-nonce counter in the wrong bytes (handshake OK, data ≥ packet 2 fails) | **pre-existing NuttX** `crypto/chachapoly.c` | T1 (sim, data beyond the first packet) | `memcpy(le_nonce_array + 4, ...)`; goes upstream as a separate `crypto:` PR |
 | 6 KB `wg_peer_s` snapshot on the 3 KB kernel stack → heap corruption/panic | **new driver** `wg_set_if()` | T6 (BUILD_KERNEL only; sim's larger stacks hid it) | move the snapshot to `kmm_malloc`/`kmm_free` |
-| Build fails (`field 'rxqueue' has incomplete type`) when `CONFIG_IOB_NCHAINS == 0`; the driver's `netpkt_queue_t rxqueue` is `struct iob_queue_s`, defined only for `IOB_NCHAINS > 0` | **new driver** (config) | T5 (Spresense: `spresense:wifi` defaults `IOB_NCHAINS=0`; esp32s3:wifi had it > 0 so this was hidden) | `mm/iob/Kconfig`: `default IOB_NBUFFERS if NET_WIREGUARD` so any config enabling the driver gets a working default (verified: clean eval → 8, builds) |
+| Build fails (`field 'rxqueue' has incomplete type`) when `CONFIG_IOB_NCHAINS == 0`; the driver's `netpkt_queue_t rxqueue` is `struct iob_queue_s`, defined only for `IOB_NCHAINS > 0` | **new driver** (config) | T5 (Spresense: `spresense:wifi` defaults `IOB_NCHAINS=0`; esp32s3:wifi had it > 0 so this was hidden) | `mm/iob/Kconfig`: `default IOB_NBUFFERS if NET_WIREGUARD` so any config enabling the driver gets a working default (verified: clean eval → 8, builds), plus a `#error` in `wireguard.c` so a configuration that still pins `IOB_NCHAINS=0` is rejected by name instead of on an incomplete type |
+| `wg set private-key` could report success when the key was not persisted (`wg_record_private_key` returned void, ignoring `fopen`/`ferror`/`fclose`/`rename`); both it and `saveconf` also `unlink()`-ed the config before `rename()`, so a failed replacement or power loss destroyed the previous file | **new app** `apps/system/wg` | code review (Codex, #17), confirmed against the source | errors propagated and surfaced (`set private-key` exits nonzero and warns the running key is unsaved); new `wg_replace_file()` tries `rename()` first and only falls back to unlink-then-rename if the filesystem refuses, reporting where the content was left. Build + T1 regression PASS; **fault-injection acceptance tests still outstanding** ([review](keyfile-correctness-review.md)) |
 | Blocking send drops the lock mid-transmit → shared `cryptbuf` / live keypair could be corrupted | **new driver** send path | design review (Codex, #12) | **final design (queued output):** protocol state under the device `d_lock`; datagrams encrypted into an immutable bounded queue; only the RX thread sends, outside `d_lock` and without live-state refs. Backend-independent. See [locking-followup.md](locking-followup.md) |
 | `wg_ifdown` could close the socket from under a still-running RX thread; a timed-out stop had no recovery | **new driver** `wg_ifdown` | design review (Codex, #12) | RX loop re-checks `running`; the stop releases `d_lock` while waiting; `reaping` excludes a second waiter; a repeated ifdown reaps a stopping interface |
 

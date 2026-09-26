@@ -126,6 +126,12 @@ Because the driver never returns the private key, the command treats the `wg(8)`
 file as the source of truth: `set`/`setconf` push to the device, `saveconf` writes from the
 file side.
 
+Since that file is the only copy of the key, persistence failures are surfaced rather than
+swallowed: `wg set private-key` exits nonzero and warns if the device took the key but it could
+not be written, and replacement goes through `rename()` first so a failed write leaves the
+previous configuration intact (falling back to unlink-then-rename only where the filesystem
+refuses to replace an existing name).
+
 ### Offline key generation
 
 `genkey`/`pubkey` run without the device. Curve25519 for these is a single vendored MIT file

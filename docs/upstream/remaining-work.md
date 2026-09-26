@@ -22,9 +22,9 @@
 | 優先 | 作業 / 追跡 | 現状と次の一手 | 完了条件 |
 | --- | --- | --- | --- |
 | P0 | TAI64N再起動保証 [#14](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/14) | RTC経路は部分修正。RTCなし・時計巻き戻し・保存領域なしの方針を確定し、永続化するなら使用前の範囲予約を設計 | 同じ鍵・相手状態維持・NuttX initiatorでTT-b/c/dを実施。対応不能構成の扱いも明示。電源断を含む保証と実装が一致 |
-| P0 | 鍵・設定保存 [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17) | 保存エラー未伝播と置換前unlinkを静的確認。まず失敗注入テストを作る | エラーを成功扱いしない。旧設定を保持し、runtime/file不一致を診断。対象FSで置換・耐電源断の保証を確認 |
+| P0 | 鍵・設定保存 [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17) | **コード修正済み(2026-09-27)**: エラー伝播、`set private-key` の失敗を成功扱いしない、`wg_replace_file` で rename 先行(拒否時のみ unlink フォールバック、原本消失時は復旧先を明示)。simビルドとT1回帰はPASS。**残: 失敗注入テスト**と対象FSの耐久性確認 | エラーを成功扱いしない。旧設定を保持し、runtime/file不一致を診断。対象FSで置換・耐電源断の保証を確認 |
 | P1 | 実usrsockの停止・送信詰まり [#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5) / [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11) | 通常疎通とsim障害注入は済み。実バックエンドで送信待ち中のioctl/down/reapを再現 | close/destroyと実行中スレッドが競合せず、timeout報告と反復downで回収・再upできる。Wi-Fi断でも記録する |
-| P1 | IOB設定制約 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11) | forkの変更は `default IOB_NBUFFERS if NET_WIREGUARD`。明示的な `IOB_NCHAINS=0` の扱いは別確認 | 既定構成がビルドでき、不適合な明示設定が明確に拒否されるか補正される。driverコミットへ統合 |
+| P1 | IOB設定制約 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11) | `default IOB_NBUFFERS if NET_WIREGUARD` に加え、**明示的な `IOB_NCHAINS=0` を `wireguard.c` の `#error` で明示拒否(2026-09-27)** — 不完全型の不可解なエラーではなくなった。**残: driverコミットへの統合** | 既定構成がビルドでき、不適合な明示設定が明確に拒否されるか補正される。driverコミットへ統合 |
 | P1 | 最終ソース版の固定・公開 [#12](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/12) | timestamp、IOB、crypto KATに未コミット差分がある | crypto/driver/appsの対応SHA、パッチ、構成、試験結果を固定。公開したコードを新規cloneで再現可能 |
 
 鍵保存のコード根拠と試験項目は [keyfile-correctness-review.md](keyfile-correctness-review.md)。
