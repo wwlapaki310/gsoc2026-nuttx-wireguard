@@ -13,8 +13,11 @@ WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED** 
 MPU build, not exercised anywhere yet) is still outstanding, as are SMP, stack measurement,
 and sustained-flood availability. **Real hardware (T5) PASS on both boards (2026-09-26): the
 in-kernel driver tunnels over real Wi-Fi on the ESP32-S3 (native Wi-Fi) and on the Spresense
-(GS2200M over `usrsock`) to the Windows official WireGuard client — the Spresense run proves the
-usrsock egress path on hardware.**
+(GS2200M over `usrsock`) to the Windows official WireGuard client — functional usrsock
+interoperability on hardware, not a proof of all blocking/concurrency failure modes.**
+The [2026-09-27 evidence review](hardware-followup-2026-09-27.md) separates reported
+hardware observations, inspected build artifacts, and remaining fault tests. The retained
+Spresense source uses the older uptime timestamp, not the uncommitted realtime correction.
 
 Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the **in-kernel
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
@@ -26,7 +29,7 @@ are listed as such, not omitted.
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
 - Legend: **PASS** = run and passed; **BUILD-ONLY** = compiles/links, not run; **NOT RUN** =
   not executed against the kernel version; **NOT IMPLEMENTED** = no test written yet.
-- Last updated: 2026-09-21.
+- Last updated: 2026-09-27.
 
 ## Summary
 
@@ -54,7 +57,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | **TR** | replay/spoof: (a) resent keepalive from a forged source does not move endpoint; (b) resent initiation → one reply; (c) out-of-window counter; (d) type/length fuzzing | sim, tap | **PASS (partial: a, b)** | `scripts/kernel/verify-sim-wg-replay.sh` (2026-09-20, all PASS): replay does not move endpoint; initiation flood past the load threshold draws cookie replies; tunnel survives | (c) out-of-window counter and (d) fuzzing not separately exercised |
 | **TN** | negative interop: wrong peer pubkey, PSK mismatch → does not connect (with a correct-key positive control) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-negotiation.sh` (all PASS) | the "peer under cookie load" case is covered by TR's flood instead |
 | **T4** | QEMU ARM Cortex-A7 runtime (T1 equivalent) | qemu-armv7a | **NOT RUN (runtime)** | — | virtio-net was not wired on qemu-armv7a in this environment; the equivalent runtime proof was done on rv-virt instead (see T6) |
-| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (both boards, kernel driver)** | 2026-09-26. **ESP32-S3** (`esp32s3-devkit:wifi`, native Wi-Fi netdev): the in-kernel driver tunnels to the Windows official WireGuard client, `ping 10.10.0.2` 4/4, runtime `wg genkey`/`set`/`up`. **Spresense** (`spresense:wifi`, **GS2200M over `usrsock`**): the in-kernel driver tunnels to the Windows client, `wg show` handshake + `transfer 496 B/496 B` bidirectional, `ping 10.11.0.2` 6/6 (RTT ~5–8 ms). This exercises the **usrsock egress path on real hardware** — the queued-output design's key open question, now proven, not just reasoned from code. Fork driver (crypto + net/wireguard + apps/system/wg + the `IOB_NCHAINS` fix) applied cleanly onto `nuttx-13.0.1` for Spresense. apps v0.1.1 was also re-confirmed on both boards the same day | ESP32-S3 kernel run is FLAT (BUILD_KERNEL/PROTECTED on Xtensa not attempted). Note: a **fresh** `nuttx-13.0.1` clone hangs at early cxd56 boot on this board (`cxd56_farapiinitialize`); building on the Docker-cached, known-bootable `spresense:wifi` tree (also 13.0.1) boots — a cxd56 build-env quirk, unrelated to WireGuard (a plain `spresense:wifi` from the fresh clone hangs too). Headless `rcS` auto-config for the kernel image is not set up (first-time config is over serial) |
+| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (reported functional connectivity, both boards)** | 2026-09-26 report: **ESP32-S3**, native Wi-Fi, Windows tunnel ping 4/4; **Spresense**, GS2200M/usrsock, recent handshake, TX/RX 496 B each, Windows tunnel ping 6/6 (~5-8 ms), SmartFS configuration restored with Windows peer unchanged. [Artifact review and scope](hardware-followup-2026-09-27.md): retained Spresense image hash matches container output, base tag is `nuttx-13.0.1`, queued-output source is present. Not an independent hardware rerun | FLAT hardware runs do not demonstrate BUILD_KERNEL/PROTECTED isolation. Usrsock blocked-send/control/stop faults, sustained load, and handshake direction on reboot remain untested by this report. Retained source includes RTC/clock/GS2200M changes and the older uptime TAI64N. Fresh-tree boot failure also occurs in a plain control according to the report; exact cause is not isolated. Reproducible build manifest and headless kernel `rcS` remain follow-ups |
 | **T6** | BUILD_KERNEL: `set private-key`→`set peer`→`up`→ping 3/3 → `wg show` handshake; **TZ** MPU exception reading `priv->wg` from the `wg` task | kernel build + virtio-net | **PASS (tunnel); build also on knsh** | `scripts/kernel/verify-knetnsh-wg.sh` on **rv-virt:knetnsh64** (2026-09-20): bidirectional tunnel + ping to Linux kernel WG, `wg` loaded as a separate ELF across the syscall boundary. `scripts/kernel/build-knsh.sh`: qemu-armv7a:knsh **BUILD_KERNEL build** passes | planned vehicle was qemu-armv7a:knetnsh; rv-virt:knetnsh64 used because its virtio-net is known-good. The **TZ MPU-exception** sub-check was not run |
 | **TZ** | zeroization: after `wg down`, `gcore` finds 0 copies of the known private key / session keys | sim | **NOT IMPLEMENTED** | — | not run |
 | **TE** | entropy: 3 cold boots → `wg genkey` all differ; no pool `cryptwarn`; `.config` meets the RNG dependency | HIL + static | **NOT IMPLEMENTED** | — | `genkey` works and the Kconfig dependency (`CRYPTO_RANDOM_POOL`/`DEV_URANDOM_ARCH`) is enforced, but the 3-cold-boot differ test was not run |
@@ -72,7 +75,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | Blocking send drops the lock mid-transmit → shared `cryptbuf` / live keypair could be corrupted | **new driver** send path | design review (Codex, #12) | **final design (queued output):** protocol state under the device `d_lock`; datagrams encrypted into an immutable bounded queue; only the RX thread sends, outside `d_lock` and without live-state refs. Backend-independent. See [locking-followup.md](locking-followup.md) |
 | `wg_ifdown` could close the socket from under a still-running RX thread; a timed-out stop had no recovery | **new driver** `wg_ifdown` | design review (Codex, #12) | RX loop re-checks `running`; the stop releases `d_lock` while waiting; `reaping` excludes a second waiter; a repeated ifdown reaps a stopping interface |
 
-Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inbound flood, per-command assertions) and `verify-sim-wg-stop-recovery.sh` (deliberate stop timeout + recovery, needs the debug Kconfig). Both PASS; regression (T1/TF/TR/TN/T3) unaffected. **Honest scope: the sim exercises buffered UDP, not the usrsock blocking path, so the `sending` guard's effect on usrsock rests on the code (usrsock strips `MSG_DONTWAIT` and waits) rather than a usrsock runtime test.**
+Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inbound flood, per-command assertions) and `verify-sim-wg-stop-recovery.sh` (deliberate stop timeout + recovery, needs the debug Kconfig). Both PASS; regression (T1/TF/TR/TN/T3) unaffected. **Scope:** sim covers buffered UDP and injected worker stalls. The queued-output design supersedes the earlier `sending`-guard argument. T5 now adds normal usrsock hardware connectivity, but does not force the actual blocked-send/control/stop interleavings; those remain targeted tests to run.
 
 ## Honest remainder before a merge-ready submission
 

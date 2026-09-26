@@ -11,8 +11,8 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 > |---|---|---|
 > | Where | `nuttx_port/apps/netutils/wireguard/` (this README below) | `drivers/net/wireguard/` + `apps/system/wg` (ioctl client), in local forks |
 > | Configured by | the `wg` NSH command directly | the `wg` command over an **ioctl ABI** |
-> | Verified | **real hardware** (ESP32-S3, Spresense) over real Wi-Fi vs Linux/Windows peers | **sim** + a **real kernel build** (rv-virt `knetnsh64`, BUILD_KERNEL) + **real hardware** (ESP32-S3 over real Wi-Fi) vs Linux/Windows kernel WireGuard |
-> | Still ahead | — (frozen) | Spresense usrsock hardware run (blocked by a cxd56/master boot hang, not WireGuard); then push + PRs |
+> | Verified | **real hardware** (ESP32-S3, Spresense) over real Wi-Fi vs Linux/Windows peers | **sim**, **rv-virt BUILD_KERNEL**, and reported **FLAT hardware connectivity on both ESP32-S3 and Spresense (GS2200M/usrsock)** |
+> | Still ahead | — (frozen) | TAI64N reboot/persistence, key-file failure safety, fault/soak tests, reproducible board builds, and upstream review; see [remaining work](docs/upstream/remaining-work.md) |
 >
 > The in-kernel version is what goes upstream. Its live status is
 > [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md), the plan is

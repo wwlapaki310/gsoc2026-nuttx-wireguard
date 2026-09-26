@@ -1,9 +1,13 @@
 # Open design & discussion points (talk + upstream)
 
+Updated 2026-09-27. Priorities, implementation tasks, and acceptance criteria:
+[remaining-work.md](remaining-work.md). This page tracks design choices, not
+a duplicate test-status list.
+
 One place for the development questions that are still open — for the Community Over Code talk
 (what to put to the audience) and for the upstream review. This **consolidates existing
 material** (the review brief's questions, the design doc's open items, the verification matrix,
-and issues #3/#5/#6/#9/#10); it adds no new claims. Each item notes a *current position* where
+and issues #3/#5/#6/#9/#10), updated against the evidence and code review. Each item notes a *current position* where
 one exists — a position, not a settled decision.
 
 Sources: [in-kernel-review-brief.md §7](in-kernel-review-brief.md) ·
@@ -14,15 +18,20 @@ Sources: [in-kernel-review-brief.md §7](in-kernel-review-brief.md) ·
 
 1. **ioctl ABI shape.** Flat fixed-size ioctl vs a netlink-style interface for future growth
    (IPv6, more peers). *Position:* flat & pointer-free because PROTECTED/KERNEL copy the caller's
-   struct directly; extend via flags. Open: is that acceptable long-term?
+   struct directly. Flags can select optional fields, but the fixed `sockaddr_in`
+   endpoint needs a new layout/command for IPv6. Open: is this versioning policy
+   acceptable? Netlink is an alternative to discuss, not a known requirement.
 2. **RX = a kthread on `psock_poll`.** vs interrupt-driven or reusing an existing lower-half RX
    path. *Position:* a kthread mirrors `rpmsgdrv.c`; open: stall/priority-inversion risk.
 3. **Kernel owns the UDP socket + thread — lifecycle.** ifup creates / ifdown tears down.
-   *Position:* serialized by `net_lock`; open: any hole across ifdown / re-up / mid-failure
-   (see design doc "open items").
+   *Position:* protocol state under device `d_lock`, immutable queued output,
+   RX worker sends without that lock. Open: actual usrsock blocked-send/control/
+   ifdown/reap tests, beyond normal hardware connectivity (see design doc).
 4. **Private key write-only + config file as source of truth.** The get ioctl never returns the
    key; it lives in the user-side config file. Open: acceptable for backup/migration, or add a
    Kconfig-gated read-back for debugging?
+   Separate correctness work: [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17)
+   tracks unreported key-save failures and deleting the original before replacement.
 5. **Vendored `wg_x25519.c` (MIT) in the `wg` command.** For offline genkey/pubkey (one call:
    `x25519(pub, priv, base, 1)` for `wg pubkey`). *Position:* **kept.** Investigated 2026-09-23:
    the kernel already ships `crypto/curve25519.c` and the in-kernel driver calls it directly
@@ -45,33 +54,36 @@ Sources: [in-kernel-review-brief.md §7](in-kernel-review-brief.md) ·
    inspection). Before the fix xchacha was equally broken (remainder landed in IV bytes `[0:8]`);
    the shared fix repairs both. The driver *does* exercise this path (cookie replies:
    `wg_noise.c` uses `wg_xaead_encrypt`/`decrypt`), and TR draws cookie replies under an
-   initiation flood. Remaining KAT gap: HChaCha20 subkey derivation and a full XChaCha20-Poly1305
-   vector — add the canonical `draft-irtf-cfrg-xchacha` test vector next to the chachapoly KAT for
-   the `crypto:` PR.
+   initiation flood. XChaCha20-Poly1305 KAT coverage was subsequently added and run;
+   the local `crypto/testmngr` vectors await integration into the crypto PR commit.
+   Do not keep listing this vector as unimplemented. See the verification matrix.
 7. **Defaults & caps:** anti-replay window 2048, `MAX_PEERS`, `MAX_AIPS`, and the static memory
    they cost (~1.5 KB + 3 replay windows per peer). Open: right defaults/limits?
-8. **Is the verification enough?** sim + rv-virt (BUILD_KERNEL) + hardware (apps) — plus the
+8. **Is the verification enough?** sim + rv-virt (BUILD_KERNEL) + hardware (in-kernel FLAT
+   functional connectivity on both boards) — plus the
    still-missing tests (§B). Open: what extra load/negative tests would a maintainer want?
 9. **Commit split:** (a) `crypto:` nonce, (b) `net/wireguard` (ABI+driver+crypto+config+docs),
    (c) `apps/system/wg`. Open: split (b) further?
 10. **Safety review:** thread-safety, endianness, memory safety — the places most worth a second
-    pair of eyes (the stack-overflow bug is fixed; net_lock coverage of every `priv->wg` access
-    is worth confirming).
+    pair of eyes (the stack-overflow bug is fixed; review `d_lock` coverage, ownership,
+    lock ordering, and worker lifecycle against the queued-output implementation).
 
 ## B. Verification / testing (still open)
 
-From [verification-matrix.md](verification-matrix.md): **not implemented** — TF (ioctl
-negatives), TV (KAT), TZ (zeroization), TE (entropy/cold-boot), TT (TAI64N/reboot), T7 (soak);
-**not run against the kernel version** — T3 (multipeer), TN (negative interop), and **T5 (real
-hardware)**. Long-run / failure-mode work is tracked in
-[#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5). These are the honest gap
-before PR-K1; none changes what is already shown (T1 + TR + T6).
+From [verification-matrix.md](verification-matrix.md): TF, T3, TN, basic crypto KATs,
+and functional T5 on both boards are now covered. TZ (zeroization), TE (cold-boot
+entropy), and T7 (soak) remain outstanding. TT has a reproduced failure and a
+partial RTC-enabled correction; durable/reboot-rollback support remains #14.
+HKDF/full-handshake vectors, wider fuzzing, actual usrsock lifecycle faults,
+representative stack measurements, SMP, and PROTECTED remain separate gaps.
+Long-run/failure-mode work is tracked in
+[#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5).
 
 ## C. Cross-implementation & upstream
 
 - **The FLAT restriction ([#6](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/6))
-  is RESOLVED** by moving into the kernel (the socket is kernel-owned). #6 should be updated /
-  closed with that outcome.
+  is RESOLVED** by moving into the kernel (the socket is kernel-owned). #6 is closed;
+  this does not mean every board's BUILD_KERNEL/PROTECTED configuration was tested.
 - **Bugs found in NuttX itself while porting** — good talk material, and separate upstream work:
   the `crypto/chachapoly` nonce (its own `crypto:` PR), the usrsock ioctl issues
   ([#10](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/10)), and the
@@ -87,8 +99,8 @@ The talk's "contributing back" close can invite review on a small subset of §A 
 ASF/embedded developers is well placed to judge:
 
 - the **ioctl ABI shape** (A1) — fixed-size vs netlink, for a constrained target;
-- **kernel-owned socket + thread lifecycle** (A3) — is the `net_lock` model the right one;
-- **the `crypto:` nonce fix** (A6) — the KAT and whether xchacha needs the same look;
+- **kernel-owned socket + thread lifecycle** (A3) — review `d_lock`, queued output, and recovery;
+- **the `crypto:` nonce fix** (A6) — review the shared fix and completed KAT evidence;
 - and an open ask: **which negative/soak tests** (A8/§B) matter most before merge.
 
 Keep the framing neutral (no GSoC), and don't present open questions as decided.

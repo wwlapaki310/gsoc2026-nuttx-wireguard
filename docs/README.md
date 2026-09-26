@@ -1,11 +1,21 @@
 # docs
 
+## 現行カーネル版の入口（2026-09-27）
+
+- [残件・作業順・完了条件](upstream/remaining-work.md)
+- [現行設計](upstream/in-kernel-design.md) / [検証マトリクス](upstream/verification-matrix.md)
+- [両ボード実機報告のレビュー](upstream/hardware-followup-2026-09-27.md)
+- [TAI64Nの部分修正と未解決事項](upstream/tai64n-design.md)
+
+`design.html` と開発フェーズ記録は主に旧apps版の説明です。現行driverの保証や残件は
+上記を正本とし、旧版の実績を混ぜないでください。
+
 | ディレクトリ | 中身 | いつ読むか |
 |---|---|---|
-| [design.html](design.html) | 設計ドキュメント（図表ベース） | **まずこれ。** 何をどう作ったかを一枚で |
+| [design.html](design.html) | 旧apps版の設計ドキュメント（図表ベース） | 旧版の構造・開発経緯を理解するとき |
 | [library-usage.html](library-usage.html) | 移植元ライブラリの使い方 | 「何を借りて何を書いたか」を理解したいとき |
 | [development/](development/) | 開発と検証の記録 | 実装の経緯・詰まった点・実機で何が起きたかを追うとき |
-| [upstream/](upstream/) | `apache/nuttx-apps` への提出準備 | PR を出す前に |
+| [upstream/](upstream/) | `apache/nuttx` / `apache/nuttx-apps` への提出準備 | PR を出す前に |
 | [presentation/](presentation/) | 発表資料 | 登壇・デモの前に |
 | [proposal/](proposal/) | 当初のプロポーザル（記録） | 当時何を計画していたかを確認するとき |
 | [releases/](releases/) | リリースノート | タグを打ったときの状態と既知の問題を確認するとき |
@@ -46,10 +56,11 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 | [gs2200m-usrsock-issue-draft.md](upstream/gs2200m-usrsock-issue-draft.md) | `apache/nuttx` への報告ドラフト: GS2200M usrsock の ioctl 2 件(未提出) |
 | [rtc-hires-wdog-regression-draft.md](upstream/rtc-hires-wdog-regression-draft.md) | `apache/nuttx` への報告ドラフト: master の `CONFIG_RTC_HIRES` 起動回帰(cxd56、未提出) |
 | [chachapoly-nonce-draft.md](upstream/chachapoly-nonce-draft.md) | `apache/nuttx` への報告ドラフト: `crypto/chachapoly` の u64 nonce が counter を誤った位置に置く(WireGuard で発覚、fork では修正済み・未提出) |
-| [in-kernel-status.md](upstream/in-kernel-status.md) | カーネル移行の**実装状況メモ**(2026-09-20: sim 完動・rv-virt:knetnsh64 で実カーネルビルド完全トンネル・残タスクは実機のみ) |
+| [in-kernel-status.md](upstream/in-kernel-status.md) | 現状案内と過去の実装記録。残件は実機のみではなく時刻・鍵保存・障害試験・再現性など |
+| [remaining-work.md](upstream/remaining-work.md) | **現在の作業順と完了条件の正本**。マージ前修正・発表準備・追加検証・設計相談を区別 |
 | [in-kernel-plan.md](upstream/in-kernel-plan.md) | **カーネル側移行計画**(`drivers/net/` + ioctl 越しの `wg`)。設計・実装順序・テスト戦略・マージ戦略・3 名の専門家レビュー |
 | [in-kernel-review-brief.md](upstream/in-kernel-review-brief.md) | **他 LLM / レビュアーに渡す自己完結ブリーフ**。目的・設計判断・ABI・検証状況・変更規模・番号付きレビュー論点を1枚に(Issue からリンクして相互レビューに使う) |
-| [in-kernel-design.md](upstream/in-kernel-design.md) | **実装に対応した設計説明**(実コードから)。アクター・ライフサイクル・データ経路・所有・ロック(net_lock がプロトコル状態を直列化)・ABI 更新規約・時刻/乱数・ビルド種別ごとの検証範囲 |
+| [in-kernel-design.md](upstream/in-kernel-design.md) | **実装に対応した設計説明**。device `d_lock`、不変データグラムのキュー、RX workerによる送信、ライフサイクル・ABI・時刻/乱数・ビルド別検証範囲 |
 | [verification-matrix.md](upstream/verification-matrix.md) | **カーネル版の検証マトリクス**(正直版)。計画 §3 の T0〜T8 / TF・TV・TR・TN・TZ・TE・TT を テストID・対象 SHA・構成・結果・ログ・未実施理由に対応づけ。「スクリプトがある」と「テストが通った」を区別 |
 | [reproduce.md](upstream/reproduce.md) | **新規 clone からの再現手順**(固定 SHA・コンテナ作成・ツールチェーン・ビルド/テストコマンド・期待結果)。fork 未 push という制約も明示 |
 | [wg-operation.md](upstream/wg-operation.md) | **利用者向け設定・運用**。対応/無視/拒否する設定キー、Linux 側込みの最小相互接続例、cryptokey routing、鍵ファイルの扱い、再起動時の読込み、確認・切り分け表 |

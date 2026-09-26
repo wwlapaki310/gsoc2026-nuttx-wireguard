@@ -1,11 +1,22 @@
 # カーネル移行 実装状況メモ
 
-**2026-09-22 追記:** `66b7403c8a` 上の未コミット再設計については
-[並行性修正・検証記録](locking-followup.md) と [設計文書](in-kernel-design.md) を参照。
-以下は従来版の記録です。今回の変更後の KERNEL/PROTECTED・実機検証は未実施で、
-過去の PASS をそのまま新実装の証拠にはしていません。TAI64N (#14) も未解決です。
+**現在の残件・作業順（2026-09-27）:** [remaining-work.md](remaining-work.md)。
+実機結果の確認範囲は [hardware-followup-2026-09-27.md](hardware-followup-2026-09-27.md)、
+公開報告は [Discussion #16](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/discussions/16)。
+「実機が動いたので残りはPRのみ」ではなく、#14、鍵保存失敗対策#17、障害試験と再現性が残ります。
 
-最終更新: 2026-09-20。計画本体は [in-kernel-plan.md](in-kernel-plan.md)、追跡は
+**2026-09-23 TAI64N 部分修正（未コミット）:** 起動後時刻ではなく実時刻を使い、
+同一起動中の巻き戻り・同時発行を保護。RTCありのsimでは同じ鍵で再起動後約0.7秒で
+再接続し、T1/TRも再実行PASS。RTCなし・再起動をまたぐ巻き戻り・耐電源断の永続化は
+未解決で、#14は閉じません。[修正方針と保証範囲](tai64n-design.md) を参照。
+このtimestamp変更についてのKERNEL/PROTECTED・実機再検証は未実施です。
+
+**並行性再設計:** queued-output / `d_lock` は `66b7403c8a` に取り込み済み。
+rv-virt BUILD_KERNELの再検証、両ボードの通常通信報告があります。
+[並行性修正・検証記録](locking-followup.md) と [設計文書](in-kernel-design.md) を参照。
+PROTECTEDや実usrsockの故障注入は別の未了項目です。TAI64N部分修正とも版を区別します。
+
+現状案内の更新: 2026-09-27。計画本体は [in-kernel-plan.md](in-kernel-plan.md)、追跡は
 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11)。
 
 ## 一言で
@@ -15,14 +26,18 @@
 **実カーネルビルド(`rv-virt:knetnsh64`、BUILD_KERNEL + virtio-net)を QEMU で起動し、
 実 Linux カーネル WireGuard 相手に双方向トンネル + ping が成立(S4a 完了)**。
 qemu-armv7a:knsh の BUILD_KERNEL ビルドも成功(apps/kernel 分離がクリーンな証拠)。
-実機(T5)はマンションのネット回線障害で Wi-Fi 不通のため保留。
+実機(T5)は9月26日にESP32-S3とSpresense（usrsock）で通常通信PASSの報告あり。
+両ボードのFLAT構成であり、実機のBUILD_KERNEL/PROTECTED試験とは別です。
 
 **検証 story(upstream 向け):** ① CI コンパイル経路 `sim:wireguard` defconfig、
 ② sim ランタイム + replay/cookie を実 Linux WG 相手に(protocol/crypto 正しさ)、
 ③ **`rv-virt:knetnsh64` の実カーネルビルドで実ネットワーク経由の完全トンネル**
 (syscall 境界越しの driver + 別 ELF の wg + virtio netdev)。
 
-## リポジトリの状態(未 push、ローカル fork)
+## 履歴: 9月20日時点のリポジトリ・詳細記録
+
+以下のHEAD・提出状況・詳細一覧は当時の記録です。現在の状態は冒頭のリンクと
+各リポジトリのgit状態で確認し、古いSHAや残件を現在の状態として引用しないでください。
 
 | 場所 | ブランチ | HEAD | 中身 |
 |---|---|---|---|

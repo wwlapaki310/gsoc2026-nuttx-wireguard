@@ -4,6 +4,8 @@
 > **upstream 提出対象のカーネル版**の現状は
 > [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md)、検証状況は
 > [verification-matrix.md](docs/upstream/verification-matrix.md) を参照。
+> **2026-09-27の作業順・完了条件は [残件一覧](docs/upstream/remaining-work.md) が正本。**
+> 以下の旧apps版の「次のステップ」や未解決Issue一覧を、現行driverの残件として扱わない。
 
 このリポジトリの「今どこまで進んでいるか」をまとめたもの。詳細な作業ログやこれからの計画は各ドキュメントにリンクしている。
 

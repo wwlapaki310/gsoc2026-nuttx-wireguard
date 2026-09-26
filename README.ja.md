@@ -11,8 +11,8 @@
 > |---|---|---|
 > | 置き場所 | `nuttx_port/apps/netutils/wireguard/`(以下の README 本体) | `drivers/net/wireguard/` + `apps/system/wg`(ローカル fork) |
 > | 設定手段 | `wg` NSH コマンドが直接 | `wg` コマンドが **ioctl ABI** 越しに |
-> | 検証済み | **実機**(ESP32-S3・Spresense)実 Wi-Fi、Linux/Windows ピア相手 | **sim** + **実カーネルビルド**(rv-virt `knetnsh64`、BUILD_KERNEL)、Linux カーネル WireGuard 相手 |
-> | 残り | —(凍結) | **カーネル版の実機**、その後 push + PR |
+> | 検証済み | **実機**(ESP32-S3・Spresense)実 Wi-Fi、Linux/Windows ピア相手 | **sim**、**rv-virt BUILD_KERNEL**、**ESP32-S3とSpresense（GS2200M/usrsock）のFLAT実機で通常通信PASS報告** |
+> | 残り | —(凍結) | TAI64N再起動・永続化、鍵保存失敗対策、障害・長時間試験、実機ビルド再現性、upstreamレビュー。[残件一覧](docs/upstream/remaining-work.md) |
 >
 > upstream に出すのはカーネル版。現状は
 > [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md)、計画は
