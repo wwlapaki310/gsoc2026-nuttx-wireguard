@@ -1096,12 +1096,12 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
     <div class="body">
       <table>
         <tr><th>Environment</th><th>Implementation</th><th>Confirmed</th></tr>
-        <tr><td>sim:wireguard defconfig</td><td class="old">kernel driver &middot; local build</td><td>builds clean (the config CI compiles)</td></tr>
-        <tr><td>rv-virt knetnsh64 &middot; QEMU</td><td class="new">kernel driver &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> a separate ELF across the syscall boundary</td></tr>
-        <tr><td>ESP32-S3 &middot; real Wi-Fi</td><td class="new">kernel driver &middot; FLAT</td><td class="new">tunnel to the Windows official client; ping 4/4</td></tr>
-        <tr><td>ESP32-S3, SPRESENSE &middot; real Wi-Fi</td><td class="old">apps v0.1.1 &middot; FLAT</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
+        <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds clean (the config CI compiles)</td></tr>
+        <tr><td>rv-virt knetnsh64</td><td class="new">kernel &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> a separate ELF across the syscall boundary</td></tr>
+        <tr><td>ESP32-S3 + SPRESENSE</td><td class="new">kernel &middot; real Wi-Fi</td><td class="new">tunnel to the Windows client &mdash; ESP32 native 4/4, SPRESENSE via <b>usrsock</b> 6/6</td></tr>
+        <tr><td>same two boards</td><td class="old">apps v0.1.1</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
       </table>
-      <div class="claim"><p>The <span class="hl">kernel driver now runs on real hardware</span> (ESP32-S3). The Spresense usrsock path is the one hardware check still ahead.</p></div>
+      <div class="claim"><p>The <span class="hl">kernel driver runs on real hardware &mdash; both boards</span>, usrsock path included.</p></div>
     </div>
     <div class="num">18 / 24</div>
     <div class="notes-src">
@@ -1109,7 +1109,7 @@ Be precise about which implementation was verified where.
 ||
 The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
 ||
-And it now runs on real hardware: the kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi. The older apps version on the two boards &mdash; real Wi-Fi, Linux and Windows peers, telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath. The one piece still ahead is the kernel driver on SPRESENSE, whose GS2200M is a usrsock device &mdash; blocked right now by an unrelated cxd56 early-boot regression, not by WireGuard.
+And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so that run also proves the usrsock egress path the queued-output design was built for &mdash; on hardware, not just in code. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
     </div>
   </section>
 
@@ -1167,7 +1167,7 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
         <tr><td>Xtensa LX7 (ESP32-S3)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi</td></tr>
         <tr><td>ARM Cortex-M4F (SPRESENSE)</td><td class="old">none</td><td class="new">tunnel over real Wi-Fi (GS2200M)</td></tr>
       </table>
-      <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim, rv-virt (BUILD_KERNEL) and the ESP32-S3 over real Wi-Fi on top.</div>
+      <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim, rv-virt (BUILD_KERNEL) and both boards over real Wi-Fi (ESP32-S3 native, SPRESENSE over usrsock) on top.</div>
     </div>
     <div class="num">21 / 24</div>
     <div class="notes-src">

@@ -11,9 +11,10 @@ and fault tests. **2026-09-23:** that revision was **re-verified on the real ker
 — `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) tunnels bidirectionally to a Linux kernel
 WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED** (a distinct
 MPU build, not exercised anywhere yet) is still outstanding, as are SMP, stack measurement,
-and sustained-flood availability. **Real hardware (T5): 2026-09-26 the in-kernel driver was
-verified on the ESP32-S3 over real Wi-Fi (PASS); Spresense is blocked by a cxd56/master
-early-boot hang unrelated to WireGuard (a plain `spresense:wifi` hangs identically).**
+and sustained-flood availability. **Real hardware (T5) PASS on both boards (2026-09-26): the
+in-kernel driver tunnels over real Wi-Fi on the ESP32-S3 (native Wi-Fi) and on the Spresense
+(GS2200M over `usrsock`) to the Windows official WireGuard client — the Spresense run proves the
+usrsock egress path on hardware.**
 
 Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the **in-kernel
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
@@ -31,9 +32,9 @@ are listed as such, not omitted.
 
 | Status | Tests |
 |---|---|
-| PASS (run) | T0 (partial), T1, **TF**, **TV** (chachapoly + xchacha + X25519 + BLAKE2s KAT), TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), T8 (partial) |
+| PASS (run) | T0 (partial), T1, **TF**, **TV** (chachapoly + xchacha + X25519 + BLAKE2s KAT), TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), **T5 (ESP32-S3 + Spresense/usrsock hardware)**, T8 (partial) |
 | BUILD-ONLY | qemu-armv7a:knsh (BUILD_KERNEL build) |
-| NOT RUN against kernel version | T4 runtime; T5 Spresense (cxd56 boot regression — ESP32-S3 T5 PASS) |
+| NOT RUN against kernel version | T4 runtime (T5 hardware PASS on both boards) |
 | PARTIAL / unresolved | TT (RTC-enabled sim reboot passes; persistence/reboot rollback remain open) |
 | NOT IMPLEMENTED | TV extras (HKDF-intermediate/full-handshake KATs), TZ, TE, T7 |
 
@@ -53,7 +54,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | **TR** | replay/spoof: (a) resent keepalive from a forged source does not move endpoint; (b) resent initiation → one reply; (c) out-of-window counter; (d) type/length fuzzing | sim, tap | **PASS (partial: a, b)** | `scripts/kernel/verify-sim-wg-replay.sh` (2026-09-20, all PASS): replay does not move endpoint; initiation flood past the load threshold draws cookie replies; tunnel survives | (c) out-of-window counter and (d) fuzzing not separately exercised |
 | **TN** | negative interop: wrong peer pubkey, PSK mismatch → does not connect (with a correct-key positive control) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-negotiation.sh` (all PASS) | the "peer under cookie load" case is covered by TR's flood instead |
 | **T4** | QEMU ARM Cortex-A7 runtime (T1 equivalent) | qemu-armv7a | **NOT RUN (runtime)** | — | virtio-net was not wired on qemu-armv7a in this environment; the equivalent runtime proof was done on rv-virt instead (see T6) |
-| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (ESP32-S3, kernel driver); Spresense blocked by an unrelated cxd56 boot regression** | 2026-09-26: the **in-kernel** driver (fork tree, `esp32s3-devkit:wifi` + kernel `NET_WIREGUARD` + `SYSTEM_WG` + NuttX `crypto/`) was flashed to the ESP32-S3 and tunnels to the Windows official WireGuard client over real Wi-Fi — `ping 10.10.0.2` 4/4, first RTT 134 ms then ~12 ms. Runtime-configured on device (`wg genkey`/`set`/`up`). Build 784 KB, DRAM 50.55%. apps v0.1.1 was re-confirmed on both boards the same day (10/10 ping). The Spresense kernel image also builds (443 KB, needed `CONFIG_IOB_NCHAINS>0` for `netdev_lowerhalf`'s `rxqueue`), but flashing it hangs at early cxd56 boot right after `cxd56_farapiinitialize`, before NSH. **A plain `spresense:wifi` with no WireGuard, built from the same master tree (`c95c546c`), hangs identically** — so this is a cxd56/master boot regression, not WireGuard; the boards that ran the apps track used `nuttx-13.0.1`/`master bda22516`, which boot on this board | ESP32-S3 kernel run is FLAT (BUILD_KERNEL/PROTECTED on Xtensa not attempted). **Spresense hardware verification (the only usrsock/GS2200M egress path) is blocked on the cxd56 boot** — needs the driver built on a cxd56-bootable ref (e.g. 13.0.1) or the `c95c546c` cxd56 regression fixed |
+| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (both boards, kernel driver)** | 2026-09-26. **ESP32-S3** (`esp32s3-devkit:wifi`, native Wi-Fi netdev): the in-kernel driver tunnels to the Windows official WireGuard client, `ping 10.10.0.2` 4/4, runtime `wg genkey`/`set`/`up`. **Spresense** (`spresense:wifi`, **GS2200M over `usrsock`**): the in-kernel driver tunnels to the Windows client, `wg show` handshake + `transfer 496 B/496 B` bidirectional, `ping 10.11.0.2` 6/6 (RTT ~5–8 ms). This exercises the **usrsock egress path on real hardware** — the queued-output design's key open question, now proven, not just reasoned from code. Fork driver (crypto + net/wireguard + apps/system/wg + the `IOB_NCHAINS` fix) applied cleanly onto `nuttx-13.0.1` for Spresense. apps v0.1.1 was also re-confirmed on both boards the same day | ESP32-S3 kernel run is FLAT (BUILD_KERNEL/PROTECTED on Xtensa not attempted). Note: a **fresh** `nuttx-13.0.1` clone hangs at early cxd56 boot on this board (`cxd56_farapiinitialize`); building on the Docker-cached, known-bootable `spresense:wifi` tree (also 13.0.1) boots — a cxd56 build-env quirk, unrelated to WireGuard (a plain `spresense:wifi` from the fresh clone hangs too). Headless `rcS` auto-config for the kernel image is not set up (first-time config is over serial) |
 | **T6** | BUILD_KERNEL: `set private-key`→`set peer`→`up`→ping 3/3 → `wg show` handshake; **TZ** MPU exception reading `priv->wg` from the `wg` task | kernel build + virtio-net | **PASS (tunnel); build also on knsh** | `scripts/kernel/verify-knetnsh-wg.sh` on **rv-virt:knetnsh64** (2026-09-20): bidirectional tunnel + ping to Linux kernel WG, `wg` loaded as a separate ELF across the syscall boundary. `scripts/kernel/build-knsh.sh`: qemu-armv7a:knsh **BUILD_KERNEL build** passes | planned vehicle was qemu-armv7a:knetnsh; rv-virt:knetnsh64 used because its virtio-net is known-good. The **TZ MPU-exception** sub-check was not run |
 | **TZ** | zeroization: after `wg down`, `gcore` finds 0 copies of the known private key / session keys | sim | **NOT IMPLEMENTED** | — | not run |
 | **TE** | entropy: 3 cold boots → `wg genkey` all differ; no pool `cryptwarn`; `.config` meets the RNG dependency | HIL + static | **NOT IMPLEMENTED** | — | `genkey` works and the Kconfig dependency (`CRYPTO_RANDOM_POOL`/`DEV_URANDOM_ARCH`) is enforced, but the 3-cold-boot differ test was not run |
@@ -80,9 +81,9 @@ Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inb
   KATs, and to land the chachapoly + xchacha vectors in `crypto/testmngr.c` with the `crypto:` PR.
 - **Run** TZ (zeroization), TE (entropy), TT (TAI64N/reboot), T7 (soak) against the kernel
   version.
-- **Hardware (T5)**: ESP32-S3 done (2026-09-26). Spresense (the usrsock/GS2200M egress path)
-  remains, blocked by a cxd56/master early-boot hang — build the driver on a cxd56-bootable ref
-  (e.g. 13.0.1) or fix the `c95c546c` cxd56 regression.
+- **Hardware (T5)**: **done on both boards (2026-09-26)** — ESP32-S3 (native Wi-Fi) and Spresense
+  (GS2200M/usrsock). Follow-ups: a proper Dockerfile stage for the kernel Spresense image (built
+  on 13.0.1), headless `rcS` auto-config, and BUILD_KERNEL/PROTECTED on the boards.
 - TF, TV (chachapoly), TN, and T3 are now covered by sim scripts/tests. The remainder does not
   change what has been shown (T1 + TF + TV + TR + TN + T3 + T6), but the items above are required
   by the plan's own §3.4 cadence before PR-K1.
