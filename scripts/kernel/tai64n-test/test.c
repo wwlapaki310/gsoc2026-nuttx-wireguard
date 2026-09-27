@@ -80,6 +80,13 @@ int main(void)
   uint8_t stamp[WG_TAI64N_LEN];
   pthread_t threads[THREADS];
 
+  /* Every value below is far under the CONFIG_START_YEAR-derived floor, so
+   * the allocator treats this clock as never set. That must stay a warning:
+   * a peer seeing this key for the first time accepts a low timestamp, and
+   * refusing would break first-time pairing on a board with no RTC. Assert
+   * the value is still issued rather than relying on it by accident.
+   */
+
   now.tv_sec = 100;
   now.tv_nsec = 123456789;
   issue(stamp, 100, 120000000);  /* Endianness and tick truncation. */
@@ -107,6 +114,13 @@ int main(void)
   now.tv_sec = 1000;
   now.tv_nsec = 0;
   issue(stamp, 1000, 0);        /* Forward jump follows realtime. */
+
+  /* A clock that is set, i.e. above the floor, is the ordinary path and must
+   * behave identically -- the unset check only logs.
+   */
+
+  now.tv_sec = ((int64_t)CONFIG_START_YEAR + 2 - 1970) * 31556952;
+  issue(stamp, (uint64_t)now.tv_sec, 0);
 
   for (size_t i = 0; i < THREADS; i++)
     assert(pthread_create(&threads[i], NULL, worker, (void *)i) == 0);

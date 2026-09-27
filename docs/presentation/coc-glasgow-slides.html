@@ -692,7 +692,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 24</div>
+    <div class="num">1 / 25</div>
     <div class="notes-src">
 Today I will talk about bringing WireGuard to Apache NuttX.
 ||
@@ -741,7 +741,7 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
       </svg>
       <p class="lead">Packets routed to <code>wg0</code> are encrypted and sent as UDP; UDP arriving on the port is decrypted and delivered as if it had arrived on <code>wg0</code>. The peer can be any existing WireGuard endpoint.</p>
     </div>
-    <div class="num">2 / 24</div>
+    <div class="num">2 / 25</div>
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
@@ -772,7 +772,7 @@ Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack. It had no VPN.
       </div>
     </div>
     <div class="sources">Quotations: apache.org/foundation, communityovercode.apache.org &middot; Logos: ASF Brand Guidelines</div>
-    <div class="num">3 / 24</div>
+    <div class="num">3 / 25</div>
     <div class="notes-src">
 A word on where this is going.
 ||
@@ -796,7 +796,7 @@ I mention this because it changes what "done" means. The goal is not a demo that
         </div>
       </div>
     </div>
-    <div class="num">4 / 24</div>
+    <div class="num">4 / 25</div>
     <div class="notes-src">
 Why work on this at all.
 ||
@@ -815,7 +815,7 @@ I wanted to reach the NuttX devices I work with, securely, after they are instal
         <li>Interop <span>the peer can be Linux, Windows, or an existing WireGuard server &mdash; not a bespoke protocol.</span></li>
       </ul>
     </div>
-    <div class="num">5 / 24</div>
+    <div class="num">5 / 25</div>
     <div class="notes-src">
 It is not that you can do new things. It is that the things you already wanted to do become ordinary.
 ||
@@ -838,7 +838,7 @@ Maintenance with the usual tools. Pulling the cloud into the device's network ra
         </div>
       </div>
     </div>
-    <div class="num">6 / 24</div>
+    <div class="num">6 / 25</div>
     <div class="notes-src">
 Writing a crypto stack from scratch would be a mistake. So I started from an existing implementation.
 ||
@@ -861,7 +861,7 @@ wireguard-lwip implements WireGuard as an lwIP netif, and crucially it isolates 
         <p><code>wg0</code> is a <code>NET_LL_TUN</code> netdev, and its wire is a UDP socket.</p>
       </div>
     </div>
-    <div class="num">7 / 24</div>
+    <div class="num">7 / 25</div>
     <div class="notes-src">
 The single most important porting decision.
 ||
@@ -884,7 +884,7 @@ Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. ne
         <small>And that is exactly where the interesting part begins &mdash; because working was the easy part.</small>
       </div>
     </div>
-    <div class="num">8 / 24</div>
+    <div class="num">8 / 25</div>
     <div class="notes-src">
 The result of the first version.
 ||
@@ -901,7 +901,7 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
         <small>And because the shallow test passed, you trust that area and spend hours looking somewhere else. That loop repeated all the way through this project &mdash; and it did not stop at the apps version.</small>
       </div>
     </div>
-    <div class="num">9 / 24</div>
+    <div class="num">9 / 25</div>
     <div class="notes-src">
 This is the heart of the talk.
 ||
@@ -924,7 +924,7 @@ Every difficult bug in this project had the same shape. A shallow test passes; a
         </div>
       </div>
     </div>
-    <div class="num">10 / 24</div>
+    <div class="num">10 / 25</div>
     <div class="notes-src">
 The first taste: a success return with no effect.
 ||
@@ -947,7 +947,7 @@ Setting a receive timeout returned zero, success. But recvfrom still blocked for
         </div>
       </div>
     </div>
-    <div class="num">11 / 24</div>
+    <div class="num">11 / 25</div>
     <div class="notes-src">
 The second: a lifecycle assumption that did not hold.
 ||
@@ -971,7 +971,7 @@ The receive thread was created detached. When the launching command exited, the 
         </div>
       </div>
     </div>
-    <div class="num">12 / 24</div>
+    <div class="num">12 / 25</div>
     <div class="notes-src">
 My favourite bug in the project.
 ||
@@ -993,7 +993,7 @@ The cause: in NuttX, file descriptors are scoped to the task group, not to the w
         <p>Fix: hook <code>psock_poll()</code> with a callback and a semaphore &mdash; real blocking wait.</p>
       </div>
     </div>
-    <div class="num">13 / 24</div>
+    <div class="num">13 / 25</div>
     <div class="notes-src">
 The fourth: an assumption I did not measure.
 ||
@@ -1015,7 +1015,7 @@ The fd-less fix also broke poll, which is fd-based, so as a stopgap I polled the
         </div>
       </div>
     </div>
-    <div class="num">14 / 24</div>
+    <div class="num">14 / 25</div>
     <div class="notes-src">
 The fifth, and it comes back later: stacks nobody measured.
 ||
@@ -1038,7 +1038,7 @@ Persisting the config by redirecting into a file froze the board, but only on re
         </div>
       </div>
     </div>
-    <div class="num">15 / 24</div>
+    <div class="num">15 / 25</div>
     <div class="notes-src">
 This is the additional work since the first version, and the part that makes it mergeable.
 ||
@@ -1057,7 +1057,7 @@ Version one lives in apps and reaches into socket internals. That is fine for a 
         <li>Kernel crypto is NuttX's own <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored on the kernel side.</span></li>
       </ul>
     </div>
-    <div class="num">16 / 24</div>
+    <div class="num">16 / 25</div>
     <div class="notes-src">
 The shape of the real driver.
 ||
@@ -1080,7 +1080,7 @@ wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receiv
         </div>
       </div>
     </div>
-    <div class="num">17 / 24</div>
+    <div class="num">17 / 25</div>
     <div class="notes-src">
 And the same pattern held at kernel depth &mdash; twice.
 ||
@@ -1103,13 +1103,41 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
       </table>
       <div class="claim"><p>The <span class="hl">kernel driver runs on real hardware &mdash; both boards</span>, usrsock path included.</p></div>
     </div>
-    <div class="num">18 / 24</div>
+    <div class="num">18 / 25</div>
     <div class="notes-src">
 Be precise about which implementation was verified where.
 ||
 The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
 ||
-And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. Be precise about what that shows: functional usrsock interoperability. It is not a fault test &mdash; it does not force a blocked send, a concurrent reconfiguration, a stop timeout or IOB exhaustion, so concurrency fault testing and reboot-time persistence stay on the remaining-work list. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
+And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. And then the fault case that design exists for was forced on that board: a datagram held outstanding on the real usrsock backend while control operations arrive. A query answered, a peer update was accepted, the stop reported a timeout instead of hanging, the held ciphertext was untouched, and a repeated down reaped it so the interface came back. What that still does not cover is IOB exhaustion, losing Wi-Fi mid-send, and sustained load. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">A design call</p>
+    <h2>The timestamp problem has no free answer.</h2>
+    <div class="body">
+      <p>A responder drops any handshake timestamp at or below the greatest it has accepted. So the initiator must beat its own past &mdash; <span class="hl">across reboots</span>.</p>
+      <table>
+        <tr><th>Option</th><th>Durable writes</th><th>No RTC</th><th>Call</th></tr>
+        <tr><td>Realtime + in-boot high-water</td><td>none</td><td class="old">no</td><td class="new">adopted</td></tr>
+        <tr><td>Persist every timestamp</td><td>every handshake</td><td>yes</td><td class="old">flash wear, on the handshake path</td></tr>
+        <tr><td>Durable range reservation</td><td>one per N</td><td>yes</td><td class="old">needs a durability contract NuttX has not got</td></tr>
+        <tr><td>Let it catch up</td><td>none</td><td class="old">no</td><td class="old">the wait equals the last uptime</td></tr>
+      </table>
+      <div class="claim"><p>Took the contract Linux and wireguard-go use &mdash; and made the case it misses <span class="hl">say so</span>.</p></div>
+    </div>
+    <div class="num">19 / 25</div>
+    <div class="notes-src">
+This is the one where I had to decide rather than test.
+||
+WireGuard's replay defence puts an obligation on the initiator: every handshake must carry a timestamp greater than anything that peer already accepted, and that has to hold across a reboot. The device is usually the one dialling out, and it is the one least likely to have a battery-backed clock.
+||
+The reproduction said recovery took seventy-five seconds, and that number is misleading. The device has to climb back past the last handshake of its previous session, so the outage is as long as the previous uptime. Seventy-five seconds only because that session was short. Something that ran for a month cannot reconnect for a month. That kills the do-nothing option outright.
+||
+Writing the timestamp every handshake means a flash write every couple of minutes, forever, on the path that most needs to stay quick. Reserving a range durably and spending it from RAM is the right long-term answer, and I have written it up &mdash; but it needs a storage backend that will state its ordering and durability guarantees, and I could not get one. Locally, hostfs sync calls a void function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved.
+||
+So: realtime plus a high-water mark within the boot, which is exactly what Linux and wireguard-go do, and never fall back to uptime. What I added is the part a desktop never needed, because a desktop always has a clock. Without an RTC, NuttX seeds the clock from a configured year, so if the clock is still below the year after it, it was never set &mdash; and the driver says so once, naming the consequence. It still issues the timestamp, because a peer meeting this key for the first time will accept it and refusing would break first pairing on exactly those boards. The failure I am turning into one line of console output is not a crash. It is a tunnel that quietly never comes back, on a device that is not on your desk.
     </div>
   </section>
 
@@ -1126,7 +1154,7 @@ And it now runs on real hardware &mdash; both boards. The kernel driver flashed 
         </div>
       </div>
     </div>
-    <div class="num">19 / 24</div>
+    <div class="num">20 / 25</div>
     <div class="notes-src">
 The point of the demo is that there is nothing special to see.
 ||
@@ -1147,7 +1175,7 @@ I telnet into the board through the tunnel and run commands, and I start a web s
         <p>Four independent signals answer one question: when the tunnel goes quiet, is it me?</p>
       </div>
     </div>
-    <div class="num">20 / 24</div>
+    <div class="num">21 / 25</div>
     <div class="notes-src">
 Moving from "it works in a demo" to "you could run it."
 ||
@@ -1169,7 +1197,7 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
       </table>
       <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim, rv-virt (BUILD_KERNEL) and both boards over real Wi-Fi (ESP32-S3 native, SPRESENSE over usrsock) on top.</div>
     </div>
-    <div class="num">21 / 24</div>
+    <div class="num">22 / 25</div>
     <div class="notes-src">
 The design decision from the start, validated.
 ||
@@ -1188,7 +1216,7 @@ Isolating the OS behind a few functions was a bet. Here is the check, with the a
         <li>Design shared on <code>dev@nuttx.apache.org</code> <span>checkpatch / nxstyle clean, PR-shaped, licensed &mdash; community over code.</span></li>
       </ul>
     </div>
-    <div class="num">22 / 24</div>
+    <div class="num">23 / 25</div>
     <div class="notes-src">
 Closing the loop with this room's values.
 ||
@@ -1206,7 +1234,7 @@ The contribution is staged: a small crypto PR first, for the nonce fix, because 
         <li>Porting into a project can improve the project <span>two latent NuttX bugs found on the way in &mdash; its ChaCha20-Poly1305 nonce, and a boot regression that stops a clean release from reaching a shell on this board at all.</span></li>
       </ul>
     </div>
-    <div class="num">23 / 24</div>
+    <div class="num">24 / 25</div>
     <div class="notes-src">
 Three things to take away.
 ||
@@ -1229,7 +1257,7 @@ First, shallow tests pass and deep tests fail &mdash; so build your tests for de
         </div>
       </div>
     </div>
-    <div class="num">24 / 24</div>
+    <div class="num">25 / 25</div>
     <div class="notes-src">
 Thank you. I am happy to take questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
     </div>
