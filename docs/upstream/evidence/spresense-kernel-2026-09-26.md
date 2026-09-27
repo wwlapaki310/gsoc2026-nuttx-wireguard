@@ -193,3 +193,49 @@ config sha256 `e2f8652ece24cf7acc5c657a72182b1ef48af303fee303a4fd0a6e06aa2b20c8`
 Not covered: retry/diagnostics when the AP is missing or DHCP fails, and
 repeated cold-boot soak. The credentials are baked into this image, so it
 must not be published.
+
+
+## Headless bring-up with diagnostics (2026-09-27, revised)
+
+The first headless rcS came up silently, which is unusable for diagnosing a
+demo that fails. It also nested `if` three deep, and NSH aborts the whole
+script past `CONFIG_NSH_NESTDEPTH` (3) with "if: nesting too deep" -- which
+skipped the diagnostics precisely when they were needed. The retry chain was
+flattened to two levels, and the script now ends with an `ifconfig` and
+`wg show` snapshot so a failed demo is diagnosable from the console alone.
+
+Unattended boot, no commands typed on the serial line (credentials redacted):
+
+```text
+AEG
+[    0.000000] cxd56_farapiinitialize: Mismatched version: loader(20585) != Self(20596)
+[    0.000000] cxd56_farapiinitialize: Please update loader and gnssfw firmwares!!
+rcS: starting Wi-Fi (gs2200m)
+gs2200m <SSID> <PASSPHRASE> is up (listen port 51820)
+rcS: wg0 up
+wg0	Link encap:UNSPEC at UP mtu 1420
+	inet addr:10.11.0.2 DRaddr:0.0.0.0 Mask:255.255.255.0
+wlan0	Link encap:Ethernet HWaddr 14:5a:fc:fa:d9:6d at UP mtu 1500
+	inet addr:192.168.0.115 DRaddr:192.168.0.1 Mask:255.255.255.0
+interface: wg0
+  public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+  listening port: 51820
+peer: WIFidVmxoENaR+/5ExC0JjIzqnsD+JfFH0rN80+2hXI=
+  endpoint: 192.168.0.216:51821
+  latest handshake: (never)
+  transfer: 0 B received, 0 B sent
+  persistent keepalive: every 25 seconds
+NuttShell (NSH) NuttX-13.0.1
+nsh>
+```
+
+`ping 10.11.0.2` from the Windows peer immediately afterwards: 6/6
+(78/7/15/16/10/13 ms).
+
+Note `latest handshake: (never)` in the snapshot: rcS prints it moments after
+`wg up`, before the first handshake completes. That is expected -- the
+handshake is driven by the keepalive and by traffic, and the ping above is
+what shows it completing.
+
+Not covered: the AP-missing and DHCP-failure paths are reported but not
+exercised, and repeated cold-boot soak is still untested.

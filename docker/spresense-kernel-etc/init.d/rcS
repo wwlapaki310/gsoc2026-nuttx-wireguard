@@ -27,16 +27,15 @@
  * registers wg0 in drivers_initialize(), so all that is left is to load a
  * configuration and bring the interface up.
  *
- *  1. Start the usrsock daemon and join the AP. "gs2200m" is the daemon
- *     itself, so it must be backgrounded. The @WIFI_SSID@/@WIFI_PASS@
- *     placeholders are substituted at image build time, which also turns
- *     the "#if 0" below into "#if 1"; with no credentials the block stays
- *     compiled out and nothing secret is committed or shipped.
- *  2. Give it a few seconds to associate and pick up a DHCP lease. wg up
- *     only needs a source address, so waiting is simpler than racing.
- *  3. Restore key, peer and tunnel address, then bring wg0 up while the
- *     daemon still accepts AF_INET sockets, so the driver's UDP socket is
- *     offloaded to the Wi-Fi module.
+ * Every step says what it did. A demo that comes up silently is impossible
+ * to diagnose when the AP is missing or DHCP is slow, so failures are
+ * announced and retried a bounded number of times rather than skipped. The
+ * retries are unrolled because NSH has no arithmetic, and bounded because an
+ * unbounded loop here would stall the console before the prompt appears.
+ *
+ * The @WIFI_SSID@/@WIFI_PASS@ placeholders are substituted at image build
+ * time, which also turns the "#if 0" below into "#if 1"; with no credentials
+ * the block stays compiled out and nothing secret is committed or shipped.
  *
  * "wg saveconf" writes Address, so a configuration saved by this build
  * restores completely. One written by the older apps image has no Address
@@ -44,13 +43,42 @@
  */
 
 #if 0 /* WIFI_CREDENTIALS */
+echo "rcS: starting Wi-Fi (gs2200m)"
 gs2200m @WIFI_SSID@ @WIFI_PASS@ &
+
+/* Association plus the module's internal DHCP. wg up only needs a source
+ * address, so waiting is simpler than racing it.
+ */
+
 sleep 10
 #endif
 
 #ifdef CONFIG_SYSTEM_WG
+/* Keep this at most two levels deep: NSH stops the whole script with
+ * "if: nesting too deep" past CONFIG_NSH_NESTDEPTH (3 by default), which
+ * would also skip the diagnostics at the end -- exactly when they matter.
+ *
+ * wg up binds INADDR_ANY and the handshake retries on its own, so a slow
+ * DHCP lease is not a failure here; the cases worth reporting are a missing
+ * or unreadable configuration and an interface that refuses to come up.
+ */
+
 if [ -f CONFIG_SYSTEM_WG_CONFIG_PATH ]; then
   wg setconf CONFIG_SYSTEM_WG_CONFIG_PATH
-  wg up
+  if wg up; then
+    echo "rcS: wg0 up"
+  else
+    echo "rcS: ERROR wg0 did not come up; configure it by hand"
+  fi
+else
+  echo "rcS: no saved configuration at CONFIG_SYSTEM_WG_CONFIG_PATH"
+  echo "rcS: set a key and peer, then run 'wg saveconf'"
 fi
+
+/* One snapshot so a failed demo can be diagnosed from the console log
+ * alone: whether wlan0 got an address, and whether wg0 has a peer.
+ */
+
+ifconfig
+wg show
 #endif
