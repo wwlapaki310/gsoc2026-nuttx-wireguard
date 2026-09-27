@@ -1,0 +1,19 @@
+diff --git a/sched/clock/clock_systime_timespec.c b/sched/clock/clock_systime_timespec.c
+index 02380fdb..bfd0fb4f 100644
+--- a/sched/clock/clock_systime_timespec.c
++++ b/sched/clock/clock_systime_timespec.c
+@@ -73,8 +73,12 @@ void clock_systime_timespec(FAR struct timespec *ts)
+     }
+   else
+     {
+-      ts->tv_sec = 0;
+-      ts->tv_nsec = 0;
++      /* RTC not yet enabled: fall back to the scheduler tick counter so
++       * that watchdogs (driven by clock_systime_ticks()) keep expiring
++       * and RTC late-initialisation can complete.
++       */
++
++      clock_ticks2time(ts, clock_get_sched_ticks());
+     }
+ #elif defined(CONFIG_ALARM_ARCH) || \
+       defined(CONFIG_TIMER_ARCH) || \

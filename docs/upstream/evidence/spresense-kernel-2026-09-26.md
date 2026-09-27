@@ -158,3 +158,38 @@ Tested in isolation: the `cxd56_rtc.c` recursive-lock change alone does **not**
 fix the hang; the `clock_systime_timespec.c` fallback does. The working image
 also carries the `gs2200m.c` PR #2707 timing backport and that `cxd56_rtc.c`
 change; neither was shown to be necessary for boot, and both are kept.
+
+## Headless bring-up (2026-09-27)
+
+`docker/spresense-kernel-etc/init.d/rcS` brings the tunnel up unattended, so
+the demo is power-on only. Unlike the apps build there is no `wg` daemon to
+start — the kernel driver registers `wg0` in `drivers_initialize()` — so rcS
+only starts the usrsock Wi-Fi daemon, waits for DHCP, and restores the saved
+configuration:
+
+```sh
+gs2200m <SSID> <PASSPHRASE> &   # substituted at build time, never committed
+sleep 10
+wg setconf /mnt/spif/wg0.conf
+wg up
+```
+
+One-time step on a board whose configuration was written by the **older apps
+image**: that file has no `Address` line (the apps build kept the tunnel
+address in Kconfig), so run `wg set address 10.11.0.2/24` once and
+`wg saveconf`. This build's `saveconf` writes `Address`, so from then on
+`setconf` restores everything.
+
+Verified on hardware: the board was reset over DTR with **no commands sent on
+the serial line at all**, and 32 s later `ping 10.11.0.2` answered 6/6
+(8/16/17/6/5/5 ms).
+
+Image: `hw-images/spresense-kernel-headless.spk`, built by
+`scripts/kernel/build-spresense-kernel.sh` from clean `nuttx-13.0.1`
+checkouts (`cec617df` / `be1ae4e8`), sha256
+`0b0107fd558cb5230ed102cfe852ecb2e39db8b6afb615decd01add7c65adfba`,
+config sha256 `e2f8652ece24cf7acc5c657a72182b1ef48af303fee303a4fd0a6e06aa2b20c8`.
+
+Not covered: retry/diagnostics when the AP is missing or DHCP fails, and
+repeated cold-boot soak. The credentials are baked into this image, so it
+must not be published.

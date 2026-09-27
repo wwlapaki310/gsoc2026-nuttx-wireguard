@@ -1,0 +1,56 @@
+/****************************************************************************
+ * boards/arm/cxd56xx/spresense/src/etc/init.d/rcS
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+#include <nuttx/config.h>
+
+/* Headless bring-up for Spresense + iS110B (GS2200M, a usrsock Wi-Fi
+ * driver), for the IN-KERNEL WireGuard driver.
+ *
+ * Unlike the apps build there is no "wg" daemon to start: the kernel driver
+ * registers wg0 in drivers_initialize(), so all that is left is to load a
+ * configuration and bring the interface up.
+ *
+ *  1. Start the usrsock daemon and join the AP. "gs2200m" is the daemon
+ *     itself, so it must be backgrounded. The @WIFI_SSID@/@WIFI_PASS@
+ *     placeholders are substituted at image build time, which also turns
+ *     the "#if 0" below into "#if 1"; with no credentials the block stays
+ *     compiled out and nothing secret is committed or shipped.
+ *  2. Give it a few seconds to associate and pick up a DHCP lease. wg up
+ *     only needs a source address, so waiting is simpler than racing.
+ *  3. Restore key, peer and tunnel address, then bring wg0 up while the
+ *     daemon still accepts AF_INET sockets, so the driver's UDP socket is
+ *     offloaded to the Wi-Fi module.
+ *
+ * "wg saveconf" writes Address, so a configuration saved by this build
+ * restores completely. One written by the older apps image has no Address
+ * line and needs a single "wg set address" before the first saveconf.
+ */
+
+#if 0 /* WIFI_CREDENTIALS */
+gs2200m @WIFI_SSID@ @WIFI_PASS@ &
+sleep 10
+#endif
+
+#ifdef CONFIG_SYSTEM_WG
+if [ -f CONFIG_SYSTEM_WG_CONFIG_PATH ]; then
+  wg setconf CONFIG_SYSTEM_WG_CONFIG_PATH
+  wg up
+fi
+#endif

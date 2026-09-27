@@ -1,9 +1,13 @@
 # In-kernel WireGuard — verification matrix
 
-**2026-09-23 timestamp follow-up (uncommitted):** the realtime/same-boot
-high-water correction has a [separate record](tai64n-design.md). RTC-enabled
-sim reboot, T1, and TR passed on this working tree. Earlier KERNEL results
-below do not constitute a rerun of this timestamp change; #14 remains open.
+**Timestamp follow-up — now committed (`7936d68402`, 2026-09-27):** the
+realtime/same-boot high-water correction has a [separate record](tai64n-design.md).
+RTC-enabled sim reboot, T1 and TR passed, and the host allocator unit test
+(encoding, repeat/rollback/carry, forward jump, failure atomicity, 4,000
+concurrent allocations, UBSan) was re-run against the committed source.
+Earlier KERNEL and hardware results predate this change and are not a rerun of
+it. **#14 remains open:** boards without a trustworthy retained clock still
+cannot reconnect, and durable range reservation is designed but not implemented.
 
 **2026-09-22 concurrency follow-up:** the queued-output revision (now
 `66b7403c8a`) has a separate [validation record](locking-followup.md), including lifecycle
@@ -23,12 +27,14 @@ Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
 are listed as such, not omitted.
 
-- Target under test: fork `net-wireguard` HEAD **`944e59802c`** (nuttx) + fork `system-wg`
-  HEAD **`3272db33`** (nuttx-apps), base upstream/master `c95c546c`. The sim and rv-virt runs
-  below, and the 2026-09-26 hardware runs, were made on the preceding `66b7403c8a` /
-  `24b3f311`; the two newer commits add the `IOB_NCHAINS` guard + AEAD KATs and the
-  configuration-save fix, and are covered by a build and a T1 rerun, not by a hardware rerun.
-  Codex's TAI64N work remains uncommitted in the nuttx fork and is in none of the above.
+- Target under test: fork `net-wireguard` HEAD **`7936d68402`** (nuttx) + fork `system-wg`
+  HEAD **`3272db33`** (nuttx-apps), base upstream/master `c95c546c`. **Both fork trees are now
+  clean — the TAI64N realtime correction that was previously uncommitted is in `7936d68402`.**
+  The sim and rv-virt runs below, and the 2026-09-26 hardware runs, were made on the earlier
+  `66b7403c8a` / `24b3f311`; the newer commits (`IOB_NCHAINS` guard + AEAD KATs, the
+  configuration-save fix, the TAI64N correction) are covered by builds, the TAI64N host unit
+  test, T1 and the key-save fault test — **not** by a hardware rerun. The 2026-09-27 Spresense
+  headless image was built from `nuttx-13.0.1` with the driver patch taken at `7936d68402`.
 - Runner: the `wgdev` container (`nuttx-wireguard:sim-master`) + a local RISC-V toolchain and
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
 - Legend: **PASS** = run and passed; **BUILD-ONLY** = compiles/links, not run; **NOT RUN** =
@@ -61,7 +67,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | **TR** | replay/spoof: (a) resent keepalive from a forged source does not move endpoint; (b) resent initiation → one reply; (c) out-of-window counter; (d) type/length fuzzing | sim, tap | **PASS (partial: a, b)** | `scripts/kernel/verify-sim-wg-replay.sh` (2026-09-20, all PASS): replay does not move endpoint; initiation flood past the load threshold draws cookie replies; tunnel survives | (c) out-of-window counter and (d) fuzzing not separately exercised |
 | **TN** | negative interop: wrong peer pubkey, PSK mismatch → does not connect (with a correct-key positive control) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-negotiation.sh` (all PASS) | the "peer under cookie load" case is covered by TR's flood instead |
 | **T4** | QEMU ARM Cortex-A7 runtime (T1 equivalent) | qemu-armv7a | **NOT RUN (runtime)** | — | virtio-net was not wired on qemu-armv7a in this environment; the equivalent runtime proof was done on rv-virt instead (see T6) |
-| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (reported functional connectivity, both boards)** | 2026-09-26 report: **ESP32-S3**, native Wi-Fi, Windows tunnel ping 4/4; **Spresense**, GS2200M/usrsock, recent handshake, TX/RX 496 B each, Windows tunnel ping 6/6 (~5-8 ms), SmartFS configuration restored with Windows peer unchanged. [Artifact review and scope](hardware-followup-2026-09-27.md): retained Spresense image hash matches container output, base tag is `nuttx-13.0.1`, queued-output source is present. Not an independent hardware rerun. **Redacted Spresense serial + ping transcript now tracked:** [evidence/spresense-kernel-2026-09-26.md](evidence/spresense-kernel-2026-09-26.md) (ESP32-S3 serial was not captured) | FLAT hardware runs do not demonstrate BUILD_KERNEL/PROTECTED isolation. Usrsock blocked-send/control/stop faults, sustained load, and handshake direction on reboot remain untested by this report. Retained source includes RTC/clock/GS2200M changes and the older uptime TAI64N. **Early-boot cause isolated 2026-09-27 (supersedes the earlier "build-cache quirk" wording): it is the known cxd56 `CONFIG_RTC_HIRES` regression ([#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)).** A fresh `nuttx-13.0.1` clone plus only the `clock_systime_timespec.c` RTC fallback boots and tunnels (ping 6/6); the earlier fresh tree lacked it because the patch step had silently failed to match. The `cxd56_rtc.c` recursive-lock patch alone did **not** fix it. A cache-free reproducible build now exists ([recipe](evidence/spresense-kernel-2026-09-26.md#cache-free-reproducible-build)); headless kernel `rcS` remains a follow-up |
+| **T5** | real hardware (ESP32-S3, Spresense) over real Wi-Fi | HIL | **PASS (reported functional connectivity, both boards)** | 2026-09-26 report: **ESP32-S3**, native Wi-Fi, Windows tunnel ping 4/4; **Spresense**, GS2200M/usrsock, recent handshake, TX/RX 496 B each, Windows tunnel ping 6/6 (~5-8 ms), SmartFS configuration restored with Windows peer unchanged. [Artifact review and scope](hardware-followup-2026-09-27.md): retained Spresense image hash matches container output, base tag is `nuttx-13.0.1`, queued-output source is present. Not an independent hardware rerun. **Redacted Spresense serial + ping transcript now tracked:** [evidence/spresense-kernel-2026-09-26.md](evidence/spresense-kernel-2026-09-26.md) (ESP32-S3 serial was not captured) | FLAT hardware runs do not demonstrate BUILD_KERNEL/PROTECTED isolation. Usrsock blocked-send/control/stop faults, sustained load, and handshake direction on reboot remain untested by this report. Retained source includes RTC/clock/GS2200M changes and the older uptime TAI64N. **Early-boot cause isolated 2026-09-27 (supersedes the earlier "build-cache quirk" wording): it is the known cxd56 `CONFIG_RTC_HIRES` regression ([#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)).** A fresh `nuttx-13.0.1` clone plus only the `clock_systime_timespec.c` RTC fallback boots and tunnels (ping 6/6); the earlier fresh tree lacked it because the patch step had silently failed to match. The `cxd56_rtc.c` recursive-lock patch alone did **not** fix it. A cache-free reproducible build now exists (`scripts/kernel/build-spresense-kernel.sh`, [recipe](evidence/spresense-kernel-2026-09-26.md#cache-free-reproducible-build)), and **headless bring-up is verified: the board was reset with no serial input and answered `ping 10.11.0.2` 6/6 32 s later** ([record](evidence/spresense-kernel-2026-09-26.md#headless-bring-up-2026-09-27)). Retry/diagnostics on AP or DHCP failure are not covered |
 | **T6** | BUILD_KERNEL: `set private-key`→`set peer`→`up`→ping 3/3 → `wg show` handshake; **TZ** MPU exception reading `priv->wg` from the `wg` task | kernel build + virtio-net | **PASS (tunnel); build also on knsh** | `scripts/kernel/verify-knetnsh-wg.sh` on **rv-virt:knetnsh64** (2026-09-20): bidirectional tunnel + ping to Linux kernel WG, `wg` loaded as a separate ELF across the syscall boundary. `scripts/kernel/build-knsh.sh`: qemu-armv7a:knsh **BUILD_KERNEL build** passes | planned vehicle was qemu-armv7a:knetnsh; rv-virt:knetnsh64 used because its virtio-net is known-good. The **TZ MPU-exception** sub-check was not run |
 | **TZ** | zeroization: after `wg down`, `gcore` finds 0 copies of the known private key / session keys | sim | **NOT IMPLEMENTED** | — | not run |
 | **TE** | entropy: 3 cold boots → `wg genkey` all differ; no pool `cryptwarn`; `.config` meets the RNG dependency | HIL + static | **NOT IMPLEMENTED** | — | `genkey` works and the Kconfig dependency (`CRYPTO_RANDOM_POOL`/`DEV_URANDOM_ARCH`) is enforced, but the 3-cold-boot differ test was not run |

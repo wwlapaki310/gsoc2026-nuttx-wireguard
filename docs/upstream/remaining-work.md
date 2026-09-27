@@ -36,7 +36,7 @@ RTCなしの保存方式・範囲予約は [tai64n-design.md](tai64n-design.md) 
 | 順序 | 作業 / 追跡 | 完了条件 |
 | --- | --- | --- |
 | D1 | Spresenseビルドの再現性 [#12](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/12) | **実質完了(2026-09-27)**: 伏字ログ・イメージ/config ハッシュを [evidence](evidence/spresense-kernel-2026-09-26.md) に保存。**early-boot ハングの原因を特定 = 既知の cxd56 `CONFIG_RTC_HIRES` 回帰([#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9))**であり「キャッシュの癖」ではなかった(以前の記述は誤り)。新規 clone + 当該パッチで起動しトンネル成立(ping 6/6)。**残: Dockerfile ステージ化(D2)と toolchain バージョンの記録** |
-| D2 | kernel用Docker stageとheadless rcS (#12) | 電源投入から設定読込み・Wi-Fi準備待ち・wg upまで再現。接続失敗時の再試行/診断も確認。公開物に資格情報を入れない |
+| D2 | kernel用ビルドスクリプトとheadless rcS (#12) | **完了(2026-09-27)**: `scripts/kernel/build-spresense-kernel.sh` がクリーンな `nuttx-13.0.1` から再現ビルド(#9パッチを同梱・適用失敗なら停止、ハッシュ出力)。`docker/spresense-kernel-etc/init.d/rcS` で電源投入 → gs2200m → `wg setconf` → `wg up`。**シリアル無操作のリセットのみで 32 秒後に ping 6/6 を実測**。資格情報は build 引数で、既定は未投入(公開物に入らない)。**残: 接続失敗時の再試行/診断の作り込み** |
 | D3 | 実演リハーサル (#12) | 両ボードと使用イメージを明記し、実際にkernel版で試した操作だけを台本に採用。時間計測、ネット不調時の録画/静的ログへの切替を確認 |
 | D4 | スライド・台本・文書同期 (#12) | 「両ボードで通常通信」と「全故障モードの保証」を区別。apps版のtelnet/HTTP/長時間実績をkernel版へ転用しない |
 

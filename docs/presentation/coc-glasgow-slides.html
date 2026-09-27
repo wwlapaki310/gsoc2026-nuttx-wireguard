@@ -1203,14 +1203,14 @@ The contribution is staged: a small crypto PR first, for the nonce fix, because 
       <ul class="big">
         <li>Shallow tests pass, deep tests fail <span>design tests for depth &mdash; sustained data, real hardware, a real kernel build &mdash; not just &ldquo;it handshook.&rdquo;</span></li>
         <li>A clean OS-abstraction bet pays off <span>four architectures, three versions, no changes.</span></li>
-        <li>Porting into a project can improve the project <span>a latent bug in NuttX's own crypto, found and fixed on the way in &mdash; and a kernel build surfaced a bug in my own driver that sim never would.</span></li>
+        <li>Porting into a project can improve the project <span>two latent NuttX bugs found on the way in &mdash; its ChaCha20-Poly1305 nonce, and a boot regression that stops a clean release from reaching a shell on this board at all.</span></li>
       </ul>
     </div>
     <div class="num">23 / 24</div>
     <div class="notes-src">
 Three things to take away.
 ||
-First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it. One bug was in NuttX's own crypto &mdash; that fix goes upstream on its own. The other was in my new driver, and only a real kernel build surfaced it; sim never would have.
+First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it. One bug was in NuttX's own crypto, and that fix goes upstream on its own. The second I only found by insisting my board image be reproducible from a clean checkout: a stock release tag does not boot to a shell on this board, because before the RTC comes up the clock reads zero and the watchdog that would finish bringing the RTC up never fires. And a third was in my own driver, where only a real kernel build surfaced it; sim never would have.
     </div>
   </section>
 
