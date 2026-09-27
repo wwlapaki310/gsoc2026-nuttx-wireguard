@@ -19,8 +19,13 @@ WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED no
 a build, not a run; PROTECTED *runtime* is still outstanding, as are SMP, stack measurement,
 and sustained-flood availability. **Real hardware (T5) PASS on both boards (2026-09-26): the
 in-kernel driver tunnels over real Wi-Fi on the ESP32-S3 (native Wi-Fi) and on the Spresense
-(GS2200M over `usrsock`) to the Windows official WireGuard client — functional usrsock
-interoperability on hardware, not a proof of all blocking/concurrency failure modes.**
+(GS2200M over `usrsock`) to the Windows official WireGuard client. **2026-09-27 the usrsock
+fault path was then forced on that board** (`DEBUG_TX_STALL`): with a datagram held outstanding
+on the real backend, a query and a peer update both completed, `wg down` reported ETIMEDOUT
+instead of hanging, the retained ciphertext was not mutated, and a repeated down reaped and
+`wg up` recovered — the queued-output design's central claim, checked against the real
+backend rather than argued from code. IOB exhaustion, Wi-Fi loss mid-send and sustained load
+are still untested.**
 The [2026-09-27 evidence review](hardware-followup-2026-09-27.md) separates reported
 hardware observations, inspected build artifacts, and remaining fault tests. The retained
 Spresense source uses the older uptime timestamp, not the uncommitted realtime correction.

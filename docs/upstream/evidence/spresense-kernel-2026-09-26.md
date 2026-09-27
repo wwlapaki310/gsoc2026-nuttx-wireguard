@@ -239,3 +239,75 @@ what shows it completing.
 
 Not covered: the AP-missing and DHCP-failure paths are reported but not
 exercised, and repeated cold-boot soak is still untested.
+
+
+## Forced usrsock fault: held send vs. concurrent control (2026-09-27)
+
+The Spresense run earlier only showed a normal handshake and ping, which is
+functional interoperability, not a fault test. This forces the case the
+queued-output design exists for: **a datagram outstanding on the real
+GS2200M/usrsock backend while control operations arrive.**
+
+Built from the same reproducible recipe plus `CONFIG_NET_WIREGUARD_DEBUG_TX_STALL=y`,
+`CONFIG_DEBUG_ASSERTIONS=y` and `CONFIG_SYSTEM_PING=y` (image
+`hw-images/spresense-faulttest.spk`). The hook makes the socket worker hold
+the first transport datagram with a payload for 16 s, hashing the buffer
+before and after to assert nothing mutated it, while the stop wait is 4.8 s.
+
+Traffic has to come **from the Windows peer**: under usrsock a board-side
+`socket()` goes to the GS2200M rather than the kernel stack, so a board
+`ping` never produces a payload datagram. The board's ICMP *replies* do.
+
+```text
+nsh> [   52.870000] wg test: output stall entered
+nsh> wg show
+interface: wg0
+  public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+  listening port: 51820
+peer: WIFidVmxoENaR+/5ExC0JjIzqnsD+JfFH0rN80+2hXI=
+  endpoint: 192.168.0.216:51821
+  latest handshake: 1 seconds ago
+  transfer: 96 B received, 96 B sent
+  persistent keepalive: every 25 seconds
+nsh> 
+nsh> wg set peer WIFidVmxoENaR+/5ExC0JjIzqnsD+JfFH0rN80+2hXI= persistent-keepalive 10
+nsh> 
+nsh> wg down
+wg: down: Unknown error 110
+nsh> 
+nsh> wg down
+[   68.880000] wg test: output owned 1
+[   68.880000] wg test: output stall left
+nsh> 
+nsh> wg up
+wg0 is up (listen port 51820)
+nsh> 
+nsh> wg show
+interface: wg0
+  public key: iaFmhQ2Pet5jnGn2y4UOdHB0Xu4r7q7auLVCTOKsx0A=
+  listening port: 51820
+peer: WIFidVmxoENaR+/5ExC0JjIzqnsD+JfFH0rN80+2hXI=
+  endpoint: 192.168.0.216:51821
+  latest handshake: 3 seconds ago
+  transfer: 352 B received, 352 B sent
+  persistent keepalive: every 10 seconds
+nsh>
+```
+
+Checks, all passing:
+
+| | |
+|---|---|
+| worker holds a datagram on the real backend | `output stall entered` |
+| query while the send is outstanding | `wg show` answered normally |
+| control update under `d_lock` while it is held | `wg set peer ... persistent-keepalive 10` accepted |
+| stop reports a timeout instead of hanging | `wg: down: Unknown error 110` (ETIMEDOUT) |
+| retained ciphertext was not mutated | `output stall left` with no `DEBUGASSERT` firing |
+| repeated down reaps, `wg up` recovers | `wg0 is up`, handshake 3 s later, 352 B each way |
+| the update survived the cycle | `persistent keepalive: every 10 seconds` |
+
+**What this does not show.** The stall is a deliberate delay inside the
+worker, so it reproduces *a send that takes a long time* and the driver's
+behaviour around it. It does not exercise usrsock's own blocking semantics
+inside `psock_sendto`, nor IOB exhaustion, Wi-Fi loss mid-send, or sustained
+load. Those remain open.
