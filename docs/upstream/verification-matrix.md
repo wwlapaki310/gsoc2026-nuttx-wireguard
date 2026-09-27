@@ -13,8 +13,10 @@ cannot reconnect, and durable range reservation is designed but not implemented.
 `66b7403c8a`) has a separate [validation record](locking-followup.md), including lifecycle
 and fault tests. **2026-09-23:** that revision was **re-verified on the real kernel build**
 — `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) tunnels bidirectionally to a Linux kernel
-WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED** (a distinct
-MPU build, not exercised anywhere yet) is still outstanding, as are SMP, stack measurement,
+WireGuard peer (T6 rerun, PASS), so the redesign is not sim-only. **PROTECTED now builds**
+(2026-09-27, `mr-canhubk3:knsh`): kernel and `nuttx_user.elf` both link with the driver and
+`apps/system/wg`, so the pointer-free ioctl ABI holds under the MPU split as well — but this is
+a build, not a run; PROTECTED *runtime* is still outstanding, as are SMP, stack measurement,
 and sustained-flood availability. **Real hardware (T5) PASS on both boards (2026-09-26): the
 in-kernel driver tunnels over real Wi-Fi on the ESP32-S3 (native Wi-Fi) and on the Spresense
 (GS2200M over `usrsock`) to the Windows official WireGuard client — functional usrsock
@@ -73,7 +75,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 | **TE** | entropy: 3 cold boots → `wg genkey` all differ; no pool `cryptwarn`; `.config` meets the RNG dependency | HIL + static | **NOT IMPLEMENTED** | — | `genkey` works and the Kconfig dependency (`CRYPTO_RANDOM_POOL`/`DEV_URANDOM_ARCH`) is enforced, but the 3-cold-boot differ test was not run |
 | **TT** | time/TAI64N: re-handshake within 30 s after reboot in four scenarios | sim + host C + HIL | **PARTIAL (RTC sim PASS)** | [Baseline failure](tai64n-reboot.md); [partial correction](tai64n-design.md), 2026-09-23: same-key reboot with retained realtime, response at 0.695 s; actual allocator tested for rollback and 4,000 concurrent allocations | #14 remains a pre-merge blocker: high-water state is RAM-only; RTC-less/persistence/cross-reboot rollback and HIL are not completed |
 | **T7** | soak: 50+ rekeys across REJECT_AFTER_TIME×3, 10 endpoint changes, 100 down/up; no monotonic iob/stack growth | HIL | **NOT IMPLEMENTED** | — | not run |
-| **T8** | build matrix (`sim:wireguard` on the CI hosts + a testbuild subset + CMake) | build | **PASS (partial)** | `sim:wireguard` defconfig builds; `qemu-armv7a:knsh` and `rv-virt:knetnsh64` build under BUILD_KERNEL; **the kernel driver also builds for `esp32s3-devkit:wifi` (Xtensa, 784 KB) and `spresense:wifi` (Cortex-M4F, 443 KB)** with kernel `NET_WIREGUARD`+`SYSTEM_WG`+`CRYPTO` | full `testbuild.sh` subset and the CMake path not run here; upstream CI not yet exercised |
+| **T8** | build matrix (`sim:wireguard` on the CI hosts + a testbuild subset + CMake) | build | **PASS (partial)** | `sim:wireguard` defconfig builds; `qemu-armv7a:knsh` and `rv-virt:knetnsh64` build under BUILD_KERNEL; **the kernel driver also builds for `esp32s3-devkit:wifi` (Xtensa, 784 KB) and `spresense:wifi` (Cortex-M4F, 443 KB)** with kernel `NET_WIREGUARD`+`SYSTEM_WG`+`CRYPTO`; **`mr-canhubk3:knsh` links under `BUILD_PROTECTED`** — kernel 170 KB of 1 MB `kflash`, 30 KB of 128 KB `ksram`, plus a 147 KB `nuttx_user.elf` carrying `wg` | full `testbuild.sh` subset and the CMake path not run here; upstream CI not yet exercised. PROTECTED is a build only, not a run. **Size floor observed:** `lm3s6965-ek:qemu-protected` (128 KB `kflash`, 20 KB `ksram`) overflows at 115%/112% with the driver and NuttX `crypto/` in the kernel image, although its `nuttx_user.elf` still links — so boards of that class are out of reach without trimming |
 
 ## Bugs found and fixed during verification
 

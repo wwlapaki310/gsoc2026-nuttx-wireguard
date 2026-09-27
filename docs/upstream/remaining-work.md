@@ -46,7 +46,8 @@ headless化は実機デモを容易にするが、#14の解決にはならない
 
 ## 追加検証と提出判断
 
-- **未実施/不足**: TZ鍵ゼロ化、TEコールドブート時の乱数、T7長時間rekey・endpoint変更・反復up/down、IOB/stackの推移、代表的実機のstack高水位、SMP、PROTECTED。
+- **未実施/不足**: TZ鍵ゼロ化、TEコールドブート時の乱数、T7長時間rekey・endpoint変更・反復up/down、IOB/stackの推移、代表的実機のstack高水位、SMP、**PROTECTEDの実行**(ビルドは2026-09-27に`mr-canhubk3:knsh`で成功: kernel 170KB/1MB・ksram 30KB/128KB・`nuttx_user.elf` 147KB。実行は未着手)。
+  - 副産物のサイズ下限: `lm3s6965-ek:qemu-protected`(kflash 128KB / ksram 20KB)はカーネル像が115%/112%で溢れる。`nuttx_user.elf`はリンクできるので、ユーザ側ではなくカーネル側の容量が効く。
 - **部分完了**: TRのout-of-window/fuzz、TVのHKDF中間値/full-handshake KAT、T8のCMake・広い構成行列。RTC部分修正後のBUILD_KERNELも再検証する。
 - **すでに確認済み**: TF、T3、TN、基本TV（ChaCha/XChaCha/X25519/BLAKE2s）、通常のT5通信。これらを未実施として再登録しない。
 - **個別提出**: crypto nonce修正とKAT、GS2200M ioctl [#10](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/10)、RTC_HIRES [#9](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/9)。**2026-09-27に切り分け完了: 実機のearly-bootハングは #9 そのもの**(新規cloneに当該パッチのみ追加で起動・トンネル成立。`cxd56_rtc.c`単独では直らない)。#9の提出価値が上がったので、driver PRとは独立に出す。
