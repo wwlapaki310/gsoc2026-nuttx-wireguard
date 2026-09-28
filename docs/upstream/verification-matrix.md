@@ -50,11 +50,12 @@ are listed as such, not omitted.
   Commits after the hardware runs: the clock-unset warning (`d472ff1c2e`), the key-lifetime
   documentation (`1b6b9c60ff`), the nxstyle vendor exception (`b230ee4876`), and on the apps side
   the X25519 adaptation tidy-up (`68eed842`).
-  The sim and rv-virt runs below, and the 2026-09-26 hardware runs, were made on the earlier
-  `66b7403c8a` / `24b3f311`; the newer commits (`IOB_NCHAINS` guard + AEAD KATs, the
-  configuration-save fix, the TAI64N correction) are covered by builds, the TAI64N host unit
-  test, T1 and the key-save fault test — **not** by a hardware rerun. The 2026-09-27 Spresense
-  headless image was built from `nuttx-13.0.1` with the driver patch taken at `7936d68402`.
+  The 2026-09-26 hardware runs were made on the earlier `66b7403c8a` / `24b3f311`. The
+  **2026-09-28 hardware runs (TH, TE, TT) were built from the current tree** by
+  `build-spresense-kernel.sh --measure`, on `nuttx-13.0.1` with the `#9` RTC patch — so the
+  clock-unset warning and the TAI64N realtime change are covered on hardware, not only in the sim.
+  The apps-side configuration-save fixes are covered by T1 and the keyfile fault tests, and were
+  also seen working on the PROTECTED target (which has no writable `/tmp`), but not on Spresense.
 - Runner: the `wgdev` container (`nuttx-wireguard:sim-master`) + a local RISC-V toolchain and
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
 - Legend: **PASS** = run and passed; **BUILD-ONLY** = compiles/links, not run; **NOT RUN** =
@@ -114,16 +115,42 @@ Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inb
 
 ## Honest remainder before a merge-ready submission
 
-- **Extend TV**: the ChaCha20-Poly1305, XChaCha20-Poly1305 (incl. HChaCha20), X25519 (RFC 7748)
-  and BLAKE2s-256 KATs are done and run; still to add are HKDF-intermediate and full-handshake
-  KATs, and to land the chachapoly + xchacha vectors in `crypto/testmngr.c` with the `crypto:` PR.
-- **Run** TT (TAI64N/reboot) against the kernel version, and repeat T7 on hardware. TZ, TE and
-  T7 are done (2026-09-28); their residual gaps are `next_keypair`/handshake clearing not being
-  exercised at measurement time, TE being reset-based rather than power-cycle-based, and T7 being
-  a 15-minute sim run whose heap figures do not transfer to a board.
-- **Hardware**: T5 **done on both boards (2026-09-26)**; **TH** resource measurement and a 40-cycle lifecycle soak done on Spresense (2026-09-28) — ESP32-S3 (native Wi-Fi) and Spresense
-  (GS2200M/usrsock). Follow-ups: a proper Dockerfile stage for the kernel Spresense image (built
-  on 13.0.1), headless `rcS` auto-config, and BUILD_KERNEL/PROTECTED on the boards.
-- TF, TV (chachapoly), TN, and T3 are now covered by sim scripts/tests. The remainder does not
-  change what has been shown (T1 + TF + TV + TR + TN + T3 + T6), but the items above are required
-  by the plan's own §3.4 cadence before PR-K1.
+As of 2026-09-28 everything in the plan's §3 is either run or deliberately closed. What is left
+falls into three groups, and the distinction matters for review.
+
+**Blocked on hardware that is not attached or cannot be driven.**
+
+- **ESP32-S3 resource measurement**, and **BUILD_PROTECTED on silicon** — `esp32s3-devkit:knsh`
+  is a PROTECTED config, and that board has native Wi-Fi rather than usrsock, so its numbers would
+  differ from the Spresense ones. Needs the board plugged in; only Spresense was connected.
+- **SmartFS rename and power-cut durability (#17)** — a DTR reset is not a power cut, so this needs
+  switchable power. It is the last open item on #17.
+- **Losing Wi-Fi mid-send** — needs control of the access point.
+- **Day-scale uptime.** The soak crosses the session expiration horizon several times over, which
+  is what makes its rekeys real, but it is minutes, not days.
+
+**Open by decision, not for lack of evidence.**
+
+- **#14 (TAI64N across a reboot).** Measured on hardware as a controlled pair — no handshake in
+  75 s with the clock unset, 4.1 s with it set, nothing sent to the board in either arm. The
+  adopted design is realtime plus an in-boot high-water mark, the same contract Linux and
+  wireguard-go use, never falling back to uptime, and it warns once when the clock was never set.
+  Durable range reservation is designed in [tai64n-design.md](tai64n-design.md) and **deliberately
+  unimplemented**: NuttX offers no storage durability contract to build it on. See
+  [tai64n-decision.md](tai64n-decision.md).
+- **A full-handshake KAT.** The reference implementation for a handshake transcript is Linux kernel
+  WireGuard, and T1, T6 and TP complete real handshakes against it on three configurations. What a
+  transcript adds is failure localisation, which the per-primitive and per-derivation KATs now
+  provide.
+
+**Known narrowness in what has been run.** Each is recorded in its own row rather than here, but in
+summary: the IOB *blocking* path is untested (allocation failure drops a packet, `nwait` never
+rose); `next_keypair` and the handshake fields were never non-zero at TZ's measurement time, so
+their clearing rests on code reading; TE is reset-based rather than power-cycle-based; SMP is one
+scripted interleaving on an emulator rather than a race search; TP is QEMU's MPU model, not
+silicon; and `STACK_COLORATION` reports the deepest use *observed*, not the worst case.
+
+**Process, not testing.** The chachapoly + xchacha vectors are written into `crypto/testmngr.c`
+and verified at boot; they still need to travel with the `crypto:` PR rather than the driver one.
+And **PR-A1's style depends on PR-K1 landing first**, because the vendored X25519's nxstyle
+exclusion is one line in the nuttx repository.
