@@ -1,6 +1,8 @@
 # 残りの開発・検証・提出準備
 
 更新: 2026-09-28。現在の作業順と完了条件の正本。
+**次に着手する人(人でもエージェントでも)向けの手順・受入条件・既知の罠は
+[handoff.md](handoff.md)** にまとめた。
 実測の正本は [verification-matrix.md](verification-matrix.md)、設計相談の索引は
 [open-questions.md](open-questions.md)。古い計画の未実施一覧より本書を優先する。
 

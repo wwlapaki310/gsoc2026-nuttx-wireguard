@@ -115,6 +115,9 @@ Lifecycle tests added for these: `verify-sim-wg-downup.sh` (down/up under an inb
 
 ## Honest remainder before a merge-ready submission
 
+Task-by-task instructions, acceptance criteria and the traps that have already
+cost time are in [handoff.md](handoff.md).
+
 As of 2026-09-28 everything in the plan's §3 is either run or deliberately closed. What is left
 falls into three groups, and the distinction matters for review.
 
