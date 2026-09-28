@@ -46,7 +46,9 @@ headless化は実機デモを容易にするが、#14の解決にはならない
 
 ## 追加検証と提出判断
 
-- **未実施/不足**: TZ鍵ゼロ化、TEコールドブート時の乱数、T7長時間rekey・endpoint変更・反復up/down、IOB/stackの推移、代表的実機のstack高水位、SMP、**PROTECTEDの実行**(ビルドは2026-09-27に`mr-canhubk3:knsh`で成功: kernel 170KB/1MB・ksram 30KB/128KB・`nuttx_user.elf` 147KB。実行は未着手)。
+- **2026-09-28完了**: **TZ鍵ゼロ化** — simの生プロセスメモリを読み、ヘッダから実行時に算出したオフセットで秘密フィールドを名前ごとに確認。rekeyを強制して`prev_keypair`にも実際に鍵を載せた上で、`curr`/`prev`の送受信鍵が up中32/32バイト → down後すべてゼロ、再upで新鍵。静的鍵は設計どおり保持され、書込可能領域全体でコピーは**ちょうど1個**(前後で不変)。`handshake`はup中すでにゼロ(`wg_start_session`が鍵導出と同時にスタック上の複製ごと消す)。`scripts/kernel/verify-sim-wg-zeroize.sh`。**残り**: `next_keypair`と`handshake`は計測時点で非ゼロにならなかったため、消去はコード読みのみの根拠。
+- **2026-09-28完了**: **TE乱数** — Spresense実機3回再起動で`wg genkey`が3件すべて異なる(`scripts/kernel/verify-spresense-entropy.py`、鍵は出力せずSHA-256前置のみ)。`DEV_URANDOM_XORSHIFT128`無効/プール有効も確認。**残り**: DTRリセットであり電源断ではない。3件相違は定数シードという致命的故障の検出であって乱数品質の測定ではない。ESP32-S3では未実施。
+- **未実施/不足**: T7長時間rekey・endpoint変更・反復up/down、IOB/stackの推移、代表的実機のstack高水位、SMP、**PROTECTEDの実行**(ビルドは2026-09-27に`mr-canhubk3:knsh`で成功: kernel 170KB/1MB・ksram 30KB/128KB・`nuttx_user.elf` 147KB。実行は未着手)。
   - 副産物のサイズ下限: `lm3s6965-ek:qemu-protected`(kflash 128KB / ksram 20KB)はカーネル像が115%/112%で溢れる。`nuttx_user.elf`はリンクできるので、ユーザ側ではなくカーネル側の容量が効く。
 - **部分完了**: TRのout-of-window/fuzz、TVのHKDF中間値/full-handshake KAT、T8のCMake・広い構成行列。RTC部分修正後のBUILD_KERNELも再検証する。
 - **すでに確認済み**: TF、T3、TN、基本TV（ChaCha/XChaCha/X25519/BLAKE2s）、通常のT5通信。これらを未実施として再登録しない。

@@ -311,3 +311,41 @@ worker, so it reproduces *a send that takes a long time* and the driver's
 behaviour around it. It does not exercise usrsock's own blocking semantics
 inside `psock_sendto`, nor IOB exhaustion, Wi-Fi loss mid-send, or sustained
 load. Those remain open.
+
+## Key generation entropy across restarts (TE, 2026-09-28)
+
+A working tunnel proves nothing about key quality: NuttX's default
+`/dev/urandom` is an xorshift128 PRNG seeded from compile-time constants, so a
+board on that path would hand out the **same** private key on every boot and
+every functional test above would still pass. Cheap to rule out, so ruled out.
+
+Run with `scripts/kernel/verify-spresense-entropy.py` against the headless
+in-kernel image. Each round resets the board over DTR, waits for `rcS`, and
+issues one `wg genkey`. The keys are never printed — only SHA-256 prefixes —
+so this record is safe to keep.
+
+```text
+round 1: sha256 b7a636c062ee38ca
+round 2: sha256 951aac062383a206
+round 3: sha256 c01587b41aa089c7
+
+distinct keys across 3 restarts: 3
+PASS: every restart produced a different key
+```
+
+The configuration confirms the pool path rather than the constant-seed path:
+
+```text
+CONFIG_DEV_URANDOM_RANDOM_POOL=y
+CONFIG_CRYPTO_RANDOM_POOL=y
+CONFIG_CRYPTO_RANDOM_POOL_COLLECT_IRQ_RANDOMNESS=y
+# CONFIG_DEV_URANDOM_XORSHIFT128 is not set
+```
+
+**What this does not show.** These are DTR resets, not power cycles. A
+compile-time constant seed — the failure being tested — shows up identically
+either way, but a seed that survives a reset while being lost on power-off
+would not be distinguished. Three distinct keys detect the catastrophic case;
+they are not a measure of entropy quality, and nothing here verifies that the
+IRQ pool had actually been stirred by the time `rcS` runs. Not repeated on
+ESP32-S3.
