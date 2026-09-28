@@ -67,6 +67,10 @@ cleanup() {
   kill "${qemu_pid}" 2>/dev/null
   wait "${qemu_pid}" 2>/dev/null
   ip link del wgtest0 2>/dev/null
+  # Remove the TAP too. Leaving it behind keeps 10.0.0.1 assigned to a
+  # down interface, and the next sim test then cannot give that address to its
+  # own tap0 -- which looks like the driver failing to carry traffic.
+  ip link del tapwg 2>/dev/null
   rm -f /tmp/q.in
 }
 trap cleanup EXIT
