@@ -1,22 +1,34 @@
 # カーネル移行 実装状況メモ
 
-**現在の残件・作業順（2026-09-27）:** [remaining-work.md](remaining-work.md)。
-実機結果の確認範囲は [hardware-followup-2026-09-27.md](hardware-followup-2026-09-27.md)、
-公開報告は [Discussion #16](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/discussions/16)。
-「実機が動いたので残りはPRのみ」ではなく、#14、鍵保存失敗対策#17、障害試験と再現性が残ります。
+**現在の残件・作業順（2026-09-28）:** [remaining-work.md](remaining-work.md)。
+実測の正本は [verification-matrix.md](verification-matrix.md)、公開報告は
+[Discussion #18](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/discussions/18)。
 
-**2026-09-23 TAI64N 部分修正（未コミット）:** 起動後時刻ではなく実時刻を使い、
-同一起動中の巻き戻り・同時発行を保護。RTCありのsimでは同じ鍵で再起動後約0.7秒で
-再接続し、T1/TRも再実行PASS。RTCなし・再起動をまたぐ巻き戻り・耐電源断の永続化は
-未解決で、#14は閉じません。[修正方針と保証範囲](tai64n-design.md) を参照。
-このtimestamp変更についてのKERNEL/PROTECTED・実機再検証は未実施です。
+**2026-09-28 現在の検証範囲。** sim に加えて次が**実行**済み:
+BUILD_KERNEL(`rv-virt:knetnsh64`、syscall 境界)、**BUILD_PROTECTED(`rv-virt:pnsh64`、
+MPU 分割)**、**SMP 4 CPU(`rv-virt:knetnsh64_smp`)**、実機 ESP32-S3 と Spresense
+(GS2200M = usrsock、故障経路の強制を含む)。さらに実機で**資源を測定**し、
+`wg_rx` スレッドのスタック高水位は **1472 B / 6144 既定**。
+「動くトンネルでは検出できない」種類の故障も個別に潰した(定数シードによる鍵の固定、
+down 後のセッション鍵残存、時間が経ってから出る漏れ)。
 
-**並行性再設計:** queued-output / `d_lock` は `66b7403c8a` に取り込み済み。
-rv-virt BUILD_KERNELの再検証、両ボードの通常通信報告があります。
+**TAI64N（#14）は「判断として」OPEN。** 実時刻 + 起動内高水位を採用し（Linux /
+wireguard-go と同じ契約）、uptime へフォールバックしない。時計が未設定なら 1 度だけ
+警告して結果を明示する。2026-09-28 に**実機で対照実験として測定完了**:
+ボードへ何も送らない条件で、時計未設定なら 75 秒経ってもハンドシェイク成立せず、
+時計を設定すると 4.1 秒で成立。耐久性のある範囲予約は [tai64n-design.md](tai64n-design.md)
+に設計済みだが**意図的に未実装**（NuttX に保存の耐久性契約が無い）。
+比較と判断は [tai64n-decision.md](tai64n-decision.md)、実機の証跡は
+[evidence/spresense-timestamp-2026-09-28.md](evidence/spresense-timestamp-2026-09-28.md)。
+
+**並行性設計:** queued-output / `d_lock` は `66b7403c8a` に取り込み済みで、
+rv-virt BUILD_KERNEL・BUILD_PROTECTED・SMP 4 CPU・実機 usrsock の故障強制で確認済み。
 [並行性修正・検証記録](locking-followup.md) と [設計文書](in-kernel-design.md) を参照。
-PROTECTEDや実usrsockの故障注入は別の未了項目です。TAI64N部分修正とも版を区別します。
 
-現状案内の更新: 2026-09-27。計画本体は [in-kernel-plan.md](in-kernel-plan.md)、追跡は
+**fork HEAD:** `net-wireguard` `b230ee4876` / `system-wg` `691311a4`
+（base upstream/master `c95c546c`）。いずれも upstream 未 push（本人作業）。
+
+現状案内の更新: 2026-09-28。計画本体は [in-kernel-plan.md](in-kernel-plan.md)、追跡は
 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11)。
 
 ## 一言で

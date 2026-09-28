@@ -11,8 +11,8 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 > |---|---|---|
 > | Where | `nuttx_port/apps/netutils/wireguard/` (this README below) | `drivers/net/wireguard/` + `apps/system/wg` (ioctl client), in local forks |
 > | Configured by | the `wg` NSH command directly | the `wg` command over an **ioctl ABI** |
-> | Verified | **real hardware** (ESP32-S3, Spresense) over real Wi-Fi vs Linux/Windows peers | **sim**, **rv-virt BUILD_KERNEL**, and reported **FLAT hardware connectivity on both ESP32-S3 and Spresense (GS2200M/usrsock)** |
-> | Still ahead | — (frozen) | TAI64N reboot/persistence, key-file failure safety, fault/soak tests, reproducible board builds, and upstream review; see [remaining work](docs/upstream/remaining-work.md) |
+> | Verified | **real hardware** (ESP32-S3, Spresense) over real Wi-Fi vs Linux/Windows peers | **sim**, **rv-virt BUILD_KERNEL** (syscall boundary), **rv-virt BUILD_PROTECTED** (MPU split, at runtime), **SMP on 4 CPUs**, and **real hardware on both ESP32-S3 and Spresense** (GS2200M/usrsock) — including resource measurement on the board and the usrsock fault path |
+> | Still ahead | — (frozen) | upstream review; the TAI64N reboot case (**#14, open by decision** — measured on hardware, deliberately not "solved" with a persistence scheme NuttX cannot back); ESP32-S3 resource measurement and PROTECTED on silicon; SmartFS power-cut durability. See [remaining work](docs/upstream/remaining-work.md) and the [verification matrix](docs/upstream/verification-matrix.md) |
 >
 > The in-kernel version is what goes upstream. Its live status is
 > [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md), the plan is
