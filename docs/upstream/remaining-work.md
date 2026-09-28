@@ -16,7 +16,9 @@
   RTCありsimは再起動後0.695秒で応答。RTCなしでは拒否が再現し、**#14は未解決**。
   9月26日の実機ビルド用ソースは旧TAI64N。検証対象を混ぜない。
 - 2026-09-28に **T0・TR(a–d)・TZ・TE・T7** が実測PASSになった(下記)。
-  未実施として残るのは PROTECTED の実行、実機でのT7/stack高水位、SMP、TVの追加KAT。
+  その後 PROTECTED のrv-virt実行、SMPの4CPU試験、Spresenseの資源測定、
+  TVの追加KATも実施済み。実機PROTECTED、ESP32-S3の資源測定、日単位の
+  連続運転は別の未実施条件であり、これらを混同しない。
 - 管理リポジトリの文書pushと、NuttX/apps forkの公開・PRは別作業。
   後者は対応するソース版と検証証拠を揃えてから行う。
 
@@ -27,12 +29,15 @@
 | 優先 | 作業 / 追跡 | 現状と次の一手 | 完了条件 |
 | --- | --- | --- | --- |
 | P0 | TAI64N再起動保証 [#14](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/14) | **2026-09-28: 実機で対照実験として測定完了**(`verify-spresense-timestamp.py`)。同一ボード・ピア・イメージ、どちらのアームでもボードには何も送らない条件で、(A) 起動時の時計(`Jan 01 1970`)→ ドライバが警告し**75秒経ってもハンドシェイク成立せず**、(B) ホストから時計を設定 → 警告は出ず**4.1秒で成立**。変数は時計だけなので、拒否された timestamp が原因と特定。**重要な落とし穴も記録**: 素朴な「再起動後に ping」は16秒で成功してしまい何も証明しない — ping によって**ピア側が開始**し、responder は自分の timestamp を必要としないため。証跡は[evidence/spresense-timestamp-2026-09-28.md](evidence/spresense-timestamp-2026-09-28.md)。**#14は「証拠不足」ではなく「判断として」OPENのまま**: 高水位はRAMのみが設計、範囲予約はNuttXに耐久性の契約が無いので意図的に未実装 | 同じ鍵・相手状態維持・NuttX initiatorでTT-b/c/dを実施。対応不能構成の扱いも明示。電源断を含む保証と実装が一致 |
-| P0 | 鍵・設定保存 [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17) | **コード修正済み(2026-09-27)**: エラー伝播、`set private-key` の失敗を成功扱いしない、`wg_replace_file` で rename 先行(拒否時のみ unlink フォールバック、原本消失時は復旧先を明示)。simビルドとT1回帰はPASS。**失敗注入テストも追加してPASS**(`verify-sim-wg-keyfile-faults.sh`: 非ゼロ終了・診断・旧設定保持・復旧の5項目)。**2026-09-28: ENOSPCと二重writerは完了(下記)。残: SmartFSのrename/耐電源断の実地確認** | エラーを成功扱いしない。旧設定を保持し、runtime/file不一致を診断。対象FSで置換・耐電源断の保証を確認 |
+| P0 | 鍵・設定保存 [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17) | **追加修正 `37f04cff`**: NuttX VFS内のunlinkを確認し、rename先行だけで保持できるという説明を撤回。排他的な `.bak` に旧設定を確保し、公開失敗時は復旧ファイルを残して次の保存を拒否。mkstemp・読取エラー・重複PrivateKey行も対応。sim T1/TF/ENOSPC回帰、実ヘルパーのホスト11ケースと破壊的変異を拒否する対照試験がPASS。[証跡](evidence/sim-followup-2026-09-28.md)。**残: SmartFS実機・電源断** | 通常の失敗を成功扱いせず、旧設定から復旧可能。電源断時の耐久性は別条件として対象FSで確認 |
 | P1 | 実usrsockの停止・送信詰まり [#5](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/5) / [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11) | **完了(2026-09-27、実機Spresense)**: `DEBUG_TX_STALL` で実GS2200M/usrsock上に送信を保持した状態で、参照(`wg show`)・制御更新(peer keepalive)が通り、`wg down`はETIMEDOUTを報告、保持中のciphertextは不変(アサート不発火)、反復downで回収し`wg up`で復旧。証跡は[evidence](evidence/spresense-kernel-2026-09-26.md#forced-usrsock-fault-held-send-vs-concurrent-control-2026-09-27) | close/destroyと実行中スレッドが競合せず、timeout報告と反復downで回収・再upできる。**2026-09-28: IOB枯渇をsimで試験しPASS**(下記)。**残: 送信中のWi-Fi断(AP操作が必要)、持続負荷。ストールは意図的遅延でありusrsock内部のブロック挙動そのものではない** |
 | P1 | IOB設定制約 [#11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11) | `default IOB_NBUFFERS if NET_WIREGUARD` に加え、**明示的な `IOB_NCHAINS=0` を `wireguard.c` の `#error` で明示拒否(2026-09-27)** — 不完全型の不可解なエラーではなくなった。**残: driverコミットへの統合** | 既定構成がビルドでき、不適合な明示設定が明確に拒否されるか補正される。driverコミットへ統合 |
-| P1 | 最終ソース版の固定・公開 [#12](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/12) | timestamp、IOB、crypto KATに未コミット差分がある | crypto/driver/appsの対応SHA、パッチ、構成、試験結果を固定。公開したコードを新規cloneで再現可能 |
+| P1 | 最終ソース版の固定・公開 [#12](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/12) | ローカルは NuttX `b230ee4876` / apps `37f04cff` にコミット済み。今回のapps差分は管理repoにもパッチを保存。**残: upstreamへのrebase、crypto/driver/appsのPR分割と全系列検証、所有者によるfork公開** | crypto/driver/appsの対応SHA、パッチ、構成、試験結果を固定。公開したコードを新規cloneで再現可能 |
 
 鍵保存のコード根拠と試験項目は [keyfile-correctness-review.md](keyfile-correctness-review.md)。
+**追加監査による訂正:** 以前の「rename先行」は安全性の根拠にはならない。
+NuttX VFSはrenameの途中で保存先をunlinkする。今回の追加対応と復旧手順は
+[追加レビュー](keyfile-correctness-review.md#follow-up-2026-09-28-vfs-replacement-is-not-atomic)を優先する。
 RTCなしの保存方式・範囲予約は [tai64n-design.md](tai64n-design.md) の**未実装提案**。
 「CLOCK_REALTIMEへ変えたので#14完了」「設定ファイルへ書けば耐電源断」は採用しない。
 

@@ -71,7 +71,7 @@ nuttx_priv="$(wg genkey)"; nuttx_pub="$(printf %s "${nuttx_priv}" | wg pubkey)"
 printf %s "${linux_priv}" > /tmp/linux.key
 
 cat > /tmp/wg_zeroize.py <<'PY'
-import base64, os, re, subprocess, sys, threading, time
+import base64, os, re, socket, subprocess, sys, threading, time
 
 offsets, nuttx_priv, nuttx_pub, linux_priv, linux_pub = sys.argv[1:6]
 O = {}
@@ -105,6 +105,29 @@ def send(cmd, wait=0.8):
     time.sleep(wait)
 
 failures = []
+relay = None
+hold_confirmation = False
+held_transports = 0
+
+def relay_packets():
+    global held_transports
+    while True:
+        try:
+            packet, sender = relay.recvfrom(65535)
+            from_linux = sender[1] == 51821
+            kind = int.from_bytes(packet[:4], "little")
+            if hold_confirmation:
+                if from_linux and kind == 4:
+                    held_transports += 1
+                    continue
+                if not from_linux and kind == 1:
+                    continue
+            destination = ("10.0.0.2", 51820) if from_linux else \
+                          ("10.0.0.1", 51821)
+            relay.sendto(packet, destination)
+        except OSError:
+            return
+
 def check(ok, what):
     print(("  ok   " if ok else "  FAIL ") + what)
     if not ok:
@@ -112,6 +135,8 @@ def check(ok, what):
 
 def cleanup():
     sh("ip", "link", "del", "wgtest0", check=False)
+    if relay is not None:
+        relay.close()
     try:
         send("poweroff", wait=1)
     except OSError:
@@ -229,16 +254,38 @@ try:
         raise SystemExit("FAIL: tap0 was never created")
     sh("ip", "addr", "add", "10.0.0.1/24", "dev", "tap0", check=False)
     sh("ip", "link", "set", "tap0", "up")
+    relay = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    relay.bind(("10.0.0.1", 51822))
+    threading.Thread(target=relay_packets, daemon=True).start()
 
     send("wg set private-key " + nuttx_priv)
     send("wg set address 10.10.0.2/24")
-    send("wg set peer %s endpoint 10.0.0.1:51821 allowed-ips 10.10.0.1/32 "
+    send("wg set peer %s endpoint 10.0.0.1:51822 allowed-ips 10.10.0.1/32 "
          "persistent-keepalive 5" % linux_pub)
+    send("wg up")
+
+    # No responder exists yet: initiation must leave real ephemeral material
+    # resident, rather than testing fields which happened to be zero already.
+    pending = None
+    hs_names = ("handshake.ephemeral_private", "handshake.chaining_key",
+                "handshake.hash")
+    for _ in range(15):
+        pending, _ = snapshot("unanswered initiation")
+        if pending and all(any(pending[0][n]) for n in hs_names):
+            break
+        time.sleep(1)
+    if not pending or not all(any(pending[0][n]) for n in hs_names):
+        raise SystemExit("FAIL: did not observe nonzero handshake secrets")
+    send("wg down", wait=2)
+    cleared, _ = snapshot("down after unanswered initiation")
+    for name in hs_names:
+        check(cleared is not None and not any(cleared[0][name]),
+              "%s: observed nonzero, then zero after down" % name)
     send("wg up")
 
     def add_linux_peer():
         sh("wg", "set", "wgtest0", "peer", nuttx_pub,
-           "allowed-ips", "10.10.0.2/32", "endpoint", "10.0.0.2:51820",
+           "allowed-ips", "10.10.0.2/32", "endpoint", "10.0.0.1:51822",
            "persistent-keepalive", "5")
 
     sh("ip", "link", "add", "wgtest0", "type", "wireguard")
@@ -262,12 +309,30 @@ try:
     subprocess.run(["ping", "-c", "5", "-i", "0.3", "-W", "2", "10.10.0.2"],
                    capture_output=True)
 
-    # Force a second handshake so the previous session rotates into
-    # prev_keypair. Without this, prev and next are still zero while up and
-    # their rows below would pass without ever having held a key.
-    sh("wg", "set", "wgtest0", "peer", nuttx_pub, "remove")
-    add_linux_peer()
-    rotated = tunnel_up()
+    # Let the real rekey timers rotate the session. Do not delete/re-add a
+    # peer or manipulate either clock: those bypass the timer path.
+    def latest_handshake():
+        output = sh("wg", "show", "wgtest0", "latest-handshakes").stdout
+        rows = [line.split() for line in output.splitlines()]
+        return next((int(row[1]) for row in rows if row[0] == nuttx_pub), 0)
+
+    original_handshake = latest_handshake()
+    check(original_handshake > 0, "initial Linux handshake timestamp exists")
+    before_rotation, _ = snapshot("before natural rekey")
+    deadline = time.monotonic() + 210
+    rotated = False
+    while time.monotonic() < deadline:
+        # Ignore overlapping startup handshakes. The configured rekey age is
+        # 120s; allow scheduling/sampling margin but not an immediate retry.
+        if latest_handshake() - original_handshake >= 110:
+            print("natural handshake timestamp advanced by %ds" %
+                  (latest_handshake() - original_handshake))
+            rotated = tunnel_up()
+            break
+        subprocess.run(["ping", "-c", "1", "-W", "2", "10.10.0.2"],
+                       capture_output=True)
+        time.sleep(2)
+    check(rotated, "natural rekey completed without peer reset or clock change")
     subprocess.run(["ping", "-c", "5", "-i", "0.3", "-W", "2", "10.10.0.2"],
                    capture_output=True)
 
@@ -277,6 +342,13 @@ try:
         raise SystemExit("FAIL: could not locate the device in memory; "
                          "the probe is wrong, not the driver")
     up_values, up_kept = up_state
+    check(before_rotation is not None and
+          before_rotation[0]["curr.sending_key"] != up_values["curr.sending_key"],
+          "natural rekey changed the actual current sending key")
+    check(all(any(up_values[n]) for n in
+              ("curr.sending_key", "curr.receiving_key",
+               "prev.sending_key", "prev.receiving_key")),
+          "current and previous keypairs were both observed nonzero")
     loaded = sorted(n for n in up_values if any(up_values[n]))
     check(bool(loaded),
           "session material is present while up (otherwise nothing is proven)")
@@ -322,6 +394,32 @@ try:
     check(reborn is not None and
           any(any(v) for v in reborn[0].values()),
           "fresh session material exists after the re-up")
+
+    # Force the responder's pending-next state using only network delivery:
+    # suppress NuttX initiations and Linux transport confirmations, but pass
+    # Linux initiation and NuttX response. No driver state is patched.
+    send("wg down", wait=2)
+    sh("wg", "set", "wgtest0", "peer", nuttx_pub, "remove")
+    hold_confirmation = True
+    send("wg up")
+    add_linux_peer()
+    next_names = ("next.sending_key", "next.receiving_key")
+    pending_next = None
+    for _ in range(20):
+        subprocess.run(["ping", "-c", "1", "-W", "1", "10.10.0.2"],
+                       capture_output=True)
+        pending_next, _ = snapshot("unconfirmed responder session")
+        if pending_next and all(any(pending_next[0][n]) for n in next_names):
+            break
+        time.sleep(1)
+    if not pending_next or not all(any(pending_next[0][n]) for n in next_names):
+        raise SystemExit("FAIL: never observed nonzero pending-next keys")
+    check(held_transports > 0, "relay withheld actual Linux confirmations")
+    send("wg down", wait=2)
+    cleared_next, _ = snapshot("down after pending-next session")
+    for name in next_names:
+        check(cleared_next is not None and not any(cleared_next[0][name]),
+              "%s: observed nonzero, then zero after down" % name)
 finally:
     tail = console()
     cleanup()

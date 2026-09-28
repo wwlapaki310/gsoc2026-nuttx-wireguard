@@ -1,5 +1,23 @@
 # Handoff — what is left, how to do it, and what will waste your time
 
+## Follow-up at apps `37f04cff` (2026-09-28)
+
+The configuration publisher needed a further correctness fix before submission:
+NuttX VFS can unlink the destination inside rename. See
+[keyfile-correctness-review.md](keyfile-correctness-review.md) and the exported
+patch under `patches/`. The apps fork is committed locally, not pushed.
+
+Task 3's handshake/next-keypair gap is now exercised by the expanded TZ test,
+including a natural timer-driven rekey phase. The direct buffered-UDP/RX IOB
+allocation question is audited in [iob-wait-audit.md](iob-wait-audit.md): these
+paths use try-allocation, so do not manufacture a blocking-IOB test for them.
+Actual usrsock send blocking remains distinct from the DEBUG_TX_STALL hook.
+
+The rebase and complete PR-series validation below are **still outstanding**.
+The latest changes do not refresh older hardware, protected, SMP or CMake
+results. Use `WG_CONTAINER=<name>` with `kdev.sh` to isolate further tests;
+style now propagates checkpatch failures instead of hiding them behind `tail`.
+
 Written 2026-09-28 for whoever picks this up next (human or agent). The other
 documents say *what is true*; this one says *what to do next and what will trip
 you up*.

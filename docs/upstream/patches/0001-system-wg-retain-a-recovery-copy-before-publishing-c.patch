@@ -1,0 +1,264 @@
+From 37f04cff9f1f1641dd3fe754b62cc96cf0f6a9ef Mon Sep 17 00:00:00 2001
+From: satoru akita <wwlap24@gmail.com>
+Date: Mon, 28 Sep 2026 20:37:51 +0900
+Subject: [PATCH] system/wg: retain a recovery copy before publishing
+ configuration
+
+---
+ system/wg/wg_main.c | 168 ++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 130 insertions(+), 38 deletions(-)
+
+diff --git a/system/wg/wg_main.c b/system/wg/wg_main.c
+index d1965979..a2c613f1 100644
+--- a/system/wg/wg_main.c
++++ b/system/wg/wg_main.c
+@@ -532,36 +532,51 @@ static int wg_set_if(int fd, FAR struct wg_ifreq_s *ifr)
+  ****************************************************************************/
+ 
+ /****************************************************************************
+- * Name: wg_temp_name
++ * Name: wg_open_temp
+  *
+  * Description:
+- *   The name a replacement is staged under. It carries the pid because both
+- *   writers here (recording a new private key, and saveconf) stage into a
+- *   temporary beside the configuration: sharing one name lets a second
+- *   writer truncate the first one's file, and lets the loser's rename move
+- *   a half-written file over the winner's.
++ *   Stage each writer into its own exclusively created, mode-0600 file.
+  *
+  ****************************************************************************/
+ 
+-static void wg_temp_name(FAR char *buf, size_t buflen, FAR const char *path)
++static FAR FILE *wg_open_temp(FAR char *buf, size_t buflen,
++                              FAR const char *path)
+ {
+-  snprintf(buf, buflen, "%s.%d.tmp", path, (int)getpid());
++  FAR FILE *out;
++  int fd;
++  int ret = snprintf(buf, buflen, "%s.tmp.XXXXXX", path);
++
++  if (ret < 0 || (size_t)ret >= buflen)
++    {
++      fprintf(stderr, "wg: temporary path is too long\n");
++      return NULL;
++    }
++
++  fd = mkstemp(buf);
++  if (fd < 0)
++    {
++      return NULL;
++    }
++
++  out = fdopen(fd, "w");
++  if (out == NULL)
++    {
++      close(fd);
++      unlink(buf);
++    }
++
++  return out;
+ }
+ 
+ /****************************************************************************
+  * Name: wg_replace_file
+  *
+  * Description:
+- *   Move tmp over path. rename() replaces the target in one step where the
+- *   filesystem supports it, so the previous file survives if anything fails.
+- *   Filesystems that refuse to rename onto an existing name fall back to
+- *   unlink-then-rename; that is the only path which can leave no file at
+- *   all, so it says where the new content was left if the retry also fails.
+- *
+- *   The fallback is not taken when the problem is that tmp itself is gone.
+- *   Unlinking path would then destroy a good configuration to install
+- *   nothing, which is how a concurrent writer that has already renamed its
+- *   own temporary away turns into data loss.
++ *   Preserve the old content before rename: the NuttX VFS can unlink the
++ *   destination even when rename subsequently fails. An exclusive backup
++ *   also serializes publishers. A failed publish leaves both files for
++ *   explicit recovery and blocks further publishers. This is not a power
++ *   loss durability guarantee.
+  *
+  * Returned Value:
+  *   Zero on success, -1 on failure.
+@@ -570,33 +585,92 @@ static void wg_temp_name(FAR char *buf, size_t buflen, FAR const char *path)
+ 
+ static int wg_replace_file(FAR const char *tmp, FAR const char *path)
+ {
+-  if (rename(tmp, path) == 0)
++  char backup[160];
++  char buf[128];
++  FAR FILE *in;
++  FAR FILE *out;
++  size_t n;
++  int fd;
++  int ret;
++  bool failed = false;
++  bool existed;
++
++  ret = snprintf(backup, sizeof(backup), "%s.bak", path);
++  if (ret < 0 || (size_t)ret >= sizeof(backup))
+     {
+-      return 0;
++      fprintf(stderr, "wg: backup path is too long\n");
++      unlink(tmp);
++      return -1;
++    }
++
++  fd = open(backup, O_WRONLY | O_CREAT | O_EXCL, 0600);
++  if (fd < 0)
++    {
++      fprintf(stderr, "wg: cannot reserve '%s': %s; check for an active "
++              "writer or recover a previous failed save\n",
++              backup, strerror(errno));
++      unlink(tmp);
++      return -1;
+     }
+ 
+-  if (errno == ENOENT)
++  out = fdopen(fd, "w");
++  if (out == NULL)
+     {
+-      fprintf(stderr, "wg: '%s' disappeared before it could replace '%s': "
+-                      "%s is unchanged\n", tmp, path, path);
++      close(fd);
++      unlink(backup);
++      unlink(tmp);
+       return -1;
+     }
+ 
+-  if (unlink(path) == 0)
++  in = fopen(path, "r");
++  existed = in != NULL;
++  if (in == NULL)
+     {
+-      if (rename(tmp, path) == 0)
++      failed = errno != ENOENT;
++    }
++  else
++    {
++      while ((n = fread(buf, 1, sizeof(buf), in)) != 0)
+         {
+-          return 0;
++          if (fwrite(buf, 1, n, out) != n)
++            {
++              failed = true;
++              break;
++            }
+         }
+ 
+-      fprintf(stderr, "wg: '%s' was removed and the new content is left in "
+-                      "'%s': %s\n", path, tmp, strerror(errno));
++      failed |= ferror(in) != 0;
++      failed |= fclose(in) != 0;
++    }
++
++  memset(buf, 0, sizeof(buf));
++  failed |= fclose(out) != 0;
++  if (failed)
++    {
++      fprintf(stderr, "wg: cannot back up '%s'; save aborted\n", path);
++      unlink(backup);
++      unlink(tmp);
++      return -1;
++    }
++
++  if (rename(tmp, path) != 0)
++    {
++      fprintf(stderr, "wg: cannot publish '%s': %s; new content: '%s'; "
++              "recovery file: '%s' (%s). Recover before saving again\n",
++              path, strerror(errno), tmp, backup,
++              existed ? "previous configuration" : "no previous file");
++      return -1;
++    }
++
++  if (unlink(backup) != 0)
++    {
++      fprintf(stderr, "wg: '%s' saved but cannot remove '%s': %s; "
++              "remove the backup before saving again\n",
++              path, backup, strerror(errno));
+       return -1;
+     }
+ 
+-  fprintf(stderr, "wg: could not replace '%s': %s\n", path, strerror(errno));
+-  unlink(tmp);
+-  return -1;
++  return 0;
+ }
+ 
+ /****************************************************************************
+@@ -608,7 +682,7 @@ static int wg_replace_file(FAR const char *tmp, FAR const char *path)
+  *   every failure has to reach the caller.
+  *
+  * Returned Value:
+- *   Zero on success, -1 on failure (path is left as it was).
++ *   Zero on success, -1 on failure (a failed publish retains a backup).
+  *
+  ****************************************************************************/
+ 
+@@ -621,8 +695,7 @@ static int wg_record_private_key(FAR const char *path,
+   char tmp[128];
+   bool written = false;
+ 
+-  wg_temp_name(tmp, sizeof(tmp), path);
+-  out = fopen(tmp, "w");
++  out = wg_open_temp(tmp, sizeof(tmp), path);
+   if (out == NULL)
+     {
+       fprintf(stderr, "wg: cannot write '%s': %s\n", tmp, strerror(errno));
+@@ -643,8 +716,11 @@ static int wg_record_private_key(FAR const char *path,
+ 
+           if (strncasecmp(p, "PrivateKey", 10) == 0)
+             {
+-              fprintf(out, "PrivateKey = %s\n", key);
+-              written = true;
++              if (!written)
++                {
++                  fprintf(out, "PrivateKey = %s\n", key);
++                  written = true;
++                }
+             }
+           else
+             {
+@@ -657,8 +733,24 @@ static int wg_record_private_key(FAR const char *path,
+             }
+         }
+ 
++      if (ferror(in) != 0)
++        {
++          fclose(in);
++          fclose(out);
++          unlink(tmp);
++          fprintf(stderr, "wg: cannot read '%s'; save aborted\n", path);
++          return -1;
++        }
++
+       fclose(in);
+     }
++  else if (errno != ENOENT)
++    {
++      fclose(out);
++      unlink(tmp);
++      fprintf(stderr, "wg: cannot read '%s'; save aborted\n", path);
++      return -1;
++    }
+ 
+   if (!written)
+     {
+@@ -1208,10 +1300,10 @@ static int wg_cmd_saveconf(int fd, FAR const char *path)
+       return 1;
+     }
+ 
+-  wg_temp_name(tmp, sizeof(tmp), path);
+-  f = fopen(tmp, "w");
++  f = wg_open_temp(tmp, sizeof(tmp), path);
+   if (f == NULL)
+     {
++      memset(priv, 0, sizeof(priv));
+       fprintf(stderr, "wg: cannot write %s: %s\n", tmp, strerror(errno));
+       return 1;
+     }
+-- 
+2.49.0.windows.1
+

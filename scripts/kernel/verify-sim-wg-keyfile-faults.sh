@@ -19,8 +19,9 @@
 # A second section runs two writers at once. Both stage into a temporary beside
 # the configuration, so if they shared one name the second would truncate the
 # first's file and the loser's rename could move a half-written file over the
-# winner's. The names carry the pid for that reason; this checks the result is
-# a loadable configuration either way.
+# winner's. Staging now uses mkstemp; this checks the result is loadable either
+# way. Scheduling here does NOT guarantee overlap: test-wg-file-publish.py
+# separately holds one real host publisher inside rename while another tries.
 #
 # Pass = every checked command has the expected status, the interface public
 # key follows the file rather than the failed write, and the file is always

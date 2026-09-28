@@ -2,6 +2,45 @@
 
 Tracking: [Issue #17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17).
 
+## Follow-up 2026-09-28: VFS replacement is not atomic
+
+This section supersedes the earlier claim that rename-first preserves the old
+file on failure. At NuttX `b230ee4876`, `fs/vfs/fs_rename.c:mountptrename`
+unlinks an existing regular destination **before** calling the filesystem's
+rename method. SmartFS rejecting existing destinations does not make the VFS
+operation atomic. The earlier ENOSPC test failed while staging, not here.
+
+The apps fix now exclusively creates `<config>.bak` (mode 0600), copies and
+checks the previous content, and only then publishes the staged file. The
+exclusive backup serializes cooperating publishers. A rename failure retains
+the backup and staged file; another publisher refuses to overwrite the backup.
+No unlink-and-retry fallback remains. Staging uses `mkstemp`, rejects truncated
+paths, and does not reuse a predictable PID filename. Input read failures abort
+the private-key rewrite rather than publishing a partial configuration.
+
+Recovery after a reported publish failure:
+
+1. Stop other configuration writers. Keep the paths printed by the error.
+2. Inspect the active file and recovery file locally without publishing keys.
+   A `.bak` from a failed *initial* save is an empty reservation, not an identity.
+3. Restore the chosen complete configuration to the configured path while
+   keeping the backup. Run `wg setconf` and check the public identity with
+   `wg show`; do not assume the runtime key still matches the file.
+4. Only after successful recovery remove the backup and abandoned staging
+   files. A successful publish with failed backup removal also returns nonzero
+   and explicitly says the new file was saved.
+
+The host fault harness compiles the actual helpers extracted from `wg_main.c`:
+`scripts/kernel/test-wg-file-publish.py`. It models VFS unlink-before-rename
+failure, non-destructive rename failure, missing source, read/open/write/close
+failures, and occupied backup. It checks content and refuses a destructive retry.
+This is **not** a SmartFS media emulator or a power-cut test. Copying adds space
+overhead, and there is still no validated storage durability contract. A power
+cut during backup creation can leave an incomplete backup: no automatic restore
+is attempted. External tools which ignore the reservation are not serialized.
+
+## Historical Review
+
 Reviewed 2026-09-27 against local nuttx-apps `24b3f311`,
 `system/wg/wg_main.c`. Static inspection only; fault injection is not yet run.
 
