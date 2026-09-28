@@ -20,11 +20,15 @@
 #   --workdir DIR     build tree (default /opt/wgspr-build)
 #   --out FILE        where to copy nuttx.spk (default <workdir>/nuttx.spk)
 #   --ref REF         NuttX tag (default nuttx-13.0.1, the one cxd56 boots)
+#   --measure         also enable CONFIG_STACK_COLORATION and procfs, so the
+#                     board can report per-task stack high-water marks and the
+#                     IOB pool. Off by default: painting stacks costs time at
+#                     every task start, which a demo image should not pay.
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 nuttx_patch=""; apps_wg=""; ssid=""; pass=""
-workdir="/opt/wgspr-build"; out=""; ref="nuttx-13.0.1"
+workdir="/opt/wgspr-build"; out=""; ref="nuttx-13.0.1"; measure=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -35,6 +39,7 @@ while [ $# -gt 0 ]; do
     --workdir)     workdir="$2";     shift 2 ;;
     --out)         out="$2";         shift 2 ;;
     --ref)         ref="$2";         shift 2 ;;
+    --measure)     measure=true;     shift 1 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -105,6 +110,17 @@ kconfig-tweak --enable  CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C
 kconfig-tweak --disable CONFIG_WL_GS2200M_DISABLE_DHCPC
 kconfig-tweak --enable  CONFIG_DEBUG_FEATURES
 kconfig-tweak --enable  CONFIG_DEBUG_WIRELESS_ERROR
+
+if [ "${measure}" = true ]; then
+  # ps grows USED/FILLED columns, and /proc/iobinfo and /proc/meminfo appear.
+  for o in STACK_COLORATION FS_PROCFS FS_PROCFS_REGISTER; do
+    kconfig-tweak --enable "CONFIG_$o"
+  done
+  kconfig-tweak --disable CONFIG_NSH_DISABLE_PS
+  kconfig-tweak --disable CONFIG_NSH_DISABLE_DF
+  echo "   (measurement build: stack colouration + procfs)"
+fi
+
 make olddefconfig >/dev/null
 
 for required in CONFIG_NET_WIREGUARD=y CONFIG_SYSTEM_WG=y CONFIG_ETC_ROMFS=y; do
