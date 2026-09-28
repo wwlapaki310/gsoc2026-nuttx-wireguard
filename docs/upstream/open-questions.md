@@ -33,17 +33,43 @@ Sources: [in-kernel-review-brief.md §7](in-kernel-review-brief.md) ·
    Separate correctness work: [#17](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/17)
    tracks unreported key-save failures and deleting the original before replacement.
 5. **Vendored `wg_x25519.c` (MIT) in the `wg` command.** For offline genkey/pubkey (one call:
-   `x25519(pub, priv, base, 1)` for `wg pubkey`). *Position:* **kept.** Investigated 2026-09-23:
-   the kernel already ships `crypto/curve25519.c` and the in-kernel driver calls it directly
-   (`wg_crypto.c` → `curve25519()`/`curve25519_generate_public()`), but that path is *in-kernel
-   only*. The `/dev/crypto` cryptodev ABI has **no** asymmetric op for X25519/Curve25519 — its
-   `CRK_*` list stops at `MOD_EXP`, `DSA`, `DH`, `RSA`, `ECDSA_SECP256R1` — so under
-   PROTECTED/KERNEL there is no syscall surface a userspace `wg pubkey` could use, and linking the
-   kernel symbol only "works" in FLAT (defeating the migration's purpose). Vendoring a small,
-   self-contained userspace X25519 also matches upstream `wireguard-tools`, which vendors its own
-   `curve25519.c`. Its nxstyle non-conformance is expected third-party formatting (kept verbatim
-   under MIT). Open (larger, separate work): add a `CRK_CURVE25519` cryptodev op upstream so any
-   future userspace WG tooling could share the kernel implementation — not a blocker for this PR.
+   `x25519(pub, priv, base, 1)` for `wg pubkey`). *Position:* **kept** — but the reason recorded
+   here on 2026-09-23 was **wrong and is corrected below (2026-09-28).**
+
+   The earlier claim was that cryptodev has no X25519 operation. It does. `swcr_dh_make_common`
+   implements `CRK_DH_COMPUTE_KEY` *as* `curve25519(shared, secret, public)`, and
+   `swcr_dh_make_public` as `curve25519_generate_public` — the comment in `cryptosoft.c` says
+   outright that "in curve25519, p and g are fixed". So a userspace `wg pubkey` **could** be done
+   over `/dev/crypto`: `CRK_DH_COMPUTE_KEY` with param[0] = the base point `{9, 0, ...}`,
+   param[1] = the private key, param[3] = the derived public key (`in == 3 && out == 1`, and
+   `curve25519()` clamps the scalar itself, matching `x25519(..., clamp=1)`).
+
+   The real reason to keep the bundled copy is the **dependency price**. Those `CRK_*` handlers
+   live in `cryptosoft.c`, which is only compiled for `CRYPTO_CRYPTODEV_SOFTWARE_CRYPTO` (which
+   `depends on CRYPTO_SW_AES`) or `CRYPTO_CRYPTODEV_SOFTWARE_KEYMGMT` (which needs an MTD config
+   device). Reaching one scalar multiplication would therefore drag the whole software cipher
+   suite — AES, 3DES, Blowfish, CAST, the HMAC/PBKDF2 set — into the image of a microcontroller
+   that asked for WireGuard. That is a worse trade than 470 lines of self-contained X25519, and it
+   would make `wg` unbuildable on boards that do not enable cryptodev at all.
+
+   Two further facts that make the bundled copy cheap: the driver already derives the interface
+   public key **in the kernel** and returns it from `SIOCGWGIF`, so `wg show` needs no userspace
+   X25519 at all — only the offline `wg pubkey` subcommand does; and upstream `wireguard-tools`
+   vendors its own `curve25519.c` for exactly the same reason. T1 cross-checks the two
+   implementations against each other: `wg pubkey <priv>` and the `public key:` line of `wg show`
+   must agree, and they do.
+
+   **Style:** the file's nxstyle non-conformance is handled the way NuttX already handles vendored
+   sources — a path entry in `g_white_files[]` in `tools/nxstyle.c`, alongside the PHY62XX,
+   Infineon ILLD and GD32VW55x SDK entries — so the algorithm body keeps the STROBE formatting and
+   stays diffable against its source. Note this puts one line of an apps path in the nuttx repo, so
+   PR-A1's style depends on PR-K1 landing first. The adaptation cruft was cleaned up at the same
+   time (commented-out `strobe.h` includes, a missing `sys/endian.h` that left `BYTE_ORDER`
+   undefined so the big-endian `#error` could never fire, and one trailing-whitespace line).
+
+   Still open, as separate work: exposing curve25519 through cryptodev without pulling in the
+   symmetric ciphers (a `CRYPTO_CRYPTODEV_SOFTWARE_PK`-style option) would let any future
+   userspace WG tooling share the kernel implementation. Not a blocker for this PR.
 6. **crypto nonce fix as a separate `crypto:` PR.** Order and granularity; add a u64-counter KAT
    to `crypto/testmngr.c`. **xchacha resolved 2026-09-23:** `xchacha20poly1305_encrypt/decrypt`
    does *not* take a byte nonce end-to-end — it splits the 24-byte nonce into an HChaCha20 subkey

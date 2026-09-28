@@ -42,7 +42,10 @@ case "${1:-}" in
     dx 'cd /opt/nuttx && make -j$(nproc) >/tmp/build.log 2>&1; rc=$?; grep -E "error|warning: .*(wireguard|wg_)" /tmp/build.log | grep -v "^ *$" | head -40; echo "BUILD_EXIT=$rc"; ls -la nuttx 2>/dev/null | cut -c1-60; exit $rc'
     ;;
   style)
-    dx 'cd /opt/nuttx && ./tools/checkpatch.sh -f drivers/net/wireguard/*.c drivers/net/wireguard/*.h include/nuttx/net/wireguard.h 2>&1 | tail -40; cd /opt/apps && ../nuttx/tools/checkpatch.sh -f system/wg/*.c 2>&1 | tail -20'
+    dx 'cd /opt/nuttx && ./tools/checkpatch.sh -f drivers/net/wireguard/*.c drivers/net/wireguard/*.h include/nuttx/net/wireguard.h 2>&1 | tail -40; cd /opt/apps && ../nuttx/tools/checkpatch.sh -f system/wg/*.c system/wg/*.h 2>&1 | tail -20'
+    # Keys are runtime-only: nothing base64-key-shaped may reach the config,
+    # and no CONFIG_ option may carry one.
+    dx 'cd /opt/nuttx && if grep -nE "[A-Za-z0-9+/]{43}=" .config; then echo "FAIL: .config contains something key-shaped"; exit 1; else echo "OK: no key material in .config"; fi'
     ;;
   nsh)
     cmds="${2:-help}"

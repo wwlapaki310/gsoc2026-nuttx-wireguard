@@ -134,12 +134,24 @@ refuses to replace an existing name).
 
 ### Offline key generation
 
-`genkey`/`pubkey` run without the device. Curve25519 for these is a single vendored MIT file
-(`wg_x25519.c`): NuttX's own `crypto/curve25519.c` is in-kernel only — the `/dev/crypto`
-cryptodev ABI exposes no X25519/Curve25519 operation, so under PROTECTED/KERNEL there is no
-syscall path a userspace `wg pubkey` could use. This matches upstream `wireguard-tools`, which
-also vendors its own curve25519. The vendored file keeps its upstream MIT formatting (it is not
-reformatted to NuttX style).
+`genkey`/`pubkey` run without the device. `genkey` only needs `/dev/urandom`, and `show` takes the
+interface's public key from the driver, which derives it in the kernel — so the only thing needing
+Curve25519 in userspace is the offline `pubkey` subcommand. That is a single vendored MIT file,
+`wg_x25519.c`.
+
+Cryptodev can do it: `CRK_DH_COMPUTE_KEY` is implemented as `curve25519()` in `cryptosoft.c`. The
+reason not to use it is the dependency — those handlers are compiled only for
+`CRYPTO_CRYPTODEV_SOFTWARE_CRYPTO` (which `depends on CRYPTO_SW_AES`) or
+`..._SOFTWARE_KEYMGMT` (which needs an MTD config device), so one scalar multiplication would pull
+the whole software cipher suite into the image and make `wg` unbuildable where cryptodev is off.
+Upstream `wireguard-tools` vendors its own curve25519 for the same reason. The two implementations
+are cross-checked in testing: `wg pubkey <priv>` must equal the `public key:` line of `wg show`,
+which comes from the kernel.
+
+The algorithm body keeps its upstream MIT formatting so it stays diffable against the STROBE
+source; the path is listed in `tools/nxstyle.c`'s `g_white_files[]` the way the PHY62XX, Infineon
+and GD32VW55x vendor sources are. **That one line lands with PR-K1, so this PR's style check
+depends on PR-K1 going in first.**
 
 ### Testing
 

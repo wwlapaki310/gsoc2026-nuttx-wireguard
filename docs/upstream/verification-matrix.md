@@ -52,7 +52,7 @@ are listed as such, not omitted.
 
 | Status | Tests |
 |---|---|
-| PASS (run) | T0 (partial), T1, **TF**, **TV** (chachapoly + xchacha + X25519 + BLAKE2s KAT), TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), **T5 (ESP32-S3 + Spresense/usrsock hardware)**, **TZ**, **TE (Spresense)**, **T7 (sim)**, T8 (partial) |
+| PASS (run) | **T0**, T1, **TF**, **TV** (chachapoly + xchacha + X25519 + BLAKE2s KAT), TR (partial), **TN**, **T3**, T6 runtime (via rv-virt), **T5 (ESP32-S3 + Spresense/usrsock hardware)**, **TZ**, **TE (Spresense)**, **T7 (sim)**, T8 (partial) |
 | BUILD-ONLY | qemu-armv7a:knsh (BUILD_KERNEL build) |
 | NOT RUN against kernel version | T4 runtime (T5 hardware PASS on both boards) |
 | PARTIAL / unresolved | TT (RTC-enabled sim reboot passes; persistence/reboot rollback remain open) |
@@ -66,7 +66,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 
 | ID | Checks | Impl / env | Status | Evidence | Pending reason |
 |---|---|---|---|---|---|
-| **T0** | style, SPDX headers, no key in `.config` | checkpatch/nxstyle | **PASS (partial)** | `kdev.sh style`: own files clean; `wg_x25519.c` (third-party MIT) excluded | full nxstyle sweep + `.config`-has-no-key assertion not scripted as a gate |
+| **T0** | style, SPDX headers, no key in `.config` | checkpatch/nxstyle | **PASS** | `kdev.sh style` (2026-09-28): `checkpatch.sh -f` over every driver `.c`/`.h`, the public header, and **every** `apps/system/wg` `.c`/`.h` — "All checks pass" on both trees, plus an assertion that nothing base64-key-shaped appears in `.config` ("OK: no key material in .config"). The vendored `wg_x25519.c`/`.h` are excluded the way NuttX already excludes vendor sources: path entries in `g_white_files[]` in `tools/nxstyle.c`, next to the PHY62XX/Infineon/GD32VW55x entries | The exclusion adds one apps path to the nuttx repo, so **PR-A1's style depends on PR-K1 landing first**. Not yet run as upstream CI does it (`checkpatch.sh -g <range>` over the actual commits); the `-f` sweep is over the files, which is stricter per file but does not check the patch form (rename/whitespace-in-diff). Adaptation cruft in the vendored files was cleaned up at the same time: commented-out `strobe.h` includes, a missing `sys/endian.h` that left `BYTE_ORDER` undefined so the big-endian `#error` could never fire, and one trailing-whitespace line |
 | **T1** | runtime-config tunnel to Linux kernel WG; handshake/ping; down/up; `saveconf`/`setconf` round-trip; on-device genkey; pubkey == wg(8) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-runtime.sh` (2026-09-20, all PASS) | `wg show` snapshot-diff against a pinned `expected/wg-show.txt` not yet added |
 | **T3** | two peers holding sessions at once | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-multipeer.sh`: two Linux WireGuard interfaces hold sessions with wg0 at once; traffic through each, both handshaken | — |
 | **TF** | ioctl unit negatives (all-zero key, self-pubkey, bad endpoint, allowed-ips overlap, peer limit+1, cidr > 32, up with no key, malformed base64 key) → all rejected, `wg show` unchanged | sim | **PASS** | `scripts/kernel/verify-sim-wg-ioctl.sh` (all cases PASS) | low-order-point and undersized-buffer cases not separately exercised |
