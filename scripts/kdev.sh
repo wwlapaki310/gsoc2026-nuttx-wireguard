@@ -6,7 +6,11 @@
 #   scripts/kdev.sh build           make (incremental)
 #   scripts/kdev.sh style           checkpatch on the WireGuard files
 #   scripts/kdev.sh nsh 'cmd1;cmd2' run nuttx sim, feed NSH commands, print output
-#   scripts/kdev.sh test <script>   run a scripts/verify-*.sh inside the container
+#   scripts/kdev.sh test <script> [lines] [args...]
+#                                   run a scripts/verify-*.sh inside the
+#                                   container, printing the last [lines] of
+#                                   output; anything further is passed to the
+#                                   script itself
 #
 # The container was created from nuttx-wireguard:sim-master with /opt/nuttx
 # and /opt/apps checked out at the same upstream commits the forks are based
@@ -30,7 +34,7 @@ case "${1:-}" in
     ;;
   configure)
     dx 'cd /opt/nuttx && make distclean >/dev/null 2>&1; ./tools/configure.sh sim:nsh >/dev/null && \
-      for o in NET NET_IPv4 NET_UDP NET_TCP NET_ICMP NET_ICMP_SOCKET SIM_NETDEV NETUTILS_IFCONFIG NETUTILS_PING SYSTEM_PING ALLOW_BSD_COMPONENTS NET_SOCKOPTS DEV_URANDOM CRYPTO CRYPTO_RANDOM_POOL DEV_URANDOM_RANDOM_POOL NET_WIREGUARD SYSTEM_WG; do kconfig-tweak --enable CONFIG_$o >/dev/null; done; \
+      for o in NET NET_IPv4 NET_UDP NET_TCP NET_ICMP NET_ICMP_SOCKET SIM_NETDEV NETUTILS_IFCONFIG NETUTILS_PING SYSTEM_PING ALLOW_BSD_COMPONENTS NET_SOCKOPTS DEV_URANDOM CRYPTO CRYPTO_RANDOM_POOL DEV_URANDOM_RANDOM_POOL NET_WIREGUARD SYSTEM_WG STACK_COLORATION; do kconfig-tweak --enable CONFIG_$o >/dev/null; done; \
       kconfig-tweak --disable CONFIG_DEV_URANDOM_XORSHIFT128; kconfig-tweak --set-val CONFIG_NSH_LINELEN 160; kconfig-tweak --set-val CONFIG_LINE_MAX 160; kconfig-tweak --set-val CONFIG_NET_WIREGUARD_MAX_PEERS 4; kconfig-tweak --set-str CONFIG_SYSTEM_WG_CONFIG_PATH /tmp/wg0.conf; \
       make olddefconfig >/dev/null 2>&1; grep -E "^CONFIG_(NET_WIREGUARD|SYSTEM_WG|CRYPTO_CURVE25519|NETDEV_IOCTL|DEV_URANDOM)" .config'
     ;;
@@ -51,7 +55,9 @@ case "${1:-}" in
     for f in "$(dirname "$0")"/kernel/*.c; do
       [ -e "$f" ] && docker cp "$f" "$C":/tmp/"$(basename "$f")"
     done
-    dx "bash /tmp/t.sh >/tmp/t.out 2>&1; rc=\$?; sed 's/\x1b\[K//g' /tmp/t.out | grep -vE '^\s*\$' | tail -${3:-30}; exit \$rc"
+    lines="${3:-30}"
+    shift 3 2>/dev/null || shift $(($#))
+    dx "bash /tmp/t.sh $* >/tmp/t.out 2>&1; rc=\$?; sed 's/\x1b\[K//g' /tmp/t.out | grep -vE '^\s*\$' | tail -${lines}; exit \$rc"
     ;;
   *)
     sed -n 2,12p "$0"; exit 1;;

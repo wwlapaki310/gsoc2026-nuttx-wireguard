@@ -692,7 +692,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 25</div>
+    <div class="num">1 / 26</div>
     <div class="notes-src">
 Today I will talk about bringing WireGuard to Apache NuttX.
 ||
@@ -741,7 +741,7 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
       </svg>
       <p class="lead">Packets routed to <code>wg0</code> are encrypted and sent as UDP; UDP arriving on the port is decrypted and delivered as if it had arrived on <code>wg0</code>. The peer can be any existing WireGuard endpoint.</p>
     </div>
-    <div class="num">2 / 25</div>
+    <div class="num">2 / 26</div>
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
@@ -772,7 +772,7 @@ Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack. It had no VPN.
       </div>
     </div>
     <div class="sources">Quotations: apache.org/foundation, communityovercode.apache.org &middot; Logos: ASF Brand Guidelines</div>
-    <div class="num">3 / 25</div>
+    <div class="num">3 / 26</div>
     <div class="notes-src">
 A word on where this is going.
 ||
@@ -796,7 +796,7 @@ I mention this because it changes what "done" means. The goal is not a demo that
         </div>
       </div>
     </div>
-    <div class="num">4 / 25</div>
+    <div class="num">4 / 26</div>
     <div class="notes-src">
 Why work on this at all.
 ||
@@ -815,7 +815,7 @@ I wanted to reach the NuttX devices I work with, securely, after they are instal
         <li>Interop <span>the peer can be Linux, Windows, or an existing WireGuard server &mdash; not a bespoke protocol.</span></li>
       </ul>
     </div>
-    <div class="num">5 / 25</div>
+    <div class="num">5 / 26</div>
     <div class="notes-src">
 It is not that you can do new things. It is that the things you already wanted to do become ordinary.
 ||
@@ -838,7 +838,7 @@ Maintenance with the usual tools. Pulling the cloud into the device's network ra
         </div>
       </div>
     </div>
-    <div class="num">6 / 25</div>
+    <div class="num">6 / 26</div>
     <div class="notes-src">
 Writing a crypto stack from scratch would be a mistake. So I started from an existing implementation.
 ||
@@ -861,7 +861,7 @@ wireguard-lwip implements WireGuard as an lwIP netif, and crucially it isolates 
         <p><code>wg0</code> is a <code>NET_LL_TUN</code> netdev, and its wire is a UDP socket.</p>
       </div>
     </div>
-    <div class="num">7 / 25</div>
+    <div class="num">7 / 26</div>
     <div class="notes-src">
 The single most important porting decision.
 ||
@@ -884,7 +884,7 @@ Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. ne
         <small>And that is exactly where the interesting part begins &mdash; because working was the easy part.</small>
       </div>
     </div>
-    <div class="num">8 / 25</div>
+    <div class="num">8 / 26</div>
     <div class="notes-src">
 The result of the first version.
 ||
@@ -901,7 +901,7 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
         <small>And because the shallow test passed, you trust that area and spend hours looking somewhere else. That loop repeated all the way through this project &mdash; and it did not stop at the apps version.</small>
       </div>
     </div>
-    <div class="num">9 / 25</div>
+    <div class="num">9 / 26</div>
     <div class="notes-src">
 This is the heart of the talk.
 ||
@@ -924,7 +924,7 @@ Every difficult bug in this project had the same shape. A shallow test passes; a
         </div>
       </div>
     </div>
-    <div class="num">10 / 25</div>
+    <div class="num">10 / 26</div>
     <div class="notes-src">
 The first taste: a success return with no effect.
 ||
@@ -947,7 +947,7 @@ Setting a receive timeout returned zero, success. But recvfrom still blocked for
         </div>
       </div>
     </div>
-    <div class="num">11 / 25</div>
+    <div class="num">11 / 26</div>
     <div class="notes-src">
 The second: a lifecycle assumption that did not hold.
 ||
@@ -971,7 +971,7 @@ The receive thread was created detached. When the launching command exited, the 
         </div>
       </div>
     </div>
-    <div class="num">12 / 25</div>
+    <div class="num">12 / 26</div>
     <div class="notes-src">
 My favourite bug in the project.
 ||
@@ -993,7 +993,7 @@ The cause: in NuttX, file descriptors are scoped to the task group, not to the w
         <p>Fix: hook <code>psock_poll()</code> with a callback and a semaphore &mdash; real blocking wait.</p>
       </div>
     </div>
-    <div class="num">13 / 25</div>
+    <div class="num">13 / 26</div>
     <div class="notes-src">
 The fourth: an assumption I did not measure.
 ||
@@ -1015,7 +1015,7 @@ The fd-less fix also broke poll, which is fd-based, so as a stopgap I polled the
         </div>
       </div>
     </div>
-    <div class="num">14 / 25</div>
+    <div class="num">14 / 26</div>
     <div class="notes-src">
 The fifth, and it comes back later: stacks nobody measured.
 ||
@@ -1038,7 +1038,7 @@ Persisting the config by redirecting into a file froze the board, but only on re
         </div>
       </div>
     </div>
-    <div class="num">15 / 25</div>
+    <div class="num">15 / 26</div>
     <div class="notes-src">
 This is the additional work since the first version, and the part that makes it mergeable.
 ||
@@ -1057,7 +1057,7 @@ Version one lives in apps and reaches into socket internals. That is fine for a 
         <li>Kernel crypto is NuttX's own <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored on the kernel side.</span></li>
       </ul>
     </div>
-    <div class="num">16 / 25</div>
+    <div class="num">16 / 26</div>
     <div class="notes-src">
 The shape of the real driver.
 ||
@@ -1080,7 +1080,7 @@ wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receiv
         </div>
       </div>
     </div>
-    <div class="num">17 / 25</div>
+    <div class="num">17 / 26</div>
     <div class="notes-src">
 And the same pattern held at kernel depth &mdash; twice.
 ||
@@ -1103,13 +1103,37 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
       </table>
       <div class="claim"><p>The <span class="hl">kernel driver runs on real hardware &mdash; both boards</span>, usrsock path included.</p></div>
     </div>
-    <div class="num">18 / 25</div>
+    <div class="num">18 / 26</div>
     <div class="notes-src">
 Be precise about which implementation was verified where.
 ||
 The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
 ||
 And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. And then the fault case that design exists for was forced on that board: a datagram held outstanding on the real usrsock backend while control operations arrive. A query answered, a peer update was accepted, the stop reported a timeout instead of hanging, the held ciphertext was untouched, and a repeated down reaped it so the interface came back. What that still does not cover is IOB exhaustion, losing Wi-Fi mid-send, and sustained load. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Verification</p>
+    <h2>A working tunnel is not evidence.</h2>
+    <div class="body">
+      <table>
+        <tr><th>Failure</th><th>Does a passing ping notice?</th><th>What was measured</th></tr>
+        <tr><td>The <b>same private key on every boot</b> &mdash; NuttX's default <code>/dev/urandom</code> is seeded from compile&#8209;time constants</td><td class="old">no &mdash; every functional test still passes</td><td class="new">3 restarts on the board &rarr; 3 different keys; the pool path, not xorshift128</td></tr>
+        <tr><td>Session keys <b>outliving the tunnel</b></td><td class="old">no</td><td class="new">read the live process memory: transport keys 32/32 bytes set while up &rarr; <b>all zero</b> after <code>down</code>; exactly <b>one</b> copy of the static key, before and after</td></tr>
+        <tr><td>A <b>leak that only shows after hours</b></td><td class="old">no</td><td class="new">151 forced rekeys past the expiration horizon, 10 endpoint moves, 100 <code>down</code>/<code>up</code>: buffer pool whole, live allocations back to the boot count <b>exactly</b>, RX&#8209;thread stack high&#8209;water 2.5&nbsp;KB and unmoved</td></tr>
+      </table>
+      <div class="claim"><p>Each of these <span class="hl">passes every functional test</span> while being broken.</p></div>
+    </div>
+    <div class="num">19 / 26</div>
+    <div class="notes-src">
+The previous slide was where it runs. This one is what a working tunnel cannot tell you.
+||
+Take key generation. NuttX's default /dev/urandom is an xorshift PRNG seeded from compile-time constants. A board left on that path hands out the same private key on every single boot. The handshake works. The ping works. The demo works. The tunnel is worthless, and nothing I showed you so far would notice. So: reset the board three times, read one key each time, compare &mdash; three different keys, and the config is on the entropy pool rather than the constant seed. It is a cheap check, and the only reason to skip it is not having thought of it.
+||
+Second, what survives bringing the interface down. Here I stopped reading the code and read the memory: find the device in the running process by matching the key I set, then check the secret fields by name, at offsets computed from the driver's own headers. The transport keys are fully populated while the tunnel is up and every byte is zero after down, and the handshake state is already gone while it is up, because it is wiped the moment the keys are derived. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in the whole writable address space, before and after. That asymmetry is a decision, so it is now written in the driver's documentation rather than left for a reviewer to guess at.
+||
+Third, the soak. A hundred and fifty-one rekeys forced past the point where sessions expire, ten endpoint moves, a hundred down-up cycles, and the resources sampled throughout: the buffer pool comes back whole, the live allocation count returns to exactly what it was at boot &mdash; not close, equal &mdash; and the receive thread's stack high-water mark is two and a half kilobytes and does not move after the first sample. That last number is worth having on its own: the default stack for that thread is six kilobytes, so the margin is real rather than assumed. What I am not claiming is a week of uptime, or that a simulator's allocator and 64-bit frames behave like the board's.
     </div>
   </section>
 
@@ -1127,7 +1151,7 @@ And it now runs on real hardware &mdash; both boards. The kernel driver flashed 
       </table>
       <div class="claim"><p>Took the contract Linux and wireguard-go use &mdash; and made the case it misses <span class="hl">say so</span>.</p></div>
     </div>
-    <div class="num">19 / 25</div>
+    <div class="num">20 / 26</div>
     <div class="notes-src">
 This is the one where I had to decide rather than test.
 ||
@@ -1154,7 +1178,7 @@ So: realtime plus a high-water mark within the boot, which is exactly what Linux
         </div>
       </div>
     </div>
-    <div class="num">20 / 25</div>
+    <div class="num">21 / 26</div>
     <div class="notes-src">
 The point of the demo is that there is nothing special to see.
 ||
@@ -1175,7 +1199,7 @@ I telnet into the board through the tunnel and run commands, and I start a web s
         <p>Four independent signals answer one question: when the tunnel goes quiet, is it me?</p>
       </div>
     </div>
-    <div class="num">21 / 25</div>
+    <div class="num">22 / 26</div>
     <div class="notes-src">
 Moving from "it works in a demo" to "you could run it."
 ||
@@ -1197,7 +1221,7 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
       </table>
       <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim, rv-virt (BUILD_KERNEL) and both boards over real Wi-Fi (ESP32-S3 native, SPRESENSE over usrsock) on top.</div>
     </div>
-    <div class="num">22 / 25</div>
+    <div class="num">23 / 26</div>
     <div class="notes-src">
 The design decision from the start, validated.
 ||
@@ -1216,7 +1240,7 @@ Isolating the OS behind a few functions was a bet. Here is the check, with the a
         <li>Design shared on <code>dev@nuttx.apache.org</code> <span>checkpatch / nxstyle clean, PR-shaped, licensed &mdash; community over code.</span></li>
       </ul>
     </div>
-    <div class="num">23 / 25</div>
+    <div class="num">24 / 26</div>
     <div class="notes-src">
 Closing the loop with this room's values.
 ||
@@ -1234,7 +1258,7 @@ The contribution is staged: a small crypto PR first, for the nonce fix, because 
         <li>Porting into a project can improve the project <span>two latent NuttX bugs found on the way in &mdash; its ChaCha20-Poly1305 nonce, and a boot regression that stops a clean release from reaching a shell on this board at all.</span></li>
       </ul>
     </div>
-    <div class="num">24 / 25</div>
+    <div class="num">25 / 26</div>
     <div class="notes-src">
 Three things to take away.
 ||
@@ -1257,7 +1281,7 @@ First, shallow tests pass and deep tests fail &mdash; so build your tests for de
         </div>
       </div>
     </div>
-    <div class="num">25 / 25</div>
+    <div class="num">26 / 26</div>
     <div class="notes-src">
 Thank you. I am happy to take questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
     </div>
