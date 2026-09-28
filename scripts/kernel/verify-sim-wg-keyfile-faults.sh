@@ -11,11 +11,20 @@
 #   3. the divergence is observable: the device holds the new key while the
 #      file still holds the old one, and setconf brings the old one back
 #
-# The fault is injected by making the temporary path a directory, so the
-# fopen() of "<config>.tmp" cannot succeed. No peer or network is needed.
+# The fault injected is a full filesystem. /tmp in the sim is a ~500 KB VFAT
+# ramdisk, so filling it produces a real ENOSPC on the path that writes the
+# replacement -- which is the failure this fix is actually about, and it does
+# not depend on knowing the temporary file's name.
 #
-# Pass = every checked command has the expected status and the interface
-# public key follows the file, not the failed write.
+# A second section runs two writers at once. Both stage into a temporary beside
+# the configuration, so if they shared one name the second would truncate the
+# first's file and the loser's rename could move a half-written file over the
+# winner's. The names carry the pid for that reason; this checks the result is
+# a loadable configuration either way.
+#
+# Pass = every checked command has the expected status, the interface public
+# key follows the file rather than the failed write, and the file is always
+# loadable afterwards.
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -86,21 +95,32 @@ checked SETK1 "wg set private-key ${K1}"
 [ "$(shown_pubkey)" = "${P1}" ] || fail "device did not take the first key"
 echo "PASS: baseline key stored"
 
-# --- fault: the temporary file cannot be created ---------------------------
+# --- fault: the filesystem is full -----------------------------------------
+# dd stops when it runs out of space, which is the point; its own exit status
+# is not what is being tested.
 
-send "mkdir ${conf}.tmp"
+fill() { send "dd if=/dev/zero of=/tmp/fill bs=512 count=2000"; sleep 0.5; }
+unfill() { send "rm /tmp/fill"; sleep 0.3; }
+
+fill
+if ! diagnostics | tail -20 | grep -qiE "no space|ENOSPC|failed|error"; then
+  # Not fatal by itself: report what df says so a filesystem that silently
+  # grew is visible rather than making the rest of the test meaningless.
+  send "df"
+fi
+
 checked SETK2 "wg set private-key ${K2}" 1
 
 if ! diagnostics | grep -q "could not be saved"; then
   fail "a failed save did not report that the running key is unsaved"
 fi
-echo "PASS: failed save exits nonzero and says the key is not stored"
+echo "PASS: a save that runs out of space exits nonzero and says so"
 
 # The device took the key even though the file did not: that divergence is
 # exactly what the warning is about, so assert it rather than hide it.
 [ "$(shown_pubkey)" = "${P2}" ] || fail "device should hold the new key"
 
-send "rmdir ${conf}.tmp"
+unfill
 
 # --- the previous configuration must have survived -------------------------
 
@@ -111,14 +131,45 @@ echo "PASS: previous configuration survived the failed save"
 
 # --- the same fault against saveconf ---------------------------------------
 
-send "mkdir ${conf}.tmp"
+fill
 checked SAVEFAIL "wg saveconf" 1
-send "rmdir ${conf}.tmp"
+unfill
 
 checked RELOAD2 "wg setconf ${conf}"
 [ "$(shown_pubkey)" = "${P1}" ] ||
   fail "a failed saveconf damaged the configuration"
 echo "PASS: failed saveconf exits nonzero and leaves the file intact"
+
+# --- no temporary files left behind ----------------------------------------
+# A replacement that fails has to clean up after itself, or a board with a
+# small filesystem fills up one failed save at a time.
+
+send "ls /tmp"
+sleep 0.4
+if diagnostics | tail -20 | grep -q "\.tmp"; then
+  fail "a failed save left its temporary file behind"
+fi
+echo "PASS: failed saves leave no temporary files"
+
+# --- two writers at once ---------------------------------------------------
+
+send "wg set private-key ${K2} &"
+send "wg saveconf &"
+sleep 3
+
+checked RELOADC "wg setconf ${conf}"
+concurrent="$(shown_pubkey)"
+if [ "${concurrent}" != "${P1}" ] && [ "${concurrent}" != "${P2}" ]; then
+  fail "two concurrent writers left a configuration that is not either key"" (got ${concurrent})"
+fi
+echo "PASS: two concurrent writers left a loadable configuration"" (holding ${concurrent})"
+
+send "ls /tmp"
+sleep 0.4
+if diagnostics | tail -20 | grep -q "\.tmp"; then
+  fail "a temporary file was left behind by the concurrent writers"
+fi
+echo "PASS: no temporary files left after concurrent writers"
 
 # --- recovery once the fault is removed ------------------------------------
 
