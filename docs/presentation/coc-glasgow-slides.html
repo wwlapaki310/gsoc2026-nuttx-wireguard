@@ -1158,11 +1158,12 @@ Third, the soak. A hundred and fifty-one rekeys forced past the point where sess
         <tr><td>Durable range reservation</td><td>one per N</td><td>yes</td><td class="old">needs a durability contract NuttX has not got</td></tr>
         <tr><td>Let it catch up</td><td>none</td><td class="old">no</td><td class="old">the wait equals the last uptime</td></tr>
       </table>
+      <p style="margin-top:14px">On the board, one variable changed, nothing sent to it: <b>clock unset &rarr; no handshake in 75&nbsp;s</b>; <b>clock set &rarr; 4.1&nbsp;s</b>.</p>
       <div class="claim"><p>Took the contract Linux and wireguard-go use &mdash; and made the case it misses <span class="hl">say so</span>.</p></div>
     </div>
     <div class="num">20 / 26</div>
     <div class="notes-src">
-This is the one where I had to decide rather than test.
+This is the one where I had to decide rather than test. Then I went and measured the decision.
 ||
 WireGuard's replay defence puts an obligation on the initiator: every handshake must carry a timestamp greater than anything that peer already accepted, and that has to hold across a reboot. The device is usually the one dialling out, and it is the one least likely to have a battery-backed clock.
 ||
@@ -1171,6 +1172,10 @@ The reproduction said recovery took seventy-five seconds, and that number is mis
 Writing the timestamp every handshake means a flash write every couple of minutes, forever, on the path that most needs to stay quick. Reserving a range durably and spending it from RAM is the right long-term answer, and I have written it up &mdash; but it needs a storage backend that will state its ordering and durability guarantees, and I could not get one. Locally, hostfs sync calls a void function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved.
 ||
 So: realtime plus a high-water mark within the boot, which is exactly what Linux and wireguard-go do, and never fall back to uptime. What I added is the part a desktop never needed, because a desktop always has a clock. Without an RTC, NuttX seeds the clock from a configured year, so if the clock is still below the year after it, it was never set &mdash; and the driver says so once, naming the consequence. It still issues the timestamp, because a peer meeting this key for the first time will accept it and refusing would break first pairing on exactly those boards. The failure I am turning into one line of console output is not a crash. It is a tunnel that quietly never comes back, on a device that is not on your desk.
+||
+And I did measure it, on the board, because a design argument you cannot demonstrate is just an opinion. The trap is that the obvious test passes. Reset the board, ping it, and the tunnel is back in sixteen seconds &mdash; because your ping made the *peer* initiate, and a responder needs no timestamp of its own. The device can be completely unable to dial out and that test still goes green.
+||
+So: send the board nothing at all, and watch its own view of the session. Two runs, same board, same peer, same image, one variable. Clock as it boots: the driver warns, and there is no handshake after seventy-five seconds. Clock set from my laptop: the warning goes quiet, and the handshake completes in four point one seconds. That is both halves at once &mdash; the uncovered case is real on hardware, not just in a simulator, and the design is right wherever a clock exists. Fourteen stays open because I decided it should, not because I ran out of evidence.
     </div>
   </section>
 
