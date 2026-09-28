@@ -11,10 +11,23 @@
 #   Host  tapwg   10.0.0.1/24   + Linux wgtest0 (listen 51821), tunnel 10.10.0.1
 #   Guest eth0    10.0.0.2/24   + NuttX wg0     (listen 51820), tunnel 10.10.0.2
 #
+# The CPU count follows CONFIG_SMP_NCPUS, so the same script also covers the
+# SMP configuration (build-knetnsh.sh rv-virt:knetnsh64_smp): the driver's
+# protocol state is serialised by the device d_lock rather than by there being
+# only one CPU, and SMP is where that claim is either true or not.
+#
 # Run inside the wgdev container after scripts/kernel/build-knetnsh.sh.
 set -euo pipefail
 
 cd /opt/nuttx
+
+# -smp must match CONFIG_SMP_NCPUS; a non-SMP config runs on one.
+ncpus=1
+if grep -q "^CONFIG_SMP=y" .config; then
+  ncpus="$(sed -n 's/^CONFIG_SMP_NCPUS=//p' .config)"
+  ncpus="${ncpus:-1}"
+fi
+echo "CPUs: ${ncpus}"
 
 if ! command -v wg >/dev/null 2>&1; then
   apt-get update -qq
@@ -39,7 +52,7 @@ mkfifo /tmp/q.in
 # default OpenSBI firmware, not -bios none. The console is the 16550 UART;
 # -serial mon:stdio wires it to our fifo. virtio-net on the first mmio slot
 # carries the tunnel to the host TAP.
-qemu-system-riscv64 -semihosting -M virt,aclint=on -cpu rv64 -smp 1 \
+qemu-system-riscv64 -semihosting -M virt,aclint=on -cpu rv64 -smp "${ncpus}" \
   -kernel nuttx -serial mon:stdio -display none \
   -global virtio-mmio.force-legacy=false \
   -netdev tap,id=u1,ifname=tapwg,script=no,downscript=no \
@@ -140,5 +153,39 @@ echo "${guest_ping}" | grep -qE "3 (packets )?received|received 3|Success" && \
 if wg show wgtest0 | grep -q "latest handshake"; then
   echo "PASS: Linux peer recorded a handshake with NuttX"
 fi
+
+# --- proof 4: concurrent load while the interface is reconfigured -----------
+# On SMP this is the only place the d_lock discipline is actually contended: a
+# flood arriving on one CPU while another runs an ioctl. On one CPU it still
+# exercises the same interleavings, just without true parallelism.
+
+faulted() {
+  out | grep -aqE "EXCEPTION|riscv_exception|PANIC|Assertion failed|_assert:|""Data access|Instruction access"
+}
+
+ping -f -c 2000 -W 1 10.10.0.2 >/dev/null 2>&1 &
+flood=$!
+for _ in 1 2 3 4 5; do
+  send "wg show"
+  send "wg set peer ${linux_pub} persistent-keepalive 15"
+done
+send "wg down"
+send "wg up"
+wait "${flood}" 2>/dev/null || true
+
+if faulted; then
+  echo "FAIL: a fault was reported under concurrent load"
+  out | grep -aE "EXCEPTION|riscv_exception|PANIC|Assertion failed|_assert:|""Data access|Instruction access" | head -10
+  exit 1
+fi
+
+recovered=false
+for _ in $(seq 1 12); do
+  sleep 2
+  if ping -c 1 -W 2 10.10.0.2 >/dev/null 2>&1; then recovered=true; break; fi
+done
+[ "${recovered}" = true ] ||
+  { echo "FAIL: the tunnel did not recover after concurrent load"; exit 1; }
+echo "PASS: survived a flood concurrent with reconfiguration and a down/up"" on ${ncpus} CPU(s), and the tunnel recovered"
 
 echo "PASS: knetnsh64 in-kernel WireGuard tunnel verified (BUILD_KERNEL + virtio-net + real Linux peer)"

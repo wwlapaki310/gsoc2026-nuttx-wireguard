@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Build the WireGuard device and the wg command under BUILD_KERNEL with
 # real networking, on rv-virt:knetnsh64 (a first-class NuttX QEMU target).
+#
+# Usage: build-knetnsh.sh [board:config]   default rv-virt:knetnsh64
+# Pass rv-virt:knetnsh64_smp for the same thing under CONFIG_SMP.
 # Unlike the qemu-armv7a:knsh build, knetnsh64 already has a known-good
 # virtio-net device, so this build is used for a full run-time tunnel
 # against a real Linux WireGuard peer (see verify-knetnsh-wg.sh).
@@ -9,9 +12,10 @@
 set -euo pipefail
 
 cd /opt/nuttx
+TARGET="${1:-rv-virt:knetnsh64}"
 
 make distclean >/dev/null 2>&1 || true
-./tools/configure.sh rv-virt:knetnsh64 >/dev/null
+./tools/configure.sh "${TARGET}" >/dev/null
 
 for o in \
   NET_IPv4 NET_UDP NET_ICMP NET_ICMP_SOCKET NET_SOCKOPTS \
@@ -32,7 +36,7 @@ kconfig-tweak --set-val CONFIG_LINE_MAX 160 >/dev/null
 make olddefconfig >/dev/null 2>&1
 
 echo "=== effective options ==="
-grep -E "^CONFIG_(BUILD_KERNEL|NET_WIREGUARD|SYSTEM_WG|CRYPTO_CURVE25519|DRIVERS_VIRTIO_NET)=" .config
+grep -E "^CONFIG_(BUILD_KERNEL|NET_WIREGUARD|SYSTEM_WG|CRYPTO_CURVE25519|DRIVERS_VIRTIO_NET|SMP|SMP_NCPUS)=" .config
 
 echo "=== building kernel ==="
 make -j"$(nproc)" >/tmp/knetnsh-build.log 2>&1 && rc=0 || rc=$?

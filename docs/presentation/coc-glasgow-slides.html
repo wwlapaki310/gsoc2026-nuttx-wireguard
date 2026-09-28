@@ -1092,17 +1092,18 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
 
   <section class="slide">
     <p class="eyebrow">Verification</p>
-    <h2>Five places it has to hold.</h2>
+    <h2>Six places it has to hold.</h2>
     <div class="body">
       <table>
         <tr><th>Environment</th><th>Implementation</th><th>Confirmed</th></tr>
         <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds clean (the config CI compiles)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> a separate ELF across the syscall boundary</td></tr>
         <tr><td>rv-virt pnsh64</td><td class="new">kernel &middot; BUILD_<b>PROTECTED</b></td><td class="new">tunnel with the <b>MPU split</b> live &mdash; <code>wg</code> in <code>nuttx_user</code>, every ioctl across the boundary, <b>no fault</b></td></tr>
+        <tr><td>rv-virt knetnsh64_smp</td><td class="new">kernel &middot; <b>SMP, 4 CPUs</b></td><td class="new">a flood <b>concurrent with</b> reconfiguration and a <code>down</code>/<code>up</code> &mdash; no fault, tunnel recovered</td></tr>
         <tr><td>ESP32-S3 + SPRESENSE</td><td class="new">kernel &middot; real Wi-Fi</td><td class="new">tunnel to the Windows client &mdash; ESP32 native 4/4, SPRESENSE via <b>usrsock</b> 6/6</td></tr>
         <tr><td>same two boards</td><td class="old">apps v0.1.1</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
       </table>
-      <div class="claim"><p>Real hardware on <span class="hl">both boards</span>, and <span class="hl">both privilege models</span> &mdash; syscall boundary and MPU split.</p></div>
+      <div class="claim"><p><span class="hl">Both boards</span>, <span class="hl">both privilege models</span>, and <span class="hl">more than one CPU</span>.</p></div>
     </div>
     <div class="num">18 / 26</div>
     <div class="notes-src">
@@ -1111,6 +1112,8 @@ Be precise about which implementation was verified where.
 The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.
 ||
 And then the other privilege model. The ioctl ABI is a fixed struct with no pointers inside it, so that the kernel never has to reach into user memory &mdash; and the way an assumption like that fails is not a compile error, it is an MPU exception on the first call. PROTECTED had only ever been built, on a board with no emulator. So I brought it up on rv-virt's protected config: the split boots, the wg command lives in the user blob, every configuration ioctl crosses the boundary, and the tunnel reaches Linux kernel WireGuard with no exception, no assertion, no panic. The memory map is the stock one &mdash; the kernel takes eighty percent of its side, the user command eight percent of the other.
+||
+And the locking. The driver puts its protocol state under the device lock, not under there being only one CPU &mdash; and until this week that was an argument I made from the code rather than something I had contended. So: four CPUs, a two-thousand-packet flood arriving while another CPU is running configuration ioctls and a down-up cycle. No exception, no assertion, and the tunnel came back. One scripted interleaving on an emulator is not a race search, so a race that needs a specific window can still be hiding. But the claim is no longer only on paper.
 ||
 And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. And then the fault case that design exists for was forced on that board: a datagram held outstanding on the real usrsock backend while control operations arrive. A query answered, a peer update was accepted, the stop reported a timeout instead of hanging, the held ciphertext was untouched, and a repeated down reaped it so the interface came back. What that still does not cover is IOB exhaustion, losing Wi-Fi mid-send, and sustained load. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.
     </div>
