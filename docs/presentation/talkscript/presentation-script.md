@@ -1,5 +1,13 @@
 # 発表: WireGuard を Apache NuttX に移植する
 
+**Community Over Code (Glasgow) 本番はこのファイルではなく
+[coc-glasgow-script-en.md](coc-glasgow-script-en.md) /
+[coc-glasgow-script-ja.md](coc-glasgow-script-ja.md) と
+[coc-glasgow-qa.md](coc-glasgow-qa.md) を使うこと。** このファイルの想定Q&Aは
+カーネル移植前の `slides.html`(apps版・FLATビルド専用)を前提にしていて、
+PROTECTED/KERNELビルドを「今後の課題」と書くなど、現状と食い違う回答が
+含まれる。
+
 短い紹介枠なら [`short-slides.md`](short-slides.md)（9 枚 / 10・8・5 分のルートつき）を使ってください。
 
 スライド本体は [`slides.html`](../slides.html) です。**話す原稿はスライドの中に入っている**ので、

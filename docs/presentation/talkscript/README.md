@@ -5,7 +5,9 @@
 
 | デッキ | 台本 | 中身 |
 |---|---|---|
-| [slides.html](../slides.html)(本編 27 枚) | [slides.md](slides.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
+| [coc-glasgow-slides.html](../coc-glasgow-slides.html)(**Community Over Code, Glasgow 本番**・カーネル移植後・26 枚) | [coc-glasgow-script-en.md](coc-glasgow-script-en.md)(英語・本番用)/ [coc-glasgow-script-ja.md](coc-glasgow-script-ja.md)(日本語・リハーサル/理解用) | 読み上げ台本。デッキ内の発表者ノート(`N`キー)と1対1対応。時間配分と削る順番つき |
+| 同上 | [coc-glasgow-qa.md](coc-glasgow-qa.md) | 想定Q&A。**このデッキ専用**(`presentation-script.md` の想定Q&Aは古い apps 版向けで合わない) |
+| [slides.html](../slides.html)(本編 27 枚・カーネル移植より前) | [slides.md](slides.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
 | [returns-slides.html](../returns-slides.html)(Sechack365 Returns、8 枚) | [returns-slides.md](returns-slides.md) | 構成・各スライドに載せるもの・**話すこと**・出典。Returns デッキの単一の情報源 |
 | [short-slides.html](../short-slides.html)(9 枚 = Returns + Spresense / NuttX 3 版) | [short-slides.md](short-slides.md) | 読み上げ台本。10 分 / 8 分 / 5 分のルートつき |
 | 同上(英語で話す場合) | [short-slides-en.md](short-slides-en.md) | 同じ 9 枚・同じ削る順番の英語版。140 words/min 換算 |
