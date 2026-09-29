@@ -1073,7 +1073,7 @@ Version one lives in apps and reaches into socket internals. That is fine for a 
         <li>Kernel netdev <span><code>netdev_lowerhalf</code> owning a UDP socket, a receive kernel thread, timers and cookies &mdash; the driver owns the socket and thread, so v1's launcher-lifetime dependency is gone.</span></li>
         <li>Flat, pointer-free ioctl ABI <span><code>SIOCS/GWGIF</code>, <code>SIOCS/D/GWGPEER</code> &mdash; no pointers, because in PROTECTED / KERNEL the kernel copies the caller's struct directly.</span></li>
         <li>Private key is write-only <span>the get ioctl never returns the private key.</span></li>
-        <li>Kernel crypto is NuttX's own <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored on the kernel side.</span></li>
+        <li>Kernel crypto is NuttX's own <span>BLAKE2s, ChaCha20-Poly1305, Curve25519 from <code>crypto/</code> &mdash; nothing vendored on the kernel side. The one vendored file, MIT X25519, is in the user-space command's offline <code>genkey</code> &mdash; reaching the kernel's Curve25519 via cryptodev instead would pull in the whole software cipher suite for one scalar multiply.</span></li>
       </ul>
     </div>
     <div class="num">16 / 26</div>

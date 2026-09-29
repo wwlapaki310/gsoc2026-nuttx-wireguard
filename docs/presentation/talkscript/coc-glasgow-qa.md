@@ -68,15 +68,18 @@ it's the stack/heap numbers on that specific chip that are still open."
 プールを12バッファまで絞って、トンネル越しのトラフィックと偽の
 ハンドシェイク開始のフラッドを同時にかけ、枯渇させることは確認して
 います — assertも落ちず、負荷が止まればプールも通信も元に戻ります。
-ただし**「ドライバが実際にIOBの確保待ちでブロックし得る経路があるか」
-自体は未確定**です。今の試験で見えているのは「確保に失敗してパケットが
-落ちる」経路で、「確保待ちでタスクが眠る」方の経路 (`nwait` が動く方)
-は一度も観測できていません。到達可能かどうかを先に決めるのが次の
-作業です。
+「ドライバが実際にIOBの確保待ちでブロックし得る経路があるか」も
+その後 [iob-wait-audit.md](../../upstream/iob-wait-audit.md) で確定
+させました: バッファ付きUDP送受信の経路はどちらも try-allocation
+(`throttled=false` / `timeout=0`)なので、`nwait` が動く「確保待ちで
+タスクが眠る」経路はこのドライバには**存在しません** — 「未検証」
+ではなく「到達不能」です。usrsockのソケット自体がブロックする経路や
+AP喪失はこれとは別物で、混同しないようにしています。
 *Say:* "Shrinking the pool and flooding it survives — no assert, full
-recovery. What's not settled is whether this driver can ever block waiting
-for a buffer at all, versus always taking the fail-fast path. That's an
-open question before I can call it tested."
+recovery. Whether the driver can ever block waiting for a buffer is
+settled, not open: the direct TX/RX paths are try-allocation only, so
+there's no wait branch to exercise. That's 'not reachable,' which is a
+better answer than 'untested.'"
 
 **Q. #14(タイムスタンプ/リプレイ)はなぜまだ open なのか、証拠が
 足りないのでは?**
@@ -97,15 +100,16 @@ clock set, 4.1 seconds."
 
 **Q. その「TZ(鍵のゼロ化)」の検証で next_keypair やハンドシェイク状態が
 非ゼロになる瞬間は見られたのか?**
-まだです。強制的な再鍵化で `prev_keypair` が本当に鍵を持つ状態は作れましたが、
+その後見られるようになりました。UDPリレーで転送確認を意図的に止めて
 `next_keypair`(responderが次のセッションをインストールしてから現行に
-昇格するまでの短い窓)と、ハンドシェイク状態(鍵導出の瞬間に消去される)は、
-サンプリングした瞬間には一度も鍵を保持していませんでした。「保持していな
-かった、行使されていない」と正直に書いてあります。デバッグフックでその
-窓を狙うのが次の作業です。
-*Say:* "Not yet — the forced rekey proves `prev_keypair` really holds a
-key, but `next_keypair` and the handshake state were never caught
-non-zero. The matrix says 'not exercised,' not 'passed.'"
+昇格するまでの短い窓)を非ゼロのまま捕捉し、応答のない開始要求で
+ハンドシェイク状態(鍵導出の瞬間に消去される一時鍵・チェイン・ハッシュ)
+も非ゼロのまま捕捉しました。どちらも `wg down` 後はゼロです。タイマー
+駆動の自然な再鍵化(ピア側のリセットなし)もこの間に確認しています。
+*Say:* "It's closed now — a UDP relay that withholds the transport
+confirmation catches `next_keypair` non-zero, and an unanswered
+initiation catches the handshake state non-zero. Both go to zero after
+`down`, on sim, under one controlled delivery schedule."
 
 ---
 
@@ -261,7 +265,9 @@ config line without erroring — and fixed it."
 
 - 質問が来る可能性が高いもの:
   upstream提出状況(fork push済み、PR/dev@は未実施)、
-  TZ/TIの狭さ、ESP32-S3の資源実測待ち、#17のSmartFS電源断待ち。
-  すべてこの資料で答えられるようにしてある。
+  ESP32-S3の資源実測待ち、#17のSmartFS電源断待ち。
+  すべてこの資料で答えられるようにしてある。TZ・TIはどちらも
+  もう閉じている(前者は測定、後者は「到達不能」の確認) — 古い
+  資料や記憶で「まだ狭い」と言わないこと。
 - 逆にスライドに載っている数字を聞かれたら、スライド18・19・20を
   直接指させばよい(URLハッシュ `#18` などで即座に飛べる)。

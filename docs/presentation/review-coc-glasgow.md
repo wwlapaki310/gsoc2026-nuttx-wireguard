@@ -376,3 +376,48 @@ accuracy problem.
 - A live demo still depends on venue networking. Keep the recorded fallback
   locally available, not only as a YouTube URL, and rehearse the switch without
   apology or debugging on stage.
+
+---
+
+## Cross-check pass on Codex's edits — 2026-09-30
+
+Reviewed the render-and-scope pass above against the actual diff
+(`413874a`) and the current state of `handoff.md` / `verification-matrix.md`.
+The rendering-based finds (slide 18 clipping at 720px, the 35 s demo, the
+"Production Readiness" framing outrunning the honest remainder) are real
+improvements this session could not have caught from static HTML alone —
+that pass is trusted and kept as-is.
+
+Two items were found stale during this cross-check and fixed directly,
+because they were not touched by the render pass:
+
+- **`coc-glasgow-qa.md`'s TZ answer said "not yet" for `next_keypair` and
+  handshake-state zeroing.** `handoff.md` Task 3(a) and
+  `verification-matrix.md` (line 20) record TZ as closed — the expanded
+  probe now catches both non-zero before `down` and zero after, using a
+  UDP relay that withholds confirmation. The QA entry predates that
+  closure (it was written before `4423fc5`, which closed TZ, and the
+  render pass did not revisit it). **Fixed:** the QA entry and its footer
+  now say closed, not open.
+- **`coc-glasgow-qa.md`'s IOB answer said whether the driver can ever
+  block on an allocation was "not settled."** `iob-wait-audit.md` and
+  `handoff.md` Task 3(b) already settled it: the direct TX/RX paths are
+  try-allocation only, so there is no wait branch to exercise — "not
+  reachable," not "untested." **Fixed:** the QA entry now states the
+  closed finding and points at the audit.
+
+One addition made directly rather than left as an action item: **slide
+16's fourth bullet now names the X25519 vendoring reason** (cryptodev's
+curve25519 path exists but pulls in the whole software cipher suite for
+one scalar multiply) — this was action item 2 from the first pass and the
+NuttX persona's top open question in both reviews, and the material
+already existed in the QA doc, so surfacing it needed no new
+investigation. It was kept short (about 2.5x the original bullet's
+length) to stay inside the same margin that the render pass found slide
+18 had already exceeded once; it has not itself been re-rendered to
+confirm it fits at 1920x1080, unlike everything else marked "Fixed"
+above — worth a visual check before the talk, the same way slide 18 was
+caught.
+
+No other staleness was found between `handoff.md`/`verification-matrix.md`
+and the deck/scripts/QA in this pass.
