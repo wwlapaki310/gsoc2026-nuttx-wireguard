@@ -1,6 +1,22 @@
 # Handoff — what is left, how to do it, and what will waste your time
 
-## Follow-up at apps `37f04cff` (2026-09-28)
+## Submission-series follow-up (2026-09-29)
+
+The local upstream rebase, three-part submission series, and complete reachable
+validation are finished. The exact bases, candidate commits, results, and
+limitations are recorded in
+[upstream-series-2026-09-29.md](evidence/upstream-series-2026-09-29.md); the
+cleanly applicable series is exported under
+[patches/2026-09-29](patches/2026-09-29/README.md). The original development
+branches remain intact and neither fork was pushed.
+
+The remaining publication work is deliberately human-owned: review/certify the
+commits, add the author's `Signed-off-by`, publish the fork branches, and open
+the crypto, driver, and apps PRs in dependency order. Hardware-only gaps and
+maintainer design decisions remain open; this local validation does not turn
+them into completed claims.
+
+## Earlier follow-up at apps `37f04cff` (2026-09-28)
 
 The configuration publisher needed a further correctness fix before submission:
 NuttX VFS can unlink the destination inside rename. See
@@ -13,10 +29,11 @@ allocation question is audited in [iob-wait-audit.md](iob-wait-audit.md): these
 paths use try-allocation, so do not manufacture a blocking-IOB test for them.
 Actual usrsock send blocking remains distinct from the DEBUG_TX_STALL hook.
 
-The rebase and complete PR-series validation below are **still outstanding**.
-The latest changes do not refresh older hardware, protected, SMP or CMake
-results. Use `WG_CONTAINER=<name>` with `kdev.sh` to isolate further tests;
-style now propagates checkpatch failures instead of hiding them behind `tail`.
+The rebase and complete PR-series validation described below were completed on
+2026-09-29. PROTECTED, SMP, CMake, and the full sim series were rerun on the
+candidate; older hardware results were not. Use `WG_CONTAINER=<name>` with
+`kdev.sh` to isolate further tests; style propagates checkpatch failures instead
+of hiding them behind `tail`.
 
 Written 2026-09-28 for whoever picks this up next (human or agent). The other
 documents say *what is true*; this one says *what to do next and what will trip
@@ -50,7 +67,7 @@ These are not preferences; breaking them has cost real rework.
    exactly that way before being fixed (see the traps below). When you add one,
    ask what it would print if the feature were removed.
 
-## Task 1 — rebase both forks and re-verify (do this first)
+## Task 1 — rebase both forks and re-verify (**completed 2026-09-29**)
 
 The fork bases are old: **nuttx is 255 commits behind `upstream/master`**, apps
 is 30. Nothing can be submitted from that base, and a rebase can break things
@@ -79,7 +96,7 @@ matrix's "Target under test" paragraph names the new base and HEADs. T7, TH, TE
 and TT do **not** need repeating for a rebase unless the driver's send/receive
 path changed; say which you re-ran and which you did not.
 
-## Task 2 — assemble the PR series
+## Task 2 — assemble the PR series (**completed locally 2026-09-29**)
 
 Planned shape, from [pr-drafts.md](pr-drafts.md):
 

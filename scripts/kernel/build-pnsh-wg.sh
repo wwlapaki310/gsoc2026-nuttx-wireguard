@@ -92,8 +92,12 @@ echo "PROTECTED_BUILD_EXIT=$rc"
 [ "$rc" -eq 0 ] || exit "$rc"
 
 echo "=== image sizes ==="
-ls -l nuttx nuttx_user.elf 2>/dev/null | awk '{print $NF, $5}'
-for image in nuttx nuttx_user.elf; do
+user_image=nuttx_user
+[ -f "$user_image" ] || user_image=nuttx_user.elf
+[ -f "$user_image" ] ||
+  { echo "FAIL: protected user image was not produced"; exit 1; }
+ls -l nuttx "$user_image" | awk '{print $NF, $5}'
+for image in nuttx "$user_image"; do
   [ -f "$image" ] || continue
   echo "--- $image"
   riscv-none-elf-size "$image" 2>/dev/null ||

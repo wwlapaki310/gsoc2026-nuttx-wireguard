@@ -1,6 +1,16 @@
 # In-kernel WireGuard — verification matrix
 
-**Latest follow-up (2026-09-28):** apps `37f04cff` adds a recovery copy before
+**Latest follow-up (2026-09-29):** the changes were rebased and assembled as a
+three-part submission series: NuttX base `68dd87f4df`, candidate
+`8defcefa94`; apps base `b66303e26a`, candidate `c039b232e5`. Clean exported
+patches, exact test scope, and limitations are in the
+[submission-series record](evidence/upstream-series-2026-09-29.md). The full
+sim suite, standalone crypto and driver builds, BUILD_KERNEL on one and four
+CPUs, PROTECTED runtime, and CMake/Ninja build passed. Earlier hardware results
+were not rerun on this rebased candidate. The owner still needs to certify and
+publish the commits; this is not a merge-ready declaration.
+
+**Earlier follow-up (2026-09-28):** apps `37f04cff` adds a recovery copy before
 VFS replacement, exclusive temporary files, and checked input reads. T1, TF and
 the sim keyfile fault suite passed on this apps revision; the extracted-helper
 host suite passes eleven cases and rejects an intentionally broken publisher.
@@ -60,10 +70,17 @@ Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
 are listed as such, not omitted.
 
-- Target under test: fork `net-wireguard` HEAD **`b230ee4876`** (nuttx) + fork `system-wg`
-  HEAD **`37f04cff`** (nuttx-apps), base upstream/master `c95c546c` (apps base
-  `73a9c9a6`). The latest apps revision was rerun for T1, TF, keyfile faults and
-  expanded TZ; other rows retain their earlier source scope, not a blanket rerun.
+- Current submission target: NuttX **`8defcefa947645d2245a320dc2d0e0c2eb8ce6cd`**
+  on upstream base **`68dd87f4df9ad1e19240136b931867efbcbc23d0`**, plus apps
+  **`c039b232e5fcf181ac4d16b9231cdc42a025d45c`** on upstream base
+  **`b66303e26aa537dd74d6abaeeeded81c151a7e35`**. The 2026-09-29 local rerun
+  covers the full sim suite, standalone dependency builds, 1/4-CPU kernel
+  runtime, PROTECTED runtime, and CMake. Rows based on physical boards retain
+  their stated older source scope, not a blanket rerun.
+  The preserved development branches are NuttX `b230ee4876` and apps
+  `37f04cff`; they are no longer the submission target.
+  The latest apps revision was previously rerun for T1, TF, keyfile faults and
+  expanded TZ.
   Commits after the hardware runs: the clock-unset warning (`d472ff1c2e`), the key-lifetime
   documentation (`1b6b9c60ff`), the nxstyle vendor exception (`b230ee4876`), and on the apps side
   the X25519 adaptation tidy-up (`68eed842`).
@@ -77,7 +94,7 @@ are listed as such, not omitted.
   `qemu-system-riscv64` for the kernel-build runtime. See [reproduce.md](reproduce.md).
 - Legend: **PASS** = run and passed; **BUILD-ONLY** = compiles/links, not run; **NOT RUN** =
   not executed against the kernel version; **NOT IMPLEMENTED** = no test written yet.
-- Last updated: 2026-09-28.
+- Last updated: 2026-09-29.
 
 ## Summary
 

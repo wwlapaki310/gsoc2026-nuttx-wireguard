@@ -25,8 +25,16 @@ dx() { MSYS_NO_PATHCONV=1 docker exec "$C" bash -c "$*"; }
 
 case "${1:-}" in
   sync)
-    (cd "$NUTTX_FORK" && git diff --binary "$(git merge-base HEAD upstream/master)") > /tmp/nuttx.patch
-    (cd "$APPS_FORK"  && git diff --binary "$(git merge-base HEAD upstream/master)") > /tmp/apps.patch
+    nuttx_base=$(git -C "$NUTTX_FORK" merge-base HEAD upstream/master)
+    apps_base=$(git -C "$APPS_FORK" merge-base HEAD upstream/master)
+    if [ "$(dx 'git -C /opt/nuttx rev-parse HEAD')" != "$nuttx_base" ] ||
+       [ "$(dx 'git -C /opt/apps rev-parse HEAD')" != "$apps_base" ]; then
+      echo "ERROR: container HEADs must match fork bases before sync."
+      echo "Expected nuttx=$nuttx_base apps=$apps_base; no files were changed."
+      exit 1
+    fi
+    git -C "$NUTTX_FORK" diff --binary "$nuttx_base" > /tmp/nuttx.patch
+    git -C "$APPS_FORK" diff --binary "$apps_base" > /tmp/apps.patch
     docker cp /tmp/nuttx.patch "$C":/tmp/nuttx.patch
     docker cp /tmp/apps.patch  "$C":/tmp/apps.patch
     dx 'cd /opt/nuttx && git checkout -q -- . && rm -rf drivers/net/wireguard include/nuttx/net/wireguard.h boards/sim/sim/sim/configs/wireguard Documentation/components/drivers/special/net/wireguard.rst Documentation/applications/system/wg && if [ -s /tmp/nuttx.patch ]; then git apply /tmp/nuttx.patch; fi && git status --short | head -20'

@@ -1,0 +1,2314 @@
+From c039b232e5fcf181ac4d16b9231cdc42a025d45c Mon Sep 17 00:00:00 2001
+From: satoru akita <wwlap24@gmail.com>
+Date: Mon, 28 Sep 2026 23:43:20 +0900
+Subject: [PATCH] system/wg: add runtime WireGuard configuration and
+ recoverable file saves
+
+Configure the kernel device through its pointer-free ioctl ABI. Keep private keys in the configuration file, propagate persistence failures, reserve a recovery copy before VFS replacement, and support public-key derivation without reading keys back from the driver.
+---
+ system/wg/CMakeLists.txt |   34 +
+ system/wg/Kconfig        |   47 ++
+ system/wg/Make.defs      |   24 +
+ system/wg/Makefile       |   32 +
+ system/wg/wg_main.c      | 1478 ++++++++++++++++++++++++++++++++++++++
+ system/wg/wg_x25519.c    |  481 +++++++++++++
+ system/wg/wg_x25519.h    |  149 ++++
+ 7 files changed, 2245 insertions(+)
+ create mode 100644 system/wg/CMakeLists.txt
+ create mode 100644 system/wg/Kconfig
+ create mode 100644 system/wg/Make.defs
+ create mode 100644 system/wg/Makefile
+ create mode 100644 system/wg/wg_main.c
+ create mode 100644 system/wg/wg_x25519.c
+ create mode 100644 system/wg/wg_x25519.h
+
+diff --git a/system/wg/CMakeLists.txt b/system/wg/CMakeLists.txt
+new file mode 100644
+index 00000000..c13d8faf
+--- /dev/null
++++ b/system/wg/CMakeLists.txt
+@@ -0,0 +1,34 @@
++# ##############################################################################
++# apps/system/wg/CMakeLists.txt
++#
++# SPDX-License-Identifier: Apache-2.0
++#
++# Licensed to the Apache Software Foundation (ASF) under one or more contributor
++# license agreements.  See the NOTICE file distributed with this work for
++# additional information regarding copyright ownership.  The ASF licenses this
++# file to you under the Apache License, Version 2.0 (the "License"); you may not
++# use this file except in compliance with the License.  You may obtain a copy of
++# the License at
++#
++# http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++# License for the specific language governing permissions and limitations under
++# the License.
++#
++# ##############################################################################
++
++if(CONFIG_SYSTEM_WG)
++  nuttx_add_application(
++    NAME
++    ${CONFIG_SYSTEM_WG_PROGNAME}
++    SRCS
++    wg_main.c
++    wg_x25519.c
++    STACKSIZE
++    ${CONFIG_SYSTEM_WG_STACKSIZE}
++    PRIORITY
++    ${CONFIG_SYSTEM_WG_PRIORITY})
++endif()
+diff --git a/system/wg/Kconfig b/system/wg/Kconfig
+new file mode 100644
+index 00000000..84555bdc
+--- /dev/null
++++ b/system/wg/Kconfig
+@@ -0,0 +1,47 @@
++#
++# For a description of the syntax of this configuration file,
++# see the file kconfig-language.txt in the NuttX tools repository.
++#
++
++config SYSTEM_WG
++	tristate "WireGuard 'wg' command"
++	default n
++	depends on NET_WIREGUARD
++	---help---
++		Configure and inspect the WireGuard network device (wg0) with the
++		same sub-commands as wg(8): up, down, show, showconf, setconf,
++		saveconf, set, genkey, pubkey. Talks to the driver through the
++		ioctls in include/nuttx/net/wireguard.h; the only key material it
++		holds is what it reads from or writes to the configuration file.
++
++if SYSTEM_WG
++
++config SYSTEM_WG_PROGNAME
++	string "Program name"
++	default "wg"
++
++config SYSTEM_WG_PRIORITY
++	int "Task priority"
++	default 100
++
++config SYSTEM_WG_STACKSIZE
++	int "Stack size"
++	default 4096
++	---help---
++		"wg setconf" and "wg saveconf" go through stdio and the file
++		system; 2048 is not enough for that on some boards.
++
++config SYSTEM_WG_CONFIG_PATH
++	string "Default configuration file"
++	default "/data/wg0.conf"
++	---help---
++		Used by "wg setconf" and "wg saveconf" when no file is given, and
++		by the board start-up script to restore the configuration after a
++		reboot. The file has the [Interface] / [Peer] layout of wg(8) and
++		is interchangeable with a desktop WireGuard configuration.
++
++		The private key lives in this file and nowhere else on the user
++		side: the driver accepts it but never hands it back, so "wg
++		saveconf" takes it from here rather than from the device.
++
++endif
+diff --git a/system/wg/Make.defs b/system/wg/Make.defs
+new file mode 100644
+index 00000000..07286be3
+--- /dev/null
++++ b/system/wg/Make.defs
+@@ -0,0 +1,24 @@
++############################################################################
++# apps/system/wg/Make.defs#
++# SPDX-License-Identifier: Apache-2.0
++#
++# Licensed to the Apache Software Foundation (ASF) under one or more
++# contributor license agreements.  See the NOTICE file distributed with
++# this work for additional information regarding copyright ownership.  The
++# ASF licenses this file to you under the Apache License, Version 2.0 (the
++# "License"); you may not use this file except in compliance with the
++# License.  You may obtain a copy of the License at
++#
++#   http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++# License for the specific language governing permissions and limitations
++# under the License.
++#
++############################################################################
++
++ifneq ($(CONFIG_SYSTEM_WG),)
++CONFIGURED_APPS += $(APPDIR)/system/wg
++endif
+diff --git a/system/wg/Makefile b/system/wg/Makefile
+new file mode 100644
+index 00000000..286ba387
+--- /dev/null
++++ b/system/wg/Makefile
+@@ -0,0 +1,32 @@
++############################################################################
++# apps/system/wg/Makefile#
++# SPDX-License-Identifier: Apache-2.0
++#
++# Licensed to the Apache Software Foundation (ASF) under one or more
++# contributor license agreements.  See the NOTICE file distributed with
++# this work for additional information regarding copyright ownership.  The
++# ASF licenses this file to you under the Apache License, Version 2.0 (the
++# "License"); you may not use this file except in compliance with the
++# License.  You may obtain a copy of the License at
++#
++#   http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++# License for the specific language governing permissions and limitations
++# under the License.
++#
++############################################################################
++
++include $(APPDIR)/Make.defs
++
++PROGNAME  = $(CONFIG_SYSTEM_WG_PROGNAME)
++PRIORITY  = $(CONFIG_SYSTEM_WG_PRIORITY)
++STACKSIZE = $(CONFIG_SYSTEM_WG_STACKSIZE)
++MODULE    = $(CONFIG_SYSTEM_WG)
++
++CSRCS   = wg_x25519.c
++MAINSRC = wg_main.c
++
++include $(APPDIR)/Application.mk
+diff --git a/system/wg/wg_main.c b/system/wg/wg_main.c
+new file mode 100644
+index 00000000..a2c613f1
+--- /dev/null
++++ b/system/wg/wg_main.c
+@@ -0,0 +1,1478 @@
++/****************************************************************************
++ * apps/system/wg/wg_main.c
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++/* wg - configure and inspect a WireGuard network device.
++ *
++ * Follows the sub-command surface of wg(8) and its configuration file
++ * format. All state lives in the kernel driver, reached through the
++ * ioctls in include/nuttx/net/wireguard.h; this program keeps nothing
++ * between invocations. The one asymmetry: the driver accepts a private
++ * key but never returns it, so "saveconf" and "showconf" take the key
++ * from the configuration file, and "set private-key" records it there.
++ */
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++#include <sys/ioctl.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <net/if.h>
++
++#include <nuttx/net/ioctl.h>
++#include <nuttx/net/wireguard.h>
++
++#include "wg_x25519.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_IFNAME       "wg0"
++#define WG_B64_LEN      44              /* base64 of 32 bytes, no NUL */
++#define WG_LINE_MAX     256
++#define WG_MAX_PEERS    64              /* Enumeration bound for show */
++
++/****************************************************************************
++ * Private Types
++ ****************************************************************************/
++
++/* A peer as read from a configuration file, before it is pushed */
++
++struct wg_conf_peer_s
++{
++  bool valid;
++  struct wg_peerreq_s req;
++};
++
++/****************************************************************************
++ * Private Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_b64_encode, wg_b64_decode
++ ****************************************************************************/
++
++static const char g_b64[] =
++  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++
++static void wg_b64_encode(FAR const uint8_t *in, FAR char *out)
++{
++  int i;
++  int o = 0;
++
++  for (i = 0; i < 30; i += 3)
++    {
++      uint32_t v = ((uint32_t)in[i] << 16) | ((uint32_t)in[i + 1] << 8) |
++                   in[i + 2];
++
++      out[o++] = g_b64[(v >> 18) & 63];
++      out[o++] = g_b64[(v >> 12) & 63];
++      out[o++] = g_b64[(v >> 6) & 63];
++      out[o++] = g_b64[v & 63];
++    }
++
++  /* 32 = 10 * 3 + 2: one final group with one pad character */
++
++  {
++    uint32_t v = ((uint32_t)in[30] << 16) | ((uint32_t)in[31] << 8);
++
++    out[o++] = g_b64[(v >> 18) & 63];
++    out[o++] = g_b64[(v >> 12) & 63];
++    out[o++] = g_b64[(v >> 6) & 63];
++    out[o++] = '=';
++  }
++
++  out[o] = '\0';
++}
++
++static int wg_b64_value(char c)
++{
++  FAR const char *p = strchr(g_b64, c);
++
++  return (p == NULL || c == '\0') ? -1 : (int)(p - g_b64);
++}
++
++static bool wg_b64_decode(FAR const char *in, FAR uint8_t *out)
++{
++  int i;
++  int o = 0;
++
++  if (strlen(in) != WG_B64_LEN || in[WG_B64_LEN - 1] != '=')
++    {
++      return false;
++    }
++
++  for (i = 0; i < 40; i += 4)
++    {
++      int a = wg_b64_value(in[i]);
++      int b = wg_b64_value(in[i + 1]);
++      int c = wg_b64_value(in[i + 2]);
++      int d = wg_b64_value(in[i + 3]);
++      uint32_t v;
++
++      if (a < 0 || b < 0 || c < 0 || d < 0)
++        {
++          return false;
++        }
++
++      v = ((uint32_t)a << 18) | ((uint32_t)b << 12) | ((uint32_t)c << 6) |
++          (uint32_t)d;
++      out[o++] = (uint8_t)(v >> 16);
++      out[o++] = (uint8_t)(v >> 8);
++      out[o++] = (uint8_t)v;
++    }
++
++  {
++    int a = wg_b64_value(in[40]);
++    int b = wg_b64_value(in[41]);
++    int c = wg_b64_value(in[42]);
++    uint32_t v;
++
++    if (a < 0 || b < 0 || c < 0 || (c & 3) != 0)
++      {
++        return false;
++      }
++
++    v = ((uint32_t)a << 18) | ((uint32_t)b << 12) | ((uint32_t)c << 6);
++    out[o++] = (uint8_t)(v >> 16);
++    out[o++] = (uint8_t)(v >> 8);
++  }
++
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_random_key
++ *
++ * Description:
++ *   32 bytes from /dev/urandom, clamped as a Curve25519 scalar. The
++ *   driver refuses to build against a constant-seeded PRNG backend, so
++ *   /dev/urandom is a real source in any configuration that has wg0.
++ *
++ ****************************************************************************/
++
++static bool wg_random_key(FAR uint8_t *key)
++{
++  size_t total = 0;
++  int fd;
++
++  fd = open("/dev/urandom", O_RDONLY);
++  if (fd < 0)
++    {
++      return false;
++    }
++
++  while (total < WG_KEY_LEN)
++    {
++      ssize_t n = read(fd, key + total, WG_KEY_LEN - total);
++
++      if (n <= 0)
++        {
++          break;
++        }
++
++      total += (size_t)n;
++    }
++
++  close(fd);
++  if (total != WG_KEY_LEN)
++    {
++      return false;
++    }
++
++  key[0] &= 248;
++  key[31] = (key[31] & 127) | 64;
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_derive_public
++ ****************************************************************************/
++
++static bool wg_derive_public(FAR uint8_t *pub, FAR const uint8_t *priv)
++{
++  return x25519(pub, priv, X25519_BASE_POINT, 1) == 0;
++}
++
++/****************************************************************************
++ * Name: wg_open, wg_ioctl
++ *
++ * Description:
++ *   The ioctls travel over any AF_INET socket; the request names the
++ *   interface.
++ *
++ ****************************************************************************/
++
++static int wg_open(void)
++{
++  int fd = socket(AF_INET, SOCK_DGRAM, 0);
++
++  if (fd < 0)
++    {
++      fprintf(stderr, "wg: socket: %s\n", strerror(errno));
++    }
++
++  return fd;
++}
++
++static int wg_ioctl(int fd, int cmd, FAR void *req)
++{
++  if (ioctl(fd, cmd, (unsigned long)(uintptr_t)req) < 0)
++    {
++      return -errno;
++    }
++
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_get_if, wg_get_peer
++ ****************************************************************************/
++
++static int wg_get_if(int fd, FAR struct wg_ifreq_s *ifr)
++{
++  memset(ifr, 0, sizeof(*ifr));
++  strlcpy(ifr->ifname, WG_IFNAME, IFNAMSIZ);
++  return wg_ioctl(fd, SIOCGWGIF, ifr);
++}
++
++static int wg_get_peer(int fd, int index, FAR struct wg_peerreq_s *req)
++{
++  memset(req, 0, sizeof(*req));
++  strlcpy(req->ifname, WG_IFNAME, IFNAMSIZ);
++  req->index = index;
++  return wg_ioctl(fd, SIOCGWGPEER, req);
++}
++
++/****************************************************************************
++ * Name: wg_parse_endpoint, wg_parse_aip
++ ****************************************************************************/
++
++static bool wg_parse_endpoint(FAR const char *s, FAR struct sockaddr_in *sa)
++{
++  char host[INET_ADDRSTRLEN];
++  FAR const char *colon = strrchr(s, ':');
++  long port;
++
++  if (colon == NULL || (size_t)(colon - s) >= sizeof(host))
++    {
++      return false;
++    }
++
++  memcpy(host, s, colon - s);
++  host[colon - s] = '\0';
++  port = strtol(colon + 1, NULL, 10);
++  if (port <= 0 || port > 65535)
++    {
++      return false;
++    }
++
++  memset(sa, 0, sizeof(*sa));
++  sa->sin_family = AF_INET;
++  sa->sin_port = htons((uint16_t)port);
++  return inet_pton(AF_INET, host, &sa->sin_addr) == 1;
++}
++
++static bool wg_parse_aip(FAR const char *s, FAR struct wg_aip_s *aip)
++{
++  char host[INET_ADDRSTRLEN];
++  FAR const char *slash = strchr(s, '/');
++  long cidr = 32;
++
++  if (slash != NULL)
++    {
++      if ((size_t)(slash - s) >= sizeof(host))
++        {
++          return false;
++        }
++
++      memcpy(host, s, slash - s);
++      host[slash - s] = '\0';
++      cidr = strtol(slash + 1, NULL, 10);
++      if (cidr < 0 || cidr > 32)
++        {
++          return false;
++        }
++    }
++  else
++    {
++      strlcpy(host, s, sizeof(host));
++    }
++
++  memset(aip, 0, sizeof(*aip));
++  aip->cidr = (uint8_t)cidr;
++  return inet_pton(AF_INET, host, &aip->addr) == 1;
++}
++
++/* "a/32,b/24" -> aips[], returns count or -1 */
++
++static int wg_parse_aips(FAR char *list, FAR struct wg_aip_s *aips)
++{
++  FAR char *save;
++  FAR char *tok;
++  int n = 0;
++
++  for (tok = strtok_r(list, ",", &save); tok != NULL;
++       tok = strtok_r(NULL, ",", &save))
++    {
++      while (*tok == ' ')
++        {
++          tok++;
++        }
++
++      if (n >= WG_MAX_AIPS || !wg_parse_aip(tok, &aips[n]))
++        {
++          return -1;
++        }
++
++      n++;
++    }
++
++  return n;
++}
++
++/****************************************************************************
++ * Name: wg_file_private_key
++ *
++ * Description:
++ *   The PrivateKey line of a configuration file, if the file exists and
++ *   has one.
++ *
++ ****************************************************************************/
++
++static bool wg_file_private_key(FAR const char *path, FAR char *key)
++{
++  char line[WG_LINE_MAX];
++  FAR FILE *f;
++  bool found = false;
++
++  f = fopen(path, "r");
++  if (f == NULL)
++    {
++      return false;
++    }
++
++  while (fgets(line, sizeof(line), f) != NULL)
++    {
++      FAR char *p = line;
++      FAR char *eq;
++
++      while (*p == ' ' || *p == '\t')
++        {
++          p++;
++        }
++
++      if (strncasecmp(p, "PrivateKey", 10) != 0)
++        {
++          continue;
++        }
++
++      eq = strchr(p, '=');
++      if (eq == NULL)
++        {
++          continue;
++        }
++
++      eq++;
++      while (*eq == ' ' || *eq == '\t')
++        {
++          eq++;
++        }
++
++      eq[strcspn(eq, " \t\r\n")] = '\0';
++      if (strlen(eq) == WG_B64_LEN)
++        {
++          strlcpy(key, eq, WG_B64_LEN + 1);
++          found = true;
++          break;
++        }
++    }
++
++  fclose(f);
++  return found;
++}
++
++/****************************************************************************
++ * Name: wg_write_conf
++ *
++ * Description:
++ *   Write the device's configuration in wg(8) format. The private key is
++ *   whatever the caller knows (from the file or the command line); when
++ *   unknown it is written as a placeholder so the file is still readable
++ *   by a human but not loadable by setconf.
++ *
++ ****************************************************************************/
++
++static int wg_write_conf(int fd, FAR FILE *out, FAR const char *privkey)
++{
++  struct wg_ifreq_s ifr;
++  struct wg_peerreq_s peer;
++  char b64[WG_B64_LEN + 1];
++  char addr[INET_ADDRSTRLEN];
++  int ret;
++  int i;
++  int j;
++
++  ret = wg_get_if(fd, &ifr);
++  if (ret < 0)
++    {
++      return ret;
++    }
++
++  fprintf(out, "[Interface]\n");
++  fprintf(out, "PrivateKey = %s\n", privkey != NULL ? privkey : "(hidden)");
++  fprintf(out, "ListenPort = %u\n", ifr.listen_port);
++  if ((ifr.flags & WG_IF_HAS_ADDR) && ifr.addr.s_addr != 0)
++    {
++      uint32_t m = ntohl(ifr.netmask.s_addr);
++      int cidr = 0;
++
++      while (m & 0x80000000u)
++        {
++          cidr++;
++          m <<= 1;
++        }
++
++      inet_ntop(AF_INET, &ifr.addr, addr, sizeof(addr));
++      fprintf(out, "Address = %s/%d\n", addr, cidr);
++    }
++
++  for (i = 0; i < ifr.npeers; i++)
++    {
++      if (wg_get_peer(fd, i, &peer) < 0)
++        {
++          break;
++        }
++
++      wg_b64_encode(peer.public_key, b64);
++      fprintf(out, "\n[Peer]\n");
++      fprintf(out, "PublicKey = %s\n", b64);
++
++      if (peer.flags & WG_PEER_HAS_AIPS)
++        {
++          fprintf(out, "AllowedIPs = ");
++          for (j = 0; j < peer.naips; j++)
++            {
++              inet_ntop(AF_INET, &peer.aips[j].addr, addr, sizeof(addr));
++              fprintf(out, "%s%s/%u", j > 0 ? ", " : "", addr,
++                      peer.aips[j].cidr);
++            }
++
++          fprintf(out, "\n");
++        }
++
++      if (peer.flags & WG_PEER_HAS_ENDPOINT)
++        {
++          inet_ntop(AF_INET, &peer.endpoint.sin_addr, addr, sizeof(addr));
++          fprintf(out, "Endpoint = %s:%u\n", addr,
++                  ntohs(peer.endpoint.sin_port));
++        }
++
++      if (peer.keepalive > 0)
++        {
++          fprintf(out, "PersistentKeepalive = %u\n", peer.keepalive);
++        }
++    }
++
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_set_if
++ ****************************************************************************/
++
++static int wg_set_if(int fd, FAR struct wg_ifreq_s *ifr)
++{
++  strlcpy(ifr->ifname, WG_IFNAME, IFNAMSIZ);
++  return wg_ioctl(fd, SIOCSWGIF, ifr);
++}
++
++/****************************************************************************
++ * Name: wg_record_private_key
++ *
++ * Description:
++ *   Keep the private key in the configuration file so that a later
++ *   saveconf can write a loadable file. Rewrites the PrivateKey line in
++ *   place, or creates a minimal file.
++ *
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_open_temp
++ *
++ * Description:
++ *   Stage each writer into its own exclusively created, mode-0600 file.
++ *
++ ****************************************************************************/
++
++static FAR FILE *wg_open_temp(FAR char *buf, size_t buflen,
++                              FAR const char *path)
++{
++  FAR FILE *out;
++  int fd;
++  int ret = snprintf(buf, buflen, "%s.tmp.XXXXXX", path);
++
++  if (ret < 0 || (size_t)ret >= buflen)
++    {
++      fprintf(stderr, "wg: temporary path is too long\n");
++      return NULL;
++    }
++
++  fd = mkstemp(buf);
++  if (fd < 0)
++    {
++      return NULL;
++    }
++
++  out = fdopen(fd, "w");
++  if (out == NULL)
++    {
++      close(fd);
++      unlink(buf);
++    }
++
++  return out;
++}
++
++/****************************************************************************
++ * Name: wg_replace_file
++ *
++ * Description:
++ *   Preserve the old content before rename: the NuttX VFS can unlink the
++ *   destination even when rename subsequently fails. An exclusive backup
++ *   also serializes publishers. A failed publish leaves both files for
++ *   explicit recovery and blocks further publishers. This is not a power
++ *   loss durability guarantee.
++ *
++ * Returned Value:
++ *   Zero on success, -1 on failure.
++ *
++ ****************************************************************************/
++
++static int wg_replace_file(FAR const char *tmp, FAR const char *path)
++{
++  char backup[160];
++  char buf[128];
++  FAR FILE *in;
++  FAR FILE *out;
++  size_t n;
++  int fd;
++  int ret;
++  bool failed = false;
++  bool existed;
++
++  ret = snprintf(backup, sizeof(backup), "%s.bak", path);
++  if (ret < 0 || (size_t)ret >= sizeof(backup))
++    {
++      fprintf(stderr, "wg: backup path is too long\n");
++      unlink(tmp);
++      return -1;
++    }
++
++  fd = open(backup, O_WRONLY | O_CREAT | O_EXCL, 0600);
++  if (fd < 0)
++    {
++      fprintf(stderr, "wg: cannot reserve '%s': %s; check for an active "
++              "writer or recover a previous failed save\n",
++              backup, strerror(errno));
++      unlink(tmp);
++      return -1;
++    }
++
++  out = fdopen(fd, "w");
++  if (out == NULL)
++    {
++      close(fd);
++      unlink(backup);
++      unlink(tmp);
++      return -1;
++    }
++
++  in = fopen(path, "r");
++  existed = in != NULL;
++  if (in == NULL)
++    {
++      failed = errno != ENOENT;
++    }
++  else
++    {
++      while ((n = fread(buf, 1, sizeof(buf), in)) != 0)
++        {
++          if (fwrite(buf, 1, n, out) != n)
++            {
++              failed = true;
++              break;
++            }
++        }
++
++      failed |= ferror(in) != 0;
++      failed |= fclose(in) != 0;
++    }
++
++  memset(buf, 0, sizeof(buf));
++  failed |= fclose(out) != 0;
++  if (failed)
++    {
++      fprintf(stderr, "wg: cannot back up '%s'; save aborted\n", path);
++      unlink(backup);
++      unlink(tmp);
++      return -1;
++    }
++
++  if (rename(tmp, path) != 0)
++    {
++      fprintf(stderr, "wg: cannot publish '%s': %s; new content: '%s'; "
++              "recovery file: '%s' (%s). Recover before saving again\n",
++              path, strerror(errno), tmp, backup,
++              existed ? "previous configuration" : "no previous file");
++      return -1;
++    }
++
++  if (unlink(backup) != 0)
++    {
++      fprintf(stderr, "wg: '%s' saved but cannot remove '%s': %s; "
++              "remove the backup before saving again\n",
++              path, backup, strerror(errno));
++      return -1;
++    }
++
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_record_private_key
++ *
++ * Description:
++ *   Store key as the PrivateKey of path, keeping the rest of the file. The
++ *   driver never returns the private key, so this file is the only copy;
++ *   every failure has to reach the caller.
++ *
++ * Returned Value:
++ *   Zero on success, -1 on failure (a failed publish retains a backup).
++ *
++ ****************************************************************************/
++
++static int wg_record_private_key(FAR const char *path,
++                                 FAR const char *key)
++{
++  char line[WG_LINE_MAX];
++  FAR FILE *in;
++  FAR FILE *out;
++  char tmp[128];
++  bool written = false;
++
++  out = wg_open_temp(tmp, sizeof(tmp), path);
++  if (out == NULL)
++    {
++      fprintf(stderr, "wg: cannot write '%s': %s\n", tmp, strerror(errno));
++      return -1;
++    }
++
++  in = fopen(path, "r");
++  if (in != NULL)
++    {
++      while (fgets(line, sizeof(line), in) != NULL)
++        {
++          FAR char *p = line;
++
++          while (*p == ' ' || *p == '\t')
++            {
++              p++;
++            }
++
++          if (strncasecmp(p, "PrivateKey", 10) == 0)
++            {
++              if (!written)
++                {
++                  fprintf(out, "PrivateKey = %s\n", key);
++                  written = true;
++                }
++            }
++          else
++            {
++              fputs(line, out);
++              if (!written && strncasecmp(p, "[Interface]", 11) == 0)
++                {
++                  fprintf(out, "PrivateKey = %s\n", key);
++                  written = true;
++                }
++            }
++        }
++
++      if (ferror(in) != 0)
++        {
++          fclose(in);
++          fclose(out);
++          unlink(tmp);
++          fprintf(stderr, "wg: cannot read '%s'; save aborted\n", path);
++          return -1;
++        }
++
++      fclose(in);
++    }
++  else if (errno != ENOENT)
++    {
++      fclose(out);
++      unlink(tmp);
++      fprintf(stderr, "wg: cannot read '%s'; save aborted\n", path);
++      return -1;
++    }
++
++  if (!written)
++    {
++      fprintf(out, "[Interface]\nPrivateKey = %s\n", key);
++    }
++
++  if (ferror(out) != 0)
++    {
++      fclose(out);
++      unlink(tmp);
++      fprintf(stderr, "wg: cannot write '%s'\n", tmp);
++      return -1;
++    }
++
++  if (fclose(out) != 0)
++    {
++      unlink(tmp);
++      fprintf(stderr, "wg: cannot write '%s': %s\n", tmp, strerror(errno));
++      return -1;
++    }
++
++  return wg_replace_file(tmp, path);
++}
++
++/****************************************************************************
++ * Name: wg_cmd_show
++ ****************************************************************************/
++
++static int wg_cmd_show(int fd)
++{
++  struct wg_ifreq_s ifr;
++  struct wg_peerreq_s peer;
++  char b64[WG_B64_LEN + 1];
++  char addr[INET_ADDRSTRLEN];
++  int ret;
++  int i;
++
++  ret = wg_get_if(fd, &ifr);
++  if (ret < 0)
++    {
++      fprintf(stderr, "wg: %s: %s\n", WG_IFNAME, strerror(-ret));
++      return 1;
++    }
++
++  printf("interface: %s\n", WG_IFNAME);
++  if (ifr.flags & WG_IF_HAS_PUBLIC_KEY)
++    {
++      wg_b64_encode(ifr.public_key, b64);
++      printf("  public key: %s\n", b64);
++    }
++  else
++    {
++      printf("  public key: (none)\n");
++    }
++
++  printf("  listening port: %u\n", ifr.listen_port);
++  if (!(ifr.flags & WG_IF_UP))
++    {
++      printf("  status: down\n");
++    }
++
++  for (i = 0; i < ifr.npeers; i++)
++    {
++      if (wg_get_peer(fd, i, &peer) < 0)
++        {
++          break;
++        }
++
++      wg_b64_encode(peer.public_key, b64);
++      printf("peer: %s\n", b64);
++      if (peer.flags & WG_PEER_HAS_ENDPOINT)
++        {
++          inet_ntop(AF_INET, &peer.endpoint.sin_addr, addr, sizeof(addr));
++          printf("  endpoint: %s:%u\n", addr, ntohs(peer.endpoint.sin_port));
++        }
++
++      if (peer.flags & WG_PEER_HANDSHAKED)
++        {
++          printf("  latest handshake: %lu seconds ago\n",
++                 (unsigned long)(peer.last_handshake / 1000));
++        }
++      else
++        {
++          printf("  latest handshake: (never)\n");
++        }
++
++      printf("  transfer: %llu B received, %llu B sent\n",
++             (unsigned long long)peer.rx_bytes,
++             (unsigned long long)peer.tx_bytes);
++      if (peer.keepalive > 0)
++        {
++          printf("  persistent keepalive: every %u seconds\n",
++                 peer.keepalive);
++        }
++    }
++
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_cmd_updown
++ ****************************************************************************/
++
++static int wg_cmd_updown(int fd, bool up)
++{
++  struct wg_ifreq_s ifr;
++  int ret;
++
++  memset(&ifr, 0, sizeof(ifr));
++  ifr.flags = up ? WG_IF_UP : WG_IF_DOWN;
++  ret = wg_set_if(fd, &ifr);
++  if (ret < 0)
++    {
++      if (ret == -EINVAL && up)
++        {
++          fprintf(stderr, "wg: no private key: run \"wg set private-key\" "
++                  "or \"wg setconf\" first\n");
++        }
++      else
++        {
++          fprintf(stderr, "wg: %s: %s\n", up ? "up" : "down",
++                  strerror(-ret));
++        }
++
++      return 1;
++    }
++
++  if (up)
++    {
++      wg_get_if(fd, &ifr);
++      printf("%s is up (listen port %u)\n", WG_IFNAME, ifr.listen_port);
++    }
++
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_cmd_set
++ *
++ * Description:
++ *   wg set private-key <key> | listen-port <n> | address <a/n> |
++ *          peer <pub> [remove] [endpoint <a:p>] [allowed-ips <a/n,...>]
++ *                     [persistent-keepalive <s>] [preshared-key <key>]
++ *
++ ****************************************************************************/
++
++static int wg_cmd_set(int fd, int argc, FAR char *argv[])
++{
++  struct wg_ifreq_s ifr;
++  struct wg_peerreq_s peer;
++  int ret;
++  int i;
++
++  if (argc < 4)
++    {
++      fprintf(stderr, "wg: set needs an item\n");
++      return 1;
++    }
++
++  memset(&ifr, 0, sizeof(ifr));
++
++  if (strcmp(argv[2], "private-key") == 0)
++    {
++      if (!wg_b64_decode(argv[3], ifr.private_key))
++        {
++          fprintf(stderr, "wg: not a valid base64 key\n");
++          return 1;
++        }
++
++      ifr.flags = WG_IF_HAS_PRIVATE_KEY;
++      ret = wg_set_if(fd, &ifr);
++      memset(ifr.private_key, 0, sizeof(ifr.private_key));
++      if (ret == OK &&
++          wg_record_private_key(CONFIG_SYSTEM_WG_CONFIG_PATH, argv[3]) < 0)
++        {
++          /* The device took the key but it is not on storage. Saying
++           * nothing here would lose it silently at the next restart.
++           */
++
++          fprintf(stderr, "wg: the device now uses the new key, but it "
++                          "could not be saved to %s; it will be lost on "
++                          "restart\n", CONFIG_SYSTEM_WG_CONFIG_PATH);
++          return 1;
++        }
++    }
++  else if (strcmp(argv[2], "listen-port") == 0)
++    {
++      ifr.flags = WG_IF_HAS_LISTEN_PORT;
++      ifr.listen_port = (uint16_t)strtoul(argv[3], NULL, 10);
++      ret = wg_set_if(fd, &ifr);
++    }
++  else if (strcmp(argv[2], "address") == 0)
++    {
++      struct wg_aip_s a;
++
++      if (!wg_parse_aip(argv[3], &a))
++        {
++          fprintf(stderr, "wg: bad address\n");
++          return 1;
++        }
++
++      ifr.flags = WG_IF_HAS_ADDR;
++      ifr.addr = a.addr;
++      ifr.netmask.s_addr = a.cidr == 0 ? 0 :
++                           htonl(0xffffffffu << (32 - a.cidr));
++      ret = wg_set_if(fd, &ifr);
++    }
++  else if (strcmp(argv[2], "peer") == 0)
++    {
++      memset(&peer, 0, sizeof(peer));
++      strlcpy(peer.ifname, WG_IFNAME, IFNAMSIZ);
++      if (!wg_b64_decode(argv[3], peer.public_key))
++        {
++          fprintf(stderr, "wg: not a valid base64 key\n");
++          return 1;
++        }
++
++      if (argc >= 5 && strcmp(argv[4], "remove") == 0)
++        {
++          ret = wg_ioctl(fd, SIOCDWGPEER, &peer);
++          goto done;
++        }
++
++      for (i = 4; i + 1 < argc; i += 2)
++        {
++          if (strcmp(argv[i], "endpoint") == 0)
++            {
++              if (!wg_parse_endpoint(argv[i + 1], &peer.endpoint))
++                {
++                  fprintf(stderr, "wg: bad endpoint\n");
++                  return 1;
++                }
++
++              peer.flags |= WG_PEER_HAS_ENDPOINT;
++            }
++          else if (strcmp(argv[i], "allowed-ips") == 0)
++            {
++              int n = wg_parse_aips(argv[i + 1], peer.aips);
++
++              if (n < 0)
++                {
++                  fprintf(stderr, "wg: bad allowed-ips\n");
++                  return 1;
++                }
++
++              peer.naips = (uint8_t)n;
++              peer.flags |= WG_PEER_HAS_AIPS | WG_PEER_REPLACE_AIPS;
++            }
++          else if (strcmp(argv[i], "persistent-keepalive") == 0)
++            {
++              peer.keepalive = strcmp(argv[i + 1], "off") == 0 ? 0 :
++                               (uint16_t)strtoul(argv[i + 1], NULL, 10);
++              peer.flags |= WG_PEER_HAS_KEEPALIVE;
++            }
++          else if (strcmp(argv[i], "preshared-key") == 0)
++            {
++              if (!wg_b64_decode(argv[i + 1], peer.preshared_key))
++                {
++                  fprintf(stderr, "wg: not a valid base64 key\n");
++                  return 1;
++                }
++
++              peer.flags |= WG_PEER_HAS_PSK;
++            }
++          else
++            {
++              fprintf(stderr, "wg: unknown peer option '%s'\n", argv[i]);
++              return 1;
++            }
++        }
++
++      ret = wg_ioctl(fd, SIOCSWGPEER, &peer);
++      memset(peer.preshared_key, 0, sizeof(peer.preshared_key));
++    }
++  else
++    {
++      fprintf(stderr, "wg: unknown item '%s'\n", argv[2]);
++      return 1;
++    }
++
++done:
++  if (ret < 0)
++    {
++      fprintf(stderr, "wg: set %s: %s\n", argv[2],
++              ret == -EBUSY ? "interface must be down" :
++              ret == -EEXIST ? "allowed-ips overlap another peer" :
++              ret == -ENOKEY ? "set the private key first" :
++              strerror(-ret));
++      return 1;
++    }
++
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_cmd_setconf
++ *
++ * Description:
++ *   Load a wg(8) / wg-quick style file: [Interface] PrivateKey,
++ *   ListenPort, Address; [Peer] PublicKey, PresharedKey, AllowedIPs,
++ *   Endpoint, PersistentKeepalive. Applied only after the whole file has
++ *   parsed, so a bad line leaves the device untouched.
++ *
++ ****************************************************************************/
++
++static int wg_cmd_setconf(int fd, FAR const char *path)
++{
++  struct wg_ifreq_s ifr;
++  struct wg_conf_peer_s peers[CONFIG_NET_WIREGUARD_MAX_PEERS];
++  FAR struct wg_conf_peer_s *cur = NULL;
++  char line[WG_LINE_MAX];
++  FAR FILE *f;
++  int npeers = 0;
++  int lineno = 0;
++  int ret;
++  int i;
++
++  f = fopen(path, "r");
++  if (f == NULL)
++    {
++      fprintf(stderr, "wg: cannot open %s: %s\n", path, strerror(errno));
++      return 1;
++    }
++
++  memset(&ifr, 0, sizeof(ifr));
++  memset(peers, 0, sizeof(peers));
++
++  while (fgets(line, sizeof(line), f) != NULL)
++    {
++      FAR char *key = line;
++      FAR char *val;
++      FAR char *eq;
++
++      lineno++;
++      key[strcspn(key, "\r\n")] = '\0';
++      while (*key == ' ' || *key == '\t')
++        {
++          key++;
++        }
++
++      if (*key == '\0' || *key == '#')
++        {
++          continue;
++        }
++
++      if (strcasecmp(key, "[Interface]") == 0)
++        {
++          cur = NULL;
++          continue;
++        }
++
++      if (strcasecmp(key, "[Peer]") == 0)
++        {
++          if (npeers >= CONFIG_NET_WIREGUARD_MAX_PEERS)
++            {
++              fprintf(stderr, "wg: %s:%d: too many peers\n", path, lineno);
++              goto fail;
++            }
++
++          cur = &peers[npeers++];
++          cur->valid = true;
++          strlcpy(cur->req.ifname, WG_IFNAME, IFNAMSIZ);
++          continue;
++        }
++
++      eq = strchr(key, '=');
++      if (eq == NULL)
++        {
++          fprintf(stderr, "wg: %s:%d: expected key = value\n", path,
++                  lineno);
++          goto fail;
++        }
++
++      val = eq + 1;
++      *eq = '\0';
++      key[strcspn(key, " \t")] = '\0';
++      while (*val == ' ' || *val == '\t')
++        {
++          val++;
++        }
++
++      if (cur == NULL)
++        {
++          if (strcasecmp(key, "PrivateKey") == 0)
++            {
++              if (!wg_b64_decode(val, ifr.private_key))
++                {
++                  goto badvalue;
++                }
++
++              ifr.flags |= WG_IF_HAS_PRIVATE_KEY;
++            }
++          else if (strcasecmp(key, "ListenPort") == 0)
++            {
++              ifr.listen_port = (uint16_t)strtoul(val, NULL, 10);
++              ifr.flags |= WG_IF_HAS_LISTEN_PORT;
++            }
++          else if (strcasecmp(key, "Address") == 0)
++            {
++              struct wg_aip_s a;
++
++              if (!wg_parse_aip(val, &a))
++                {
++                  goto badvalue;
++                }
++
++              ifr.addr = a.addr;
++              ifr.netmask.s_addr = a.cidr == 0 ? 0 :
++                                   htonl(0xffffffffu << (32 - a.cidr));
++              ifr.flags |= WG_IF_HAS_ADDR;
++            }
++
++          /* DNS, MTU, PostUp and friends are wg-quick's business */
++        }
++      else
++        {
++          if (strcasecmp(key, "PublicKey") == 0)
++            {
++              if (!wg_b64_decode(val, cur->req.public_key))
++                {
++                  goto badvalue;
++                }
++            }
++          else if (strcasecmp(key, "PresharedKey") == 0)
++            {
++              if (!wg_b64_decode(val, cur->req.preshared_key))
++                {
++                  goto badvalue;
++                }
++
++              cur->req.flags |= WG_PEER_HAS_PSK;
++            }
++          else if (strcasecmp(key, "AllowedIPs") == 0)
++            {
++              int n = wg_parse_aips(val, cur->req.aips);
++
++              if (n < 0)
++                {
++                  goto badvalue;
++                }
++
++              cur->req.naips = (uint8_t)n;
++              cur->req.flags |= WG_PEER_HAS_AIPS | WG_PEER_REPLACE_AIPS;
++            }
++          else if (strcasecmp(key, "Endpoint") == 0)
++            {
++              if (!wg_parse_endpoint(val, &cur->req.endpoint))
++                {
++                  goto badvalue;
++                }
++
++              cur->req.flags |= WG_PEER_HAS_ENDPOINT;
++            }
++          else if (strcasecmp(key, "PersistentKeepalive") == 0)
++            {
++              cur->req.keepalive = strcasecmp(val, "off") == 0 ? 0 :
++                                   (uint16_t)strtoul(val, NULL, 10);
++              cur->req.flags |= WG_PEER_HAS_KEEPALIVE;
++            }
++        }
++
++      continue;
++
++badvalue:
++      fprintf(stderr, "wg: %s:%d: bad value for %s\n", path, lineno, key);
++      goto fail;
++    }
++
++  fclose(f);
++  f = NULL;
++
++  /* Apply: interface first (the key must exist before peers), then the
++   * peers. Existing peers are removed so the file is the whole truth.
++   */
++
++  ret = wg_set_if(fd, &ifr);
++  if (ret < 0)
++    {
++      fprintf(stderr, "wg: setconf: %s\n",
++              ret == -EBUSY ? "interface must be down" : strerror(-ret));
++      goto fail;
++    }
++
++  {
++    struct wg_ifreq_s cur_if;
++    struct wg_peerreq_s old;
++
++    if (wg_get_if(fd, &cur_if) == OK)
++      {
++        while (cur_if.npeers > 0 && wg_get_peer(fd, 0, &old) == OK)
++          {
++            if (wg_ioctl(fd, SIOCDWGPEER, &old) < 0)
++              {
++                break;
++              }
++
++            cur_if.npeers--;
++          }
++      }
++  }
++
++  for (i = 0; i < npeers; i++)
++    {
++      ret = wg_ioctl(fd, SIOCSWGPEER, &peers[i].req);
++      if (ret < 0)
++        {
++          fprintf(stderr, "wg: setconf: peer %d: %s\n", i + 1,
++                  ret == -EEXIST ? "allowed-ips overlap another peer" :
++                  strerror(-ret));
++          goto fail;
++        }
++    }
++
++  memset(&ifr, 0, sizeof(ifr));
++  memset(peers, 0, sizeof(peers));
++  return 0;
++
++fail:
++  if (f != NULL)
++    {
++      fclose(f);
++    }
++
++  memset(&ifr, 0, sizeof(ifr));
++  memset(peers, 0, sizeof(peers));
++  return 1;
++}
++
++/****************************************************************************
++ * Name: wg_cmd_saveconf
++ ****************************************************************************/
++
++static int wg_cmd_saveconf(int fd, FAR const char *path)
++{
++  char priv[WG_B64_LEN + 1];
++  char tmp[128];
++  FAR FILE *f;
++  bool have_priv;
++  int ret;
++
++  have_priv = wg_file_private_key(path, priv);
++  if (!have_priv)
++    {
++      fprintf(stderr, "wg: no private key known for %s; the driver does "
++              "not return it. Use \"wg set private-key\" (which records "
++              "it) or write the file by hand\n", path);
++      return 1;
++    }
++
++  f = wg_open_temp(tmp, sizeof(tmp), path);
++  if (f == NULL)
++    {
++      memset(priv, 0, sizeof(priv));
++      fprintf(stderr, "wg: cannot write %s: %s\n", tmp, strerror(errno));
++      return 1;
++    }
++
++  ret = wg_write_conf(fd, f, priv);
++  memset(priv, 0, sizeof(priv));
++  if (fclose(f) != 0 || ret < 0)
++    {
++      unlink(tmp);
++      fprintf(stderr, "wg: could not write '%s'\n", path);
++      return 1;
++    }
++
++  if (wg_replace_file(tmp, path) < 0)
++    {
++      return 1;
++    }
++
++  printf("saved to %s\n", path);
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_usage
++ ****************************************************************************/
++
++static void wg_usage(void)
++{
++  fprintf(stderr,
++    "usage: wg [up|down|show|showconf|setconf|saveconf|genkey|pubkey|set]\n"
++    "\n"
++    "  up                      bring wg0 up (default if no argument)\n"
++    "  down                    take wg0 down\n"
++    "  show                    print interface and peer status\n"
++    "  showconf                print the configuration in wg(8) format\n"
++    "  saveconf [file]         write it to a file so it survives a reboot\n"
++    "  setconf <file>          load a wg(8) format configuration file\n"
++    "  genkey                  print a new private key\n"
++    "  pubkey                  read a private key from stdin and print\n"
++    "                          the matching public key\n"
++    "\n"
++    "  set private-key <key>\n"
++    "  set listen-port <port>\n"
++    "  set address <addr>/<prefix>\n"
++    "  set peer <public-key> [endpoint <addr:port>]\n"
++    "                         [allowed-ips <addr>/<prefix>[,...]]\n"
++    "                         [persistent-keepalive <seconds>|off]\n"
++    "                         [preshared-key <key>]\n"
++    "  set peer <public-key> remove\n"
++    "\n"
++    "The private key, listen port and setconf are accepted only while wg0\n"
++    "is down. The default file is " CONFIG_SYSTEM_WG_CONFIG_PATH ".\n");
++}
++
++/****************************************************************************
++ * Public Functions
++ ****************************************************************************/
++
++int main(int argc, FAR char *argv[])
++{
++  FAR const char *cmd = argc >= 2 ? argv[1] : "up";
++  int fd;
++  int ret;
++
++  if (strcmp(cmd, "genkey") == 0)
++    {
++      uint8_t key[WG_KEY_LEN];
++      char b64[WG_B64_LEN + 1];
++
++      if (!wg_random_key(key))
++        {
++          fprintf(stderr, "wg: /dev/urandom is not usable\n");
++          return 1;
++        }
++
++      wg_b64_encode(key, b64);
++      memset(key, 0, sizeof(key));
++      printf("%s\n", b64);
++      return 0;
++    }
++
++  if (strcmp(cmd, "pubkey") == 0)
++    {
++      char in[WG_B64_LEN + 4];
++      uint8_t priv[WG_KEY_LEN];
++      uint8_t pub[WG_KEY_LEN];
++      char b64[WG_B64_LEN + 1];
++      FAR const char *src;
++
++      /* Like wg(8), from stdin, so the key stays out of the history */
++
++      if (argc >= 3)
++        {
++          src = argv[2];
++        }
++      else if (fgets(in, sizeof(in), stdin) != NULL)
++        {
++          in[strcspn(in, " \t\r\n")] = '\0';
++          src = in;
++        }
++      else
++        {
++          src = "";
++        }
++
++      if (!wg_b64_decode(src, priv) || !wg_derive_public(pub, priv))
++        {
++          fprintf(stderr, "wg: not a valid private key\n");
++          return 1;
++        }
++
++      memset(priv, 0, sizeof(priv));
++      wg_b64_encode(pub, b64);
++      printf("%s\n", b64);
++      return 0;
++    }
++
++  if (strcmp(cmd, "help") == 0 || strcmp(cmd, "-h") == 0)
++    {
++      wg_usage();
++      return 0;
++    }
++
++  fd = wg_open();
++  if (fd < 0)
++    {
++      return 1;
++    }
++
++  if (strcmp(cmd, "up") == 0)
++    {
++      ret = wg_cmd_updown(fd, true);
++    }
++  else if (strcmp(cmd, "down") == 0)
++    {
++      ret = wg_cmd_updown(fd, false);
++    }
++  else if (strcmp(cmd, "show") == 0)
++    {
++      ret = wg_cmd_show(fd);
++    }
++  else if (strcmp(cmd, "showconf") == 0)
++    {
++      char priv[WG_B64_LEN + 1];
++      bool have = wg_file_private_key(CONFIG_SYSTEM_WG_CONFIG_PATH, priv);
++
++      ret = wg_write_conf(fd, stdout, have ? priv : NULL) < 0 ? 1 : 0;
++      memset(priv, 0, sizeof(priv));
++    }
++  else if (strcmp(cmd, "setconf") == 0)
++    {
++      ret = wg_cmd_setconf(fd, argc >= 3 ? argv[2] :
++                           CONFIG_SYSTEM_WG_CONFIG_PATH);
++    }
++  else if (strcmp(cmd, "saveconf") == 0)
++    {
++      ret = wg_cmd_saveconf(fd, argc >= 3 ? argv[2] :
++                            CONFIG_SYSTEM_WG_CONFIG_PATH);
++    }
++  else if (strcmp(cmd, "set") == 0)
++    {
++      ret = wg_cmd_set(fd, argc, argv);
++    }
++  else
++    {
++      wg_usage();
++      ret = 1;
++    }
++
++  close(fd);
++  return ret;
++}
+diff --git a/system/wg/wg_x25519.c b/system/wg/wg_x25519.c
+new file mode 100644
+index 00000000..72b0a645
+--- /dev/null
++++ b/system/wg/wg_x25519.c
+@@ -0,0 +1,481 @@
++/****************************************************************************
++ * apps/system/wg/wg_x25519.c
++ *
++ * SPDX-License-Identifier: MIT
++ * SPDX-FileCopyrightText: 2015-2016 Cryptography Research, Inc.
++ * SPDX-FileContributor: Mike Hamburg
++ *
++ * Key exchange and signatures based on X25519. Taken from the STROBE
++ * project (https://sourceforge.net/p/strobe), used here for the offline
++ * genkey / pubkey commands so a key pair can be produced before any
++ * WireGuard interface exists.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ ****************************************************************************/
++
++#include <stdint.h>
++#include <string.h>
++#include <sys/endian.h>
++
++#include "wg_x25519.h"
++
++/* Adaptation: upstream includes strobe.h and strobe_config.h, which bring in
++ * the rest of the STROBE framework.  Only the options that X25519 itself
++ * reads are needed here, so they are set directly and nothing else of STROBE
++ * is carried.  Everything below this block is the upstream source, kept in
++ * its own formatting so it can be diffed against it.
++ *
++ * sys/endian.h is included for BYTE_ORDER.  Without it the test below reads
++ * as 0 == 0, so a big-endian target would silently take the little-endian
++ * path instead of reaching the #error that is there to stop it.
++ */
++
++#define X25519_WBITS 32
++#define X25519_SUPPORT_SIGN 0
++#define X25519_MEMCPY_PARAMS 1
++#define X25519_USE_POWER_CHAIN 1
++#if BYTE_ORDER == LITTLE_ENDIAN
++static inline uint32_t eswap_letoh_32(uint32_t w) { return w; }
++#else
++#error "Fix eswap() on non-little-endian machine"
++#endif
++
++#if X25519_WBITS == 64
++    typedef uint64_t limb_t;
++    typedef __uint128_t dlimb_t;
++    typedef __int128_t sdlimb_t;
++    #define eswap_limb eswap_letoh_64
++    #define LIMB(x) x##ull
++#elif X25519_WBITS == 32
++    typedef uint32_t limb_t;
++    typedef uint64_t dlimb_t;
++    typedef int64_t sdlimb_t;
++    #define eswap_limb eswap_letoh_32
++    #define LIMB(x) (uint32_t)(x##ull),(uint32_t)((x##ull)>>32)
++#else
++    #error "Need to know X25519_WBITS"
++#endif
++
++#define NLIMBS (256/X25519_WBITS)
++typedef limb_t fe[NLIMBS];
++
++#if X25519_SUPPORT_SIGN
++typedef limb_t scalar_t[NLIMBS];
++static const limb_t MONTGOMERY_FACTOR = (limb_t)0xd2b51da312547e1bull;
++static const scalar_t sc_p = {
++    LIMB(0x5812631a5cf5d3ed), LIMB(0x14def9dea2f79cd6),
++    LIMB(0x0000000000000000), LIMB(0x1000000000000000)
++}, sc_r2 = {
++    LIMB(0xa40611e3449c0f01), LIMB(0xd00e1ba768859347),
++    LIMB(0xceec73d217f5be65), LIMB(0x0399411b7c309a3d)
++};
++#endif
++
++static inline limb_t umaal(
++    limb_t *carry, limb_t acc, limb_t mand, limb_t mier
++) {
++    dlimb_t tmp = (dlimb_t) mand * mier + acc + *carry;
++    *carry = tmp >> X25519_WBITS;
++    return tmp;
++}
++
++/* These functions are implemented in terms of umaal on ARM */
++static inline limb_t adc(limb_t *carry, limb_t acc, limb_t mand) {
++    dlimb_t total = (dlimb_t)*carry + acc + mand;
++    *carry = total>>X25519_WBITS;
++    return total;
++}
++
++static inline limb_t adc0(limb_t *carry, limb_t acc) {
++    dlimb_t total = (dlimb_t)*carry + acc;
++    *carry = total>>X25519_WBITS;
++    return total;
++}
++
++/* Precondition: carry is small.
++ * Invariant: result of propagate is < 2^255 + 1 word
++ * In particular, always less than 2p.
++ * Also, output x >= min(x,19)
++ */
++static void propagate(fe x, limb_t over) {
++    unsigned i;
++    over = x[NLIMBS-1]>>(X25519_WBITS-1) | over<<1;
++    x[NLIMBS-1] &= ~((limb_t)1<<(X25519_WBITS-1));
++
++    limb_t carry = over * 19;
++    for (i=0; i<NLIMBS; i++) {
++        x[i] = adc0(&carry, x[i]);
++    }
++}
++
++static void add(fe out, const fe a, const fe b) {
++    unsigned i;
++    limb_t carry = 0;
++    for (i=0; i<NLIMBS; i++) {
++        out[i] = adc(&carry, a[i], b[i]);
++    }
++    propagate(out,carry);
++}
++
++static void sub(fe out, const fe a, const fe b) {
++    unsigned i;
++    sdlimb_t carry = -38;
++    for (i=0; i<NLIMBS; i++) {
++        out[i] = carry = carry + a[i] - b[i];
++        carry >>= X25519_WBITS;
++    }
++    propagate(out,1+carry);
++}
++
++static void __attribute__((unused))
++swapin(limb_t *x, const uint8_t *in) {
++    memcpy(x,in,sizeof(fe));
++    unsigned i;
++    for (i=0; i<NLIMBS; i++) {
++        x[i] = eswap_limb(x[i]);
++    }
++}
++
++static void __attribute__((unused))
++swapout(uint8_t *out, limb_t *x) {
++    unsigned i;
++    for (i=0; i<NLIMBS; i++) {
++        x[i] = eswap_limb(x[i]);
++    }
++    memcpy(out,x,sizeof(fe));
++}
++
++static void mul(fe out, const fe a, const fe b, unsigned nb) {
++    /* GCC at least produces pretty decent asm for this, so don't need to have dedicated asm. */
++    limb_t accum[2*NLIMBS] = {0};
++    unsigned i,j;
++
++    limb_t carry2;
++    for (i=0; i<nb; i++) {
++        carry2 = 0;
++        limb_t mand = b[i];
++        for (j=0; j<NLIMBS; j++) {
++            accum[i+j] = umaal(&carry2, accum[i+j], mand, a[j]);
++        }
++        accum[i+j] = carry2;
++    }
++
++    carry2 = 0;
++    const limb_t mand = 38;
++    for (j=0; j<NLIMBS; j++) {
++         out[j] = umaal(&carry2, accum[j], mand, accum[j+NLIMBS]);
++    }
++    propagate(out,carry2);
++}
++
++static void sqr(fe out, const fe a) { mul(out,a,a,NLIMBS); }
++static void mul1(fe out, const fe a) { mul(out,a,out,NLIMBS); }
++static void sqr1(fe a) { mul1(a,a); }
++
++static void condswap(limb_t a[2*NLIMBS], limb_t b[2*NLIMBS], limb_t doswap) {
++    unsigned i;
++    for (i=0; i<2*NLIMBS; i++) {
++        limb_t xor = (a[i]^b[i]) & doswap;
++        a[i] ^= xor; b[i] ^= xor;
++    }
++}
++
++static limb_t canon(fe x) {
++    /* Canonicalize a field element x, reducing it to the least residue
++     * which is congruent to it mod 2^255-19.
++     *
++     * Precondition: x < 2^255 + 1 word
++     */
++
++    /* First, add 19. */
++    unsigned i;
++    limb_t carry0 = 19;
++    for (i=0; i<NLIMBS; i++) {
++        x[i] = adc0(&carry0, x[i]);
++    }
++    propagate(x,carry0);
++
++    /* Here, 19 <= x2 < 2^255
++     *
++     * This is because we added 19, so before propagate it can't be less than 19.
++     * After propagate, it still can't be less than 19, because if propagate does
++     * anything it adds 19.
++     *
++     * We know that the high bit must be clear, because either the input was
++     * ~ 2^255 + one word + 19 (in which case it propagates to at most 2 words)
++     * or it was < 2^255.
++     *
++     * So now, if we subtract 19, we will get back to something in [0,2^255-19).
++     */
++    sdlimb_t carry = -19;
++    limb_t res = 0;
++    for (i=0; i<NLIMBS; i++) {
++        res |= x[i] = carry += x[i];
++        carry >>= X25519_WBITS;
++    }
++    return ((dlimb_t)res - 1) >> X25519_WBITS;
++}
++
++static const limb_t a24[1]={121665};
++
++static void ladder_part1(fe xs[5]) {
++    limb_t *x2 = xs[0], *z2=xs[1],*x3=xs[2],*z3=xs[3],*t1=xs[4];
++    add(t1,x2,z2);  // t1 = A
++    sub(z2,x2,z2);  // z2 = B
++    add(x2,x3,z3);  // x2 = C
++    sub(z3,x3,z3);  // z3 = D
++    mul1(z3,t1);    // z3 = DA
++    mul1(x2,z2);    // x3 = BC
++    add(x3,z3,x2);  // x3 = DA+CB
++    sub(z3,z3,x2);  // z3 = DA-CB
++    sqr1(t1);       // t1 = AA
++    sqr1(z2);       // z2 = BB
++    sub(x2,t1,z2);  // x2 = E = AA-BB
++    mul(z2,x2,a24,sizeof(a24)/sizeof(a24[0])); // z2 = E*a24
++    add(z2,z2,t1);  // z2 = E*a24 + AA
++}
++static void ladder_part2(fe xs[5], const fe x1) {
++    limb_t *x2 = xs[0], *z2=xs[1],*x3=xs[2],*z3=xs[3],*t1=xs[4];
++    sqr1(z3);       // z3 = (DA-CB)^2
++    mul1(z3,x1);    // z3 = x1 * (DA-CB)^2
++    sqr1(x3);       // x3 = (DA+CB)^2
++    mul1(z2,x2);    // z2 = AA*(E*a24+AA)
++    sub(x2,t1,x2);  // x2 = BB again
++    mul1(x2,t1);    // x2 = AA*BB
++}
++
++static void x25519_core(fe xs[5], const uint8_t scalar[X25519_BYTES], const uint8_t *x1, int clamp) {
++    int i;
++#if X25519_MEMCPY_PARAMS
++    fe x1i;
++    swapin(x1i,x1);
++    x1 = (const uint8_t *)x1;
++#endif
++    limb_t swap = 0;
++    limb_t *x2 = xs[0],*x3=xs[2],*z3=xs[3];
++    memset(xs,0,4*sizeof(fe));
++    x2[0] = z3[0] = 1;
++    memcpy(x3,x1,sizeof(fe));
++
++    for (i=255; i>=0; i--) {
++        uint8_t bytei = scalar[i/8];
++        if (clamp) {
++            if (i/8 == 0) {
++                bytei &= ~7;
++            } else if (i/8 == X25519_BYTES-1) {
++                bytei &= 0x7F;
++                bytei |= 0x40;
++            }
++        }
++        limb_t doswap = -(limb_t)((bytei>>(i%8)) & 1);
++        condswap(x2,x3,swap^doswap);
++        swap = doswap;
++
++        ladder_part1(xs);
++        ladder_part2(xs,(const limb_t *)x1);
++    }
++    condswap(x2,x3,swap);
++}
++
++int x25519(uint8_t out[X25519_BYTES], const uint8_t scalar[X25519_BYTES], const uint8_t x1[X25519_BYTES], int clamp) {
++    fe xs[5];
++    x25519_core(xs,scalar,x1,clamp);
++
++    /* Precomputed inversion chain */
++    limb_t *x2 = xs[0], *z2=xs[1], *z3=xs[3];
++    int i;
++
++    limb_t *prev = z2;
++#if X25519_USE_POWER_CHAIN
++    static const struct { uint8_t a,c,n; } steps[13] = {
++        {2,1,1  },
++        {2,1,1  },
++        {4,2,3  },
++        {2,4,6  },
++        {3,1,1  },
++        {3,2,12 },
++        {4,3,25 },
++        {2,3,25 },
++        {2,4,50 },
++        {3,2,125},
++        {3,1,2  },
++        {3,1,2  },
++        {3,1,1  }
++    };
++    for (i=0; i<13; i++) {
++        int j;
++        limb_t *a = xs[steps[i].a];
++        for (j=steps[i].n; j>0; j--) {
++            sqr(a, prev);
++            prev = a;
++        }
++        mul1(a,xs[steps[i].c]);
++    }
++#else
++    /* Raise to the p-2 = 0x7f..ffeb */
++    for (i=253; i>=0; i--) {
++        sqr(z3,prev);
++        prev = z3;
++        if (i>=8 || (0xeb>>i & 1)) {
++            mul1(z3,z2);
++        }
++    }
++#endif
++
++    /* Here prev = z3 */
++    /* x2 /= z2 */
++#if X25519_MEMCPY_PARAMS
++    mul1(x2,z3);
++    int ret = canon(x2);
++    swapout(out,x2);
++#else
++    mul((limb_t *)out, x2, z3, NLIMBS);
++    int ret = canon((limb_t*)out);
++#endif
++    if (clamp) return ret;
++    else return 0;
++}
++
++const uint8_t X25519_BASE_POINT[X25519_BYTES] = {9};
++
++#if X25519_SUPPORT_VERIFY
++static limb_t x25519_verify_core(
++    fe xs[5],
++    const limb_t *other1,
++    const uint8_t other2[X25519_BYTES]
++) {
++    limb_t *z2=xs[1],*x3=xs[2],*z3=xs[3];
++#if X25519_MEMCPY_PARAMS
++    fe xo2;
++    swapin(xo2,other2);
++#else
++    const limb_t *xo2 = (const limb_t *)other2;
++#endif
++
++    memcpy(x3, other1, 2*sizeof(fe));
++
++    ladder_part1(xs);
++
++    /* Here z2 = t2^2 */
++    mul1(z2,other1);
++    mul1(z2,other1+NLIMBS);
++    mul1(z2,xo2);
++    const limb_t sixteen = 16;
++    mul (z2,z2,&sixteen,1);
++
++    mul1(z3,xo2);
++    sub(z3,z3,x3);
++    sqr1(z3);
++
++    /* check equality */
++    sub(z3,z3,z2);
++
++    /* If canon(z2) then both sides are zero.
++     * If canon(z3) then the two sides are equal.
++     *
++     * Reject sigs where both sides are zero, because
++     * that can happen if an input causes the ladder to
++     * return 0/0.
++     */
++    return canon(z2) | ~canon(z3);
++}
++
++int x25519_verify_p2 (
++    const uint8_t response[X25519_BYTES],
++    const uint8_t challenge[X25519_BYTES],
++    const uint8_t eph[X25519_BYTES],
++    const uint8_t pub[X25519_BYTES]
++) {
++    fe xs[7];
++    x25519_core(&xs[0],challenge,pub,0);
++    x25519_core(&xs[2],response,X25519_BASE_POINT,0);
++    return x25519_verify_core(&xs[2],xs[0],eph);
++}
++#endif // X25519_SUPPORT_VERIFY
++
++#if X25519_SUPPORT_SIGN
++static void sc_montmul (
++    scalar_t out,
++    const scalar_t a,
++    const scalar_t b
++) {
++   /**
++    * OK, so carry bounding.  We're using a high carry, so that the
++    * inputs don't have to be reduced.
++    *
++    * First montmul: output < (M^2 + Mp)/M = M+p, subtract p, < M.  This gets rid of high carry.
++    * Second montmul, by r^2 mod p < p: output < (Mp + Mp)/M = 2p, subtract p, < p, done.
++    */
++    unsigned i,j;
++    limb_t hic = 0;
++    for (i=0; i<NLIMBS; i++) {
++        limb_t carry=0, carry2=0, mand = a[i], mand2 = MONTGOMERY_FACTOR;
++
++        for (j=0; j<NLIMBS; j++) {
++            limb_t acc = out[j];
++            acc = umaal(&carry, acc, mand, b[j]);
++            if (j==0) mand2 *= acc;
++            acc = umaal(&carry2, acc, mand2, sc_p[j]);
++            if (j>0) out[j-1] = acc;
++        }
++
++        /* Add two carry registers and high carry */
++        out[NLIMBS-1] = adc(&hic, carry, carry2);
++    }
++
++    /* Reduce */
++    sdlimb_t scarry = 0;
++    for (i=0; i<NLIMBS; i++) {
++        out[i] = scarry = scarry + out[i] - sc_p[i];
++        scarry >>= X25519_WBITS;
++    }
++    limb_t need_add = -(scarry + hic);
++
++    limb_t carry = 0;
++    for (i=0; i<NLIMBS; i++) {
++        out[i] = umaal(&carry, out[i], need_add, sc_p[i]);
++    }
++}
++
++void x25519_sign_p2 (
++    uint8_t response[X25519_BYTES],
++    const uint8_t challenge[X25519_BYTES],
++    const uint8_t eph_secret[X25519_BYTES],
++    const uint8_t secret[X25519_BYTES]
++) {
++    /* FUTURE memory/code size: just make eph_secret non-const? */
++    scalar_t scalar1;
++    swapin(scalar1,eph_secret);
++
++    #if X25519_MEMCPY_PARAMS
++    scalar_t scalar2, scalar3;
++    swapin(scalar2,secret);
++    swapin(scalar3,challenge);
++    sc_montmul(scalar1,scalar2,scalar3);
++    memset(scalar2,0,sizeof(scalar2));
++    sc_montmul(scalar2,scalar1,sc_r2);
++    swapout(response,scalar2);
++    #else
++    sc_montmul(scalar1,(const limb_t *)secret,(const limb_t *)challenge);
++    memset(response,0,X25519_BYTES);
++    sc_montmul((limb_t *)response,scalar1,sc_r2);
++    #endif
++}
++#endif // X25519_SUPPORT_SIGN
+diff --git a/system/wg/wg_x25519.h b/system/wg/wg_x25519.h
+new file mode 100644
+index 00000000..32cd11af
+--- /dev/null
++++ b/system/wg/wg_x25519.h
+@@ -0,0 +1,149 @@
++/****************************************************************************
++ * apps/system/wg/wg_x25519.h
++ *
++ * SPDX-License-Identifier: MIT
++ * SPDX-FileCopyrightText: 2016 Cryptography Research, Inc.
++ * SPDX-FileContributor: Mike Hamburg
++ *
++ * X25519 key exchange and signatures. Taken from the STROBE project
++ * (https://sourceforge.net/p/strobe).
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ ****************************************************************************/
++
++#ifndef __X25519_H__
++#define __X25519_H__
++
++#define X25519_BYTES (256/8)
++
++/* The base point (9) */
++extern const unsigned char X25519_BASE_POINT[X25519_BYTES];
++
++/** Number of bytes in an EC public key */
++#define EC_PUBLIC_BYTES 32
++
++/** Number of bytes in an EC private key */
++#define EC_PRIVATE_BYTES 32
++
++/**
++ * Number of bytes in a Schnorr challenge.
++ * Could be set to 16 in a pinch.  (FUTURE?)
++ */
++#define EC_CHALLENGE_BYTES 32
++
++/** Enough bytes to get a uniform sample mod #E.  For eg a Brainpool
++ * curve this would need to be more than for a private key, but due
++ * to the special prime used by Curve25519, the same size is enough.
++ */
++#define EC_UNIFORM_BYTES 32
++
++/* x25519 scalar multiplication.  Sets out to scalar*base.
++ *
++ * If clamp is set (and supported by X25519_INTEROP_SUPPORT_CLAMP)
++ * then the scalar will be "clamped" like a Curve25519 secret key.
++ * This adds almost no security, but permits interop with other x25519
++ * implementations without manually clamping the keys.
++ *
++ * Per RFC 7748, this function returns failure (-1) if the output
++ * is zero and clamp is set.  This indicates "non-contributory behavior",
++ * meaning that one party might steer the key so that the other party's
++ * contribution doesn't matter, or contributes only a little entropy.
++ *
++ * WARNING: however, this function differs from RFC 7748 in another way:
++ * it pays attention to the high bit base[EC_PUBLIC_BYTES-1] & 0x80, but
++ * RFC 7748 says to ignore this bit.  For compatibility with RFC 7748,
++ * you must also clear this bit by running base[EC_PUBLIC_BYTES-1] &= 0x7F.
++ * This library won't clear it for you because it takes the base point as
++ * const, and (depending on build flags) doesn't copy it.
++ *
++ * If clamp==0, or if X25519_INTEROP_SUPPORT_CLAMP==0, then this function
++ * always returns 0.
++ */
++int x25519 (
++    unsigned char out[EC_PUBLIC_BYTES],
++    const unsigned char scalar[EC_PRIVATE_BYTES],
++    const unsigned char base[EC_PUBLIC_BYTES],
++    int clamp
++);
++
++/**
++ * Returns 0 on success, -1 on failure.
++ *
++ * Per RFC 7748, this function returns failure if the output
++ * is zero and clamp is set.  This usually doesn't matter for
++ * base scalarmuls.
++ *
++ * If clamp==0, or if X25519_INTEROP_SUPPORT_CLAMP==0, then this function
++ * always returns 0.
++ *
++ * Same as x255(out,scalar,X255_BASE_POINT), except that
++ * other implementations may optimize it.
++ */
++static inline int x25519_base (
++    unsigned char out[EC_PUBLIC_BYTES],
++    const unsigned char scalar[EC_PRIVATE_BYTES],
++    int clamp
++) {
++    return x25519(out,scalar,X25519_BASE_POINT,clamp);
++}
++
++/**
++ * As x25519_base, but with a scalar that's EC_UNIFORM_BYTES long,
++ * and clamp always 0 (and thus, no return value).
++ *
++ * This is used for signing.  Implementers must replace it for
++ * curves that require more bytes for uniformity (Brainpool).
++ */
++static inline void x25519_base_uniform (
++    unsigned char out[EC_PUBLIC_BYTES],
++    const unsigned char scalar[EC_UNIFORM_BYTES]
++) {
++    (void)x25519_base(out,scalar,0);
++}
++
++/**
++ * STROBE-compatible Schnorr signatures using curve25519 (not ed25519)
++ *
++ * The user will call x25519_base_uniform(eph,eph_secret) to schedule
++ * a random ephemeral secret key.  They then call a Schnorr oracle to
++ * get a challenge, and compute the response using this function.
++ */
++void x25519_sign_p2 (
++    unsigned char response[EC_PRIVATE_BYTES],
++    const unsigned char challenge[EC_CHALLENGE_BYTES],
++    const unsigned char eph_secret[EC_UNIFORM_BYTES],
++    const unsigned char secret[EC_PRIVATE_BYTES]
++);
++
++/**
++ * STROBE-compatible signature verification using curve25519 (not ed25519).
++ * This function is the public equivalent x25519_sign_p2, taking the long-term
++ * and ephemeral public keys instead of secret ones.
++ *
++ * Returns -1 on failure and 0 on success.
++ */
++int x25519_verify_p2 (
++    const unsigned char response[X25519_BYTES],
++    const unsigned char challenge[X25519_BYTES],
++    const unsigned char eph[X25519_BYTES],
++    const unsigned char pub[X25519_BYTES]
++);
++
++#endif /* __X25519_H__ */
+-- 
+2.49.0.windows.1
+

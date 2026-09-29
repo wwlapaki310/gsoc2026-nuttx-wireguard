@@ -7,20 +7,23 @@ instead — note that **the `Dockerfile` currently copies the apps version**
 (`nuttx_port/apps/netutils/wireguard/` → `/opt/apps/netutils/wireguard/`); it has no in-kernel
 target yet.
 
-## ⚠️ Publication status (blocks a clean external repro today)
+## Publication Status
 
-The in-kernel code lives in two **local** forks that are **not yet pushed**:
+The development branches remain local. The coordination repository now also
+carries a [complete submission patch series](patches/2026-09-29/README.md), so
+source acquisition no longer depends on publishing those forks.
 
 | Fork | Branch | Base (upstream/master) | HEAD | Public? |
 |---|---|---|---|---|
-| `apache/nuttx` fork | `net-wireguard` | `c95c546c0993…` | `677c8f54fe46…` | **no — not pushed (GitHub returns 404)** |
-| `apache/nuttx-apps` fork | `system-wg` | `73a9c9a69711…` | `24b3f31157e5…` | **no — not pushed** |
+| `apache/nuttx` fork | `net-wireguard` | `c95c546c0993…` | `b230ee4876` | local development branch |
+| `apache/nuttx-apps` fork | `system-wg` | `73a9c9a69711…` | `37f04cff` | local development branch |
+| NuttX submission worktree | `review/pr-series-20260928` | `68dd87f4df` | `8defcefa94` | exported patches |
+| apps submission worktree | `review/pr-series-20260928` | `b66303e2` | `c039b232` | exported patch |
 
-Until those branches are pushed, a third party cannot fetch the driver/command sources, so the
-steps below cannot be run from a fresh external clone. **Publishing the forks is the author's
-task** (see the role split in [issue #11](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/issues/11)).
-The procedure is written so it works the moment they are public; on the author's machine it
-works today because the forks are checked out locally.
+Patch application was checked on clean upstream-base worktrees: the resulting
+trees match the submission candidates exactly. This is not a claim that a fresh
+Docker image build was repeated. Publishing forks/PRs and author certification
+are still the owner's actions. Original development branches were not rewritten.
 
 ## Prerequisites
 
@@ -34,29 +37,35 @@ works today because the forks are checked out locally.
 ## 1. Get the sources at the pinned revisions
 
 ```bash
-# upstream, at the fork base
+# Run in a clean working directory; set this to the coordination repo clone.
+REVIEW_REPO=/absolute/path/to/gsoc2026-nuttx-wireguard
 git clone https://github.com/apache/nuttx.git       nuttx
 git clone https://github.com/apache/nuttx-apps.git  apps
-git -C nuttx checkout c95c546c0993
-git -C apps  checkout 73a9c9a69711
-
-# the in-kernel changes, once the forks are public (see the caveat above):
-#   git -C nuttx remote add fork <nuttx fork url>  && git -C nuttx fetch fork net-wireguard && git -C nuttx checkout 677c8f54fe46
-#   git -C apps  remote add fork <apps fork url>   && git -C apps  fetch fork system-wg     && git -C apps  checkout 24b3f31157e5
+git -C nuttx checkout -b wg-candidate 68dd87f4df9ad1e19240136b931867efbcbc23d0
+git -C apps  checkout -b wg-candidate b66303e26aa537dd74d6abaeeeded81c151a7e35
+git -C nuttx am "$REVIEW_REPO"/docs/upstream/patches/2026-09-29/nuttx/*.patch
+git -C apps  am "$REVIEW_REPO"/docs/upstream/patches/2026-09-29/apps/*.patch
 ```
 
 This repository also carries a dev-loop helper, [`scripts/kdev.sh`](../../scripts/kdev.sh),
-that syncs each fork's working-tree diff into a container and builds/tests it. It assumes a
-container named `wgdev` (from image `nuttx-wireguard:sim-master`, with `/opt/nuttx` and
-`/opt/apps` checked out at the fork bases). To create that container from scratch:
+that builds/tests a container containing `/opt/nuttx` and `/opt/apps`. Select it
+with `WG_CONTAINER` (default `wgdev`). On a Linux host, the patched trees above
+can be mounted over those paths in an existing toolchain image:
 
 ```bash
-docker build -t nuttx-wireguard:sim-master .            # base image
-docker run -d --name wgdev --cap-add=NET_ADMIN --device=/dev/net/tun \
-  nuttx-wireguard:sim-master sleep infinity
-# then, from a clone of THIS repo with the forks checked out beside it:
-bash scripts/kdev.sh sync                                # applies each fork's diff into wgdev
+docker run -d --name wg-candidate --cap-add=NET_ADMIN --device=/dev/net/tun \
+  -v "$PWD/nuttx:/opt/nuttx" -v "$PWD/apps:/opt/apps" \
+  --entrypoint sleep nuttx-wireguard:sim-master infinity
+export WG_CONTAINER=wg-candidate
+cd "$REVIEW_REPO"
+# Do not run sync: these source trees already include the complete patches.
 ```
+
+For the separate local-fork development loop, `kdev.sh sync` applies each fork's
+working diff onto a container checked out at the matching **base**, not at a
+candidate tip. It now refuses a mismatched HEAD before resetting any source.
+Never use an old-base `wgdev` to validate a new-base diff. The image's legacy
+apps WireGuard tree must not be mixed with the patched `/opt/apps` tree.
 
 ## 2. sim: build and the runtime + replay tests (T1, TR)
 

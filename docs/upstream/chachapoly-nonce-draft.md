@@ -4,6 +4,14 @@ Found while bringing up the in-kernel WireGuard device against a real Linux
 kernel WireGuard peer. Status: **draft, fixed locally in the fork, not
 filed** (2026-09-20).
 
+**Submission-series update (2026-09-29):** the local candidate now carries the
+nonce correction and both AEAD KAT families together in `a5d9148cf5`, based on
+upstream `68dd87f4df`. A sim with only this crypto commit, no WireGuard driver,
+booted with `CONFIG_CRYPTO_ALGTEST` and reported `crypto test OK`.
+`scripts/kernel/verify-crypto-prerequisite.py` asserts that separation.
+The old instructions below to move working-tree vectors into the crypto commit
+are now completed. Publication and author certification remain with the owner.
+
 Suggested title: `crypto/chachapoly: place the 64-bit AEAD counter nonce in
 the last 8 bytes (RFC 8439 / WireGuard convention)`
 

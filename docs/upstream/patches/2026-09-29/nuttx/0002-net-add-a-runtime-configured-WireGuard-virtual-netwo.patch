@@ -1,0 +1,5348 @@
+From 8defcefa947645d2245a320dc2d0e0c2eb8ce6cd Mon Sep 17 00:00:00 2001
+From: satoru akita <wwlap24@gmail.com>
+Date: Mon, 28 Sep 2026 23:42:59 +0900
+Subject: [PATCH 2/2] net: add a runtime-configured WireGuard virtual network
+ device
+
+Queue immutable outbound datagrams for worker-owned socket sends outside the device lock. Add the pointer-free ioctl interface, lifecycle recovery, realtime handshake timestamps, build wiring, and documentation. Require IOB chain heads and keep the vendored apps X25519 adaptation excluded from nxstyle.
+---
+ .../applications/system/wg/index.rst          |   84 +
+ .../components/drivers/special/net/index.rst  |    1 +
+ .../drivers/special/net/wireguard.rst         |  172 ++
+ .../sim/sim/sim/configs/wireguard/defconfig   |   92 +
+ drivers/drivers_initialize.c                  |    7 +
+ drivers/net/Make.defs                         |    2 +
+ drivers/net/netdev_upperhalf.c                |   52 +-
+ drivers/net/wireguard/CMakeLists.txt          |   25 +
+ drivers/net/wireguard/Make.defs               |   30 +
+ drivers/net/wireguard/wg_crypto.c             |  413 ++++
+ drivers/net/wireguard/wg_crypto.h             |  138 ++
+ drivers/net/wireguard/wg_noise.c              | 1174 ++++++++++
+ drivers/net/wireguard/wg_noise.h              |  307 +++
+ drivers/net/wireguard/wg_tai64n.c             |  183 ++
+ drivers/net/wireguard/wireguard.c             | 1952 +++++++++++++++++
+ include/nuttx/net/ioctl.h                     |    8 +
+ include/nuttx/net/wireguard.h                 |  169 ++
+ mm/iob/Kconfig                                |    1 +
+ net/Kconfig                                   |  129 ++
+ net/netdev/netdev_ioctl.c                     |   74 +
+ net/netdev/netdev_register.c                  |    7 +-
+ tools/nxstyle.c                               |    9 +
+ 22 files changed, 5012 insertions(+), 17 deletions(-)
+ create mode 100644 Documentation/applications/system/wg/index.rst
+ create mode 100644 Documentation/components/drivers/special/net/wireguard.rst
+ create mode 100644 boards/sim/sim/sim/configs/wireguard/defconfig
+ create mode 100644 drivers/net/wireguard/CMakeLists.txt
+ create mode 100644 drivers/net/wireguard/Make.defs
+ create mode 100644 drivers/net/wireguard/wg_crypto.c
+ create mode 100644 drivers/net/wireguard/wg_crypto.h
+ create mode 100644 drivers/net/wireguard/wg_noise.c
+ create mode 100644 drivers/net/wireguard/wg_noise.h
+ create mode 100644 drivers/net/wireguard/wg_tai64n.c
+ create mode 100644 drivers/net/wireguard/wireguard.c
+ create mode 100644 include/nuttx/net/wireguard.h
+
+diff --git a/Documentation/applications/system/wg/index.rst b/Documentation/applications/system/wg/index.rst
+new file mode 100644
+index 0000000000..0792fb3336
+--- /dev/null
++++ b/Documentation/applications/system/wg/index.rst
+@@ -0,0 +1,84 @@
++=================================
++``wg`` WireGuard Configuration Tool
++=================================
++
++``wg`` configures the WireGuard virtual network device (``wg0``, see
++:doc:`/components/drivers/special/net/wireguard`) at run time over the
++device's ioctl ABI. It is a small, self-contained subset of the upstream
++``wg(8)`` command: it sets the private key, listen port and tunnel
++address, adds and removes peers, brings the interface up and down, and
++reads and writes ``wg(8)``-format configuration files.
++
++Configuration
++=============
++
++Enable ``CONFIG_SYSTEM_WG`` (it depends on ``CONFIG_NET_WIREGUARD``).
++
++- ``CONFIG_SYSTEM_WG_CONFIG_PATH``: default path used by ``saveconf`` and
++  ``setconf`` when no file is given (for example ``/data/wg0.conf``).
++  Point it at a writable, persistent file system so a configuration
++  survives a reboot.
++
++Usage
++=====
++
++::
++
++  wg [up|down|show|showconf|setconf|saveconf|genkey|pubkey|set]
++
++- ``up`` — bring ``wg0`` up (the default when no argument is given). The
++  private key must already be set.
++- ``down`` — take ``wg0`` down.
++- ``show`` — print interface and peer status (public key, listen port,
++  endpoints, allowed-ips, last handshake, transfer counters).
++- ``showconf`` — print the current configuration in ``wg(8)`` format.
++- ``saveconf [file]`` — write the configuration to a file so it survives a
++  reboot (defaults to ``CONFIG_SYSTEM_WG_CONFIG_PATH``).
++- ``setconf <file>`` — load a ``wg(8)``-format configuration file.
++- ``genkey`` — print a new Curve25519 private key.
++- ``pubkey`` — read a private key from stdin and print the matching public
++  key.
++- ``set <item> ...`` — change one setting:
++
++  ::
++
++    set private-key <key>
++    set listen-port <port>
++    set address <addr>/<prefix>
++    set peer <public-key> [endpoint <addr:port>]
++                          [allowed-ips <addr>/<prefix>[,...]]
++                          [persistent-keepalive <seconds>|off]
++                          [preshared-key <key>]
++    set peer <public-key> remove
++
++The private key, the listen port and ``setconf`` are accepted only while
++``wg0`` is down.
++
++Keys and the configuration file
++===============================
++
++The driver never returns the private key (it is write-only in the ABI),
++so ``wg`` keeps the private key in the configuration file as the source of
++truth: ``set private-key`` records it there as well as pushing it to the
++device, and ``saveconf`` writes the file from that record plus the state
++read back from the device. ``genkey`` and ``pubkey`` run entirely in user
++space (a vendored MIT Curve25519), so a key pair can be produced before
++any interface exists and ``pubkey`` agrees with the host ``wg(8)``.
++
++Example
++=======
++
++::
++
++  nsh> wg genkey
++  cO...=                         # a new private key
++  nsh> wg set private-key cO...=
++  nsh> wg set listen-port 51820
++  nsh> wg set address 10.10.0.2/24
++  nsh> wg set peer <peer-public-key> \
++         endpoint 192.168.1.5:51820 \
++         allowed-ips 10.10.0.1/32 \
++         persistent-keepalive 25
++  nsh> wg up
++  nsh> wg show
++  nsh> wg saveconf /data/wg0.conf
+diff --git a/Documentation/components/drivers/special/net/index.rst b/Documentation/components/drivers/special/net/index.rst
+index 03ec5461ba..8e9edd93a9 100644
+--- a/Documentation/components/drivers/special/net/index.rst
++++ b/Documentation/components/drivers/special/net/index.rst
+@@ -12,3 +12,4 @@ Network interface drivers
+ 
+   ethernet.rst
+   vlan.rst
++  wireguard.rst
+diff --git a/Documentation/components/drivers/special/net/wireguard.rst b/Documentation/components/drivers/special/net/wireguard.rst
+new file mode 100644
+index 0000000000..3cc2239deb
+--- /dev/null
++++ b/Documentation/components/drivers/special/net/wireguard.rst
+@@ -0,0 +1,172 @@
++========================
++WireGuard Device Driver
++========================
++
++WireGuard is a VPN that runs the Noise_IKpsk2 handshake and carries
++transport data as ChaCha20-Poly1305 over UDP. NuttX implements it as a
++virtual network device (``wg0``): packets the routing table sends to
++``wg0`` are encrypted and forwarded as UDP datagrams to the configured
++peer, and UDP datagrams received on the listen port are decrypted and
++delivered to the network stack as though they had arrived on ``wg0``. The
++peer can be any WireGuard implementation (the Linux kernel module,
++``wireguard-go``, ``boringtun``, another NuttX, ...).
++
++-  **Driver**: ``drivers/net/wireguard/``
++
++   -  ``wireguard.c`` — the ``netdev_lowerhalf`` device: a UDP socket, a
++      receive thread, the timer state machine, and the ioctl handlers.
++   -  ``wg_noise.c`` — the protocol core (handshake, key derivation,
++      anti-replay window, cookie / mac2 under load). Derived from
++      `wireguard-lwip <https://github.com/smartalock/wireguard-lwip>`_
++      (BSD-3-Clause), which is why the device depends on
++      ``ALLOW_BSD_COMPONENTS``.
++   -  ``wg_crypto.c`` — a thin layer over NuttX's own ``crypto/``
++      primitives (BLAKE2s, ChaCha20-Poly1305, Curve25519).
++
++-  **ABI**: ``include/nuttx/net/wireguard.h`` defines the fixed-size,
++   pointer-free structures exchanged with the driver, and
++   ``include/nuttx/net/ioctl.h`` the ioctl command numbers. The header is
++   shared verbatim by the kernel driver and by the user-space ``wg``
++   command, so it holds no pointers: in ``PROTECTED`` and ``KERNEL``
++   builds the driver copies these structures directly to and from the
++   caller.
++
++The device is a ``NET_LL_TUN`` link type (no link-layer header; the tunnel
++carries bare IP packets). Only IPv4 is supported for now.
++
++Configuration Options
++=====================
++
++``CONFIG_NET_WIREGUARD``
++  Enable the WireGuard virtual network device. Requires ``NET_UDP``,
++  ``NET_IPv4`` and ``ALLOW_BSD_COMPONENTS``, and a real random source —
++  either the entropy pool (``CRYPTO_RANDOM_POOL``) or a hardware RNG
++  behind ``/dev/urandom`` (``DEV_URANDOM_ARCH``). The constant-seeded
++  software PRNGs are refused, because with them every device would
++  generate the same keys on every boot. Selecting it pulls in
++  ``NETDEV_IOCTL`` and ``CRYPTO_CURVE25519``.
++``CONFIG_NET_WIREGUARD_NINTERFACES``
++  How many ``wgN`` devices to register at start-up (default 1).
++``CONFIG_NET_WIREGUARD_MAX_PEERS``
++  Peers allocated statically inside each device (default 1). Each peer
++  costs roughly 1 KiB plus three anti-replay windows.
++``CONFIG_NET_WIREGUARD_MAX_AIPS``
++  Allowed-ips (cryptokey-routing prefixes) per peer (default 2).
++``CONFIG_NET_WIREGUARD_PKTSIZE``
++  MTU of the IP packets carried inside the tunnel (default 1420, leaving
++  room for the WireGuard, UDP and outer IPv4 headers within a 1500-byte
++  Ethernet frame).
++``CONFIG_NET_WIREGUARD_REPLAY_WINDOW``
++  Anti-replay window in packets (default 2048, must be a multiple of 64).
++  Data packets more than this many counters behind the newest seen are
++  dropped.
++``CONFIG_NET_WIREGUARD_LOAD_THRESHOLD``
++  Handshake initiations per second above which the device answers
++  initiations that carry no valid mac2 with a cookie reply instead of
++  doing the Diffie-Hellman work (WireGuard whitepaper 5.4.7).
++``CONFIG_NET_WIREGUARD_RXSTACKSIZE`` / ``CONFIG_NET_WIREGUARD_RXPRIORITY``
++  Stack size and priority of the receive thread.
++
++Time Requirements
++=================
++
++Before this device initiates handshakes, the platform must restore
++``CLOCK_REALTIME`` from a reliable RTC or another trusted time source.
++WireGuard's responder requires initiation timestamps to increase for the
++same peer key. A fixed build-time start date is not sufficient across
++reboots; merely enabling ``CONFIG_RTC`` does not prove that the RTC is set.
++
++``wg_tai64n.c`` rounds realtime to tick resolution and keeps a shared
++in-memory high-water mark, so equal clock readings, same-boot clock rollback,
++and interface/key reconfiguration do not produce decreasing timestamps.
++Clock acquisition errors abort initiation rather than falling back to
++uptime. Protocol retry and expiration timers still use monotonic time.
++
++The high-water mark is not persistent. A clock reset or rollback across a
++reboot can therefore prevent reconnection with the same key until realtime
++exceeds the timestamp remembered by the remote peer. Platforms without a
++retained clock or trusted time synchronization need an additional persistent
++timestamp design; that support is not implemented here.
++
++Key Lifetime
++============
++
++Bringing the interface down destroys every session: ``wg_ifdown`` clears all
++three key pairs and the in-progress handshake of each peer, so the transport
++keys that carried traffic do not outlive the tunnel. Handshake state is
++shorter-lived still — ``wg_start_session`` wipes it, and its own working copy
++of the derived key pair, as soon as the transport keys exist.
++
++The static private key deliberately **survives** a down, so that ``wg up``
++works again without reconfiguring the interface; the same is true of the
++values derived from the static identity alone (the peer's static-static
++Diffie-Hellman result and the MAC/cookie labels). Callers that need the
++identity gone as well must change or clear the private key explicitly, which
++also means erasing the configuration file if one is in use.
++
++Runtime Configuration
++=====================
++
++The device registers with no key and no peers; everything is set at run
++time through the ioctls declared in ``include/nuttx/net/wireguard.h``.
++Nothing is baked into the image. The five commands, on any ``AF_INET``
++socket, are:
++
++``SIOCSWGIF`` / ``SIOCGWGIF`` (``struct wg_ifreq_s``)
++  Set / get the interface: private key, listen port, tunnel address and
++  netmask, and the up/down state. The private key is **write-only** — it
++  is accepted by ``SIOCSWGIF`` and is never copied back by ``SIOCGWGIF``,
++  so key material does not leave the kernel once set. ``SIOCGWGIF``
++  returns the derived public key instead.
++``SIOCSWGPEER`` / ``SIOCDWGPEER`` / ``SIOCGWGPEER`` (``struct wg_peerreq_s``)
++  Add or update / delete / enumerate a peer. Set and delete address the
++  peer by public key; get enumerates by ``index`` (``0 .. npeers-1``) and
++  fills in the endpoint, allowed-ips, keepalive and the get-only
++  statistics (last handshake, rx/tx bytes).
++
++These are normally driven by the ``wg`` command
++(:doc:`/applications/system/wg/index`) rather than called directly.
++
++The private key and listen port may only be changed while the interface
++is down; peers and their endpoints may be changed at any time.
++
++Example
++=======
++
++.. code-block:: c
++
++  #include <sys/ioctl.h>
++  #include <nuttx/net/wireguard.h>
++
++  int s = socket(AF_INET, SOCK_DGRAM, 0);
++  struct wg_ifreq_s ifr;
++
++  memset(&ifr, 0, sizeof(ifr));
++  strlcpy(ifr.ifname, "wg0", IFNAMSIZ);
++
++  /* Private key, listen port and tunnel address, then bring it up. */
++
++  memcpy(ifr.private_key, privkey, WG_KEY_LEN);
++  ifr.listen_port = 51820;
++  ifr.addr.s_addr = HTONL(0x0a0a0002);      /* 10.10.0.2 */
++  ifr.netmask.s_addr = HTONL(0xffffff00);
++  ifr.flags = WG_IF_HAS_PRIVATE_KEY | WG_IF_HAS_LISTEN_PORT |
++              WG_IF_HAS_ADDR | WG_IF_UP;
++  ioctl(s, SIOCSWGIF, &ifr);
++
++  /* Add a peer with an endpoint and one allowed-ips prefix. */
++
++  struct wg_peerreq_s peer;
++  memset(&peer, 0, sizeof(peer));
++  strlcpy(peer.ifname, "wg0", IFNAMSIZ);
++  memcpy(peer.public_key, peerpub, WG_KEY_LEN);
++  peer.endpoint.sin_family = AF_INET;
++  peer.endpoint.sin_port = HTONS(51820);
++  peer.endpoint.sin_addr.s_addr = HTONL(0xc0a80105);   /* 192.168.1.5 */
++  peer.aips[0].addr.s_addr = HTONL(0x0a0a0001);        /* 10.10.0.1/32 */
++  peer.aips[0].cidr = 32;
++  peer.naips = 1;
++  peer.flags = WG_PEER_HAS_ENDPOINT | WG_PEER_HAS_AIPS;
++  ioctl(s, SIOCSWGPEER, &peer);
++
++  close(s);
+diff --git a/boards/sim/sim/sim/configs/wireguard/defconfig b/boards/sim/sim/sim/configs/wireguard/defconfig
+new file mode 100644
+index 0000000000..859a672b29
+--- /dev/null
++++ b/boards/sim/sim/sim/configs/wireguard/defconfig
+@@ -0,0 +1,92 @@
++#
++# This file is autogenerated: PLEASE DO NOT EDIT IT.
++#
++# You can use "make menuconfig" to make any modifications to the installed .config file.
++# You can then do "make savedefconfig" to generate a new defconfig file that includes your
++# modifications.
++#
++# CONFIG_NSH_CMDOPT_HEXDUMP is not set
++CONFIG_ALLOW_BSD_COMPONENTS=y
++CONFIG_ARCH="sim"
++CONFIG_ARCH_BOARD="sim"
++CONFIG_ARCH_BOARD_SIM=y
++CONFIG_ARCH_CHIP="sim"
++CONFIG_ARCH_SIM=y
++CONFIG_BOARDCTL_APP_SYMTAB=y
++CONFIG_BOARDCTL_POWEROFF=y
++CONFIG_BOARD_LOOPSPERMSEC=0
++CONFIG_BOOT_RUNFROMEXTSRAM=y
++CONFIG_BUILTIN=y
++CONFIG_CRYPTO=y
++CONFIG_CRYPTO_RANDOM_POOL=y
++CONFIG_DEBUG_ASSERTIONS=y
++CONFIG_DEBUG_ASSERTIONS_EXPRESSION=y
++CONFIG_DEBUG_FEATURES=y
++CONFIG_DEBUG_SYMBOLS=y
++CONFIG_DEV_LOOP=y
++CONFIG_DEV_URANDOM=y
++CONFIG_DEV_URANDOM_RANDOM_POOL=y
++CONFIG_ETC_FATDEVNO=2
++CONFIG_ETC_ROMFS=y
++CONFIG_ETC_ROMFSDEVNO=1
++CONFIG_EXAMPLES_HELLO=y
++CONFIG_EXPERIMENTAL=y
++CONFIG_FAT_LCNAMES=y
++CONFIG_FAT_LFN=y
++CONFIG_FS_BINFS=y
++CONFIG_FS_FAT=y
++CONFIG_FS_HOSTFS=y
++CONFIG_FS_LINKS=y
++CONFIG_FS_PROCFS=y
++CONFIG_FS_RAMMAP=y
++CONFIG_FS_ROMFS=y
++CONFIG_HAVE_CXXINITIALIZE=y
++CONFIG_IDLETHREAD_STACKSIZE=4096
++CONFIG_INIT_ENTRYPOINT="init_main"
++CONFIG_LIBC_ENVPATH=y
++CONFIG_LIBC_EXECFUNCS=y
++CONFIG_LIBC_LOCALE=y
++CONFIG_LIBC_LOCALE_CATALOG=y
++CONFIG_LIBC_LOCALE_GETTEXT=y
++CONFIG_LIBC_MAX_EXITFUNS=1
++CONFIG_LIBC_NUMBERED_ARGS=y
++CONFIG_LINE_MAX=256
++CONFIG_NDEBUG=y
++CONFIG_NET=y
++CONFIG_NETUTILS_PING=y
++CONFIG_NET_ICMP_SOCKET=y
++CONFIG_NET_SOCKOPTS=y
++CONFIG_NET_TCP=y
++CONFIG_NET_UDP=y
++CONFIG_NET_WIREGUARD=y
++CONFIG_NET_WIREGUARD_MAX_PEERS=4
++CONFIG_NSH_BUILTIN_APPS=y
++CONFIG_NSH_FILE_APPS=y
++CONFIG_NSH_LINELEN=256
++CONFIG_NSH_READLINE=y
++CONFIG_PATH_INITIAL="/bin"
++CONFIG_PIPES=y
++CONFIG_PSEUDOFS_ATTRIBUTES=y
++CONFIG_PSEUDOFS_FILE=y
++CONFIG_READLINE_CMD_HISTORY=y
++CONFIG_READLINE_EDIT_EMACS=y
++CONFIG_READLINE_TABCOMPLETION=y
++CONFIG_RTC=y
++CONFIG_RTC_ARCH=y
++CONFIG_RTC_DRIVER=y
++CONFIG_SCHED_BACKTRACE=y
++CONFIG_SCHED_CHILD_STATUS=y
++CONFIG_SCHED_EVENTS=y
++CONFIG_SCHED_HAVE_PARENT=y
++CONFIG_SCHED_WAITPID=y
++CONFIG_SIM_HOSTFS=y
++CONFIG_SIM_NETDEV=y
++CONFIG_SIM_WALLTIME_SIGNAL=y
++CONFIG_START_MONTH=6
++CONFIG_START_YEAR=2008
++CONFIG_SYSTEM_DUMPSTACK=y
++CONFIG_SYSTEM_NSH=y
++CONFIG_SYSTEM_NXINIT=y
++CONFIG_SYSTEM_PING=y
++CONFIG_SYSTEM_WG=y
++CONFIG_SYSTEM_WG_CONFIG_PATH="/tmp/wg0.conf"
+diff --git a/drivers/drivers_initialize.c b/drivers/drivers_initialize.c
+index 43dce64641..401b37013f 100644
+--- a/drivers/drivers_initialize.c
++++ b/drivers/drivers_initialize.c
+@@ -38,6 +38,7 @@
+ #include <nuttx/net/loopback.h>
+ #include <nuttx/net/rpmsgdrv.h>
+ #include <nuttx/net/tun.h>
++#include <nuttx/net/wireguard.h>
+ #include <nuttx/net/telnet.h>
+ #include <nuttx/note/note_driver.h>
+ #include <nuttx/pci/pci.h>
+@@ -242,6 +243,12 @@ void drivers_initialize(void)
+   tun_initialize();
+ #endif
+ 
++#ifdef CONFIG_NET_WIREGUARD
++  /* Initialize the WireGuard virtual network devices */
++
++  wireguard_initialize();
++#endif
++
+ #ifdef CONFIG_NETDEV_TELNET
+   /* Initialize the Telnet session factory */
+ 
+diff --git a/drivers/net/Make.defs b/drivers/net/Make.defs
+index 9dc64e5c64..5a1536a6b8 100644
+--- a/drivers/net/Make.defs
++++ b/drivers/net/Make.defs
+@@ -70,6 +70,8 @@ ifeq ($(CONFIG_NET_VLAN),y)
+   CSRCS += vlan.c
+ endif
+ 
++include net/wireguard/Make.defs
++
+ ifeq ($(CONFIG_NET_FTMAC100),y)
+   CSRCS += ftmac100.c
+ endif
+diff --git a/drivers/net/netdev_upperhalf.c b/drivers/net/netdev_upperhalf.c
+index 9da33fb892..ee6c9c17fe 100644
+--- a/drivers/net/netdev_upperhalf.c
++++ b/drivers/net/netdev_upperhalf.c
+@@ -484,6 +484,16 @@ netdev_upper_vlan_foreach(FAR struct netdev_upperhalf_s *upper,
+ {
+   int i;
+ 
++  /* vlan_register only accepts Ethernet parents. In particular, a TUN
++   * device has no VLAN children and must not take g_netlock here while
++   * its protocol processing holds d_lock.
++   */
++
++  if (upper->lower->netdev.d_lltype != NET_LL_ETHERNET)
++    {
++      return;
++    }
++
+   net_lock();
+   for (i = 0; i < CONFIG_NET_VLAN_COUNT; i++)
+     {
+@@ -636,7 +646,7 @@ static void eth_input(FAR struct net_driver_s *dev)
+  *
+  ****************************************************************************/
+ 
+-#ifdef CONFIG_NET_MBIM
++#if defined(CONFIG_NET_MBIM) || defined(CONFIG_NET_WIREGUARD)
+ static void ip_input(FAR struct net_driver_s *dev)
+ {
+   /* We only accept IP packets of the configured type */
+@@ -735,33 +745,38 @@ static void netdev_upper_rxpoll_work(FAR struct netdev_upperhalf_s *upper)
+       switch (dev->d_lltype)
+         {
+ #ifdef CONFIG_NET_LOOPBACK
+-        case NET_LL_LOOPBACK:
++          case NET_LL_LOOPBACK:
+ #endif
+ #ifdef CONFIG_NET_ETHERNET
+-        case NET_LL_ETHERNET:
++          case NET_LL_ETHERNET:
+ #endif
+ #ifdef CONFIG_DRIVERS_IEEE80211
+-        case NET_LL_IEEE80211:
++          case NET_LL_IEEE80211:
+ #endif
+ #if defined(CONFIG_NET_LOOPBACK) || defined(CONFIG_NET_ETHERNET) || \
+     defined(CONFIG_DRIVERS_IEEE80211)
+-          eth_input(dev);
+-          break;
++            eth_input(dev);
++            break;
+ #endif
+ #ifdef CONFIG_NET_MBIM
+-        case NET_LL_MBIM:
+-          ip_input(dev);
+-          break;
++          case NET_LL_MBIM:
++            ip_input(dev);
++            break;
++#endif
++#ifdef CONFIG_NET_WIREGUARD
++          case NET_LL_TUN:
++            ip_input(dev);
++            break;
+ #endif
+ #ifdef CONFIG_NET_CAN
+-        case NET_LL_CAN:
+-          ninfo("CAN frame");
+-          can_input(dev);
+-          break;
++          case NET_LL_CAN:
++            ninfo("CAN frame");
++            can_input(dev);
++            break;
+ #endif
+-        default:
+-          nerr("Unknown link type %d\n", dev->d_lltype);
+-          break;
++          default:
++            nerr("Unknown link type %d\n", dev->d_lltype);
++            break;
+         }
+     }
+ 
+@@ -844,6 +859,7 @@ static inline void netdev_upper_queue_work(FAR struct net_driver_s *dev)
+       case NETDEV_RX_WORK:
+         {
+           FAR struct work_s *work = upper->work;
++
+           if (work_available(work))
+             {
+               /* Schedule to serialize the poll on the worker thread. */
+@@ -1534,6 +1550,7 @@ void netdev_lower_carrier_on(FAR struct netdev_lowerhalf_s *dev)
+ {
+ #ifdef CONFIG_NET_VLAN
+   FAR struct netdev_upperhalf_s *upper = dev->netdev.d_private;
++
+   netdev_upper_vlan_foreach(upper, netdev_lower_carrier_on);
+ #endif
+ 
+@@ -1558,6 +1575,7 @@ void netdev_lower_carrier_off(FAR struct netdev_lowerhalf_s *dev)
+ {
+ #ifdef CONFIG_NET_VLAN
+   FAR struct netdev_upperhalf_s *upper = dev->netdev.d_private;
++
+   netdev_upper_vlan_foreach(upper, netdev_lower_carrier_off);
+ #endif
+ 
+@@ -1608,6 +1626,7 @@ void netdev_lower_txdone(FAR struct netdev_lowerhalf_s *dev)
+ {
+ #ifdef CONFIG_NET_VLAN
+   FAR struct netdev_upperhalf_s *upper = dev->netdev.d_private;
++
+   netdev_upper_vlan_foreach(upper, netdev_lower_txdone);
+ #endif
+   if (dev->rxtype == NETDEV_RX_DIRECT)
+@@ -1871,6 +1890,7 @@ int netpkt_setdatalen(FAR struct netdev_lowerhalf_s *dev,
+ {
+   uint8_t llhdrlen = NET_LL_HDRLEN(&dev->netdev);
+   int ret = iob_update_pktlen(pkt, len - llhdrlen, false);
++
+   return ret >= 0 ? ret + llhdrlen : ret;
+ }
+ 
+diff --git a/drivers/net/wireguard/CMakeLists.txt b/drivers/net/wireguard/CMakeLists.txt
+new file mode 100644
+index 0000000000..378b986940
+--- /dev/null
++++ b/drivers/net/wireguard/CMakeLists.txt
+@@ -0,0 +1,25 @@
++# ##############################################################################
++# drivers/net/wireguard/CMakeLists.txt
++#
++# SPDX-License-Identifier: Apache-2.0
++#
++# Licensed to the Apache Software Foundation (ASF) under one or more contributor
++# license agreements.  See the NOTICE file distributed with this work for
++# additional information regarding copyright ownership.  The ASF licenses this
++# file to you under the Apache License, Version 2.0 (the "License"); you may not
++# use this file except in compliance with the License.  You may obtain a copy of
++# the License at
++#
++# http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++# License for the specific language governing permissions and limitations under
++# the License.
++#
++# ##############################################################################
++
++if(CONFIG_NET_WIREGUARD)
++  target_sources(drivers PRIVATE wireguard.c wg_crypto.c wg_noise.c wg_tai64n.c)
++endif()
+diff --git a/drivers/net/wireguard/Make.defs b/drivers/net/wireguard/Make.defs
+new file mode 100644
+index 0000000000..5211cb413f
+--- /dev/null
++++ b/drivers/net/wireguard/Make.defs
+@@ -0,0 +1,30 @@
++############################################################################
++# drivers/net/wireguard/Make.defs
++#
++# SPDX-License-Identifier: Apache-2.0
++#
++# Licensed to the Apache Software Foundation (ASF) under one or more
++# contributor license agreements.  See the NOTICE file distributed with
++# this work for additional information regarding copyright ownership.  The
++# ASF licenses this file to you under the Apache License, Version 2.0 (the
++# "License"); you may not use this file except in compliance with the
++# License.  You may obtain a copy of the License at
++#
++#   http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++# License for the specific language governing permissions and limitations
++# under the License.
++#
++############################################################################
++
++ifeq ($(CONFIG_NET_WIREGUARD),y)
++
++CSRCS += wireguard.c wg_crypto.c wg_noise.c wg_tai64n.c
++
++DEPPATH += --dep-path net$(DELIM)wireguard
++VPATH += :net$(DELIM)wireguard
++
++endif # CONFIG_NET_WIREGUARD
+diff --git a/drivers/net/wireguard/wg_crypto.c b/drivers/net/wireguard/wg_crypto.c
+new file mode 100644
+index 0000000000..e02dfa3fc5
+--- /dev/null
++++ b/drivers/net/wireguard/wg_crypto.c
+@@ -0,0 +1,413 @@
++/****************************************************************************
++ * drivers/net/wireguard/wg_crypto.c
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <string.h>
++#include <time.h>
++#include <fcntl.h>
++
++#include <nuttx/clock.h>
++#include <nuttx/random.h>
++#include <nuttx/fs/fs.h>
++#include <nuttx/crypto/blake2s.h>
++#include <crypto/chachapoly.h>
++#include <crypto/curve25519.h>
++
++#include "wg_crypto.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_BLAKE2S_BLOCK    64
++
++/****************************************************************************
++ * Public Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_x25519, wg_x25519_public, wg_x25519_clamp
++ *
++ * Description:
++ *   Curve25519 scalar multiplication on top of crypto/curve25519.c, whose
++ *   functions follow the Linux convention of returning non-zero on
++ *   success and zero when the result is the all-zero point. That is the
++ *   opposite of the reference implementation this port derives from, so
++ *   the boolean is normalised here and callers never see the raw value.
++ *
++ ****************************************************************************/
++
++bool wg_x25519(FAR uint8_t out[WG_KEY_LEN],
++               FAR const uint8_t scalar[WG_KEY_LEN],
++               FAR const uint8_t point[WG_KEY_LEN])
++{
++  return curve25519(out, scalar, point) != 0;
++}
++
++bool wg_x25519_public(FAR uint8_t pub[WG_KEY_LEN],
++                      FAR const uint8_t priv[WG_KEY_LEN])
++{
++  return curve25519_generate_public(pub, priv) != 0;
++}
++
++void wg_x25519_clamp(FAR uint8_t priv[WG_KEY_LEN])
++{
++  curve25519_clamp_secret(priv);
++}
++
++/****************************************************************************
++ * Name: wg_hash, wg_mix_hash, wg_mac
++ ****************************************************************************/
++
++void wg_hash(FAR uint8_t out[WG_HASH_LEN], FAR const void *in,
++             size_t inlen)
++{
++  blake2s(out, WG_HASH_LEN, in, inlen, NULL, 0);
++}
++
++void wg_mix_hash(FAR uint8_t hash[WG_HASH_LEN], FAR const void *in,
++                 size_t inlen)
++{
++  blake2s_state s;
++
++  blake2s_init(&s, WG_HASH_LEN);
++  blake2s_update(&s, hash, WG_HASH_LEN);
++  blake2s_update(&s, in, inlen);
++  blake2s_final(&s, hash, WG_HASH_LEN);
++  wg_zero(&s, sizeof(s));
++}
++
++void wg_mac(FAR uint8_t out[WG_MAC_LEN], FAR const void *in, size_t inlen,
++            FAR const uint8_t *key, size_t keylen)
++{
++  blake2s(out, WG_MAC_LEN, in, inlen, key, keylen);
++}
++
++/****************************************************************************
++ * Name: wg_hmac
++ *
++ * Description:
++ *   HMAC-BLAKE2s per RFC 2104 with the 64-byte BLAKE2s block size. The
++ *   handshake uses this as the extract/expand function of HKDF.
++ *
++ ****************************************************************************/
++
++void wg_hmac(FAR uint8_t out[WG_HASH_LEN], FAR const uint8_t *key,
++             size_t keylen, FAR const void *in, size_t inlen)
++{
++  uint8_t k_ipad[WG_BLAKE2S_BLOCK];
++  uint8_t k_opad[WG_BLAKE2S_BLOCK];
++  uint8_t tk[WG_HASH_LEN];
++  blake2s_state s;
++  int i;
++
++  if (keylen > WG_BLAKE2S_BLOCK)
++    {
++      wg_hash(tk, key, keylen);
++      key = tk;
++      keylen = WG_HASH_LEN;
++    }
++
++  memset(k_ipad, 0, sizeof(k_ipad));
++  memset(k_opad, 0, sizeof(k_opad));
++  memcpy(k_ipad, key, keylen);
++  memcpy(k_opad, key, keylen);
++
++  for (i = 0; i < WG_BLAKE2S_BLOCK; i++)
++    {
++      k_ipad[i] ^= 0x36;
++      k_opad[i] ^= 0x5c;
++    }
++
++  blake2s_init(&s, WG_HASH_LEN);
++  blake2s_update(&s, k_ipad, sizeof(k_ipad));
++  blake2s_update(&s, in, inlen);
++  blake2s_final(&s, out, WG_HASH_LEN);
++
++  blake2s_init(&s, WG_HASH_LEN);
++  blake2s_update(&s, k_opad, sizeof(k_opad));
++  blake2s_update(&s, out, WG_HASH_LEN);
++  blake2s_final(&s, out, WG_HASH_LEN);
++
++  wg_zero(&s, sizeof(s));
++  wg_zero(k_ipad, sizeof(k_ipad));
++  wg_zero(k_opad, sizeof(k_opad));
++  wg_zero(tk, sizeof(tk));
++}
++
++/****************************************************************************
++ * Name: wg_kdf1, wg_kdf2, wg_kdf3
++ *
++ * Description:
++ *   HKDF (whitepaper 5.4.1): tau0 = HMAC(key, input); tau1 = HMAC(tau0,
++ *   0x1); tau2 = HMAC(tau0, tau1 || 0x2); tau3 = HMAC(tau0, tau2 || 0x3).
++ *
++ ****************************************************************************/
++
++void wg_kdf1(FAR uint8_t t1[WG_HASH_LEN], FAR const uint8_t *chaining_key,
++             FAR const void *data, size_t datalen)
++{
++  uint8_t tau0[WG_HASH_LEN];
++  uint8_t output[WG_HASH_LEN + 1];
++
++  wg_hmac(tau0, chaining_key, WG_HASH_LEN, data, datalen);
++  output[0] = 1;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, 1);
++  memcpy(t1, output, WG_HASH_LEN);
++
++  wg_zero(tau0, sizeof(tau0));
++  wg_zero(output, sizeof(output));
++}
++
++void wg_kdf2(FAR uint8_t t1[WG_HASH_LEN], FAR uint8_t t2[WG_HASH_LEN],
++             FAR const uint8_t *chaining_key, FAR const void *data,
++             size_t datalen)
++{
++  uint8_t tau0[WG_HASH_LEN];
++  uint8_t output[WG_HASH_LEN + 1];
++
++  wg_hmac(tau0, chaining_key, WG_HASH_LEN, data, datalen);
++  output[0] = 1;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, 1);
++  memcpy(t1, output, WG_HASH_LEN);
++
++  output[WG_HASH_LEN] = 2;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, WG_HASH_LEN + 1);
++  memcpy(t2, output, WG_HASH_LEN);
++
++  wg_zero(tau0, sizeof(tau0));
++  wg_zero(output, sizeof(output));
++}
++
++void wg_kdf3(FAR uint8_t t1[WG_HASH_LEN], FAR uint8_t t2[WG_HASH_LEN],
++             FAR uint8_t t3[WG_HASH_LEN], FAR const uint8_t *chaining_key,
++             FAR const void *data, size_t datalen)
++{
++  uint8_t tau0[WG_HASH_LEN];
++  uint8_t output[WG_HASH_LEN + 1];
++
++  wg_hmac(tau0, chaining_key, WG_HASH_LEN, data, datalen);
++  output[0] = 1;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, 1);
++  memcpy(t1, output, WG_HASH_LEN);
++
++  output[WG_HASH_LEN] = 2;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, WG_HASH_LEN + 1);
++  memcpy(t2, output, WG_HASH_LEN);
++
++  output[WG_HASH_LEN] = 3;
++  wg_hmac(output, tau0, WG_HASH_LEN, output, WG_HASH_LEN + 1);
++  memcpy(t3, output, WG_HASH_LEN);
++
++  wg_zero(tau0, sizeof(tau0));
++  wg_zero(output, sizeof(output));
++}
++
++/****************************************************************************
++ * Name: wg_aead_encrypt, wg_aead_decrypt, wg_xaead_encrypt, wg_xaead_decrypt
++ *
++ * Description:
++ *   crypto/chachapoly.c implements exactly the AEAD constructions
++ *   WireGuard uses (RFC 8439 with a 64-bit counter nonce, and the
++ *   XChaCha20 variant with a 192-bit nonce). Its decrypt functions return
++ *   non-zero on success after a constant-time tag comparison.
++ *
++ ****************************************************************************/
++
++void wg_aead_encrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                     size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                     uint64_t nonce, FAR const uint8_t *key)
++{
++  chacha20poly1305_encrypt(dst, src, srclen, ad, adlen, nonce, key);
++}
++
++bool wg_aead_decrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                     size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                     uint64_t nonce, FAR const uint8_t *key)
++{
++  return chacha20poly1305_decrypt(dst, src, srclen, ad, adlen, nonce,
++                                  key) != 0;
++}
++
++void wg_xaead_encrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                      size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                      FAR const uint8_t nonce[WG_COOKIE_NONCE_LEN],
++                      FAR const uint8_t *key)
++{
++  xchacha20poly1305_encrypt(dst, src, srclen, ad, adlen, nonce, key);
++}
++
++bool wg_xaead_decrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                      size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                      FAR const uint8_t nonce[WG_COOKIE_NONCE_LEN],
++                      FAR const uint8_t *key)
++{
++  return xchacha20poly1305_decrypt(dst, src, srclen, ad, adlen, nonce,
++                                   key) != 0;
++}
++
++/****************************************************************************
++ * Name: wg_random
++ *
++ * Description:
++ *   Fill a buffer from the kernel's random source: the entropy pool when
++ *   CONFIG_CRYPTO_RANDOM_POOL is selected, otherwise the hardware RNG
++ *   behind /dev/urandom (CONFIG_DEV_URANDOM_ARCH). Kconfig does not allow
++ *   NET_WIREGUARD with the constant-seeded software PRNGs, so there is no
++ *   deterministic fallback here on purpose.
++ *
++ * Returned Value:
++ *   true if the whole buffer was filled, false if the source is not
++ *   available. On false the buffer contents are undefined and the caller
++ *   must not use them as key material.
++ *
++ ****************************************************************************/
++
++bool wg_random(FAR void *buf, size_t len)
++{
++#ifdef CONFIG_CRYPTO_RANDOM_POOL
++  up_rngbuf(buf, len);
++  return true;
++#else
++  struct file f;
++  FAR uint8_t *p = buf;
++  size_t total = 0;
++  int ret;
++
++  ret = file_open(&f, "/dev/urandom", O_RDONLY);
++  if (ret < 0)
++    {
++      return false;
++    }
++
++  while (total < len)
++    {
++      ssize_t n = file_read(&f, p + total, len - total);
++
++      if (n <= 0)
++        {
++          break;
++        }
++
++      total += (size_t)n;
++    }
++
++  file_close(&f);
++  return total == len;
++#endif
++}
++
++/****************************************************************************
++ * Name: wg_now
++ *
++ * Description:
++ *   Milliseconds from the scheduler tick counter, wrapping at 2^32. The
++ *   protocol only ever compares differences, so the wrap is harmless, but
++ *   several places use zero as "never", so a real reading is never zero.
++ *   This deliberately does not go through CLOCK_REALTIME or the RTC: the
++ *   timers must keep running on boards whose RTC is not yet (or never)
++ *   available.
++ *
++ ****************************************************************************/
++
++uint32_t wg_now(void)
++{
++  uint32_t ms = (uint32_t)TICK2MSEC(clock_systime_ticks());
++
++  return ms == 0 ? 1 : ms;
++}
++
++/****************************************************************************
++ * Name: wg_equal, wg_zero, wg_is_zero
++ ****************************************************************************/
++
++bool wg_equal(FAR const void *a, FAR const void *b, size_t len)
++{
++  return timingsafe_bcmp(a, b, len) == 0;
++}
++
++void wg_zero(FAR void *p, size_t len)
++{
++  explicit_bzero(p, len);
++}
++
++bool wg_is_zero(FAR const void *p, size_t len)
++{
++  FAR const uint8_t *b = p;
++  uint8_t acc = 0;
++  size_t i;
++
++  for (i = 0; i < len; i++)
++    {
++      acc |= b[i];
++    }
++
++  return acc == 0;
++}
++
++/****************************************************************************
++ * Name: wg_read_le64, wg_write_le64, wg_read_le32, wg_write_le32
++ ****************************************************************************/
++
++uint64_t wg_read_le64(FAR const uint8_t *p)
++{
++  uint64_t v = 0;
++  int i;
++
++  for (i = 7; i >= 0; i--)
++    {
++      v = (v << 8) | p[i];
++    }
++
++  return v;
++}
++
++void wg_write_le64(FAR uint8_t *p, uint64_t v)
++{
++  int i;
++
++  for (i = 0; i < 8; i++)
++    {
++      p[i] = (uint8_t)(v >> (8 * i));
++    }
++}
++
++uint32_t wg_read_le32(FAR const uint8_t *p)
++{
++  return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) |
++         ((uint32_t)p[3] << 24);
++}
++
++void wg_write_le32(FAR uint8_t *p, uint32_t v)
++{
++  p[0] = (uint8_t)v;
++  p[1] = (uint8_t)(v >> 8);
++  p[2] = (uint8_t)(v >> 16);
++  p[3] = (uint8_t)(v >> 24);
++}
+diff --git a/drivers/net/wireguard/wg_crypto.h b/drivers/net/wireguard/wg_crypto.h
+new file mode 100644
+index 0000000000..acac0f24aa
+--- /dev/null
++++ b/drivers/net/wireguard/wg_crypto.h
+@@ -0,0 +1,138 @@
++/****************************************************************************
++ * drivers/net/wireguard/wg_crypto.h
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++#ifndef __DRIVERS_NET_WIREGUARD_WG_CRYPTO_H
++#define __DRIVERS_NET_WIREGUARD_WG_CRYPTO_H
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++
++/* The cryptographic and platform primitives the WireGuard protocol core
++ * needs, on top of NuttX's crypto/ and clock/random services. Everything
++ * the core knows about the outside world goes through this header, so
++ * this is also where a test build substitutes deterministic time and
++ * randomness to check the handshake against known-answer vectors.
++ */
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_KEY_LEN            32  /* Curve25519 keys, pre-shared keys */
++#define WG_HASH_LEN           32  /* BLAKE2s-256 */
++#define WG_SESSION_KEY_LEN    32  /* ChaCha20-Poly1305 key */
++#define WG_AUTHTAG_LEN        16  /* Poly1305 tag */
++#define WG_MAC_LEN            16  /* mac1 / mac2 (BLAKE2s-128) */
++#define WG_COOKIE_LEN         16
++#define WG_COOKIE_NONCE_LEN   24  /* XChaCha20-Poly1305 nonce */
++#define WG_TAI64N_LEN         12
++
++/****************************************************************************
++ * Public Function Prototypes
++ ****************************************************************************/
++
++/* Curve25519. Both return true on success and false when the result is
++ * the all-zero point (a low-order or invalid input), in which case the
++ * output must not be used.
++ */
++
++bool wg_x25519(FAR uint8_t out[WG_KEY_LEN],
++               FAR const uint8_t scalar[WG_KEY_LEN],
++               FAR const uint8_t point[WG_KEY_LEN]);
++bool wg_x25519_public(FAR uint8_t pub[WG_KEY_LEN],
++                      FAR const uint8_t priv[WG_KEY_LEN]);
++void wg_x25519_clamp(FAR uint8_t priv[WG_KEY_LEN]);
++
++/* BLAKE2s: plain hash, keyed MAC (16-byte output), HMAC and the three
++ * HKDF forms the handshake uses (whitepaper 5.4.1).
++ */
++
++void wg_hash(FAR uint8_t out[WG_HASH_LEN], FAR const void *in,
++             size_t inlen);
++void wg_mix_hash(FAR uint8_t hash[WG_HASH_LEN], FAR const void *in,
++                 size_t inlen);
++void wg_mac(FAR uint8_t out[WG_MAC_LEN], FAR const void *in, size_t inlen,
++            FAR const uint8_t *key, size_t keylen);
++void wg_hmac(FAR uint8_t out[WG_HASH_LEN], FAR const uint8_t *key,
++             size_t keylen, FAR const void *in, size_t inlen);
++void wg_kdf1(FAR uint8_t t1[WG_HASH_LEN], FAR const uint8_t *chaining_key,
++             FAR const void *data, size_t datalen);
++void wg_kdf2(FAR uint8_t t1[WG_HASH_LEN], FAR uint8_t t2[WG_HASH_LEN],
++             FAR const uint8_t *chaining_key, FAR const void *data,
++             size_t datalen);
++void wg_kdf3(FAR uint8_t t1[WG_HASH_LEN], FAR uint8_t t2[WG_HASH_LEN],
++             FAR uint8_t t3[WG_HASH_LEN], FAR const uint8_t *chaining_key,
++             FAR const void *data, size_t datalen);
++
++/* AEAD: ChaCha20-Poly1305 with a 64-bit counter nonce (transport data and
++ * handshake fields) and XChaCha20-Poly1305 with a 24-byte random nonce
++ * (cookie replies). dst holds len + WG_AUTHTAG_LEN bytes after encryption;
++ * decrypt takes srclen including the tag and returns false on failure.
++ */
++
++void wg_aead_encrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                     size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                     uint64_t nonce, FAR const uint8_t *key);
++bool wg_aead_decrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                     size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                     uint64_t nonce, FAR const uint8_t *key);
++void wg_xaead_encrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                      size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                      FAR const uint8_t nonce[WG_COOKIE_NONCE_LEN],
++                      FAR const uint8_t *key);
++bool wg_xaead_decrypt(FAR uint8_t *dst, FAR const uint8_t *src,
++                      size_t srclen, FAR const uint8_t *ad, size_t adlen,
++                      FAR const uint8_t nonce[WG_COOKIE_NONCE_LEN],
++                      FAR const uint8_t *key);
++
++/* Platform: random bytes (false if no usable source), a millisecond
++ * monotonic clock that never reads zero, and a realtime TAI64N timestamp.
++ * wg_tai64n returns false without modifying out if no timestamp can be
++ * issued. It guards against rollback only within this boot; the platform
++ * must restore a sufficiently advanced realtime clock after reboot.
++ */
++
++bool wg_random(FAR void *buf, size_t len);
++uint32_t wg_now(void);
++bool wg_tai64n(FAR uint8_t out[WG_TAI64N_LEN]);
++
++/* Constant-time helpers */
++
++bool wg_equal(FAR const void *a, FAR const void *b, size_t len);
++void wg_zero(FAR void *p, size_t len);
++bool wg_is_zero(FAR const void *p, size_t len);
++
++/* Little-endian 64-bit counter <-> bytes, as used on the wire */
++
++uint64_t wg_read_le64(FAR const uint8_t *p);
++void wg_write_le64(FAR uint8_t *p, uint64_t v);
++uint32_t wg_read_le32(FAR const uint8_t *p);
++void wg_write_le32(FAR uint8_t *p, uint32_t v);
++
++#endif /* __DRIVERS_NET_WIREGUARD_WG_CRYPTO_H */
+diff --git a/drivers/net/wireguard/wg_noise.c b/drivers/net/wireguard/wg_noise.c
+new file mode 100644
+index 0000000000..86fdac63ec
+--- /dev/null
++++ b/drivers/net/wireguard/wg_noise.c
+@@ -0,0 +1,1174 @@
++/****************************************************************************
++ * drivers/net/wireguard/wg_noise.c
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ * SPDX-FileCopyrightText: 2021 Daniel Hope (www.floorsense.nz)
++ * SPDX-FileContributor: Daniel Hope <daniel.hope@smartalock.com>
++ * SPDX-FileContributor: Satoru Akita
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in
++ *    the documentation and/or other materials provided with the
++ *    distribution.
++ * 3. Neither the name of "Floorsense Ltd", "Agile Workspace Ltd" nor the
++ *    names of its contributors may be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
++ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
++ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Derived from wireguard.c in smartalock/wireguard-lwip: the Noise_IKpsk2
++ * handshake, session key schedule, cookie mechanism and transport data
++ * encryption of the WireGuard protocol (https://www.wireguard.com/papers/
++ * wireguard.pdf, section numbers below refer to it). Compared with the
++ * original: NuttX coding style, NuttX crypto/ primitives through
++ * wg_crypto.h, a wider anti-replay window, and a repaired per-peer
++ * initiation rate limit. Nothing here touches the network; that is the
++ * job of wireguard.c.
++ *
++ ****************************************************************************/
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <string.h>
++
++#include "wg_crypto.h"
++#include "wg_noise.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++/* Valid initiations accepted from one peer per second (5.4.7) */
++
++#define WG_MAX_INITIATIONS_PER_SECOND 2
++
++/****************************************************************************
++ * Private Data
++ ****************************************************************************/
++
++/* 5.4 constants. The lengths are those of the strings without NUL. */
++
++static const uint8_t g_construction[37] =
++  "Noise_IKpsk2_25519_ChaChaPoly_BLAKE2s";
++static const uint8_t g_identifier[34] = "WireGuard v1 zx2c4 Jason@zx2c4.com";
++static const uint8_t g_label_mac1[8] = "mac1----";
++static const uint8_t g_label_cookie[8] = "cookie--";
++
++/* Hash(Construction) and Hash(Hash(Construction) || Identifier),
++ * computed once by wg_noise_init().
++ */
++
++static uint8_t g_construction_hash[WG_HASH_LEN];
++static uint8_t g_identifier_hash[WG_HASH_LEN];
++
++static const uint8_t g_zero_key[WG_KEY_LEN];
++
++/****************************************************************************
++ * Private Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_mac_key
++ *
++ * Description:
++ *   Hash(Label || public key): the key for mac1 (Label-Mac1) and for the
++ *   cookie reply AEAD (Label-Cookie), precomputed per key.
++ *
++ ****************************************************************************/
++
++static void wg_mac_key(FAR uint8_t *key, FAR const uint8_t *public_key,
++                       FAR const uint8_t *label, size_t labellen)
++{
++  uint8_t buf[8 + WG_KEY_LEN];
++
++  memcpy(buf, label, labellen);
++  memcpy(buf + labellen, public_key, WG_KEY_LEN);
++  wg_hash(key, buf, labellen + WG_KEY_LEN);
++}
++
++/****************************************************************************
++ * Name: wg_new_cookie_secret, wg_peer_cookie
++ *
++ * Description:
++ *   5.4.7: the cookie for a source is Mac(Rm, source address || port),
++ *   with the secret Rm rotated every two minutes.
++ *
++ ****************************************************************************/
++
++static void wg_new_cookie_secret(FAR struct wg_device_s *dev)
++{
++  wg_random(dev->cookie_secret, sizeof(dev->cookie_secret));
++  dev->cookie_secret_millis = wg_now();
++}
++
++static void wg_peer_cookie(FAR struct wg_device_s *dev, FAR uint8_t *cookie,
++                           FAR const uint8_t *source, size_t sourcelen)
++{
++  if (wg_expired(dev->cookie_secret_millis, WG_COOKIE_SECRET_MAX_AGE))
++    {
++      wg_new_cookie_secret(dev);
++    }
++
++  wg_mac(cookie, source, sourcelen, dev->cookie_secret, WG_HASH_LEN);
++}
++
++/****************************************************************************
++ * Name: wg_unique_index
++ *
++ * Description:
++ *   A random 32-bit session/handshake index not currently in use by any
++ *   peer of this device (0 and 0xffffffff are reserved).
++ *
++ ****************************************************************************/
++
++static uint32_t wg_unique_index(FAR struct wg_device_s *dev)
++{
++  uint8_t buf[4];
++  uint32_t result;
++  bool existing;
++  int x;
++
++  do
++    {
++      do
++        {
++          wg_random(buf, sizeof(buf));
++          result = wg_read_le32(buf);
++        }
++      while (result == 0 || result == 0xffffffff);
++
++      existing = false;
++      for (x = 0; x < WG_MAX_PEERS && !existing; x++)
++        {
++          FAR struct wg_peer_s *peer = &dev->peers[x];
++
++          existing = result == peer->curr_keypair.local_index ||
++                     result == peer->prev_keypair.local_index ||
++                     result == peer->next_keypair.local_index ||
++                     result == peer->handshake.local_index;
++        }
++    }
++  while (existing);
++
++  return result;
++}
++
++/****************************************************************************
++ * Name: wg_generate_private_key, wg_generate_public_key
++ ****************************************************************************/
++
++static bool wg_generate_private_key(FAR uint8_t *key)
++{
++  if (!wg_random(key, WG_KEY_LEN))
++    {
++      return false;
++    }
++
++  wg_x25519_clamp(key);
++  return true;
++}
++
++static bool wg_generate_public_key(FAR uint8_t *public_key,
++                                   FAR const uint8_t *private_key)
++{
++  if (wg_equal(private_key, g_zero_key, WG_KEY_LEN))
++    {
++      return false;
++    }
++
++  return wg_x25519_public(public_key, private_key);
++}
++
++/****************************************************************************
++ * Name: wg_add_keypair
++ *
++ * Description:
++ *   Install a freshly derived session (5.4.5): as initiator it becomes
++ *   current at once, as responder it is "next" until the initiator's
++ *   first data packet confirms it (wg_keypair_update()).
++ *
++ ****************************************************************************/
++
++static void wg_add_keypair(FAR struct wg_peer_s *peer,
++                           FAR const struct wg_keypair_s *keypair)
++{
++  if (keypair->initiator)
++    {
++      if (peer->next_keypair.valid)
++        {
++          peer->prev_keypair = peer->next_keypair;
++          wg_keypair_destroy(&peer->next_keypair);
++        }
++      else
++        {
++          peer->prev_keypair = peer->curr_keypair;
++        }
++
++      peer->curr_keypair = *keypair;
++    }
++  else
++    {
++      peer->next_keypair = *keypair;
++      wg_keypair_destroy(&peer->prev_keypair);
++    }
++}
++
++/****************************************************************************
++ * Name: wg_sign_message
++ *
++ * Description:
++ *   Append mac1 and, when we hold a fresh cookie from this peer, mac2 to
++ *   an initiation or response (5.4.4). len is the full message length;
++ *   mac1 and mac2 are the last two 16-byte fields.
++ *
++ ****************************************************************************/
++
++static void wg_sign_message(FAR struct wg_peer_s *peer, FAR uint8_t *msg,
++                            size_t len)
++{
++  FAR uint8_t *mac1 = msg + len - 2 * WG_MAC_LEN;
++  FAR uint8_t *mac2 = msg + len - WG_MAC_LEN;
++
++  wg_mac(mac1, msg, len - 2 * WG_MAC_LEN, peer->label_mac1_key,
++         WG_SESSION_KEY_LEN);
++
++  if (peer->cookie_millis == 0 ||
++      wg_expired(peer->cookie_millis, WG_COOKIE_SECRET_MAX_AGE))
++    {
++      wg_zero(mac2, WG_MAC_LEN);
++    }
++  else
++    {
++      wg_mac(mac2, msg, len - WG_MAC_LEN, peer->cookie, WG_COOKIE_LEN);
++    }
++}
++
++/****************************************************************************
++ * Public Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_noise_init
++ *
++ * Description:
++ *   Precompute the two hashes every handshake starts from. Call once.
++ *
++ ****************************************************************************/
++
++void wg_noise_init(void)
++{
++  uint8_t buf[WG_HASH_LEN + sizeof(g_identifier)];
++
++  wg_hash(g_construction_hash, g_construction, sizeof(g_construction));
++
++  memcpy(buf, g_construction_hash, WG_HASH_LEN);
++  memcpy(buf + WG_HASH_LEN, g_identifier, sizeof(g_identifier));
++  wg_hash(g_identifier_hash, buf, sizeof(buf));
++}
++
++/****************************************************************************
++ * Name: wg_device_init
++ *
++ * Description:
++ *   Set the device's static key pair from a private key. Peers must be
++ *   (re)initialised afterwards, since their precomputed DH depends on it.
++ *
++ ****************************************************************************/
++
++bool wg_device_init(FAR struct wg_device_s *dev,
++                    FAR const uint8_t *private_key)
++{
++  memcpy(dev->private_key, private_key, WG_KEY_LEN);
++  wg_x25519_clamp(dev->private_key);
++
++  dev->valid = wg_generate_public_key(dev->public_key, dev->private_key);
++  if (!dev->valid)
++    {
++      wg_zero(dev->private_key, WG_KEY_LEN);
++      return false;
++    }
++
++  wg_new_cookie_secret(dev);
++  wg_mac_key(dev->label_mac1_key, dev->public_key, g_label_mac1,
++             sizeof(g_label_mac1));
++  wg_mac_key(dev->label_cookie_key, dev->public_key, g_label_cookie,
++             sizeof(g_label_cookie));
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_peer_init
++ *
++ * Description:
++ *   Initialise a peer slot with its static public key and optional
++ *   pre-shared key, and precompute DH(our static, their static). Fails
++ *   for a low-order public key, whose DH result would be zero.
++ *
++ ****************************************************************************/
++
++bool wg_peer_init(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer,
++                  FAR const uint8_t *public_key,
++                  FAR const uint8_t *preshared_key)
++{
++  wg_zero(peer, sizeof(*peer));
++
++  if (!dev->valid)
++    {
++      return false;
++    }
++
++  memcpy(peer->public_key, public_key, WG_KEY_LEN);
++  if (preshared_key != NULL)
++    {
++      memcpy(peer->preshared_key, preshared_key, WG_SESSION_KEY_LEN);
++    }
++
++  if (!wg_x25519(peer->public_key_dh, dev->private_key, peer->public_key))
++    {
++      wg_zero(peer, sizeof(*peer));
++      return false;
++    }
++
++  wg_mac_key(peer->label_mac1_key, peer->public_key, g_label_mac1,
++             sizeof(g_label_mac1));
++  wg_mac_key(peer->label_cookie_key, peer->public_key, g_label_cookie,
++             sizeof(g_label_cookie));
++  peer->valid = true;
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_peer_destroy, wg_peer_clear_sessions
++ ****************************************************************************/
++
++void wg_peer_destroy(FAR struct wg_peer_s *peer)
++{
++  wg_zero(peer, sizeof(*peer));
++}
++
++void wg_peer_clear_sessions(FAR struct wg_peer_s *peer)
++{
++  wg_keypair_destroy(&peer->curr_keypair);
++  wg_keypair_destroy(&peer->prev_keypair);
++  wg_keypair_destroy(&peer->next_keypair);
++  wg_zero(&peer->handshake, sizeof(peer->handshake));
++  peer->handshake_mac1_valid = false;
++  peer->send_handshake = false;
++  peer->active = false;
++}
++
++/****************************************************************************
++ * Name: wg_peer_alloc, wg_peer_index, wg_peer_by_*
++ ****************************************************************************/
++
++FAR struct wg_peer_s *wg_peer_alloc(FAR struct wg_device_s *dev)
++{
++  int x;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      if (!dev->peers[x].valid)
++        {
++          return &dev->peers[x];
++        }
++    }
++
++  return NULL;
++}
++
++int wg_peer_index(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer)
++{
++  int x;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      if (peer == &dev->peers[x])
++        {
++          return x;
++        }
++    }
++
++  return -1;
++}
++
++FAR struct wg_peer_s *wg_peer_by_pubkey(FAR struct wg_device_s *dev,
++                                        FAR const uint8_t *public_key)
++{
++  int x;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &dev->peers[x];
++
++      if (peer->valid && memcmp(peer->public_key, public_key,
++                                WG_KEY_LEN) == 0)
++        {
++          return peer;
++        }
++    }
++
++  return NULL;
++}
++
++FAR struct wg_peer_s *wg_peer_by_receiver(FAR struct wg_device_s *dev,
++                                          uint32_t receiver)
++{
++  int x;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &dev->peers[x];
++
++      if (peer->valid &&
++          ((peer->curr_keypair.valid &&
++            peer->curr_keypair.local_index == receiver) ||
++           (peer->next_keypair.valid &&
++            peer->next_keypair.local_index == receiver) ||
++           (peer->prev_keypair.valid &&
++            peer->prev_keypair.local_index == receiver)))
++        {
++          return peer;
++        }
++    }
++
++  return NULL;
++}
++
++FAR struct wg_peer_s *wg_peer_by_handshake(FAR struct wg_device_s *dev,
++                                           uint32_t receiver)
++{
++  int x;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &dev->peers[x];
++
++      if (peer->valid && peer->handshake.valid &&
++          peer->handshake.initiator &&
++          peer->handshake.local_index == receiver)
++        {
++          return peer;
++        }
++    }
++
++  return NULL;
++}
++
++/****************************************************************************
++ * Name: wg_start_session
++ *
++ * Description:
++ *   5.4.5 Transport Data Key Derivation: turn a completed handshake into
++ *   a key pair and wipe the handshake state.
++ *
++ ****************************************************************************/
++
++void wg_start_session(FAR struct wg_peer_s *peer, bool initiator)
++{
++  FAR struct wg_handshake_s *hs = &peer->handshake;
++  struct wg_keypair_s kp;
++
++  wg_zero(&kp, sizeof(kp));
++  kp.initiator = initiator;
++  kp.local_index = hs->local_index;
++  kp.remote_index = hs->remote_index;
++  kp.keypair_millis = wg_now();
++  kp.sending_valid = true;
++  kp.receiving_valid = true;
++
++  /* (Tsend_i = Trecv_r, Trecv_i = Tsend_r) := Kdf2(C, empty) */
++
++  if (initiator)
++    {
++      wg_kdf2(kp.sending_key, kp.receiving_key, hs->chaining_key, NULL, 0);
++    }
++  else
++    {
++      wg_kdf2(kp.receiving_key, kp.sending_key, hs->chaining_key, NULL, 0);
++    }
++
++  kp.valid = true;
++
++  wg_zero(hs, sizeof(*hs));
++  wg_add_keypair(peer, &kp);
++  wg_zero(&kp, sizeof(kp));
++}
++
++/****************************************************************************
++ * Name: wg_keypair_update, wg_keypair_destroy, wg_keypair_by_index
++ ****************************************************************************/
++
++void wg_keypair_update(FAR struct wg_peer_s *peer,
++                       FAR struct wg_keypair_s *received)
++{
++  if (received == &peer->next_keypair)
++    {
++      peer->prev_keypair = peer->curr_keypair;
++      peer->curr_keypair = peer->next_keypair;
++      wg_keypair_destroy(&peer->next_keypair);
++    }
++}
++
++void wg_keypair_destroy(FAR struct wg_keypair_s *keypair)
++{
++  wg_zero(keypair, sizeof(*keypair));
++}
++
++FAR struct wg_keypair_s *wg_keypair_by_index(FAR struct wg_peer_s *peer,
++                                             uint32_t idx)
++{
++  if (peer->curr_keypair.valid && peer->curr_keypair.local_index == idx)
++    {
++      return &peer->curr_keypair;
++    }
++  else if (peer->next_keypair.valid &&
++           peer->next_keypair.local_index == idx)
++    {
++      return &peer->next_keypair;
++    }
++  else if (peer->prev_keypair.valid &&
++           peer->prev_keypair.local_index == idx)
++    {
++      return &peer->prev_keypair;
++    }
++
++  return NULL;
++}
++
++/****************************************************************************
++ * Name: wg_check_replay
++ *
++ * Description:
++ *   RFC 2401 appendix C sliding window over the received counters of a
++ *   key pair, WG_REPLAY_WORDS * 64 packets wide. Returns true if the
++ *   counter is new (and records it), false if it was seen already or is
++ *   too old. Call only after the packet has been authenticated.
++ *
++ ****************************************************************************/
++
++bool wg_check_replay(FAR struct wg_keypair_s *keypair, uint64_t counter)
++{
++  const uint64_t window = (uint64_t)WG_REPLAY_WORDS * 64;
++  uint64_t seq = counter + 1;   /* Counters start at 0; window at 1 */
++  uint64_t diff;
++
++  if (seq == 0)
++    {
++      return false;
++    }
++
++  if (seq > keypair->replay_counter)
++    {
++      diff = seq - keypair->replay_counter;
++      if (diff < window)
++        {
++          size_t words = (size_t)(diff / 64);
++          unsigned bits = (unsigned)(diff % 64);
++          int i;
++
++          for (i = WG_REPLAY_WORDS - 1; i >= 0; i--)
++            {
++              uint64_t v = 0;
++
++              if ((size_t)i >= words)
++                {
++                  v = keypair->replay_bitmap[i - words] << bits;
++                  if (bits != 0 && (size_t)i > words)
++                    {
++                      v |= keypair->replay_bitmap[i - words - 1] >>
++                           (64 - bits);
++                    }
++                }
++
++              keypair->replay_bitmap[i] = v;
++            }
++
++          keypair->replay_bitmap[0] |= 1;
++        }
++      else
++        {
++          memset(keypair->replay_bitmap, 0, sizeof(keypair->replay_bitmap));
++          keypair->replay_bitmap[0] = 1;
++        }
++
++      keypair->replay_counter = seq;
++      return true;
++    }
++
++  diff = keypair->replay_counter - seq;
++  if (diff < window)
++    {
++      uint64_t bit = (uint64_t)1 << (diff % 64);
++      size_t word = (size_t)(diff / 64);
++
++      if ((keypair->replay_bitmap[word] & bit) == 0)
++        {
++          keypair->replay_bitmap[word] |= bit;
++          return true;
++        }
++    }
++
++  return false;
++}
++
++/****************************************************************************
++ * Name: wg_expired
++ ****************************************************************************/
++
++bool wg_expired(uint32_t created_millis, uint32_t valid_seconds)
++{
++  uint32_t diff = wg_now() - created_millis;
++
++  return diff >= valid_seconds * 1000;
++}
++
++/****************************************************************************
++ * Name: wg_message_type
++ *
++ * Description:
++ *   Classify a received datagram by its type byte and length. Anything
++ *   that is not exactly one of the four message shapes is invalid.
++ *
++ ****************************************************************************/
++
++uint8_t wg_message_type(FAR const uint8_t *data, size_t len)
++{
++  if (len < 4 || data[1] != 0 || data[2] != 0 || data[3] != 0)
++    {
++      return WG_MSG_INVALID;
++    }
++
++  switch (data[0])
++    {
++      case WG_MSG_HANDSHAKE_INIT:
++        return len == sizeof(struct wg_msg_init_s) ?
++               WG_MSG_HANDSHAKE_INIT : WG_MSG_INVALID;
++
++      case WG_MSG_HANDSHAKE_RESPONSE:
++        return len == sizeof(struct wg_msg_response_s) ?
++               WG_MSG_HANDSHAKE_RESPONSE : WG_MSG_INVALID;
++
++      case WG_MSG_COOKIE_REPLY:
++        return len == sizeof(struct wg_msg_cookie_s) ?
++               WG_MSG_COOKIE_REPLY : WG_MSG_INVALID;
++
++      case WG_MSG_TRANSPORT_DATA:
++        return len >= sizeof(struct wg_msg_data_s) + WG_AUTHTAG_LEN ?
++               WG_MSG_TRANSPORT_DATA : WG_MSG_INVALID;
++
++      default:
++        return WG_MSG_INVALID;
++    }
++}
++
++/****************************************************************************
++ * Name: wg_check_mac1, wg_check_mac2
++ ****************************************************************************/
++
++bool wg_check_mac1(FAR struct wg_device_s *dev, FAR const uint8_t *data,
++                   size_t len, FAR const uint8_t *mac1)
++{
++  uint8_t calculated[WG_MAC_LEN];
++
++  wg_mac(calculated, data, len, dev->label_mac1_key, WG_SESSION_KEY_LEN);
++  return wg_equal(calculated, mac1, WG_MAC_LEN);
++}
++
++bool wg_check_mac2(FAR struct wg_device_s *dev, FAR const uint8_t *data,
++                   size_t len, FAR const uint8_t *source, size_t sourcelen,
++                   FAR const uint8_t *mac2)
++{
++  uint8_t cookie[WG_COOKIE_LEN];
++  uint8_t calculated[WG_MAC_LEN];
++
++  wg_peer_cookie(dev, cookie, source, sourcelen);
++  wg_mac(calculated, data, len, cookie, WG_COOKIE_LEN);
++  return wg_equal(calculated, mac2, WG_MAC_LEN);
++}
++
++/****************************************************************************
++ * Name: wg_process_init
++ *
++ * Description:
++ *   5.4.2, responder side. Decrypt the initiator's static key and
++ *   timestamp; on success the peer's handshake state is primed for
++ *   wg_create_response() and the peer is returned. mac1 (and mac2 under
++ *   load) must have been checked by the caller.
++ *
++ ****************************************************************************/
++
++FAR struct wg_peer_s *wg_process_init(FAR struct wg_device_s *dev,
++                                      FAR struct wg_msg_init_s *msg)
++{
++  FAR struct wg_peer_s *result = NULL;
++  FAR struct wg_peer_s *peer;
++  uint8_t key[WG_SESSION_KEY_LEN];
++  uint8_t chaining_key[WG_HASH_LEN];
++  uint8_t hash[WG_HASH_LEN];
++  uint8_t s[WG_KEY_LEN];
++  uint8_t t[WG_TAI64N_LEN];
++  uint8_t dh[WG_KEY_LEN];
++  uint32_t now;
++
++  /* Ci := Hash(Construction); Hi := Hash(Ci || Identifier) */
++
++  memcpy(chaining_key, g_construction_hash, WG_HASH_LEN);
++  memcpy(hash, g_identifier_hash, WG_HASH_LEN);
++
++  /* Hi := Hash(Hi || Spub_r) */
++
++  wg_mix_hash(hash, dev->public_key, WG_KEY_LEN);
++
++  /* Ci := Kdf1(Ci, Epub_i); Hi := Hash(Hi || msg.ephemeral) */
++
++  wg_kdf1(chaining_key, chaining_key, msg->ephemeral, WG_KEY_LEN);
++  wg_mix_hash(hash, msg->ephemeral, WG_KEY_LEN);
++
++  /* (Ci, k) := Kdf2(Ci, DH(Spriv_r, Epub_i)) */
++
++  if (!wg_x25519(dh, dev->private_key, msg->ephemeral))
++    {
++      goto out;
++    }
++
++  wg_kdf2(chaining_key, key, chaining_key, dh, WG_KEY_LEN);
++
++  /* msg.static := AEAD(k, 0, Spub_i, Hi) */
++
++  if (!wg_aead_decrypt(s, msg->enc_static, sizeof(msg->enc_static), hash,
++                       WG_HASH_LEN, 0, key))
++    {
++      goto out;
++    }
++
++  wg_mix_hash(hash, msg->enc_static, sizeof(msg->enc_static));
++
++  peer = wg_peer_by_pubkey(dev, s);
++  if (peer == NULL)
++    {
++      goto out;
++    }
++
++  /* (Ci, k) := Kdf2(Ci, DH(Spriv_r, Spub_i)) - precomputed per peer */
++
++  wg_kdf2(chaining_key, key, chaining_key, peer->public_key_dh, WG_KEY_LEN);
++
++  /* msg.timestamp := AEAD(k, 0, Timestamp(), Hi) */
++
++  if (!wg_aead_decrypt(t, msg->enc_timestamp, sizeof(msg->enc_timestamp),
++                       hash, WG_HASH_LEN, 0, key))
++    {
++      goto out;
++    }
++
++  wg_mix_hash(hash, msg->enc_timestamp, sizeof(msg->enc_timestamp));
++
++  /* 5.1: the timestamp must exceed the greatest one seen from this peer,
++   * and no more than WG_MAX_INITIATIONS_PER_SECOND valid initiations are
++   * accepted per second from it. TAI64N is big-endian, so memcmp orders
++   * it correctly.
++   */
++
++  now = wg_now();
++  if (memcmp(t, peer->greatest_timestamp, WG_TAI64N_LEN) <= 0)
++    {
++      goto out;
++    }
++
++  if (peer->last_initiation_rx != 0 &&
++      now - peer->last_initiation_rx <
++        1000 / WG_MAX_INITIATIONS_PER_SECOND)
++    {
++      goto out;
++    }
++
++  peer->last_initiation_rx = now;
++  memcpy(peer->greatest_timestamp, t, WG_TAI64N_LEN);
++
++  memcpy(peer->handshake.remote_ephemeral, msg->ephemeral, WG_KEY_LEN);
++  memcpy(peer->handshake.hash, hash, WG_HASH_LEN);
++  memcpy(peer->handshake.chaining_key, chaining_key, WG_HASH_LEN);
++  peer->handshake.remote_index = msg->sender;
++  peer->handshake.valid = true;
++  peer->handshake.initiator = false;
++  result = peer;
++
++out:
++  wg_zero(key, sizeof(key));
++  wg_zero(hash, sizeof(hash));
++  wg_zero(chaining_key, sizeof(chaining_key));
++  wg_zero(dh, sizeof(dh));
++  wg_zero(s, sizeof(s));
++  return result;
++}
++
++/****************************************************************************
++ * Name: wg_process_response
++ *
++ * Description:
++ *   5.4.3, initiator side. Finish the handshake we started with
++ *   wg_create_init(). On success the caller calls wg_start_session().
++ *
++ ****************************************************************************/
++
++bool wg_process_response(FAR struct wg_device_s *dev,
++                         FAR struct wg_peer_s *peer,
++                         FAR struct wg_msg_response_s *msg)
++{
++  FAR struct wg_handshake_s *hs = &peer->handshake;
++  uint8_t key[WG_SESSION_KEY_LEN];
++  uint8_t hash[WG_HASH_LEN];
++  uint8_t chaining_key[WG_HASH_LEN];
++  uint8_t dh[WG_KEY_LEN];
++  uint8_t tau[WG_HASH_LEN];
++  bool result = false;
++
++  if (!hs->valid || !hs->initiator)
++    {
++      return false;
++    }
++
++  memcpy(hash, hs->hash, WG_HASH_LEN);
++  memcpy(chaining_key, hs->chaining_key, WG_HASH_LEN);
++
++  /* Cr := Kdf1(Cr, Epub_r); Hr := Hash(Hr || msg.ephemeral) */
++
++  wg_kdf1(chaining_key, chaining_key, msg->ephemeral, WG_KEY_LEN);
++  wg_mix_hash(hash, msg->ephemeral, WG_KEY_LEN);
++
++  /* Cr := Kdf1(Cr, DH(Epriv_i, Epub_r)) */
++
++  if (!wg_x25519(dh, hs->ephemeral_private, msg->ephemeral))
++    {
++      goto out;
++    }
++
++  wg_kdf1(chaining_key, chaining_key, dh, WG_KEY_LEN);
++
++  /* Cr := Kdf1(Cr, DH(Spriv_i, Epub_r)) */
++
++  if (!wg_x25519(dh, dev->private_key, msg->ephemeral))
++    {
++      goto out;
++    }
++
++  wg_kdf1(chaining_key, chaining_key, dh, WG_KEY_LEN);
++
++  /* (Cr, tau, k) := Kdf3(Cr, Q); Hr := Hash(Hr || tau) */
++
++  wg_kdf3(chaining_key, tau, key, chaining_key, peer->preshared_key,
++          WG_SESSION_KEY_LEN);
++  wg_mix_hash(hash, tau, WG_HASH_LEN);
++
++  /* msg.empty := AEAD(k, 0, empty, Hr) */
++
++  if (!wg_aead_decrypt(NULL, msg->enc_empty, sizeof(msg->enc_empty), hash,
++                       WG_HASH_LEN, 0, key))
++    {
++      goto out;
++    }
++
++  memcpy(hs->remote_ephemeral, msg->ephemeral, WG_KEY_LEN);
++  memcpy(hs->hash, hash, WG_HASH_LEN);
++  memcpy(hs->chaining_key, chaining_key, WG_HASH_LEN);
++  hs->remote_index = msg->sender;
++  result = true;
++
++out:
++  wg_zero(key, sizeof(key));
++  wg_zero(hash, sizeof(hash));
++  wg_zero(chaining_key, sizeof(chaining_key));
++  wg_zero(dh, sizeof(dh));
++  wg_zero(tau, sizeof(tau));
++  return result;
++}
++
++/****************************************************************************
++ * Name: wg_process_cookie
++ *
++ * Description:
++ *   5.4.7, initiator side: the peer is under load and sent a cookie for
++ *   us to put in mac2 of the next initiation. The cookie is encrypted
++ *   under the mac1 of our last initiation, which we kept for this.
++ *
++ ****************************************************************************/
++
++bool wg_process_cookie(FAR struct wg_device_s *dev,
++                       FAR struct wg_peer_s *peer,
++                       FAR struct wg_msg_cookie_s *msg)
++{
++  uint8_t cookie[WG_COOKIE_LEN];
++
++  if (!peer->handshake_mac1_valid)
++    {
++      return false;
++    }
++
++  if (!wg_xaead_decrypt(cookie, msg->enc_cookie, sizeof(msg->enc_cookie),
++                        peer->handshake_mac1, WG_MAC_LEN, msg->nonce,
++                        peer->label_cookie_key))
++    {
++      return false;
++    }
++
++  memcpy(peer->cookie, cookie, WG_COOKIE_LEN);
++  peer->cookie_millis = wg_now();
++  peer->handshake_mac1_valid = false;
++  wg_zero(cookie, sizeof(cookie));
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_create_init
++ *
++ * Description:
++ *   5.4.2, initiator side. Build a handshake initiation for the peer and
++ *   prime the handshake state for wg_process_response(). The caller
++ *   records msg->mac1 as peer->handshake_mac1 when it sends the message.
++ *
++ ****************************************************************************/
++
++bool wg_create_init(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer,
++                    FAR struct wg_msg_init_s *msg)
++{
++  FAR struct wg_handshake_s *hs = &peer->handshake;
++  uint8_t timestamp[WG_TAI64N_LEN];
++  uint8_t key[WG_SESSION_KEY_LEN];
++  uint8_t dh[WG_KEY_LEN];
++  bool result = false;
++
++  memset(msg, 0, sizeof(*msg));
++
++  if (!wg_tai64n(timestamp))
++    {
++      goto out;
++    }
++
++  /* Ci := Hash(Construction); Hi := Hash(Ci || Identifier);
++   * Hi := Hash(Hi || Spub_r)
++   */
++
++  memcpy(hs->chaining_key, g_construction_hash, WG_HASH_LEN);
++  memcpy(hs->hash, g_identifier_hash, WG_HASH_LEN);
++  wg_mix_hash(hs->hash, peer->public_key, WG_KEY_LEN);
++
++  /* (Epriv_i, Epub_i) := DH-Generate() */
++
++  if (!wg_generate_private_key(hs->ephemeral_private) ||
++      !wg_generate_public_key(msg->ephemeral, hs->ephemeral_private))
++    {
++      goto out;
++    }
++
++  /* Ci := Kdf1(Ci, Epub_i); Hi := Hash(Hi || msg.ephemeral) */
++
++  wg_kdf1(hs->chaining_key, hs->chaining_key, msg->ephemeral, WG_KEY_LEN);
++  wg_mix_hash(hs->hash, msg->ephemeral, WG_KEY_LEN);
++
++  /* (Ci, k) := Kdf2(Ci, DH(Epriv_i, Spub_r)) */
++
++  if (!wg_x25519(dh, hs->ephemeral_private, peer->public_key))
++    {
++      goto out;
++    }
++
++  wg_kdf2(hs->chaining_key, key, hs->chaining_key, dh, WG_KEY_LEN);
++
++  /* msg.static := AEAD(k, 0, Spub_i, Hi); Hi := Hash(Hi || msg.static) */
++
++  wg_aead_encrypt(msg->enc_static, dev->public_key, WG_KEY_LEN, hs->hash,
++                  WG_HASH_LEN, 0, key);
++  wg_mix_hash(hs->hash, msg->enc_static, sizeof(msg->enc_static));
++
++  /* (Ci, k) := Kdf2(Ci, DH(Spriv_i, Spub_r)) */
++
++  wg_kdf2(hs->chaining_key, key, hs->chaining_key, peer->public_key_dh,
++          WG_KEY_LEN);
++
++  /* msg.timestamp := AEAD(k, 0, Timestamp(), Hi);
++   * Hi := Hash(Hi || msg.timestamp)
++   */
++
++  wg_aead_encrypt(msg->enc_timestamp, timestamp, WG_TAI64N_LEN, hs->hash,
++                  WG_HASH_LEN, 0, key);
++  wg_mix_hash(hs->hash, msg->enc_timestamp, sizeof(msg->enc_timestamp));
++
++  msg->type = WG_MSG_HANDSHAKE_INIT;
++  msg->sender = wg_unique_index(dev);
++  hs->valid = true;
++  hs->initiator = true;
++  hs->local_index = msg->sender;
++
++  wg_sign_message(peer, (FAR uint8_t *)msg, sizeof(*msg));
++  result = true;
++
++out:
++  wg_zero(key, sizeof(key));
++  wg_zero(dh, sizeof(dh));
++  wg_zero(timestamp, sizeof(timestamp));
++  return result;
++}
++
++/****************************************************************************
++ * Name: wg_create_response
++ *
++ * Description:
++ *   5.4.3, responder side, after wg_process_init(). The caller calls
++ *   wg_start_session(peer, false) once the message is built.
++ *
++ ****************************************************************************/
++
++bool wg_create_response(FAR struct wg_device_s *dev,
++                        FAR struct wg_peer_s *peer,
++                        FAR struct wg_msg_response_s *msg)
++{
++  FAR struct wg_handshake_s *hs = &peer->handshake;
++  uint8_t key[WG_SESSION_KEY_LEN];
++  uint8_t dh[WG_KEY_LEN];
++  uint8_t tau[WG_HASH_LEN];
++  bool result = false;
++
++  memset(msg, 0, sizeof(*msg));
++
++  if (!hs->valid || hs->initiator)
++    {
++      return false;
++    }
++
++  /* (Epriv_r, Epub_r) := DH-Generate() */
++
++  if (!wg_generate_private_key(hs->ephemeral_private) ||
++      !wg_generate_public_key(msg->ephemeral, hs->ephemeral_private))
++    {
++      goto out;
++    }
++
++  /* Cr := Kdf1(Cr, Epub_r); Hr := Hash(Hr || msg.ephemeral) */
++
++  wg_kdf1(hs->chaining_key, hs->chaining_key, msg->ephemeral, WG_KEY_LEN);
++  wg_mix_hash(hs->hash, msg->ephemeral, WG_KEY_LEN);
++
++  /* Cr := Kdf1(Cr, DH(Epriv_r, Epub_i)) */
++
++  if (!wg_x25519(dh, hs->ephemeral_private, hs->remote_ephemeral))
++    {
++      goto out;
++    }
++
++  wg_kdf1(hs->chaining_key, hs->chaining_key, dh, WG_KEY_LEN);
++
++  /* Cr := Kdf1(Cr, DH(Epriv_r, Spub_i)) */
++
++  if (!wg_x25519(dh, hs->ephemeral_private, peer->public_key))
++    {
++      goto out;
++    }
++
++  wg_kdf1(hs->chaining_key, hs->chaining_key, dh, WG_KEY_LEN);
++
++  /* (Cr, tau, k) := Kdf3(Cr, Q); Hr := Hash(Hr || tau) */
++
++  wg_kdf3(hs->chaining_key, tau, key, hs->chaining_key,
++          peer->preshared_key, WG_SESSION_KEY_LEN);
++  wg_mix_hash(hs->hash, tau, WG_HASH_LEN);
++
++  /* msg.empty := AEAD(k, 0, empty, Hr); Hr := Hash(Hr || msg.empty) */
++
++  wg_aead_encrypt(msg->enc_empty, NULL, 0, hs->hash, WG_HASH_LEN, 0, key);
++  wg_mix_hash(hs->hash, msg->enc_empty, sizeof(msg->enc_empty));
++
++  msg->type = WG_MSG_HANDSHAKE_RESPONSE;
++  msg->receiver = hs->remote_index;
++  msg->sender = wg_unique_index(dev);
++  hs->local_index = msg->sender;
++
++  wg_sign_message(peer, (FAR uint8_t *)msg, sizeof(*msg));
++  result = true;
++
++out:
++  wg_zero(key, sizeof(key));
++  wg_zero(dh, sizeof(dh));
++  wg_zero(tau, sizeof(tau));
++  return result;
++}
++
++/****************************************************************************
++ * Name: wg_create_cookie
++ *
++ * Description:
++ *   5.4.7, responder side: answer an initiation that arrived under load
++ *   without a valid mac2. The cookie is bound to the sender's address and
++ *   port and encrypted under the initiation's mac1.
++ *
++ ****************************************************************************/
++
++bool wg_create_cookie(FAR struct wg_device_s *dev,
++                      FAR struct wg_msg_cookie_s *msg,
++                      FAR const uint8_t *mac1, uint32_t index,
++                      FAR const uint8_t *source, size_t sourcelen)
++{
++  uint8_t cookie[WG_COOKIE_LEN];
++
++  wg_zero(msg, sizeof(*msg));
++  msg->type = WG_MSG_COOKIE_REPLY;
++  msg->receiver = index;
++
++  if (!wg_random(msg->nonce, sizeof(msg->nonce)))
++    {
++      return false;
++    }
++
++  wg_peer_cookie(dev, cookie, source, sourcelen);
++  wg_xaead_encrypt(msg->enc_cookie, cookie, WG_COOKIE_LEN, mac1,
++                   WG_MAC_LEN, msg->nonce, dev->label_cookie_key);
++  wg_zero(cookie, sizeof(cookie));
++  return true;
++}
++
++/****************************************************************************
++ * Name: wg_encrypt_packet, wg_decrypt_packet
++ *
++ * Description:
++ *   5.4.6 transport data: AEAD with the sending counter as nonce and no
++ *   associated data. dst needs srclen + WG_AUTHTAG_LEN bytes.
++ *
++ ****************************************************************************/
++
++void wg_encrypt_packet(FAR uint8_t *dst, FAR const uint8_t *src,
++                       size_t srclen, FAR struct wg_keypair_s *keypair)
++{
++  wg_aead_encrypt(dst, src, srclen, NULL, 0, keypair->sending_counter,
++                  keypair->sending_key);
++  keypair->sending_counter++;
++}
++
++bool wg_decrypt_packet(FAR uint8_t *dst, FAR const uint8_t *src,
++                       size_t srclen, uint64_t counter,
++                       FAR struct wg_keypair_s *keypair)
++{
++  return wg_aead_decrypt(dst, src, srclen, NULL, 0, counter,
++                         keypair->receiving_key);
++}
+diff --git a/drivers/net/wireguard/wg_noise.h b/drivers/net/wireguard/wg_noise.h
+new file mode 100644
+index 0000000000..a040b7e147
+--- /dev/null
++++ b/drivers/net/wireguard/wg_noise.h
+@@ -0,0 +1,307 @@
++/****************************************************************************
++ * drivers/net/wireguard/wg_noise.h
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ * SPDX-FileCopyrightText: 2021 Daniel Hope (www.floorsense.nz)
++ * SPDX-FileContributor: Daniel Hope <daniel.hope@smartalock.com>
++ * SPDX-FileContributor: Satoru Akita
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in
++ *    the documentation and/or other materials provided with the
++ *    distribution.
++ * 3. Neither the name of "Floorsense Ltd", "Agile Workspace Ltd" nor the
++ *    names of its contributors may be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
++ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
++ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
++ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
++ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
++ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++ * POSSIBILITY OF SUCH DAMAGE.
++ *
++ * Derived from wireguard.h in smartalock/wireguard-lwip. The protocol
++ * state machine is unchanged; the structures are re-expressed in NuttX
++ * style, lwIP types are replaced by in_addr_t, and the anti-replay window
++ * is wider than the original.
++ *
++ ****************************************************************************/
++
++#ifndef __DRIVERS_NET_WIREGUARD_WG_NOISE_H
++#define __DRIVERS_NET_WIREGUARD_WG_NOISE_H
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <netinet/in.h>
++
++#include "wg_crypto.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_MAX_PEERS          CONFIG_NET_WIREGUARD_MAX_PEERS
++#define WG_MAX_AIPS_PER_PEER  CONFIG_NET_WIREGUARD_MAX_AIPS
++#define WG_REPLAY_WORDS       (CONFIG_NET_WIREGUARD_REPLAY_WINDOW / 64)
++
++/* Timers and limits (whitepaper 6.1), seconds unless noted */
++
++#define WG_COOKIE_SECRET_MAX_AGE  (2 * 60)
++#define WG_REKEY_AFTER_MESSAGES   (1ull << 60)
++#define WG_REJECT_AFTER_MESSAGES  (0xffffffffffffffffull - (1ull << 13))
++#define WG_REKEY_AFTER_TIME       120
++#define WG_REJECT_AFTER_TIME      180
++#define WG_REKEY_TIMEOUT          5
++#define WG_KEEPALIVE_TIMEOUT      10
++
++/* Message types (5.4) */
++
++#define WG_MSG_INVALID            0
++#define WG_MSG_HANDSHAKE_INIT     1
++#define WG_MSG_HANDSHAKE_RESPONSE 2
++#define WG_MSG_COOKIE_REPLY       3
++#define WG_MSG_TRANSPORT_DATA     4
++
++/****************************************************************************
++ * Public Types
++ ****************************************************************************/
++
++/* Wire formats. The 32-bit index fields are opaque values chosen by each
++ * side and echoed back, so no byte-order conversion is applied to them;
++ * the data counter is little-endian and is handled as bytes.
++ */
++
++begin_packed_struct struct wg_msg_init_s
++{
++  uint8_t type;
++  uint8_t reserved[3];
++  uint32_t sender;
++  uint8_t ephemeral[WG_KEY_LEN];
++  uint8_t enc_static[WG_KEY_LEN + WG_AUTHTAG_LEN];
++  uint8_t enc_timestamp[WG_TAI64N_LEN + WG_AUTHTAG_LEN];
++  uint8_t mac1[WG_MAC_LEN];
++  uint8_t mac2[WG_MAC_LEN];
++} end_packed_struct;
++
++begin_packed_struct struct wg_msg_response_s
++{
++  uint8_t type;
++  uint8_t reserved[3];
++  uint32_t sender;
++  uint32_t receiver;
++  uint8_t ephemeral[WG_KEY_LEN];
++  uint8_t enc_empty[WG_AUTHTAG_LEN];
++  uint8_t mac1[WG_MAC_LEN];
++  uint8_t mac2[WG_MAC_LEN];
++} end_packed_struct;
++
++begin_packed_struct struct wg_msg_cookie_s
++{
++  uint8_t type;
++  uint8_t reserved[3];
++  uint32_t receiver;
++  uint8_t nonce[WG_COOKIE_NONCE_LEN];
++  uint8_t enc_cookie[WG_COOKIE_LEN + WG_AUTHTAG_LEN];
++} end_packed_struct;
++
++begin_packed_struct struct wg_msg_data_s
++{
++  uint8_t type;
++  uint8_t reserved[3];
++  uint32_t receiver;
++  uint8_t counter[8];
++
++  /* Followed by the encrypted packet and its tag */
++} end_packed_struct;
++
++/* One transport session (5.4.5) */
++
++struct wg_keypair_s
++{
++  bool valid;
++  bool initiator;               /* We sent the initiation for this session */
++  bool sending_valid;
++  bool receiving_valid;
++  uint32_t keypair_millis;      /* wg_now() when established */
++  uint32_t local_index;
++  uint32_t remote_index;
++  uint32_t last_tx;
++  uint32_t last_rx;
++  uint64_t sending_counter;
++  uint64_t replay_counter;      /* Highest counter received, plus one */
++  uint64_t replay_bitmap[WG_REPLAY_WORDS];
++  uint8_t sending_key[WG_SESSION_KEY_LEN];
++  uint8_t receiving_key[WG_SESSION_KEY_LEN];
++};
++
++/* An in-progress handshake */
++
++struct wg_handshake_s
++{
++  bool valid;
++  bool initiator;
++  uint32_t local_index;
++  uint32_t remote_index;
++  uint8_t ephemeral_private[WG_KEY_LEN];
++  uint8_t remote_ephemeral[WG_KEY_LEN];
++  uint8_t hash[WG_HASH_LEN];
++  uint8_t chaining_key[WG_HASH_LEN];
++};
++
++/* A cryptokey-routing entry: destinations routed to, and sources accepted
++ * from, the peer.
++ */
++
++struct wg_allowed_s
++{
++  bool valid;
++  in_addr_t ip;                 /* Network byte order */
++  in_addr_t mask;               /* Network byte order */
++};
++
++struct wg_peer_s
++{
++  bool valid;                   /* Slot in use */
++  bool active;                  /* Try to keep a session up */
++  bool send_handshake;          /* An initiation is due */
++  bool handshake_mac1_valid;    /* handshake_mac1 is the last one we sent */
++  uint16_t keepalive_interval;  /* Seconds; 0 disables */
++
++  /* Endpoint: the configured one, and the last one a valid packet came
++   * from (which is where we send).
++   */
++
++  in_addr_t connect_ip;
++  uint16_t connect_port;
++  in_addr_t ip;
++  uint16_t port;
++
++  struct wg_allowed_s allowed[WG_MAX_AIPS_PER_PEER];
++
++  uint8_t public_key[WG_KEY_LEN];
++  uint8_t preshared_key[WG_SESSION_KEY_LEN];
++  uint8_t public_key_dh[WG_KEY_LEN];    /* DH(our static, their static) */
++
++  struct wg_keypair_s curr_keypair;
++  struct wg_keypair_s prev_keypair;
++  struct wg_keypair_s next_keypair;
++
++  uint8_t greatest_timestamp[WG_TAI64N_LEN];  /* Replay guard (5.1) */
++  struct wg_handshake_s handshake;
++
++  uint32_t cookie_millis;       /* When cookie was received; 0 = none */
++  uint8_t cookie[WG_COOKIE_LEN];
++  uint8_t handshake_mac1[WG_MAC_LEN];
++
++  uint8_t label_cookie_key[WG_SESSION_KEY_LEN];  /* Hash(Label-Cookie||S) */
++  uint8_t label_mac1_key[WG_SESSION_KEY_LEN];    /* Hash(Label-Mac1||S) */
++
++  uint32_t last_initiation_rx;
++  uint32_t last_initiation_tx;
++  uint32_t last_tx;
++  uint32_t last_rx;
++  uint64_t rx_bytes;
++  uint64_t tx_bytes;
++};
++
++struct wg_device_s
++{
++  bool valid;                   /* A private key has been set */
++  uint8_t public_key[WG_KEY_LEN];
++  uint8_t private_key[WG_KEY_LEN];
++  uint8_t cookie_secret[WG_HASH_LEN];
++  uint32_t cookie_secret_millis;
++  uint8_t label_cookie_key[WG_SESSION_KEY_LEN];
++  uint8_t label_mac1_key[WG_SESSION_KEY_LEN];
++  struct wg_peer_s peers[WG_MAX_PEERS];
++};
++
++/****************************************************************************
++ * Public Function Prototypes
++ ****************************************************************************/
++
++/* Device and peers */
++
++void wg_noise_init(void);
++bool wg_device_init(FAR struct wg_device_s *dev,
++                    FAR const uint8_t *private_key);
++bool wg_peer_init(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer,
++                  FAR const uint8_t *public_key,
++                  FAR const uint8_t *preshared_key);
++void wg_peer_destroy(FAR struct wg_peer_s *peer);
++void wg_peer_clear_sessions(FAR struct wg_peer_s *peer);
++FAR struct wg_peer_s *wg_peer_alloc(FAR struct wg_device_s *dev);
++int wg_peer_index(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer);
++FAR struct wg_peer_s *wg_peer_by_pubkey(FAR struct wg_device_s *dev,
++                                        FAR const uint8_t *public_key);
++FAR struct wg_peer_s *wg_peer_by_receiver(FAR struct wg_device_s *dev,
++                                          uint32_t receiver);
++FAR struct wg_peer_s *wg_peer_by_handshake(FAR struct wg_device_s *dev,
++                                           uint32_t receiver);
++
++/* Sessions */
++
++void wg_start_session(FAR struct wg_peer_s *peer, bool initiator);
++void wg_keypair_update(FAR struct wg_peer_s *peer,
++                       FAR struct wg_keypair_s *received);
++void wg_keypair_destroy(FAR struct wg_keypair_s *keypair);
++FAR struct wg_keypair_s *wg_keypair_by_index(FAR struct wg_peer_s *peer,
++                                             uint32_t idx);
++bool wg_check_replay(FAR struct wg_keypair_s *keypair, uint64_t counter);
++bool wg_expired(uint32_t created_millis, uint32_t valid_seconds);
++
++/* Messages */
++
++uint8_t wg_message_type(FAR const uint8_t *data, size_t len);
++bool wg_check_mac1(FAR struct wg_device_s *dev, FAR const uint8_t *data,
++                   size_t len, FAR const uint8_t *mac1);
++bool wg_check_mac2(FAR struct wg_device_s *dev, FAR const uint8_t *data,
++                   size_t len, FAR const uint8_t *source, size_t sourcelen,
++                   FAR const uint8_t *mac2);
++FAR struct wg_peer_s *wg_process_init(FAR struct wg_device_s *dev,
++                                      FAR struct wg_msg_init_s *msg);
++bool wg_process_response(FAR struct wg_device_s *dev,
++                         FAR struct wg_peer_s *peer,
++                         FAR struct wg_msg_response_s *msg);
++bool wg_process_cookie(FAR struct wg_device_s *dev,
++                       FAR struct wg_peer_s *peer,
++                       FAR struct wg_msg_cookie_s *msg);
++bool wg_create_init(FAR struct wg_device_s *dev, FAR struct wg_peer_s *peer,
++                    FAR struct wg_msg_init_s *msg);
++bool wg_create_response(FAR struct wg_device_s *dev,
++                        FAR struct wg_peer_s *peer,
++                        FAR struct wg_msg_response_s *msg);
++bool wg_create_cookie(FAR struct wg_device_s *dev,
++                      FAR struct wg_msg_cookie_s *msg,
++                      FAR const uint8_t *mac1, uint32_t index,
++                      FAR const uint8_t *source, size_t sourcelen);
++
++/* Transport data */
++
++void wg_encrypt_packet(FAR uint8_t *dst, FAR const uint8_t *src,
++                       size_t srclen, FAR struct wg_keypair_s *keypair);
++bool wg_decrypt_packet(FAR uint8_t *dst, FAR const uint8_t *src,
++                       size_t srclen, uint64_t counter,
++                       FAR struct wg_keypair_s *keypair);
++
++#endif /* __DRIVERS_NET_WIREGUARD_WG_NOISE_H */
+diff --git a/drivers/net/wireguard/wg_tai64n.c b/drivers/net/wireguard/wg_tai64n.c
+new file mode 100644
+index 0000000000..fc344dd517
+--- /dev/null
++++ b/drivers/net/wireguard/wg_tai64n.c
+@@ -0,0 +1,183 @@
++/****************************************************************************
++ * drivers/net/wireguard/wg_tai64n.c
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <time.h>
++#include <syslog.h>
++
++#include <nuttx/clock.h>
++#include <nuttx/mutex.h>
++
++#include "wg_crypto.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_TAI64_UNIX_EPOCH 0x400000000000000aull
++
++/* Without an RTC, clock_initialize() seeds CLOCK_REALTIME from
++ * CONFIG_START_YEAR, so a realtime that is still below the year after it was
++ * almost certainly never set -- a device is not plausibly up for a year with
++ * no time source. A responder remembers the greatest timestamp it accepted
++ * for this key, so such a device stops reconnecting after a reboot until its
++ * clock passes that value, and the wait is as long as the previous session.
++ * Say so once instead of leaving a silent connectivity failure.
++ *
++ * This is a heuristic for the common "never set" case. It cannot tell a
++ * plausible-but-wrong date from a correct one, and does not try to.
++ */
++
++#define WG_SECS_PER_YEAR    31556952ull
++#define WG_CLOCK_UNSET_BELOW \
++  (((uint64_t)CONFIG_START_YEAR + 1 - 1970) * WG_SECS_PER_YEAR)
++
++/****************************************************************************
++ * Private Data
++ ****************************************************************************/
++
++/* Shared across interfaces and key/peer reconfiguration. The lock protects
++ * only timestamp allocation; no socket operations or device locks are taken
++ * while holding it. This high-water mark does NOT survive reboot.
++ */
++
++static mutex_t g_timestamp_lock = NXMUTEX_INITIALIZER;
++static uint64_t g_timestamp_seconds;
++static uint32_t g_timestamp_nanos;
++static bool g_clock_unset_warned;
++
++/****************************************************************************
++ * Public Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_tai64n
++ *
++ * Description:
++ *   Encode realtime as TAI64N, rounded down to tick resolution. If the clock
++ *   repeats or goes backwards during this boot, advance the last issued
++ *   value by one tick instead. Consume values even when a later handshake
++ *   construction or send fails. The platform must supply a realtime clock
++ *   that advances across boots: a configured start date is not sufficient.
++ *
++ * Returned Value:
++ *   True on success; false without changing out on clock/lock failure,
++ *   invalid time, or timestamp exhaustion. Never fall back to uptime.
++ *
++ ****************************************************************************/
++
++bool wg_tai64n(FAR uint8_t out[WG_TAI64N_LEN])
++{
++  struct timespec ts;
++  uint64_t seconds;
++  uint32_t nanos;
++  bool result = false;
++  bool warn = false;
++  int i;
++
++  if (nxmutex_lock(&g_timestamp_lock) < 0)
++    {
++      return false;
++    }
++
++  if (nxclock_gettime(CLOCK_REALTIME, &ts) < 0 || ts.tv_sec < 0 ||
++      ts.tv_nsec < 0 || ts.tv_nsec >= NSEC_PER_SEC ||
++      (uint64_t)ts.tv_sec > UINT64_MAX - WG_TAI64_UNIX_EPOCH)
++    {
++      goto out;
++    }
++
++  /* Still issue the timestamp: a peer that has never seen this key accepts
++   * it, so refusing here would break first-time pairing on a board with no
++   * clock. Only the reconnect-after-reboot case is affected, so warn.
++   */
++
++  if (!g_clock_unset_warned &&
++      (uint64_t)ts.tv_sec < WG_CLOCK_UNSET_BELOW)
++    {
++      g_clock_unset_warned = true;
++      warn = true;
++    }
++
++  seconds = (uint64_t)ts.tv_sec + WG_TAI64_UNIX_EPOCH;
++  nanos = (uint32_t)ts.tv_nsec - ((uint32_t)ts.tv_nsec % NSEC_PER_TICK);
++
++  if (seconds < g_timestamp_seconds ||
++      (seconds == g_timestamp_seconds && nanos <= g_timestamp_nanos))
++    {
++      seconds = g_timestamp_seconds;
++      nanos = g_timestamp_nanos + NSEC_PER_TICK;
++      if (nanos >= NSEC_PER_SEC)
++        {
++          if (seconds == UINT64_MAX)
++            {
++              goto out;
++            }
++
++          seconds++;
++          nanos = 0;
++        }
++    }
++
++  g_timestamp_seconds = seconds;
++  g_timestamp_nanos = nanos;
++  for (i = 0; i < 8; i++)
++    {
++      out[i] = (uint8_t)(seconds >> (8 * (7 - i)));
++    }
++
++  for (i = 0; i < 4; i++)
++    {
++      out[8 + i] = (uint8_t)(nanos >> (8 * (3 - i)));
++    }
++
++  result = true;
++out:
++  nxmutex_unlock(&g_timestamp_lock);
++
++  if (warn)
++    {
++      syslog(LOG_WARNING,
++             "wireguard: the realtime clock looks unset; handshakes will be "
++             "refused by a peer that already saw a later timestamp for this "
++             "key, until the clock passes it. Set the time (RTC or SNTP) "
++             "before bringing wg0 up.\n");
++    }
++
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_TAI64N
++  if (result)
++    {
++      syslog(LOG_INFO, "wg test: tai64n %08lx%08lx%08lx\n",
++             (unsigned long)(seconds >> 32),
++             (unsigned long)(seconds & UINT32_MAX), (unsigned long)nanos);
++    }
++#endif
++
++  return result;
++}
+diff --git a/drivers/net/wireguard/wireguard.c b/drivers/net/wireguard/wireguard.c
+new file mode 100644
+index 0000000000..61e5080b2a
+--- /dev/null
++++ b/drivers/net/wireguard/wireguard.c
+@@ -0,0 +1,1952 @@
++/****************************************************************************
++ * drivers/net/wireguard/wireguard.c
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++/* WireGuard as a NuttX network device.
++ *
++ * wgN is a NET_LL_TUN device on the netdev_lowerhalf framework. IP packets
++ * the stack routes to it are encrypted and sent as UDP datagrams to the
++ * peer whose allowed-ips cover the destination; datagrams received on the
++ * UDP socket are decrypted and handed back to the stack as packets that
++ * arrived on wgN. The UDP socket is held as a struct socket and driven
++ * with the psock_* interfaces, the same way drivers/net/rpmsgdrv.c holds
++ * its socket. A kernel thread waits on the socket and also runs the
++ * protocol timers (handshake retry, keepalive, rekey).
++ *
++ * Protocol and peer state is protected by this device's d_lock, also used
++ * by the upper half. Outbound datagrams are copied to a bounded queue;
++ * only the receive thread calls psock_sendto, without d_lock held and
++ * without references to live protocol state. The decrypted receive queue
++ * uses a spinlock like rpmsgdrv.c.
++ *
++ * The protocol itself lives in wg_noise.c; this file only knows about
++ * sockets, packets, timers and configuration.
++ */
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdbool.h>
++#include <stdint.h>
++#include <string.h>
++#include <errno.h>
++#include <poll.h>
++#include <debug.h>
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_TX_STALL
++#include <syslog.h>
++#endif
++
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <sys/socket.h>
++#include <sys/ioctl.h>
++#include <net/if.h>
++
++#include <nuttx/kthread.h>
++#include <nuttx/kmalloc.h>
++#include <nuttx/signal.h>
++#include <nuttx/semaphore.h>
++#include <nuttx/spinlock.h>
++#include <nuttx/clock.h>
++#include <nuttx/queue.h>
++#include <nuttx/net/net.h>
++#include <nuttx/net/netdev.h>
++#include <nuttx/net/netdev_lowerhalf.h>
++#include <nuttx/net/ioctl.h>
++#include <nuttx/net/ip.h>
++#include <nuttx/net/wireguard.h>
++
++#include "wg_crypto.h"
++#include "wg_noise.h"
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++/* The receive queue is a netpkt_queue_t, i.e. a struct iob_queue_s, which
++ * only exists when IOB chain heads are allocated. mm/iob/Kconfig defaults
++ * IOB_NCHAINS to IOB_NBUFFERS for NET_WIREGUARD, but a configuration can
++ * still pin it to zero; say so here instead of failing later on an
++ * incomplete type.
++ */
++
++#if CONFIG_IOB_NCHAINS < 1
++#  error "CONFIG_NET_WIREGUARD requires CONFIG_IOB_NCHAINS > 0"
++#endif
++
++#define WG_NINTERFACES      CONFIG_NET_WIREGUARD_NINTERFACES
++#define WG_PKTSIZE          CONFIG_NET_WIREGUARD_PKTSIZE
++
++/* Transport data: 16-byte header, payload padded to 16, then the tag */
++
++#define WG_DATA_HDRLEN      sizeof(struct wg_msg_data_s)
++#define WG_CRYPT_BUFSIZE    (WG_DATA_HDRLEN + ((WG_PKTSIZE + 15) & ~15) + \
++                             WG_AUTHTAG_LEN)
++
++/* How often the receive thread wakes to run the timers when nothing
++ * arrives. The protocol's shortest interval is REKEY_TIMEOUT (5 s), so
++ * this only needs to be a comfortable fraction of that.
++ */
++
++#define WG_TIMER_MSECS      400
++#define WG_STOP_WAIT_MSECS  (4 * WG_TIMER_MSECS)
++#define WG_STOP_RETRIES     3       /* Total stop wait = RETRIES * WAIT */
++
++/* Serialised outer source address for cookies: 4-byte IPv4 + 2-byte port */
++
++#define WG_SOURCE_LEN       (sizeof(in_addr_t) + sizeof(uint16_t))
++
++/* Receive packets the driver may hold before the upper half drains them */
++
++#define WG_RX_QUOTA         4
++#define WG_TX_QUOTA         4
++#define WG_RX_BUDGET        16
++
++/****************************************************************************
++ * Private Types
++ ****************************************************************************/
++
++struct wg_outbound_s
++{
++  sq_entry_t entry;
++  struct sockaddr_in to;
++  size_t len;
++  uint8_t data[];
++};
++
++struct wg_netdev_s
++{
++  struct netdev_lowerhalf_s lower;  /* Must be first */
++  struct wg_device_s wg;            /* Protocol state (keys, peers) */
++
++  struct socket psock;              /* The "wire": a UDP socket */
++  uint16_t listen_port;
++  bool bifup;                       /* Interface is up */
++  bool running;                     /* RX thread should keep going */
++  bool reaping;                     /* One ifdown owns the exit wait */
++  pid_t rxpid;
++  sem_t rxdone;                     /* Posted when the RX thread exits */
++  sem_t wake;                       /* UDP readiness or queued output */
++  sq_queue_t txqueue;               /* Immutable outer UDP datagrams */
++  unsigned int ntx;                 /* Queued plus in-flight datagrams */
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL
++  bool stop_stalled;                /* Test delay once per interface */
++#endif
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_TX_STALL
++  bool tx_stalled;                  /* Test delay with a datagram owned */
++#endif
++
++  netpkt_queue_t rxqueue;           /* Decrypted packets for receive() */
++  spinlock_t rxlock;
++
++  uint32_t init_window_start;       /* Initiation-rate bucket (5.4.7) */
++  uint32_t init_count;
++
++  /* Scratch buffers. Serialised by the device lock like everything else
++   * that touches the protocol state.
++   */
++
++  uint8_t plainbuf[WG_PKTSIZE];
++  uint8_t cryptbuf[WG_CRYPT_BUFSIZE];    /* TX encryption scratch */
++  uint8_t rxbuf[WG_CRYPT_BUFSIZE];       /* RX datagram, owned by rx thread */
++};
++
++/****************************************************************************
++ * Private Function Prototypes
++ ****************************************************************************/
++
++static int  wg_ifup(FAR struct netdev_lowerhalf_s *dev);
++static int  wg_ifdown(FAR struct netdev_lowerhalf_s *dev);
++static int  wg_transmit(FAR struct netdev_lowerhalf_s *dev,
++                        FAR netpkt_t *pkt);
++static FAR netpkt_t *wg_receive(FAR struct netdev_lowerhalf_s *dev);
++static int  wg_ioctl(FAR struct netdev_lowerhalf_s *dev, int cmd,
++                     unsigned long arg);
++
++static int  wg_send_data(FAR struct wg_netdev_s *priv,
++                         FAR struct wg_peer_s *peer,
++                         FAR const uint8_t *plaintext, size_t len);
++static void wg_send_initiation(FAR struct wg_netdev_s *priv,
++                               FAR struct wg_peer_s *peer);
++static void wg_run_timers(FAR struct wg_netdev_s *priv);
++static int  wg_rx_thread(int argc, FAR char *argv[]);
++
++/****************************************************************************
++ * Private Data
++ ****************************************************************************/
++
++static const struct netdev_ops_s g_wg_ops =
++{
++  .ifup     = wg_ifup,
++  .ifdown   = wg_ifdown,
++  .transmit = wg_transmit,
++  .receive  = wg_receive,
++  .ioctl    = wg_ioctl,
++};
++
++static struct wg_netdev_s g_wg[WG_NINTERFACES];
++
++/****************************************************************************
++ * Private Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wg_tx_enqueue
++ *
++ * Description:
++ *   Queue an immutable datagram and endpoint while holding d_lock. A
++ *   successful return means queued, not delivered by the UDP backend.
++ *
++ ****************************************************************************/
++
++static ssize_t wg_tx_enqueue(FAR struct wg_netdev_s *priv,
++                            FAR const void *buf, size_t len,
++                            in_addr_t ip, uint16_t port)
++{
++  FAR struct wg_outbound_s *out;
++
++  DEBUGASSERT(nxrmutex_is_hold(&priv->lower.netdev.d_lock));
++
++  /* Include the worker's in-flight datagram in the quota. No caller waits
++   * for queue space: transport loss is recovered by the inner protocol,
++   * and handshake/keepalive timers retry control traffic.
++   */
++
++  if (!priv->running || priv->ntx >= WG_TX_QUOTA)
++    {
++      return -EAGAIN;
++    }
++
++  out = kmm_malloc(sizeof(*out) + len);
++  if (out == NULL)
++    {
++      return -ENOMEM;
++    }
++
++  memset(&out->to, 0, sizeof(out->to));
++  out->to.sin_family = AF_INET;
++  out->to.sin_addr.s_addr = ip;
++  out->to.sin_port = htons(port);
++  out->len = len;
++  memcpy(out->data, buf, len);
++  sq_addlast(&out->entry, &priv->txqueue);
++  priv->ntx++;
++  nxsem_post(&priv->wake);
++  return len;
++}
++
++/* The socket worker owns removed entries until send returns. Never carry
++ * a peer/keypair pointer or a protocol scratch buffer across this call.
++ */
++
++static void wg_flush_tx(FAR struct wg_netdev_s *priv)
++{
++  FAR struct net_driver_s *dev = &priv->lower.netdev;
++  FAR struct wg_outbound_s *out;
++  ssize_t ret;
++  int budget;
++
++  for (budget = 0; budget < WG_TX_QUOTA; budget++)
++    {
++      netdev_lock(dev);
++      out = priv->running ?
++        (FAR struct wg_outbound_s *)sq_remfirst(&priv->txqueue) : NULL;
++      netdev_unlock(dev);
++      if (out == NULL)
++        {
++          break;
++        }
++
++      DEBUGASSERT(!nxrmutex_is_hold(&dev->d_lock));
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_TX_STALL
++      if (!priv->tx_stalled && out->data[0] == WG_MSG_TRANSPORT_DATA &&
++          out->len > WG_DATA_HDRLEN + WG_AUTHTAG_LEN)
++        {
++          uint8_t before[WG_HASH_LEN];
++          uint8_t after[WG_HASH_LEN];
++          unsigned int pending;
++
++          priv->tx_stalled = true;
++          wg_hash(before, out->data, out->len);
++          syslog(LOG_WARNING, "wg test: output stall entered\n");
++          nxsig_usleep((WG_STOP_RETRIES + 7) * WG_STOP_WAIT_MSECS * 1000);
++          wg_hash(after, out->data, out->len);
++          DEBUGASSERT(wg_equal(before, after, WG_HASH_LEN));
++          netdev_lock(dev);
++          pending = priv->ntx;
++          netdev_unlock(dev);
++          syslog(LOG_WARNING, "wg test: output owned %u\n", pending);
++          syslog(LOG_WARNING, "wg test: output stall left\n");
++        }
++#endif
++
++      ret = psock_sendto(&priv->psock, out->data, out->len, MSG_DONTWAIT,
++                         (FAR struct sockaddr *)&out->to, sizeof(out->to));
++      kmm_free(out);
++
++      netdev_lock(dev);
++      if (ret < 0)
++        {
++          NETDEV_TXERRORS(dev);
++        }
++
++      priv->ntx--;
++      netdev_unlock(dev);
++    }
++}
++
++static bool wg_running(FAR struct wg_netdev_s *priv)
++{
++  bool running;
++
++  netdev_lock(&priv->lower.netdev);
++  running = priv->running;
++  netdev_unlock(&priv->lower.netdev);
++  return running;
++}
++
++/****************************************************************************
++ * Name: wg_source_bytes
++ *
++ * Description:
++ *   Serialise an outer source address for the cookie MAC. Only used on
++ *   both sides of this driver's own cookie exchange, so the layout is a
++ *   private convention.
++ *
++ ****************************************************************************/
++
++static void wg_source_bytes(FAR uint8_t *out, in_addr_t ip, uint16_t port)
++{
++  uint16_t nport = htons(port);
++
++  memcpy(out, &ip, sizeof(ip));
++  memcpy(out + sizeof(ip), &nport, sizeof(nport));
++}
++
++/****************************************************************************
++ * Name: wg_peer_for_dest
++ *
++ * Description:
++ *   Cryptokey routing: the peer whose allowed-ips contain the destination,
++ *   longest prefix first.
++ *
++ ****************************************************************************/
++
++static FAR struct wg_peer_s *wg_peer_for_dest(FAR struct wg_netdev_s *priv,
++                                              in_addr_t dest)
++{
++  FAR struct wg_peer_s *best = NULL;
++  uint32_t best_mask = 0;
++  int x;
++  int y;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++
++      if (!peer->valid)
++        {
++          continue;
++        }
++
++      for (y = 0; y < WG_MAX_AIPS_PER_PEER; y++)
++        {
++          FAR struct wg_allowed_s *aip = &peer->allowed[y];
++          uint32_t mask;
++
++          if (!aip->valid || (dest & aip->mask) != (aip->ip & aip->mask))
++            {
++              continue;
++            }
++
++          mask = ntohl(aip->mask);
++          if (best == NULL || mask > best_mask)
++            {
++              best = peer;
++              best_mask = mask;
++            }
++        }
++    }
++
++  return best;
++}
++
++/****************************************************************************
++ * Name: wg_source_allowed
++ *
++ * Description:
++ *   The other half of cryptokey routing: a decrypted packet is only
++ *   accepted if its inner source address is in the peer's allowed-ips.
++ *
++ ****************************************************************************/
++
++static bool wg_source_allowed(FAR struct wg_peer_s *peer, in_addr_t src)
++{
++  int y;
++
++  for (y = 0; y < WG_MAX_AIPS_PER_PEER; y++)
++    {
++      FAR struct wg_allowed_s *aip = &peer->allowed[y];
++
++      if (aip->valid && (src & aip->mask) == (aip->ip & aip->mask))
++        {
++          return true;
++        }
++    }
++
++  return false;
++}
++
++/****************************************************************************
++ * Name: wg_under_load
++ *
++ * Description:
++ *   Count one handshake initiation and report whether more than
++ *   CONFIG_NET_WIREGUARD_LOAD_THRESHOLD arrived in the current second
++ *   (5.4.7). Anyone who knows the public key can produce a valid mac1, so
++ *   without this an initiation flood costs the receiver two X25519
++ *   operations per packet.
++ *
++ ****************************************************************************/
++
++static bool wg_under_load(FAR struct wg_netdev_s *priv)
++{
++  uint32_t now = wg_now();
++
++  if (now - priv->init_window_start >= 1000)
++    {
++      priv->init_window_start = now;
++      priv->init_count = 0;
++    }
++
++  priv->init_count++;
++  return priv->init_count > CONFIG_NET_WIREGUARD_LOAD_THRESHOLD;
++}
++
++/****************************************************************************
++ * Name: wg_send_data
++ *
++ * Description:
++ *   Encrypt a packet (or nothing, for a keepalive) under the peer's
++ *   current session and send it. Marks the peer for a new handshake when
++ *   the session is near its message or time limit (6.2).
++ *
++ ****************************************************************************/
++
++static int wg_send_data(FAR struct wg_netdev_s *priv,
++                         FAR struct wg_peer_s *peer,
++                         FAR const uint8_t *plaintext, size_t len)
++{
++  FAR struct wg_keypair_s *kp = &peer->curr_keypair;
++  FAR struct wg_msg_data_s *hdr;
++  size_t padded;
++  size_t total;
++  uint32_t now;
++  int ret;
++
++  /* As responder we may not use the new session until the initiator has
++   * sent on it; fall back to the previous one meanwhile.
++   */
++
++  if (kp->valid && !kp->initiator && kp->last_rx == 0)
++    {
++      kp = &peer->prev_keypair;
++    }
++
++  if (!kp->valid || (!kp->initiator && kp->last_rx == 0))
++    {
++      return -ENOKEY;
++    }
++
++  if (wg_expired(kp->keypair_millis, WG_REJECT_AFTER_TIME) ||
++      kp->sending_counter >= WG_REJECT_AFTER_MESSAGES)
++    {
++      wg_keypair_destroy(kp);
++      return -ENOKEY;
++    }
++
++  padded = (len + 15) & ~(size_t)15;
++  total = WG_DATA_HDRLEN + padded + WG_AUTHTAG_LEN;
++  if (total > sizeof(priv->cryptbuf))
++    {
++      nerr("ERROR: packet too large (%zu bytes)\n", len);
++      return -EMSGSIZE;
++    }
++
++  memset(priv->cryptbuf, 0, total);
++  hdr = (FAR struct wg_msg_data_s *)priv->cryptbuf;
++  hdr->type = WG_MSG_TRANSPORT_DATA;
++  hdr->receiver = kp->remote_index;
++  wg_write_le64(hdr->counter, kp->sending_counter);
++
++  if (len > 0)
++    {
++      memcpy(priv->cryptbuf + WG_DATA_HDRLEN, plaintext, len);
++    }
++
++  wg_encrypt_packet(priv->cryptbuf + WG_DATA_HDRLEN,
++                    priv->cryptbuf + WG_DATA_HDRLEN, padded, kp);
++
++  ret = wg_tx_enqueue(priv, priv->cryptbuf, total, peer->ip, peer->port);
++  if (ret >= 0)
++    {
++      now = wg_now();
++      peer->last_tx = now;
++      kp->last_tx = now;
++      peer->tx_bytes += total - WG_DATA_HDRLEN;
++    }
++
++  if (kp->sending_counter >= WG_REKEY_AFTER_MESSAGES ||
++      (kp->initiator && wg_expired(kp->keypair_millis,
++                                   WG_REKEY_AFTER_TIME)))
++    {
++      peer->send_handshake = true;
++    }
++
++  return ret < 0 ? ret : OK;
++}
++
++/****************************************************************************
++ * Name: wg_send_initiation
++ *
++ * Description:
++ *   Build and send a handshake initiation (5.4.2). The mac1 is kept so a
++ *   cookie reply can be decrypted.
++ *
++ ****************************************************************************/
++
++static void wg_send_initiation(FAR struct wg_netdev_s *priv,
++                               FAR struct wg_peer_s *peer)
++{
++  struct wg_msg_init_s msg;
++
++  if (peer->ip == 0 || peer->port == 0)
++    {
++      return;
++    }
++
++  if (!wg_create_init(&priv->wg, peer, &msg))
++    {
++      return;
++    }
++
++  wg_tx_enqueue(priv, &msg, sizeof(msg), peer->ip, peer->port);
++
++  peer->send_handshake = false;
++  peer->last_initiation_tx = wg_now();
++  memcpy(peer->handshake_mac1, msg.mac1, WG_MAC_LEN);
++  peer->handshake_mac1_valid = true;
++  wg_zero(&msg, sizeof(msg));
++}
++
++/****************************************************************************
++ * Name: wg_send_response
++ ****************************************************************************/
++
++static void wg_send_response(FAR struct wg_netdev_s *priv,
++                             FAR struct wg_peer_s *peer)
++{
++  struct wg_msg_response_s msg;
++
++  if (!wg_create_response(&priv->wg, peer, &msg))
++    {
++      return;
++    }
++
++  wg_start_session(peer, false);
++  wg_tx_enqueue(priv, &msg, sizeof(msg), peer->ip, peer->port);
++  wg_zero(&msg, sizeof(msg));
++}
++
++/****************************************************************************
++ * Name: wg_send_cookie
++ *
++ * Description:
++ *   Answer an initiation that arrived under load without a valid mac2
++ *   with a cookie reply (5.4.7).
++ *
++ ****************************************************************************/
++
++static void wg_send_cookie(FAR struct wg_netdev_s *priv,
++                           FAR const uint8_t *mac1, uint32_t sender,
++                           in_addr_t ip, uint16_t port)
++{
++  struct wg_msg_cookie_s msg;
++  uint8_t source[WG_SOURCE_LEN];
++
++  wg_source_bytes(source, ip, port);
++  if (wg_create_cookie(&priv->wg, &msg, mac1, sender, source,
++                       sizeof(source)))
++    {
++      wg_tx_enqueue(priv, &msg, sizeof(msg), ip, port);
++    }
++}
++
++/****************************************************************************
++ * Name: wg_deliver
++ *
++ * Description:
++ *   Queue a decrypted IP packet for the upper half. Called with the
++ *   device lock held, from the receive thread. Notify the upper half only
++ *   after leaving protocol processing and releasing the device lock.
++ *
++ ****************************************************************************/
++
++static void wg_deliver(FAR struct wg_netdev_s *priv,
++                       FAR const uint8_t *data, size_t len)
++{
++  FAR struct netdev_lowerhalf_s *dev = &priv->lower;
++  FAR netpkt_t *pkt;
++  irqstate_t flags;
++
++  pkt = netpkt_alloc(dev, NETPKT_RX);
++  if (pkt == NULL)
++    {
++      NETDEV_RXDROPPED(&dev->netdev);
++      return;
++    }
++
++  if (netpkt_copyin(dev, pkt, data, len, 0) < 0)
++    {
++      netpkt_free(dev, pkt, NETPKT_RX);
++      NETDEV_RXDROPPED(&dev->netdev);
++      return;
++    }
++
++  flags = spin_lock_irqsave(&priv->rxlock);
++  if (netpkt_tryadd_queue(pkt, &priv->rxqueue) < 0)
++    {
++      spin_unlock_irqrestore(&priv->rxlock, flags);
++      netpkt_free(dev, pkt, NETPKT_RX);
++      NETDEV_RXDROPPED(&dev->netdev);
++      return;
++    }
++
++  spin_unlock_irqrestore(&priv->rxlock, flags);
++}
++
++/****************************************************************************
++ * Name: wg_process_data
++ *
++ * Description:
++ *   A transport data message for one of our sessions (5.4.6). Order of
++ *   operations matters: authenticate, check the replay window, and only
++ *   then update the endpoint and session state. Updating the endpoint
++ *   first would let a captured packet resent from another address steer
++ *   the peer's traffic there.
++ *
++ ****************************************************************************/
++
++static void wg_process_data(FAR struct wg_netdev_s *priv,
++                            FAR struct wg_peer_s *peer,
++                            FAR struct wg_msg_data_s *hdr, size_t datalen,
++                            in_addr_t ip, uint16_t port)
++{
++  FAR struct wg_keypair_s *kp;
++  FAR const uint8_t *src;
++  uint64_t counter;
++  uint32_t now;
++
++  kp = wg_keypair_by_index(peer, hdr->receiver);
++  if (kp == NULL)
++    {
++      return;
++    }
++
++  if (!kp->receiving_valid ||
++      wg_expired(kp->keypair_millis, WG_REJECT_AFTER_TIME) ||
++      kp->replay_counter >= WG_REJECT_AFTER_MESSAGES)
++    {
++      wg_keypair_destroy(kp);
++      return;
++    }
++
++  if (datalen < WG_AUTHTAG_LEN ||
++      datalen - WG_AUTHTAG_LEN > sizeof(priv->plainbuf))
++    {
++      return;
++    }
++
++  counter = wg_read_le64(hdr->counter);
++  src = (FAR const uint8_t *)hdr + WG_DATA_HDRLEN;
++
++  if (!wg_decrypt_packet(priv->plainbuf, src, datalen, counter, kp))
++    {
++      return;
++    }
++
++  if (!wg_check_replay(kp, counter))
++    {
++      return;
++    }
++
++  peer->ip = ip;
++  peer->port = port;
++
++  now = wg_now();
++  kp->last_rx = now;
++  peer->last_rx = now;
++  peer->rx_bytes += datalen;
++
++  wg_keypair_update(peer, kp);
++
++  if (kp->initiator &&
++      wg_expired(kp->keypair_millis, WG_REJECT_AFTER_TIME -
++                 peer->keepalive_interval - WG_REKEY_TIMEOUT))
++    {
++      peer->send_handshake = true;
++    }
++
++  netdev_lower_carrier_on(&priv->lower);
++
++  /* Keepalives carry no payload; anything else is an IP packet whose
++   * inner source must be allowed for this peer.
++   */
++
++  if (datalen > WG_AUTHTAG_LEN)
++    {
++      FAR struct ipv4_hdr_s *iphdr = (FAR struct ipv4_hdr_s *)priv->plainbuf;
++      size_t pktlen = datalen - WG_AUTHTAG_LEN;
++      uint16_t totlen;
++
++      if (((iphdr->vhl >> 4) & 0x0f) != 4)
++        {
++          return;
++        }
++
++      totlen = ((uint16_t)iphdr->len[0] << 8) | iphdr->len[1];
++      if (totlen > pktlen || totlen < IPv4_HDRLEN)
++        {
++          return;
++        }
++
++      if (!wg_source_allowed(peer, net_ip4addr_conv32(iphdr->srcipaddr)))
++        {
++          return;
++        }
++
++      wg_deliver(priv, priv->plainbuf, totlen);
++    }
++}
++
++/****************************************************************************
++ * Name: wg_process_datagram
++ *
++ * Description:
++ *   Dispatch one received UDP datagram. Called with the network lock
++ *   held. On an initiation the checks go mac1 -> (under load) mac2 ->
++ *   the Diffie-Hellman work, per 5.4.7.
++ *
++ ****************************************************************************/
++
++static void wg_process_datagram(FAR struct wg_netdev_s *priv,
++                                FAR uint8_t *data, size_t len,
++                                in_addr_t ip, uint16_t port)
++{
++  FAR struct wg_peer_s *peer;
++
++  switch (wg_message_type(data, len))
++    {
++      case WG_MSG_HANDSHAKE_INIT:
++        {
++          FAR struct wg_msg_init_s *msg = (FAR struct wg_msg_init_s *)data;
++
++          if (!wg_check_mac1(&priv->wg, data, sizeof(*msg) - 2 * WG_MAC_LEN,
++                             msg->mac1))
++            {
++              break;
++            }
++
++          if (wg_under_load(priv))
++            {
++              uint8_t source[WG_SOURCE_LEN];
++
++              wg_source_bytes(source, ip, port);
++              if (!wg_check_mac2(&priv->wg, data, sizeof(*msg) - WG_MAC_LEN,
++                                 source, sizeof(source), msg->mac2))
++                {
++                  wg_send_cookie(priv, msg->mac1, msg->sender, ip, port);
++                  break;
++                }
++            }
++
++          peer = wg_process_init(&priv->wg, msg);
++          if (peer != NULL)
++            {
++              peer->ip = ip;
++              peer->port = port;
++              wg_send_response(priv, peer);
++            }
++        }
++        break;
++
++      case WG_MSG_HANDSHAKE_RESPONSE:
++        {
++          FAR struct wg_msg_response_s *msg =
++            (FAR struct wg_msg_response_s *)data;
++
++          if (!wg_check_mac1(&priv->wg, data, sizeof(*msg) - 2 * WG_MAC_LEN,
++                             msg->mac1))
++            {
++              break;
++            }
++
++          peer = wg_peer_by_handshake(&priv->wg, msg->receiver);
++          if (peer != NULL && wg_process_response(&priv->wg, peer, msg))
++            {
++              peer->ip = ip;
++              peer->port = port;
++              wg_start_session(peer, true);
++
++              /* Confirm the session with a keepalive */
++
++              wg_send_data(priv, peer, NULL, 0);
++              netdev_lower_carrier_on(&priv->lower);
++            }
++        }
++        break;
++
++      case WG_MSG_COOKIE_REPLY:
++        {
++          FAR struct wg_msg_cookie_s *msg =
++            (FAR struct wg_msg_cookie_s *)data;
++
++          /* The peer is under load and wants mac2 on our next initiation.
++           * Retry at once rather than waiting for the REKEY_TIMEOUT retry.
++           */
++
++          peer = wg_peer_by_handshake(&priv->wg, msg->receiver);
++          if (peer != NULL && wg_process_cookie(&priv->wg, peer, msg))
++            {
++              wg_send_initiation(priv, peer);
++            }
++        }
++        break;
++
++      case WG_MSG_TRANSPORT_DATA:
++        {
++          FAR struct wg_msg_data_s *msg = (FAR struct wg_msg_data_s *)data;
++
++          peer = wg_peer_by_receiver(&priv->wg, msg->receiver);
++          if (peer != NULL)
++            {
++              wg_process_data(priv, peer, msg, len - WG_DATA_HDRLEN, ip,
++                              port);
++            }
++        }
++        break;
++
++      default:
++        break;
++    }
++}
++
++/****************************************************************************
++ * Name: wg_run_timers
++ *
++ * Description:
++ *   Per-peer maintenance (6.1/6.2): expire old sessions, send keepalives,
++ *   start or retry handshakes. Caller holds the device lock.
++ *
++ ****************************************************************************/
++
++static void wg_run_timers(FAR struct wg_netdev_s *priv)
++{
++  bool link_up = false;
++  int x;
++
++  DEBUGASSERT(nxrmutex_is_hold(&priv->lower.netdev.d_lock));
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++      bool can_initiate;
++      bool should_initiate;
++
++      if (!peer->valid)
++        {
++          continue;
++        }
++
++      /* Nothing heard for three reject periods: forget everything,
++       * including the learned endpoint.
++       */
++
++      if (peer->curr_keypair.valid &&
++          wg_expired(peer->curr_keypair.keypair_millis,
++                     WG_REJECT_AFTER_TIME * 3))
++        {
++          wg_keypair_destroy(&peer->next_keypair);
++          wg_keypair_destroy(&peer->curr_keypair);
++          wg_keypair_destroy(&peer->prev_keypair);
++          peer->ip = peer->connect_ip;
++          peer->port = peer->connect_port;
++        }
++
++      if (peer->curr_keypair.valid &&
++          (wg_expired(peer->curr_keypair.keypair_millis,
++                      WG_REJECT_AFTER_TIME) ||
++           peer->curr_keypair.sending_counter >= WG_REJECT_AFTER_MESSAGES))
++        {
++          wg_keypair_destroy(&peer->curr_keypair);
++        }
++
++      if (peer->keepalive_interval > 0 &&
++          (peer->curr_keypair.valid || peer->prev_keypair.valid) &&
++          wg_expired(peer->last_tx, peer->keepalive_interval))
++        {
++          wg_send_data(priv, peer, NULL, 0);
++        }
++
++      can_initiate = peer->last_initiation_tx == 0 ||
++                     wg_expired(peer->last_initiation_tx, WG_REKEY_TIMEOUT);
++
++      should_initiate = can_initiate &&
++        (peer->send_handshake ||
++         (peer->curr_keypair.valid && !peer->curr_keypair.initiator &&
++          wg_expired(peer->curr_keypair.keypair_millis,
++                     WG_REJECT_AFTER_TIME - peer->keepalive_interval)) ||
++         (!peer->curr_keypair.valid && peer->active));
++
++      if (should_initiate)
++        {
++          wg_send_initiation(priv, peer);
++        }
++
++      if (peer->curr_keypair.valid || peer->prev_keypair.valid)
++        {
++          link_up = true;
++        }
++    }
++
++  if (!link_up)
++    {
++      netdev_lower_carrier_off(&priv->lower);
++    }
++}
++
++/****************************************************************************
++ * Name: wg_poll_cb, wg_rx_thread
++ *
++ * Description:
++ *   The receive thread waits on the UDP socket for at most WG_TIMER_MSECS,
++ *   drains whatever arrived, and runs the timers. It owns the socket
++ *   while running; ifdown waits for it to exit before closing it.
++ *
++ ****************************************************************************/
++
++static void wg_poll_cb(FAR struct pollfd *fds)
++{
++  nxsem_post((FAR sem_t *)fds->arg);
++}
++
++static int wg_rx_thread(int argc, FAR char *argv[])
++{
++  FAR struct wg_netdev_s *priv;
++  struct pollfd fds;
++  int budget;
++  int ifidx;
++
++  ifidx = atoi(argv[1]);
++  priv = &g_wg[ifidx];
++
++  while (wg_running(priv))
++    {
++      struct sockaddr_in from;
++      socklen_t fromlen;
++      ssize_t n;
++
++      memset(&fds, 0, sizeof(fds));
++      fds.events = POLLIN;
++      fds.arg    = &priv->wake;
++      fds.cb     = wg_poll_cb;
++
++      if (psock_poll(&priv->psock, &fds, true) >= 0)
++        {
++          nxsem_tickwait(&priv->wake, MSEC2TICK(WG_TIMER_MSECS));
++          psock_poll(&priv->psock, &fds, false);
++        }
++
++      while (nxsem_trywait(&priv->wake) >= 0);
++
++      /* Re-check running inside the drain loop: a sustained inbound flood
++       * would otherwise keep this loop busy past ifdown's stop timeout,
++       * and ifdown must be able to close the socket knowing the thread has
++       * left it.
++       */
++
++      for (budget = 0;
++           budget < WG_RX_BUDGET && wg_running(priv); budget++)
++        {
++          fromlen = sizeof(from);
++          n = psock_recvfrom(&priv->psock, priv->rxbuf, WG_CRYPT_BUFSIZE,
++                             MSG_DONTWAIT, (FAR struct sockaddr *)&from,
++                             &fromlen);
++          if (n <= 0)
++            {
++              break;
++            }
++
++          netdev_lock(&priv->lower.netdev);
++          if (priv->running)
++            {
++              wg_process_datagram(priv, priv->rxbuf, (size_t)n,
++                                  from.sin_addr.s_addr,
++                                  ntohs(from.sin_port));
++            }
++
++          netdev_unlock(&priv->lower.netdev);
++          netdev_lower_rxready(&priv->lower);
++          wg_flush_tx(priv);
++        }
++
++      netdev_lock(&priv->lower.netdev);
++      if (priv->running)
++        {
++          wg_run_timers(priv);
++        }
++
++      netdev_unlock(&priv->lower.netdev);
++      wg_flush_tx(priv);
++    }
++
++#ifdef CONFIG_NET_WIREGUARD_DEBUG_STOP_STALL
++  if (!priv->stop_stalled)
++    {
++      priv->stop_stalled = true;
++      nxsig_usleep((WG_STOP_RETRIES + 1) * WG_STOP_WAIT_MSECS * 1000);
++    }
++#endif
++
++  nxsem_post(&priv->rxdone);
++  return 0;
++}
++
++/****************************************************************************
++ * Name: wg_rx_teardown
++ *
++ * Description:
++ *   Stop the RX thread and release the socket and semaphore, but only once
++ *   the thread has confirmed it has left them (it posts rxdone as its last
++ *   act). Idempotent: with rxpid == 0 there is nothing to do. If the bounded
++ *   wait times out the thread is still live, so nothing is torn down and
++ *   -ETIMEDOUT is returned; the interface stays in a stopping state (IFF_UP
++ *   stays set) and a repeated ifdown calls this again to reap it. The wait
++ *   releases d_lock so the socket worker can finish. reaping excludes a
++ *   second waiter while that lock is released.
++ *
++ ****************************************************************************/
++
++static int wg_rx_teardown(FAR struct wg_netdev_s *priv)
++{
++  int x;
++
++  if (priv->rxpid == 0)
++    {
++      return OK;
++    }
++
++  if (priv->reaping)
++    {
++      return -EBUSY;
++    }
++
++  priv->reaping = true;
++  priv->running = false;
++  nxsem_post(&priv->wake);
++  for (x = 0; x < WG_STOP_RETRIES; x++)
++    {
++      if (net_sem_timedwait2(&priv->rxdone, false, WG_STOP_WAIT_MSECS,
++                             &priv->lower.netdev.d_lock, NULL) >= 0)
++        {
++          break;
++        }
++    }
++
++  priv->reaping = false;
++  if (x >= WG_STOP_RETRIES)
++    {
++      return -ETIMEDOUT;
++    }
++
++  priv->rxpid = 0;
++  nxsem_destroy(&priv->rxdone);
++  nxsem_destroy(&priv->wake);
++  psock_close(&priv->psock);
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_down_finish
++ *
++ * Description:
++ *   Finish taking the interface down once the RX thread has stopped: wipe
++ *   every peer's session and handshake state, restore the configured
++ *   endpoints, and free anything left in the receive queue. Shared by
++ *   wg_ifdown and its retry path so that a down whose stop
++ *   timed out is still completed properly when the thread is finally reaped.
++ *
++ ****************************************************************************/
++
++static void wg_down_finish(FAR struct netdev_lowerhalf_s *dev)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  FAR struct wg_outbound_s *out;
++  FAR netpkt_t *pkt;
++  irqstate_t flags;
++  int x;
++
++  while ((out = (FAR struct wg_outbound_s *)
++          sq_remfirst(&priv->txqueue)) != NULL)
++    {
++      kmm_free(out);
++    }
++
++  priv->ntx = 0;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++
++      if (peer->valid)
++        {
++          wg_peer_clear_sessions(peer);
++          peer->ip = peer->connect_ip;
++          peer->port = peer->connect_port;
++        }
++    }
++
++  flags = spin_lock_irqsave(&priv->rxlock);
++  while ((pkt = netpkt_remove_queue(&priv->rxqueue)) != NULL)
++    {
++      spin_unlock_irqrestore(&priv->rxlock, flags);
++      netpkt_free(dev, pkt, NETPKT_RX);
++      flags = spin_lock_irqsave(&priv->rxlock);
++    }
++
++  spin_unlock_irqrestore(&priv->rxlock, flags);
++}
++
++/****************************************************************************
++ * Name: wg_ifup
++ *
++ * Description:
++ *   Open the UDP socket and start the receive thread. Refused until a
++ *   private key has been set.
++ *
++ ****************************************************************************/
++
++static int wg_ifup(FAR struct netdev_lowerhalf_s *dev)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  struct sockaddr_in addr;
++  FAR char *argv[2];
++  char arg[8];
++  int ret;
++  int x;
++
++  DEBUGASSERT(nxrmutex_is_hold(&dev->netdev.d_lock));
++
++  if (priv->bifup)
++    {
++      return OK;
++    }
++
++  /* netdev_ifup only reaches here with IFF_UP clear, which a previous
++   * ifdown sets only after it fully stopped (rxpid == 0). A leftover thread
++   * (a stop that timed out) keeps IFF_UP set, so recovery runs through a
++   * repeated ifdown, not here. This guard is therefore defensive only.
++   */
++
++  if (priv->rxpid > 0)
++    {
++      nerr("ERROR: %s is still stopping\n", dev->netdev.d_ifname);
++      return -EBUSY;
++    }
++
++  if (!priv->wg.valid)
++    {
++      nerr("ERROR: %s has no private key\n", dev->netdev.d_ifname);
++      return -EINVAL;
++    }
++
++  ret = psock_socket(AF_INET, SOCK_DGRAM, 0, &priv->psock);
++  if (ret < 0)
++    {
++      nerr("ERROR: psock_socket() failed: %d\n", ret);
++      return ret;
++    }
++
++  memset(&addr, 0, sizeof(addr));
++  addr.sin_family = AF_INET;
++  addr.sin_addr.s_addr = INADDR_ANY;
++  addr.sin_port = htons(priv->listen_port);
++
++  ret = psock_bind(&priv->psock, (FAR struct sockaddr *)&addr,
++                   sizeof(addr));
++  if (ret < 0)
++    {
++      nerr("ERROR: psock_bind() failed: %d\n", ret);
++      psock_close(&priv->psock);
++      return ret;
++    }
++
++  /* Start from the configured endpoints and kick off handshakes to the
++   * peers that have one.
++   */
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++
++      if (peer->valid && peer->connect_ip != 0 && peer->connect_port != 0)
++        {
++          peer->active = true;
++          peer->ip = peer->connect_ip;
++          peer->port = peer->connect_port;
++          peer->send_handshake = true;
++        }
++    }
++
++  priv->running = true;
++  nxsem_init(&priv->rxdone, 0, 0);
++  nxsem_init(&priv->wake, 0, 0);
++
++  snprintf(arg, sizeof(arg), "%d", (int)(priv - g_wg));
++  argv[0] = arg;
++  argv[1] = NULL;
++
++  ret = kthread_create("wg_rx", CONFIG_NET_WIREGUARD_RXPRIORITY,
++                       CONFIG_NET_WIREGUARD_RXSTACKSIZE, wg_rx_thread, argv);
++  if (ret < 0)
++    {
++      nerr("ERROR: kthread_create failed: %d\n", ret);
++      priv->running = false;
++      nxsem_destroy(&priv->rxdone);
++      nxsem_destroy(&priv->wake);
++      psock_close(&priv->psock);
++      return ret;
++    }
++
++  priv->rxpid = ret;
++  priv->bifup = true;
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_ifdown
++ *
++ * Description:
++ *   Stop the receive thread, close the socket, and end every session:
++ *   keys and handshake state are wiped and the endpoints fall back to
++ *   the configured ones.
++ *
++ ****************************************************************************/
++
++static int wg_ifdown(FAR struct netdev_lowerhalf_s *dev)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  int ret;
++
++  DEBUGASSERT(nxrmutex_is_hold(&dev->netdev.d_lock));
++
++  /* Enter also while already down-but-stopping (bifup clear, rxpid set) so
++   * a stop that previously timed out is reaped and finished here.
++   */
++
++  if (!priv->bifup && priv->rxpid == 0)
++    {
++      return OK;
++    }
++
++  priv->bifup = false;
++  netdev_lower_carrier_off(dev);
++
++  /* Stop the RX thread and wait for it to actually leave the socket and the
++   * semaphore before either is destroyed. The thread checks running in both
++   * its outer and inner loops and posts rxdone as its last act, so it
++   * normally wakes within a poll period. A backend send can take longer.
++   * On timeout nothing is torn
++   * down (no close from under a live thread): d_ifdown returns an error so
++   * the netdev layer leaves IFF_UP set, and a repeated ifdown (the only
++   * caller reached while IFF_UP is still set) reaps the thread once it has
++   * finally exited and completes the teardown.
++   */
++
++  ret = wg_rx_teardown(priv);
++  if (ret < 0)
++    {
++      nerr("ERROR: %s RX thread did not stop; left stopping\n",
++           dev->netdev.d_ifname);
++      return ret;
++    }
++
++  wg_down_finish(dev);
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_transmit
++ *
++ * Description:
++ *   An IP packet from the stack. Route it to a peer by destination,
++ *   encrypt and send. Without a session the packet is dropped and a
++ *   handshake is requested; the stack will retransmit.
++ *
++ ****************************************************************************/
++
++static int wg_transmit(FAR struct netdev_lowerhalf_s *dev,
++                       FAR netpkt_t *pkt)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  FAR struct ipv4_hdr_s *iphdr;
++  FAR struct wg_peer_s *peer;
++  unsigned int len = netpkt_getdatalen(dev, pkt);
++  int ret;
++
++  DEBUGASSERT(nxrmutex_is_hold(&dev->netdev.d_lock));
++
++  if (!priv->bifup || len < IPv4_HDRLEN || len > sizeof(priv->plainbuf))
++    {
++      goto drop;
++    }
++
++  netpkt_copyout(dev, priv->plainbuf, pkt, len, 0);
++  iphdr = (FAR struct ipv4_hdr_s *)priv->plainbuf;
++
++  if (((iphdr->vhl >> 4) & 0x0f) != 4)
++    {
++      goto drop;
++    }
++
++  peer = wg_peer_for_dest(priv, net_ip4addr_conv32(iphdr->destipaddr));
++  if (peer == NULL)
++    {
++      goto drop;
++    }
++
++  ret = wg_send_data(priv, peer, priv->plainbuf, len);
++  if (ret < 0)
++    {
++      if (ret != -ENOKEY)
++        {
++          goto drop;  /* Backpressure does not invalidate the session */
++        }
++
++      /* No usable session: ask for one now instead of on the next timer
++       * tick, unless one was requested within REKEY_TIMEOUT.
++       */
++
++      peer->active = true;
++      if (peer->last_initiation_tx == 0 ||
++          wg_expired(peer->last_initiation_tx, WG_REKEY_TIMEOUT))
++        {
++          wg_send_initiation(priv, peer);
++        }
++      else
++        {
++          peer->send_handshake = true;
++        }
++
++      goto drop;
++    }
++
++  netpkt_free(dev, pkt, NETPKT_TX);
++  netdev_lower_txdone(dev);
++  return OK;
++
++drop:
++  NETDEV_ERRORS(&dev->netdev);
++  netpkt_free(dev, pkt, NETPKT_TX);
++  netdev_lower_txdone(dev);
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_receive
++ *
++ * Description:
++ *   Hand the upper half the next decrypted packet, if any.
++ *
++ ****************************************************************************/
++
++static FAR netpkt_t *wg_receive(FAR struct netdev_lowerhalf_s *dev)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  FAR netpkt_t *pkt;
++  irqstate_t flags;
++
++  flags = spin_lock_irqsave(&priv->rxlock);
++  pkt = netpkt_remove_queue(&priv->rxqueue);
++  spin_unlock_irqrestore(&priv->rxlock, flags);
++
++  return pkt;
++}
++
++/****************************************************************************
++ * Name: wg_aip_overlaps
++ *
++ * Description:
++ *   True if a prefix is already claimed by another peer's allowed-ips
++ *   (cryptokey routing requires each destination to map to one peer).
++ *
++ ****************************************************************************/
++
++static bool wg_aip_overlaps(FAR struct wg_netdev_s *priv,
++                            FAR const struct wg_peer_s *self,
++                            in_addr_t ip, in_addr_t mask)
++{
++  int x;
++  int y;
++
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++
++      if (!peer->valid || peer == self)
++        {
++          continue;
++        }
++
++      for (y = 0; y < WG_MAX_AIPS_PER_PEER; y++)
++        {
++          FAR struct wg_allowed_s *aip = &peer->allowed[y];
++          in_addr_t common;
++
++          if (!aip->valid)
++            {
++              continue;
++            }
++
++          common = mask & aip->mask;
++          if ((ip & common) == (aip->ip & common))
++            {
++              return true;
++            }
++        }
++    }
++
++  return false;
++}
++
++/****************************************************************************
++ * Name: wg_set_peer
++ *
++ * Description:
++ *   SIOCSWGPEER: add a peer or update an existing one, addressed by
++ *   public key. Everything is validated into a copy first so that a
++ *   rejected request leaves the peer untouched.
++ *
++ ****************************************************************************/
++
++static int wg_set_peer(FAR struct wg_netdev_s *priv,
++                       FAR const struct wg_peerreq_s *req)
++{
++  FAR struct wg_peer_s *peer;
++  struct wg_allowed_s allowed[WG_MAX_AIPS_PER_PEER];
++  bool created = false;
++  int naips = 0;
++  int i;
++
++  if (!priv->wg.valid)
++    {
++      return -ENOKEY;
++    }
++
++  if (wg_is_zero(req->public_key, WG_KEY_LEN) ||
++      wg_equal(req->public_key, priv->wg.public_key, WG_KEY_LEN))
++    {
++      return -EINVAL;
++    }
++
++  if (req->flags & WG_PEER_HAS_ENDPOINT)
++    {
++      if (req->endpoint.sin_family != AF_INET ||
++          req->endpoint.sin_port == 0 ||
++          req->endpoint.sin_addr.s_addr == INADDR_ANY ||
++          IN_MULTICAST(ntohl(req->endpoint.sin_addr.s_addr)))
++        {
++          return -EINVAL;
++        }
++    }
++
++  peer = wg_peer_by_pubkey(&priv->wg, req->public_key);
++
++  /* Allowed-ips: normalise, then check they do not collide with another
++   * peer's. When appending, the existing entries count towards the limit.
++   */
++
++  memset(allowed, 0, sizeof(allowed));
++  if (req->flags & WG_PEER_HAS_AIPS)
++    {
++      if (req->naips > WG_MAX_AIPS)
++        {
++          return -EINVAL;
++        }
++
++      if (peer != NULL && !(req->flags & WG_PEER_REPLACE_AIPS))
++        {
++          for (i = 0; i < WG_MAX_AIPS_PER_PEER; i++)
++            {
++              if (peer->allowed[i].valid)
++                {
++                  allowed[naips++] = peer->allowed[i];
++                }
++            }
++        }
++
++      for (i = 0; i < req->naips; i++)
++        {
++          in_addr_t mask;
++
++          if (req->aips[i].cidr > 32 || naips >= WG_MAX_AIPS_PER_PEER)
++            {
++              return naips >= WG_MAX_AIPS_PER_PEER ? -ENOSPC : -EINVAL;
++            }
++
++          mask = req->aips[i].cidr == 0 ? 0 :
++                 htonl(0xffffffffu << (32 - req->aips[i].cidr));
++
++          if (wg_aip_overlaps(priv, peer, req->aips[i].addr.s_addr, mask))
++            {
++              return -EEXIST;
++            }
++
++          allowed[naips].valid = true;
++          allowed[naips].ip = req->aips[i].addr.s_addr & mask;
++          allowed[naips].mask = mask;
++          naips++;
++        }
++    }
++
++  if (peer == NULL)
++    {
++      peer = wg_peer_alloc(&priv->wg);
++      if (peer == NULL)
++        {
++          return -ENOSPC;
++        }
++
++      if (!wg_peer_init(&priv->wg, peer, req->public_key,
++                        (req->flags & WG_PEER_HAS_PSK) ?
++                        req->preshared_key : NULL))
++        {
++          return -EINVAL;   /* Low-order public key */
++        }
++
++      created = true;
++    }
++  else if (req->flags & WG_PEER_HAS_PSK)
++    {
++      memcpy(peer->preshared_key, req->preshared_key, WG_SESSION_KEY_LEN);
++    }
++
++  if (req->flags & WG_PEER_HAS_ENDPOINT)
++    {
++      peer->connect_ip = req->endpoint.sin_addr.s_addr;
++      peer->connect_port = ntohs(req->endpoint.sin_port);
++      if (created || !peer->curr_keypair.valid)
++        {
++          peer->ip = peer->connect_ip;
++          peer->port = peer->connect_port;
++        }
++
++      if (priv->bifup)
++        {
++          peer->active = true;
++          peer->send_handshake = true;
++        }
++    }
++
++  if (req->flags & WG_PEER_HAS_KEEPALIVE)
++    {
++      peer->keepalive_interval = req->keepalive;
++    }
++
++  if (req->flags & WG_PEER_HAS_AIPS)
++    {
++      memcpy(peer->allowed, allowed, sizeof(allowed));
++    }
++
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_get_peer
++ *
++ * Description:
++ *   SIOCGWGPEER: the index-th configured peer.
++ *
++ ****************************************************************************/
++
++static int wg_get_peer(FAR struct wg_netdev_s *priv,
++                       FAR struct wg_peerreq_s *req)
++{
++  FAR struct wg_peer_s *peer = NULL;
++  int seen = 0;
++  int x;
++  int i;
++
++  for (x = 0; x < WG_MAX_PEERS && peer == NULL; x++)
++    {
++      if (priv->wg.peers[x].valid && seen++ == req->index)
++        {
++          peer = &priv->wg.peers[x];
++        }
++    }
++
++  if (peer == NULL)
++    {
++      return -ENOENT;
++    }
++
++  req->flags = 0;
++  memcpy(req->public_key, peer->public_key, WG_KEY_LEN);
++  memset(req->preshared_key, 0, WG_KEY_LEN);
++  if (!wg_is_zero(peer->preshared_key, WG_KEY_LEN))
++    {
++      req->flags |= WG_PEER_HAS_PSK;   /* Present, but not disclosed */
++    }
++
++  memset(&req->endpoint, 0, sizeof(req->endpoint));
++  if (peer->ip != 0)
++    {
++      req->flags |= WG_PEER_HAS_ENDPOINT;
++      req->endpoint.sin_family = AF_INET;
++      req->endpoint.sin_addr.s_addr = peer->ip;
++      req->endpoint.sin_port = htons(peer->port);
++    }
++
++  req->flags |= WG_PEER_HAS_KEEPALIVE;
++  req->keepalive = peer->keepalive_interval;
++
++  req->naips = 0;
++  for (i = 0; i < WG_MAX_AIPS_PER_PEER; i++)
++    {
++      FAR struct wg_allowed_s *aip = &peer->allowed[i];
++      uint32_t hmask;
++      uint8_t cidr = 0;
++
++      if (!aip->valid)
++        {
++          continue;
++        }
++
++      for (hmask = ntohl(aip->mask); hmask & 0x80000000u; hmask <<= 1)
++        {
++          cidr++;
++        }
++
++      req->aips[req->naips].addr.s_addr = aip->ip;
++      req->aips[req->naips].cidr = cidr;
++      req->naips++;
++    }
++
++  if (req->naips > 0)
++    {
++      req->flags |= WG_PEER_HAS_AIPS;
++    }
++
++  req->last_handshake = WG_HANDSHAKE_NEVER;
++  if (peer->curr_keypair.valid)
++    {
++      req->flags |= WG_PEER_HANDSHAKED;
++      req->last_handshake = wg_now() - peer->curr_keypair.keypair_millis;
++    }
++
++  req->rx_bytes = peer->rx_bytes;
++  req->tx_bytes = peer->tx_bytes;
++  return OK;
++}
++
++/****************************************************************************
++ * Name: wg_set_if
++ *
++ * Description:
++ *   SIOCSWGIF. The private key and listen port can only change while the
++ *   interface is down: sessions are bound to them.
++ *
++ ****************************************************************************/
++
++static int wg_set_if(FAR struct wg_netdev_s *priv,
++                     FAR const struct wg_ifreq_s *req)
++{
++  int ret = OK;
++
++  if ((req->flags & WG_IF_UP) && !priv->bifup && priv->rxpid != 0)
++    {
++      return -EBUSY;  /* netdev_ifup would otherwise skip the callback */
++    }
++
++  if ((req->flags & (WG_IF_HAS_PRIVATE_KEY | WG_IF_HAS_LISTEN_PORT)) &&
++      (priv->bifup || priv->rxpid != 0))
++    {
++      return -EBUSY;
++    }
++
++  if (req->flags & WG_IF_HAS_PRIVATE_KEY)
++    {
++      size_t savedsize = sizeof(struct wg_peer_s) * WG_MAX_PEERS;
++      FAR struct wg_peer_s *saved;
++      int x;
++
++      if (wg_is_zero(req->private_key, WG_KEY_LEN))
++        {
++          return -EINVAL;
++        }
++
++      /* Peers precompute DH with the static key, so re-initialise them
++       * from their configuration afterwards. wg_peer_s is large (it holds
++       * keypairs and anti-replay windows), so this snapshot goes on the
++       * heap rather than the stack, which is small in kernel builds.
++       */
++
++      saved = kmm_malloc(savedsize);
++      if (saved == NULL)
++        {
++          return -ENOMEM;
++        }
++
++      memcpy(saved, priv->wg.peers, savedsize);
++      wg_zero(&priv->wg, sizeof(priv->wg));
++
++      if (!wg_device_init(&priv->wg, req->private_key))
++        {
++          wg_zero(saved, savedsize);
++          kmm_free(saved);
++          return -EINVAL;
++        }
++
++      for (x = 0; x < WG_MAX_PEERS; x++)
++        {
++          FAR struct wg_peer_s *peer = &priv->wg.peers[x];
++
++          if (!saved[x].valid)
++            {
++              continue;
++            }
++
++          if (wg_peer_init(&priv->wg, peer, saved[x].public_key,
++                           wg_is_zero(saved[x].preshared_key, WG_KEY_LEN) ?
++                           NULL : saved[x].preshared_key))
++            {
++              peer->connect_ip = saved[x].connect_ip;
++              peer->connect_port = saved[x].connect_port;
++              peer->ip = saved[x].connect_ip;
++              peer->port = saved[x].connect_port;
++              peer->keepalive_interval = saved[x].keepalive_interval;
++              memcpy(peer->allowed, saved[x].allowed, sizeof(peer->allowed));
++            }
++        }
++
++      wg_zero(saved, savedsize);
++      kmm_free(saved);
++    }
++
++  if (req->flags & WG_IF_HAS_LISTEN_PORT)
++    {
++      priv->listen_port = req->listen_port;
++    }
++
++  if (req->flags & WG_IF_HAS_ADDR)
++    {
++      priv->lower.netdev.d_ipaddr = req->addr.s_addr;
++      priv->lower.netdev.d_netmask = req->netmask.s_addr;
++    }
++
++  if (req->flags & WG_IF_UP)
++    {
++      ret = netdev_ifup(&priv->lower.netdev);
++    }
++  else if (req->flags & WG_IF_DOWN)
++    {
++      ret = netdev_ifdown(&priv->lower.netdev);
++    }
++
++  return ret;
++}
++
++/****************************************************************************
++ * Name: wg_get_if
++ *
++ * Description:
++ *   SIOCGWGIF. The private key is never copied out.
++ *
++ ****************************************************************************/
++
++static void wg_get_if(FAR struct wg_netdev_s *priv,
++                      FAR struct wg_ifreq_s *req)
++{
++  int x;
++
++  req->flags = WG_IF_HAS_LISTEN_PORT | WG_IF_HAS_ADDR;
++  memset(req->private_key, 0, WG_KEY_LEN);
++  memset(req->public_key, 0, WG_KEY_LEN);
++
++  if (priv->wg.valid)
++    {
++      req->flags |= WG_IF_HAS_PUBLIC_KEY;
++      memcpy(req->public_key, priv->wg.public_key, WG_KEY_LEN);
++    }
++
++  if (priv->bifup)
++    {
++      req->flags |= WG_IF_UP;
++    }
++
++  req->listen_port = priv->listen_port;
++  req->addr.s_addr = priv->lower.netdev.d_ipaddr;
++  req->netmask.s_addr = priv->lower.netdev.d_netmask;
++
++  req->npeers = 0;
++  for (x = 0; x < WG_MAX_PEERS; x++)
++    {
++      if (priv->wg.peers[x].valid)
++        {
++          req->npeers++;
++        }
++    }
++}
++
++/****************************************************************************
++ * Name: wg_ioctl
++ *
++ * Description:
++ *   The five WireGuard control commands (include/nuttx/net/wireguard.h).
++ *   The request structures are flat and fixed-size and are read from and
++ *   written to the caller's copy directly.
++ *
++ ****************************************************************************/
++
++static int wg_ioctl(FAR struct netdev_lowerhalf_s *dev, int cmd,
++                    unsigned long arg)
++{
++  FAR struct wg_netdev_s *priv = (FAR struct wg_netdev_s *)dev;
++  int ret;
++
++  netdev_lock(&dev->netdev);
++
++  switch (cmd)
++    {
++      case SIOCSWGIF:
++        ret = wg_set_if(priv, (FAR const struct wg_ifreq_s *)(uintptr_t)arg);
++        break;
++
++      case SIOCGWGIF:
++        wg_get_if(priv, (FAR struct wg_ifreq_s *)(uintptr_t)arg);
++        ret = OK;
++        break;
++
++      case SIOCSWGPEER:
++        ret = wg_set_peer(priv,
++                          (FAR const struct wg_peerreq_s *)(uintptr_t)arg);
++        break;
++
++      case SIOCDWGPEER:
++        {
++          FAR const struct wg_peerreq_s *req =
++            (FAR const struct wg_peerreq_s *)(uintptr_t)arg;
++          FAR struct wg_peer_s *peer;
++
++          if (priv->bifup || priv->rxpid != 0)
++            {
++              ret = -EBUSY;   /* Sessions may be in flight */
++              break;
++            }
++
++          peer = wg_peer_by_pubkey(&priv->wg, req->public_key);
++          if (peer == NULL)
++            {
++              ret = -ENOENT;
++              break;
++            }
++
++          wg_peer_destroy(peer);
++          ret = OK;
++        }
++        break;
++
++      case SIOCGWGPEER:
++        ret = wg_get_peer(priv, (FAR struct wg_peerreq_s *)(uintptr_t)arg);
++        break;
++
++      default:
++        ret = -ENOTTY;
++        break;
++    }
++
++  netdev_unlock(&dev->netdev);
++  return ret;
++}
++
++/****************************************************************************
++ * Public Functions
++ ****************************************************************************/
++
++/****************************************************************************
++ * Name: wireguard_initialize
++ *
++ * Description:
++ *   Register wg0 .. wgN-1. Nothing is opened or started here; the socket
++ *   and receive thread are created by ifup, once a key has been set.
++ *
++ ****************************************************************************/
++
++int wireguard_initialize(void)
++{
++  int ret = OK;
++  int i;
++
++  wg_noise_init();
++
++  for (i = 0; i < WG_NINTERFACES; i++)
++    {
++      FAR struct wg_netdev_s *priv = &g_wg[i];
++      FAR struct netdev_lowerhalf_s *dev = &priv->lower;
++
++      memset(priv, 0, sizeof(*priv));
++      spin_lock_init(&priv->rxlock);
++      priv->listen_port = 51820 + i;
++
++      dev->ops = &g_wg_ops;
++      /* RX already has a thread. Direct notification also avoids waiting
++       * for an upper-half work item holding/waiting for d_lock on ifdown.
++       */
++
++      dev->rxtype = NETDEV_RX_DIRECT;
++      dev->quota[NETPKT_RX] = WG_RX_QUOTA;
++      dev->quota[NETPKT_TX] = 1;
++      dev->netdev.d_pktsize = WG_PKTSIZE;
++      strlcpy(dev->netdev.d_ifname, "wg%d", IFNAMSIZ);
++
++      ret = netdev_lower_register(dev, NET_LL_TUN);
++      if (ret < 0)
++        {
++          nerr("ERROR: netdev_lower_register failed: %d\n", ret);
++          break;
++        }
++    }
++
++  return ret;
++}
+diff --git a/include/nuttx/net/ioctl.h b/include/nuttx/net/ioctl.h
+index b1519dddff..a19bf801c6 100644
+--- a/include/nuttx/net/ioctl.h
++++ b/include/nuttx/net/ioctl.h
+@@ -161,6 +161,14 @@
+ #define SIOCGIFVLAN        _SIOC(0x0043)  /* Get VLAN interface */
+ #define SIOCSIFVLAN        _SIOC(0x0044)  /* Set VLAN interface */
+ 
++/* WireGuard control (see include/nuttx/net/wireguard.h) ********************/
++
++#define SIOCSWGIF          _SIOC(0x0046)  /* Set WireGuard interface */
++#define SIOCGWGIF          _SIOC(0x0047)  /* Get WireGuard interface */
++#define SIOCSWGPEER        _SIOC(0x0048)  /* Add or update a peer */
++#define SIOCDWGPEER        _SIOC(0x0049)  /* Delete a peer */
++#define SIOCGWGPEER        _SIOC(0x004A)  /* Get a peer by index */
++
+ /****************************************************************************
+  * Public Type Definitions
+  ****************************************************************************/
+diff --git a/include/nuttx/net/wireguard.h b/include/nuttx/net/wireguard.h
+new file mode 100644
+index 0000000000..5290d6eb0e
+--- /dev/null
++++ b/include/nuttx/net/wireguard.h
+@@ -0,0 +1,169 @@
++/****************************************************************************
++ * include/nuttx/net/wireguard.h
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.  The
++ * ASF licenses this file to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance with the
++ * License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
++ * License for the specific language governing permissions and limitations
++ * under the License.
++ *
++ ****************************************************************************/
++
++#ifndef __INCLUDE_NUTTX_NET_WIREGUARD_H
++#define __INCLUDE_NUTTX_NET_WIREGUARD_H
++
++/****************************************************************************
++ * Included Files
++ ****************************************************************************/
++
++#include <nuttx/config.h>
++
++#include <stdint.h>
++#include <net/if.h>
++#include <netinet/in.h>
++
++/* This header is the user-visible ABI of the WireGuard network device:
++ * the structures passed with SIOCSWGIF / SIOCGWGIF / SIOCSWGPEER /
++ * SIOCDWGPEER / SIOCGWGPEER (see include/nuttx/net/ioctl.h). It is
++ * included by the wg command in user space as well as by the driver, so
++ * it must contain only standard types and fixed-size, pointer-free
++ * structures. In PROTECTED and KERNEL builds the driver reads and writes
++ * the caller's copy of these structures directly; a pointer inside them
++ * could not be validated.
++ */
++
++/****************************************************************************
++ * Pre-processor Definitions
++ ****************************************************************************/
++
++#define WG_KEY_LEN            32   /* Curve25519 keys and pre-shared keys */
++#define WG_MAX_AIPS           8    /* allowed-ips entries per request */
++
++/* wg_ifreq_s.flags: which optional fields are present (set) or valid (get)
++ */
++
++#define WG_IF_HAS_PRIVATE_KEY (1 << 0)  /* Set only: private_key is set */
++#define WG_IF_HAS_LISTEN_PORT (1 << 1)  /* listen_port is set/valid */
++#define WG_IF_HAS_ADDR        (1 << 2)  /* addr/netmask are set/valid */
++#define WG_IF_HAS_PUBLIC_KEY  (1 << 3)  /* Get only: public_key is valid */
++#define WG_IF_UP              (1 << 4)  /* Set: bring up. Get: is up */
++#define WG_IF_DOWN            (1 << 5)  /* Set: take down */
++
++/* wg_peerreq_s.flags */
++
++#define WG_PEER_HAS_PSK       (1 << 0)  /* preshared_key is set/valid */
++#define WG_PEER_HAS_ENDPOINT  (1 << 1)  /* endpoint is set/valid */
++#define WG_PEER_HAS_KEEPALIVE (1 << 2)  /* keepalive is set/valid */
++#define WG_PEER_HAS_AIPS      (1 << 3)  /* aips[0..naips) are set/valid */
++#define WG_PEER_REPLACE_AIPS  (1 << 4)  /* Set: replace, do not append */
++#define WG_PEER_HANDSHAKED    (1 << 5)  /* Get: last_handshake is valid */
++
++/* wg_peerreq_s.last_handshake when no handshake has completed */
++
++#define WG_HANDSHAKE_NEVER    0xffffffffu
++
++/****************************************************************************
++ * Public Types
++ ****************************************************************************/
++
++/* One allowed-ips entry: a destination prefix routed to (and accepted
++ * from) the peer. IPv4 only for now.
++ */
++
++struct wg_aip_s
++{
++  struct in_addr addr;
++  uint8_t cidr;                 /* Prefix length, 0..32 */
++  uint8_t pad[3];
++};
++
++/* SIOCSWGIF / SIOCGWGIF: interface-level configuration. The private key
++ * is write-only: it is accepted by SIOCSWGIF and is never copied back by
++ * SIOCGWGIF, so that key material does not leave the kernel once set.
++ */
++
++struct wg_ifreq_s
++{
++  char ifname[IFNAMSIZ];        /* In: which interface, e.g. "wg0" */
++  uint32_t flags;               /* WG_IF_* */
++  uint8_t private_key[WG_KEY_LEN];
++  uint8_t public_key[WG_KEY_LEN];
++  uint16_t listen_port;         /* UDP port, host byte order */
++  uint16_t npeers;              /* Get: peers currently configured */
++  struct in_addr addr;          /* Tunnel-side address of wg0 */
++  struct in_addr netmask;
++};
++
++/* SIOCSWGPEER / SIOCDWGPEER / SIOCGWGPEER: one peer. Set and delete
++ * address the peer by public key; get enumerates by index (0..npeers-1)
++ * and fills in the rest. Statistics are get-only.
++ */
++
++struct wg_peerreq_s
++{
++  char ifname[IFNAMSIZ];        /* In: which interface */
++  uint32_t flags;               /* WG_PEER_* */
++  uint16_t index;               /* Get: which peer */
++  uint16_t keepalive;           /* Persistent keepalive, seconds; 0 = off */
++  uint8_t public_key[WG_KEY_LEN];
++  uint8_t preshared_key[WG_KEY_LEN];
++  struct sockaddr_in endpoint;  /* Peer's current (get) / initial (set) */
++  uint8_t naips;
++  uint8_t pad[3];
++  struct wg_aip_s aips[WG_MAX_AIPS];
++
++  /* Get only */
++
++  uint32_t last_handshake;      /* Milliseconds ago, WG_HANDSHAKE_NEVER */
++  uint64_t rx_bytes;
++  uint64_t tx_bytes;
++};
++
++/****************************************************************************
++ * Public Function Prototypes
++ ****************************************************************************/
++
++#ifdef __cplusplus
++#define EXTERN extern "C"
++extern "C"
++{
++#else
++#define EXTERN extern
++#endif
++
++#if defined(__KERNEL__) || defined(CONFIG_BUILD_FLAT)
++/****************************************************************************
++ * Name: wireguard_initialize
++ *
++ * Description:
++ *   Register the WireGuard network devices (wg0 .. wgN-1, with N =
++ *   CONFIG_NET_WIREGUARD_NINTERFACES). Called once during OS start-up
++ *   from drivers_initialize(). The interfaces come up with no key and no
++ *   peers; they are configured through the ioctls above, normally by the
++ *   wg command.
++ *
++ * Returned Value:
++ *   OK on success; a negated errno value on failure.
++ *
++ ****************************************************************************/
++
++int wireguard_initialize(void);
++#endif
++
++#undef EXTERN
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __INCLUDE_NUTTX_NET_WIREGUARD_H */
+diff --git a/mm/iob/Kconfig b/mm/iob/Kconfig
+index 6dc8ea4ea3..b4e3ecd661 100644
+--- a/mm/iob/Kconfig
++++ b/mm/iob/Kconfig
+@@ -49,6 +49,7 @@ config IOB_SECTION
+ 
+ config IOB_NCHAINS
+ 	int "Number of pre-allocated I/O buffer chain heads"
++	default IOB_NBUFFERS if NET_WIREGUARD
+ 	default 0 if !NET_READAHEAD
+ 	default IOB_NBUFFERS if NET_READAHEAD
+ 	---help---
+diff --git a/net/Kconfig b/net/Kconfig
+index 7ca3c46763..387c06d4c7 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -312,6 +312,135 @@ config NET_VLAN_COUNT
+ 
+ endif # NET_VLAN
+ 
++menuconfig NET_WIREGUARD
++	bool "WireGuard VPN virtual network device"
++	default n
++	depends on NET_UDP && NET_IPv4 && ALLOW_BSD_COMPONENTS
++	depends on CRYPTO && (CRYPTO_RANDOM_POOL || DEV_URANDOM_ARCH)
++	select ARCH_HAVE_NETDEV_STATISTICS
++	select NETDEV_IOCTL
++	select CRYPTO_CURVE25519
++	---help---
++		WireGuard VPN as a network device (wg0). Packets routed to wg0 are
++		encrypted and sent as UDP to the configured peer; packets received
++		on the UDP socket are decrypted and delivered as if they had
++		arrived on wg0. The peer can be any WireGuard implementation.
++
++		Keys and peers are set at run time through ioctls (see
++		include/nuttx/net/wireguard.h), normally with the wg command from
++		apps/system/wg. Nothing is baked into the image.
++
++		The protocol core is derived from wireguard-lwip (BSD-3-Clause),
++		hence ALLOW_BSD_COMPONENTS. The cryptography is NuttX's own
++		crypto/ (BLAKE2s, ChaCha20-Poly1305, Curve25519).
++
++		Key material needs a real random source: the entropy pool
++		(CRYPTO_RANDOM_POOL) or a hardware RNG behind /dev/urandom
++		(DEV_URANDOM_ARCH). The constant-seeded software PRNGs are not
++		accepted, since with them every device would generate the same
++		keys on every boot.
++
++		Initiator timestamps require CLOCK_REALTIME to be restored from
++		a reliable RTC or another external time source before use. The
++		driver prevents repeated/backward timestamps within one boot,
++		but does not persist them. A reset clock, or rollback across a
++		reboot, can prevent reconnection with the same key. A configured
++		start date alone does not meet this requirement.
++
++if NET_WIREGUARD
++
++config NET_WIREGUARD_NINTERFACES
++	int "Number of WireGuard interfaces"
++	default 1
++	range 1 4
++	---help---
++		How many wgN devices to create at start-up.
++
++config NET_WIREGUARD_MAX_PEERS
++	int "Maximum peers per interface"
++	default 1
++	range 1 16
++	---help---
++		Peers are allocated statically inside the device. Each costs
++		roughly 1 KiB plus three anti-replay windows
++		(3 * NET_WIREGUARD_REPLAY_WINDOW / 8 bytes).
++
++config NET_WIREGUARD_MAX_AIPS
++	int "Maximum allowed-ips entries per peer"
++	default 2
++	range 1 8
++	---help---
++		Destination prefixes routed to a peer (cryptokey routing).
++
++config NET_WIREGUARD_PKTSIZE
++	int "wg0 packet buffer size (MTU)"
++	default 1420
++	range 576 1500
++	---help---
++		Size of the IP packets carried inside the tunnel. 1420 leaves room
++		for the WireGuard, UDP and outer IPv4 headers within a 1500-byte
++		Ethernet frame.
++
++config NET_WIREGUARD_REPLAY_WINDOW
++	int "Anti-replay window (packets)"
++	default 2048
++	range 64 8192
++	---help---
++		Received data packets more than this many counters behind the
++		newest one seen are dropped. Must be a multiple of 64. Wi-Fi
++		retransmission reorders more than the 32 of the reference
++		implementation; Linux uses 8192.
++
++config NET_WIREGUARD_LOAD_THRESHOLD
++	int "Handshake initiations per second before cookies are required"
++	default 4
++	range 1 1000
++	---help---
++		Above this rate the device answers initiations that carry no valid
++		mac2 with a cookie reply instead of doing the Diffie-Hellman work
++		(WireGuard whitepaper 5.4.7).
++
++config NET_WIREGUARD_RXSTACKSIZE
++	int "Receive thread stack size"
++	default 6144
++	---help---
++		Stack of the kernel thread that receives UDP packets, decrypts
++		them and hands them to the network stack.
++
++config NET_WIREGUARD_RXPRIORITY
++	int "Receive thread priority"
++	default 100
++
++config NET_WIREGUARD_DEBUG_TAI64N
++	bool "Testing: log generated handshake timestamps"
++	default n
++	---help---
++		Log the generated TAI64N value before handshake encryption for
++		reboot/replay tests. Does not change the clock or log keys.
++		Never enable in a real build.
++
++config NET_WIREGUARD_DEBUG_STOP_STALL
++	bool "Testing: stall the RX thread once on stop"
++	default n
++	---help---
++		For tests only. Makes the first receive thread sleep past the
++		ifdown stop timeout, so the stopping-state recovery path (a later
++		ifdown/ifup reaping a thread that outlived the stop wait) can be
++		exercised deterministically. Never enable in a real build.
++
++config NET_WIREGUARD_DEBUG_TX_STALL
++	bool "Testing: stall with an owned outbound datagram"
++	default n
++	depends on DEBUG_ASSERTIONS
++	---help---
++		For tests only. Hold the first non-empty transport datagram outside
++		the device lock past the stop timeout. Check that its contents did
++		not change while other contexts ran. This exercises ownership and
++		stop recovery, not the actual usrsock backend. Never enable in a
++		real build.
++
++endif # NET_WIREGUARD
++
+ config NETDEV_LATEINIT
+ 	bool "Late driver initialization"
+ 	default n
+diff --git a/net/netdev/netdev_ioctl.c b/net/netdev/netdev_ioctl.c
+index 4f6610f439..bcfe736062 100644
+--- a/net/netdev/netdev_ioctl.c
++++ b/net/netdev/netdev_ioctl.c
+@@ -46,6 +46,7 @@
+ #include <nuttx/net/netdev.h>
+ #include <nuttx/net/radiodev.h>
+ #include <nuttx/net/vlan.h>
++#include <nuttx/net/wireguard.h>
+ 
+ #ifdef CONFIG_NET_6LOWPAN
+ #  include <nuttx/net/sixlowpan.h>
+@@ -705,6 +706,70 @@ static int netdev_vlan_ioctl(FAR struct socket *psock, int cmd,
+ }
+ #endif
+ 
++/****************************************************************************
++ * Name: netdev_wireguard_ioctl
++ *
++ * Description:
++ *   Forward the WireGuard control ioctls to the named wgN device. Both
++ *   request structures start with the interface name, which is all this
++ *   function needs; the driver interprets the rest.
++ *
++ *   These commands are deliberately not registered with
++ *   net_ioctl_arglen(): a usrsock daemon forwards every command it knows
++ *   the length of to its own device, and would swallow requests meant for
++ *   wg0. Unknown commands fall through to the network driver instead.
++ *
++ * Input Parameters:
++ *   psock    Socket structure
++ *   cmd      The ioctl command
++ *   arg      The argument of the ioctl cmd
++ *
++ * Returned Value:
++ *   >=0 on success (positive non-zero values are cmd-specific)
++ *   Negated errno returned on failure.
++ *
++ ****************************************************************************/
++
++#if defined(CONFIG_NETDEV_IOCTL) && defined(CONFIG_NET_WIREGUARD)
++static int netdev_wireguard_ioctl(FAR struct socket *psock, int cmd,
++                                  unsigned long arg)
++{
++  FAR struct net_driver_s *dev;
++  FAR const char *ifname;
++  int ret = -ENOTTY;
++
++  switch (cmd)
++    {
++      case SIOCSWGIF:
++      case SIOCGWGIF:
++        ifname = ((FAR struct wg_ifreq_s *)(uintptr_t)arg)->ifname;
++        break;
++
++      case SIOCSWGPEER:
++      case SIOCDWGPEER:
++      case SIOCGWGPEER:
++        ifname = ((FAR struct wg_peerreq_s *)(uintptr_t)arg)->ifname;
++        break;
++
++      default:
++        return ret;
++    }
++
++  dev = netdev_findbyname(ifname);
++  if (dev == NULL)
++    {
++      return -ENODEV;
++    }
++
++  if (dev->d_ioctl == NULL)
++    {
++      return -ENOTTY;
++    }
++
++  return dev->d_ioctl(dev, cmd, arg);
++}
++#endif
++
+ /****************************************************************************
+  * Name: netdev_ifr_split_idx
+  *
+@@ -1937,6 +2002,15 @@ int psock_vioctl(FAR struct socket *psock, int cmd, va_list ap)
+     }
+ #endif
+ 
++#if defined(CONFIG_NETDEV_IOCTL) && defined(CONFIG_NET_WIREGUARD)
++  /* Check for a WireGuard command */
++
++  if (ret == -ENOTTY)
++    {
++      ret = netdev_wireguard_ioctl(psock, cmd, arg);
++    }
++#endif
++
+ #ifdef HAVE_IEEE802154_IOCTL
+   /* Check for a IEEE802.15.4 network device IOCTL command */
+ 
+diff --git a/net/netdev/netdev_register.c b/net/netdev/netdev_register.c
+index e92e0d992b..b1c980d343 100644
+--- a/net/netdev/netdev_register.c
++++ b/net/netdev/netdev_register.c
+@@ -200,6 +200,7 @@ static int get_ifindex(void)
+   for (ndx = 0; ndx < MAX_IFINDEX; ndx++)
+     {
+       uint32_t bit = 1UL << ndx;
++
+       if ((devset & bit) == 0)
+         {
+           /* Indicate that this index is in use */
+@@ -364,11 +365,15 @@ int netdev_register(FAR struct net_driver_s *dev, enum net_lltype_e lltype)
+             break;
+ #endif
+ 
+-#ifdef CONFIG_NET_TUN
++#if defined(CONFIG_NET_TUN) || defined(CONFIG_NET_WIREGUARD)
+           case NET_LL_TUN:        /* Virtual Network Device (TUN) */
+             llhdrlen = 0;         /* This will be overwritten by tun_ioctl
+                                    * if used as a TAP (layer 2) device */
++#ifdef CONFIG_NET_TUN
+             pktsize  = CONFIG_NET_TUN_PKTSIZE;
++#else
++            pktsize  = CONFIG_NET_WIREGUARD_PKTSIZE;
++#endif
+             devfmt   = NETDEV_TUN_FORMAT;
+             flags    = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
+             break;
+diff --git a/tools/nxstyle.c b/tools/nxstyle.c
+index 151c7bb38e..4f23312013 100644
+--- a/tools/nxstyle.c
++++ b/tools/nxstyle.c
+@@ -879,6 +879,15 @@ static const char *g_white_files[] =
+   "gd32vw55x/gdwifi/gdwifi_glue.c",
+   "gd32vw55x/gdwifi/gdwifi_newlib_compat.c",
+   "gd32vw55x/gdble/gd32_ble.c",
++
++  /* Skip the third-party X25519 used by the wg command: it comes from the
++   * STROBE project under MIT, and the algorithm body keeps that project's
++   * formatting so it can be diffed against its source.
++   * Ref: apps/system/wg/wg_x25519.c
++   */
++
++  "system/wg/wg_x25519.c",
++  "system/wg/wg_x25519.h",
+   NULL
+ };
+ 
+-- 
+2.49.0.windows.1
+
