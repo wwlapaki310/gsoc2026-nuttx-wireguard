@@ -52,9 +52,13 @@ you up*.
 
 These are not preferences; breaking them has cost real rework.
 
-1. **Upstream posting is the maintainer's job, not yours.** Issues, PRs and dev@
-   posts to `apache/nuttx` and `apache/nuttx-apps` are made by the repository
-   owner. Prepare branches, patches and drafts; do not push forks or open PRs.
+1. **Posting *to Apache* is the maintainer's job, not yours.** Issues, PRs and
+   dev@ posts to `apache/nuttx` and `apache/nuttx-apps` — anything visible to
+   the ASF community — are made by the repository owner. Pushing signed
+   candidate branches to the *owner's own* forks (`wwlapaki310/nuttx`,
+   `wwlapaki310/nuttx-apps`) is fine and expected once they are ready; it is
+   not the line. The line is opening a PR against `apache/*` or posting to
+   `dev@nuttx.apache.org`.
 2. **Never write "all verified" or "merge-ready".** Every claim in the matrix is
    paired with what it does *not* show. Keep that shape. A result whose limits
    are not stated is worse than no result, because it stops anyone else looking.
