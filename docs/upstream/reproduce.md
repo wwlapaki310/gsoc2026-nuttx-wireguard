@@ -67,6 +67,15 @@ candidate tip. It now refuses a mismatched HEAD before resetting any source.
 Never use an old-base `wgdev` to validate a new-base diff. The image's legacy
 apps WireGuard tree must not be mixed with the patched `/opt/apps` tree.
 
+Before publishing the three commits, validate their count, base ranges and
+patch form in a container holding the candidate trees:
+
+```bash
+bash scripts/kernel/verify-pr-series.sh
+# After the author has reviewed and signed all commits:
+bash scripts/kernel/verify-pr-series.sh --require-signoff
+```
+
 ## 2. sim: build and the runtime + replay tests (T1, TR)
 
 ```bash

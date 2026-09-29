@@ -121,7 +121,9 @@ for NuttX `68dd87f4df..8defcefa94` and apps
 `b66303e26a..c039b232e5`. The message-enforcing `-m -g` form fails only because
 the owner has not yet added `Signed-off-by`; do not manufacture that
 certification. Re-run both forms after the owner signs, because signing changes
-the commit IDs.
+the commit IDs. `scripts/kernel/verify-pr-series.sh` performs the range/shape
+check and `checkpatch.sh -g` for both repositories; add `--require-signoff` for
+the final publication gate.
 
 ## Task 3 — close two named gaps (**completed 2026-09-29**)
 
