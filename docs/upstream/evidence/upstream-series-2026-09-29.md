@@ -22,8 +22,8 @@ Original development branches were preserved and no fork was pushed.
 | --- | --- | --- |
 | Crypto commit alone | PASS: sim build, boot, `crypto test OK` | No driver present; startup ALGTEST only |
 | Driver commit without apps `wg` | PASS: sim build, `wireguard_initialize` linked, `wg0` registered | Registration, not tunnel operation |
-| File/patch style | PASS with `checkpatch`, codespell and encoding checks | NuttX/apps candidate trees; commit-message certification excluded |
-| CI message check | Expected failure: missing `Signed-off-by` | Owner must review and certify; no identity was invented |
+| File/patch style | PASS: `checkpatch.sh -g` says "All checks pass" for both actual commit ranges; codespell and encoding checks pass | NuttX `68dd87f4df..8defcefa94`; apps `b66303e26a..c039b232e5` |
+| CI message check | `checkpatch.sh -m -g` fails only for missing `Signed-off-by` on the three commits | Owner must review and certify; no identity was invented. Re-run after signing changes the SHAs |
 | Combined sim build | PASS | `.config` SHA-256 `14d5b1c7325230cdec190a5d6f5af2f426297b1d27bd4eff1ea7181e8cfcaf73` |
 | T1, TF, TV, TN, T3, TR | PASS | Linux host peer / sim TAP, sequential isolated suite |
 | Expanded TZ | PASS | Natural rekey plus nonzero handshake/next-key observations; sim memory only |

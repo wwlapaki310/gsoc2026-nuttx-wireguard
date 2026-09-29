@@ -116,30 +116,31 @@ PR description; it is already in the draft.
 
 **Acceptance:** each commit builds on its own (`git rebase --exec` with a sim
 build is enough), and `./tools/checkpatch.sh -g <range>` passes over the actual
-commits. Note that this has **not** been run yet the way CI does it — everything
-so far used `-f` over the files, which is stricter per file but says nothing
-about the patch form (renames, whitespace in the diff).
+commits. **Completed 2026-09-29:** `checkpatch.sh -g` reports "All checks pass"
+for NuttX `68dd87f4df..8defcefa94` and apps
+`b66303e26a..c039b232e5`. The message-enforcing `-m -g` form fails only because
+the owner has not yet added `Signed-off-by`; do not manufacture that
+certification. Re-run both forms after the owner signs, because signing changes
+the commit IDs.
 
-## Task 3 — close two named gaps that are reachable in the simulator
+## Task 3 — close two named gaps (**completed 2026-09-29**)
 
 Both are listed in the matrix as narrowness, with the exact reason.
 
-**(a) TZ: `next_keypair` and the handshake fields were never non-zero when
-sampled.** `verify-sim-wg-zeroize.sh` forces one rekey so `prev_keypair` really
-holds a key, and that row is real. `next_keypair` only holds a key in the window
-between a responder installing it and it becoming current, and
-`wg_start_session()` wipes the handshake at key derivation — so both read as
-"held no key while up, not exercised". Arrange to sample inside that window (the
-`CONFIG_NET_WIREGUARD_DEBUG_*` hooks are the obvious lever) and either confirm
-the clearing or replace the note with what you found.
+**(a) TZ is closed by measurement.** `verify-sim-wg-zeroize.sh` now delays the
+relevant protocol transitions: an unanswered initiation exposes nonzero
+handshake ephemeral/chaining/hash state, and a UDP relay withholding transport
+confirmation exposes nonzero `next_keypair` send/receive keys. Both are zero
+after down. Current and previous keypairs are also populated (including a
+natural timer-driven rekey) and then observed zero after down.
 
-**(b) TI: the IOB *blocking* path is untested.** In
-`verify-sim-wg-iob-exhaustion.sh` the pool reaches zero free but `nwait` never
-rises, so what is exercised is "allocation fails, packet is dropped". First
-settle whether this driver can ever block on an IOB at all — if every allocation
-on its paths is a try-variant, then the row should say "not reachable" rather
-than "untested", which is a better answer than a test. Only if it is reachable
-is there something to exercise.
+**(b) TI is closed for the direct driver IOB paths.** The allocation audit in
+[iob-wait-audit.md](iob-wait-audit.md) traces buffered UDP TX and RX to
+try-allocation (`throttled=false` / `timeout=0`), so `nwait=0` is expected and
+there is no driver IOB-wait branch to exercise. The exhaustion test reaches
+zero free buffers, observes allocation-failure drops, and confirms recovery.
+Actual socket-backend blocking and AP loss remain separate usrsock tests; they
+must not be reported as an IOB-wait gap.
 
 **Acceptance:** the matrix rows for TZ and TI no longer contain an unexplained
 gap — either a measurement, or a statement that the path does not exist with the
