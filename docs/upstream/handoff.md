@@ -8,20 +8,22 @@ limitations are recorded in
 [upstream-series-2026-09-29.md](evidence/upstream-series-2026-09-29.md); the
 cleanly applicable series is exported under
 [patches/2026-09-29](patches/2026-09-29/README.md). The original development
-branches remain intact and neither fork was pushed.
+branches remain intact; signed submission branches are now published in the
+owner's forks.
 
-The remaining publication work is deliberately human-owned: review/certify the
-commits, add the author's `Signed-off-by`, publish the fork branches, and open
-the crypto, driver, and apps PRs in dependency order. Hardware-only gaps and
-maintainer design decisions remain open; this local validation does not turn
-them into completed claims.
+The remaining publication work is deliberately human-owned: open the crypto,
+driver, and apps PRs in dependency order and respond to upstream review. The
+commits are owner-certified and the fork branches are public. Hardware-only
+gaps and maintainer design decisions remain open; this local validation does
+not turn them into completed claims.
 
 ## Earlier follow-up at apps `37f04cff` (2026-09-28)
 
 The configuration publisher needed a further correctness fix before submission:
 NuttX VFS can unlink the destination inside rename. See
 [keyfile-correctness-review.md](keyfile-correctness-review.md) and the exported
-patch under `patches/`. The apps fork is committed locally, not pushed.
+patch under `patches/`. The historical `system-wg` development branch remains
+local; its signed submission form is public as `wireguard-wg`.
 
 Task 3's handshake/next-keypair gap is now exercised by the expanded TZ test,
 including a natural timer-driven rekey phase. The direct buffered-UDP/RX IOB
@@ -117,13 +119,11 @@ PR description; it is already in the draft.
 **Acceptance:** each commit builds on its own (`git rebase --exec` with a sim
 build is enough), and `./tools/checkpatch.sh -g <range>` passes over the actual
 commits. **Completed 2026-09-29:** `checkpatch.sh -g` reports "All checks pass"
-for NuttX `68dd87f4df..8defcefa94` and apps
-`b66303e26a..c039b232e5`. The message-enforcing `-m -g` form fails only because
-the owner has not yet added `Signed-off-by`; do not manufacture that
-certification. Re-run both forms after the owner signs, because signing changes
-the commit IDs. `scripts/kernel/verify-pr-series.sh` performs the range/shape
-check and `checkpatch.sh -g` for both repositories; add `--require-signoff` for
-the final publication gate.
+for the unsigned NuttX and apps candidates. **Signed follow-up:** the owner
+authorized and added DCO sign-offs, producing NuttX `a2dd121201..c0ead14d83`
+and apps `e4f910dc18`. `scripts/kernel/verify-pr-series.sh --require-signoff`
+passes both repositories, and the three branches are published to the owner's
+fork as `wireguard-crypto`, `wireguard-driver`, and `wireguard-wg`.
 
 ## Task 3 — close two named gaps (**completed 2026-09-29**)
 

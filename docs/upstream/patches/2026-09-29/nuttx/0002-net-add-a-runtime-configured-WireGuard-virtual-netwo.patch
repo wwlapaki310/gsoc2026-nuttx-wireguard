@@ -1,10 +1,12 @@
-From 8defcefa947645d2245a320dc2d0e0c2eb8ce6cd Mon Sep 17 00:00:00 2001
+From c0ead14d8337bde212f5f01da0e4a2d089870170 Mon Sep 17 00:00:00 2001
 From: satoru akita <wwlap24@gmail.com>
 Date: Mon, 28 Sep 2026 23:42:59 +0900
 Subject: [PATCH 2/2] net: add a runtime-configured WireGuard virtual network
  device
 
 Queue immutable outbound datagrams for worker-owned socket sends outside the device lock. Add the pointer-free ioctl interface, lifecycle recovery, realtime handshake timestamps, build wiring, and documentation. Require IOB chain heads and keep the vendored apps X25519 adaptation excluded from nxstyle.
+
+Signed-off-by: satoru akita <wwlap24@gmail.com>
 ---
  .../applications/system/wg/index.rst          |   84 +
  .../components/drivers/special/net/index.rst  |    1 +

@@ -7,14 +7,17 @@ candidate, not copied from an earlier report.
 
 | Repository | Upstream base | Candidate |
 | --- | --- | --- |
-| NuttX | `68dd87f4df9ad1e19240136b931867efbcbc23d0` | `8defcefa947645d2245a320dc2d0e0c2eb8ce6cd` |
-| apps | `b66303e26aa537dd74d6abaeeeded81c151a7e35` | `c039b232e5fcf181ac4d16b9231cdc42a025d45c` |
+| NuttX | `68dd87f4df9ad1e19240136b931867efbcbc23d0` | `c0ead14d8337bde212f5f01da0e4a2d089870170` |
+| apps | `b66303e26aa537dd74d6abaeeeded81c151a7e35` | `e4f910dc18523a4c7edf586924723683b536196b` |
 
 Both development series rebased without conflict. The submission series was
 then squashed into three review units: crypto prerequisite, NuttX driver, and
 apps command. Exported patches applied cleanly to detached clean base worktrees;
 the resulting trees matched the candidate trees with `git diff --exit-code`.
-Original development branches were preserved and no fork was pushed.
+Original development branches and unsigned candidate refs were preserved. The
+owner authorized DCO sign-offs, the signed source trees were verified identical
+to the tested unsigned trees, and branches `wireguard-crypto`,
+`wireguard-driver`, and `wireguard-wg` were pushed to the owner's forks.
 
 ## Results
 
@@ -22,8 +25,8 @@ Original development branches were preserved and no fork was pushed.
 | --- | --- | --- |
 | Crypto commit alone | PASS: sim build, boot, `crypto test OK` | No driver present; startup ALGTEST only |
 | Driver commit without apps `wg` | PASS: sim build, `wireguard_initialize` linked, `wg0` registered | Registration, not tunnel operation |
-| File/patch style | PASS: `checkpatch.sh -g` says "All checks pass" for both actual commit ranges; codespell and encoding checks pass | NuttX `68dd87f4df..8defcefa94`; apps `b66303e26a..c039b232e5` |
-| CI message check | `checkpatch.sh -m -g` fails only for missing `Signed-off-by` on the three commits | Owner must review and certify; no identity was invented. Re-run after signing changes the SHAs |
+| File/patch style | PASS: `checkpatch.sh -g` says "All checks pass" for both signed commit ranges; codespell and encoding checks pass | NuttX `68dd87f4df..c0ead14d83`; apps `b66303e26a..e4f910dc18` |
+| CI message check | PASS: `verify-pr-series.sh --require-signoff` checks the 2+1 shape and `checkpatch.sh -m -g` on both repositories | All three commits carry the owner-authorized DCO sign-off |
 | Combined sim build | PASS | `.config` SHA-256 `14d5b1c7325230cdec190a5d6f5af2f426297b1d27bd4eff1ea7181e8cfcaf73` |
 | T1, TF, TV, TN, T3, TR | PASS | Linux host peer / sim TAP, sequential isolated suite |
 | Expanded TZ | PASS | Natural rekey plus nonzero handshake/next-key observations; sim memory only |

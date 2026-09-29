@@ -1,10 +1,12 @@
-From a5d9148cf59034a65152e1812a173fcc17319172 Mon Sep 17 00:00:00 2001
+From a2dd1212011963e7a745f17e3dd14cbee32ea3d0 Mon Sep 17 00:00:00 2001
 From: satoru akita <wwlap24@gmail.com>
 Date: Mon, 28 Sep 2026 23:42:56 +0900
 Subject: [PATCH 1/2] crypto: fix ChaCha20-Poly1305 nonce layout and add
  known-answer tests
 
 Place the 64-bit counter nonce in the last eight bytes of the IETF nonce. Carry the ChaCha20-Poly1305 and XChaCha20-Poly1305 vectors with this prerequisite, independently of the WireGuard driver.
+
+Signed-off-by: satoru akita <wwlap24@gmail.com>
 ---
  crypto/chachapoly.c |  18 ++++-
  crypto/testmngr.c   | 147 ++++++++++++++++++++++++++++++++++++++-

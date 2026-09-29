@@ -5,7 +5,7 @@ kernel WireGuard peer. Status: **draft, fixed locally in the fork, not
 filed** (2026-09-20).
 
 **Submission-series update (2026-09-29):** the local candidate now carries the
-nonce correction and both AEAD KAT families together in `a5d9148cf5`, based on
+nonce correction and both AEAD KAT families together in `a2dd121201`, based on
 upstream `68dd87f4df`. A sim with only this crypto commit, no WireGuard driver,
 booted with `CONFIG_CRYPTO_ALGTEST` and reported `crypto test OK`.
 `scripts/kernel/verify-crypto-prerequisite.py` asserts that separation.

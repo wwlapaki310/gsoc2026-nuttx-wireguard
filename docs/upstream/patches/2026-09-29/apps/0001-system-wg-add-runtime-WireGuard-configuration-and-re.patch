@@ -1,10 +1,12 @@
-From c039b232e5fcf181ac4d16b9231cdc42a025d45c Mon Sep 17 00:00:00 2001
+From e4f910dc18523a4c7edf586924723683b536196b Mon Sep 17 00:00:00 2001
 From: satoru akita <wwlap24@gmail.com>
 Date: Mon, 28 Sep 2026 23:43:20 +0900
 Subject: [PATCH] system/wg: add runtime WireGuard configuration and
  recoverable file saves
 
 Configure the kernel device through its pointer-free ioctl ABI. Keep private keys in the configuration file, propagate persistence failures, reserve a recovery copy before VFS replacement, and support public-key derivation without reading keys back from the driver.
+
+Signed-off-by: satoru akita <wwlap24@gmail.com>
 ---
  system/wg/CMakeLists.txt |   34 +
  system/wg/Kconfig        |   47 ++

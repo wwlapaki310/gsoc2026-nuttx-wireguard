@@ -2,7 +2,7 @@
 
 **Latest follow-up (2026-09-29):** the changes were rebased and assembled as a
 three-part submission series: NuttX base `68dd87f4df`, candidate
-`8defcefa94`; apps base `b66303e26a`, candidate `c039b232e5`. Clean exported
+`c0ead14d83`; apps base `b66303e26a`, candidate `e4f910dc18`. Clean exported
 patches, exact test scope, and limitations are in the
 [submission-series record](evidence/upstream-series-2026-09-29.md). The full
 sim suite, standalone crypto and driver builds, BUILD_KERNEL on one and four
@@ -70,9 +70,9 @@ Honest status of each test in [in-kernel-plan.md](in-kernel-plan.md) §3 for the
 version**. "A script exists" and "the test passed" are tracked separately; unimplemented tests
 are listed as such, not omitted.
 
-- Current submission target: NuttX **`8defcefa947645d2245a320dc2d0e0c2eb8ce6cd`**
+- Current submission target: NuttX **`c0ead14d8337bde212f5f01da0e4a2d089870170`**
   on upstream base **`68dd87f4df9ad1e19240136b931867efbcbc23d0`**, plus apps
-  **`c039b232e5fcf181ac4d16b9231cdc42a025d45c`** on upstream base
+  **`e4f910dc18523a4c7edf586924723683b536196b`** on upstream base
   **`b66303e26aa537dd74d6abaeeeded81c151a7e35`**. The 2026-09-29 local rerun
   covers the full sim suite, standalone dependency builds, 1/4-CPU kernel
   runtime, PROTECTED runtime, and CMake. Rows based on physical boards retain
@@ -114,7 +114,7 @@ real kernel build). The gaps below are the honest remainder for a merge-ready su
 
 | ID | Checks | Impl / env | Status | Evidence | Pending reason |
 |---|---|---|---|---|---|
-| **T0** | style, SPDX headers, no key in `.config` | checkpatch/nxstyle | **PASS** | `kdev.sh style` (2026-09-28) passes the full file sweep and key-material check. On 2026-09-29 the actual rebased commits also pass `checkpatch.sh -g`: NuttX `68dd87f4df..8defcefa94` and apps `b66303e26a..c039b232e5`, both "All checks pass". The vendored `wg_x25519.c`/`.h` use NuttX's existing vendor-source `g_white_files[]` mechanism | `checkpatch.sh -m -g` fails only for the intentionally absent `Signed-off-by` on all three commits. The owner must review and certify them, after which the changed commit IDs require one final rerun. PR-A1's vendor exclusion depends on PR-K1 landing first |
+| **T0** | style, SPDX headers, no key in `.config` | checkpatch/nxstyle | **PASS** | `kdev.sh style` passes the full file sweep and key-material check. On 2026-09-29 the signed commits pass `verify-pr-series.sh --require-signoff`, including `checkpatch.sh -m -g`: NuttX `68dd87f4df..c0ead14d83` and apps `b66303e26a..e4f910dc18`. The vendored `wg_x25519.c`/`.h` use NuttX's existing vendor-source `g_white_files[]` mechanism | PR-A1's vendor exclusion depends on PR-K1 landing first. Signing changed commit metadata only; source trees are identical to the fully tested unsigned candidates |
 | **T1** | runtime-config tunnel to Linux kernel WG; handshake/ping; down/up; `saveconf`/`setconf` round-trip; on-device genkey; pubkey == wg(8) | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-runtime.sh` (2026-09-20, all PASS) | `wg show` snapshot-diff against a pinned `expected/wg-show.txt` not yet added |
 | **T3** | two peers holding sessions at once | sim, tap | **PASS** | `scripts/kernel/verify-sim-wg-multipeer.sh`: two Linux WireGuard interfaces hold sessions with wg0 at once; traffic through each, both handshaken | — |
 | **TF** | ioctl unit negatives (all-zero key, self-pubkey, bad endpoint, allowed-ips overlap, peer limit+1, cidr > 32, up with no key, malformed base64 key) → all rejected, `wg show` unchanged | sim | **PASS** | `scripts/kernel/verify-sim-wg-ioctl.sh` (all cases PASS) | low-order-point and undersized-buffer cases not separately exercised |

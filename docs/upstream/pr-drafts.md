@@ -9,7 +9,7 @@ first (the driver depends on it), then the driver PR, then the apps PR.
 - **PR-A1 (apps)** — below.
 
 Last updated: 2026-09-29. Local submission branches `review/pr-series-20260928`:
-NuttX `8defcefa94` on `68dd87f4df`, apps `c039b232e5` on `b66303e2`.
+NuttX `c0ead14d83` on `68dd87f4df`, apps `e4f910dc18` on `b66303e2`.
 Original development branches remain unchanged. These drafts do not authorize
 fork publication; final validation and source scope are recorded separately.
 

@@ -9,21 +9,22 @@ target yet.
 
 ## Publication Status
 
-The development branches remain local. The coordination repository now also
-carries a [complete submission patch series](patches/2026-09-29/README.md), so
-source acquisition no longer depends on publishing those forks.
+The original development branches remain local. Signed submission branches are
+published in the owner's forks, and this coordination repository also carries
+a [complete submission patch series](patches/2026-09-29/README.md).
 
 | Fork | Branch | Base (upstream/master) | HEAD | Public? |
 |---|---|---|---|---|
 | `apache/nuttx` fork | `net-wireguard` | `c95c546c0993…` | `b230ee4876` | local development branch |
 | `apache/nuttx-apps` fork | `system-wg` | `73a9c9a69711…` | `37f04cff` | local development branch |
-| NuttX submission worktree | `review/pr-series-20260928` | `68dd87f4df` | `8defcefa94` | exported patches |
-| apps submission worktree | `review/pr-series-20260928` | `b66303e2` | `c039b232` | exported patch |
+| NuttX submission worktree | `review/pr-series-20260928` | `68dd87f4df` | `c0ead14d83` | fork branches `wireguard-crypto`, `wireguard-driver` |
+| apps submission worktree | `review/pr-series-20260928` | `b66303e2` | `e4f910dc18` | fork branch `wireguard-wg` |
 
 Patch application was checked on clean upstream-base worktrees: the resulting
 trees match the submission candidates exactly. This is not a claim that a fresh
-Docker image build was repeated. Publishing forks/PRs and author certification
-are still the owner's actions. Original development branches were not rewritten.
+Docker image build was repeated. DCO certification and fork publication are
+complete; opening the Apache PRs remains the owner's action. Original
+development branches were not rewritten.
 
 ## Prerequisites
 
