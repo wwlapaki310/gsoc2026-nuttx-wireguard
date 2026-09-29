@@ -9,11 +9,11 @@ otherwise (see [../../upstream/handoff.md](../../upstream/handoff.md) ground rul
 on tests that cannot fail — the same logic applies to a script that cannot go
 stale).
 
-**Total at 140 words/min: ≈24.5 min** for a 26-slide, 20–30 min slot. Times below
+**Total: about 25 min, including a 90-second demo** for a 26-slide, 20–30 min slot. Times below
 are cumulative, so read them as "should be at roughly this point."
 
 **The centre of gravity is slides 18–20** (verification): together they are
-10.7 of the 24.5 minutes, and they carry the claims a reviewer will actually
+10.7 of the 25 minutes, and they carry the claims a reviewer will actually
 check. Do not compress that block to protect time elsewhere — cut before it or
 after it, never inside it. Slides 18-19-20 are also a locked sequence in
 meaning: 18 is where it runs, 19 is what "it runs" does not prove, 20 is the one
@@ -21,8 +21,8 @@ place the answer is a judgment call rather than a test. Splitting them loses the
 argument.
 
 **If time is short, drop in this order:** slide 3 (ASF/CoC context — this room
-already knows it), slide 22 (portability table — supporting evidence, not the
-spine), slide 20's live demo narration (say the line and cut to the recording).
+already knows it), slide 23 (portability table — supporting evidence, not the
+spine), slide 21's live demo (switch immediately to the local recording).
 Do not drop anything in 8–19 or 24–25; those are the shape of the talk.
 
 ---
@@ -38,9 +38,9 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
 - It is a WireGuard VPN implemented as a `wg0` network device. The tunnel is up
   over real Wi-Fi on ESP32-S3 and on SPRESENSE, the peers are always real
   WireGuard implementations — the Linux kernel module and the official Windows
-  client — and the same source builds on three NuttX versions. Later in the talk
-  it also runs inside a real kernel build, which is the harder and more
-  interesting half.
+  client. The apps version builds from one source on three NuttX versions.
+  Later in the talk the new driver runs inside real KERNEL and PROTECTED builds,
+  which is the harder and more interesting half.
 - But the point of this talk is not that it works. It is what "works" hid, and
   what pushing it into the kernel forced into the open.
 
@@ -56,6 +56,9 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   an ordinary interface, and underneath, the encrypted transport is a UDP
   socket. The peer on the other end is a real WireGuard endpoint — Linux,
   Windows, or another gateway.
+- That POSIX and BSD-socket shape is why NuttX is a good fit. I am not claiming
+  FreeRTOS or Zephyr cannot run a VPN; I am showing how naturally it becomes an
+  ordinary network device in NuttX.
 
 ## 3 — The ASF and Community Over Code (1:14 → 1:47) *(cut candidate)*
 
@@ -78,6 +81,8 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   build a bespoke protocol and own its bugs, or to accept a vendor cloud. None
   is good. And this is not niche — it is the same problem across edge AI
   cameras, industrial IoT, and remote or satellite-linked equipment.
+- Wi-Fi security protects the local radio hop. WireGuard protects the path end
+  to end, across Wi-Fi, LTE, Ethernet, or a satellite link.
 
 ## 5 — Why It Matters (2:26 → 2:57)
 
@@ -295,14 +300,14 @@ notice?" answered "no."
 **Say:**
 - The previous slide was where it runs. This one is what a working tunnel
   cannot tell you.
-- Take key generation. NuttX's default `/dev/urandom` is an xorshift PRNG
-  seeded from compile-time constants. A board left on that path hands out the
+- Take key generation. NuttX can provide `/dev/urandom` through an xorshift128
+  backend whose seed material is compile-time configuration. A board left on that path hands out the
   same private key on every single boot. The handshake works. The ping works.
   The demo works. The tunnel is worthless, and nothing I showed you so far
   would notice. So: reset the board three times, read one key each time,
   compare — three different keys, and the config is on the entropy pool rather
-  than the constant seed. It is a cheap check, and the only reason to skip it
-  is not having thought of it.
+  than xorshift128. That is a useful regression check, not a certification of
+  entropy quality.
 - Second, what survives bringing the interface down. Here I stopped reading
   the code and read the memory: find the device in the running process by
   matching the key I set, then check the secret fields by name, at offsets
@@ -378,7 +383,7 @@ set → 4.1 s).
   clock exists. Fourteen stays open because I decided it should, not because I
   ran out of evidence.
 
-## 21 — The Demo (21:04 → 21:39)
+## 21 — The Demo (21:04 → 22:34)
 
 **Say:**
 - The point of the demo is that there is nothing special to see.
@@ -387,6 +392,8 @@ set → 4.1 s).
   unplugged; the board is on a power adapter. The peer is the official Windows
   client over home Wi-Fi. The board is just an ordinary host at the far end of
   an encrypted tunnel — which is exactly the goal.
+- Let the commands breathe. Show `wg show` before and after loading the page so
+  the byte counters visibly move; the change is the proof, not terminal noise.
 
 **If live:** `uname -a` / `ifconfig` (wg0 = 10.10.0.2) / `wg show` (handshake +
 byte counters) / `ps` (wg_rx running) / `webserver &`, then browse to
@@ -395,7 +402,7 @@ logs, or `wg showconf` (prints the private key) on screen — the SSID and
 passphrase are plaintext in those places. **Fallback:** the recording,
 youtu.be/1kyX2av5WG4.
 
-## 22 — Production Readiness (21:39 → 22:00)
+## 22 — Operability (22:34 → 22:55)
 
 **Say:**
 - Moving from "it works in a demo" to "you could run it."
@@ -406,7 +413,7 @@ youtu.be/1kyX2av5WG4.
   flowing — so when it goes quiet I can say which layer failed instead of
   guessing.
 
-## 23 — Portability (22:00 → 22:24) *(cut candidate)*
+## 23 — Portability (22:55 → 23:19) *(cut candidate)*
 
 **Say:**
 - The design decision from the start, validated.
@@ -416,20 +423,21 @@ youtu.be/1kyX2av5WG4.
   move between them. The kernel driver then adds sim and the rv-virt kernel
   build on top. The bet paid off.
 
-## 24 — Contributing Back (22:24 → 22:48)
+## 24 — Contributing Back (23:19 → 23:43)
 
 **Say:**
 - Closing the loop with this room's values.
 - The contribution is staged: a small `crypto:` PR first, for the nonce fix,
   because that stands on its own and helps everyone. Then the driver PR for
   the kernel device, and then the command PR for the user-space tool. The
-  design goes to the dev list first, the code is style-clean and PR-shaped, and
-  the licensing is handled. Community over code.
+  three signed candidate branches are published on my forks, and the patch-form
+  checks pass. The design discussion and upstream PRs are next; they are not
+  open yet. Community over code means letting that review change the work.
 
 **If asked "is it merged yet":** no — this is a submission candidate, not a
 merge-ready declaration. See the Q&A doc.
 
-## 25 — Takeaways (22:48 → 23:54)
+## 25 — Takeaways (23:43 → 24:49)
 
 **Say:**
 - Three things to take away.
@@ -445,7 +453,7 @@ merge-ready declaration. See the Q&A doc.
   fires. And a third was in my own driver, where only a real kernel build
   surfaced it; sim never would have.
 
-## 26 — Thank you (23:54 → 24:05)
+## 26 — Thank you (24:49 → 25:00)
 
 **Say:**
 - Thank you. I am happy to take questions — about the kernel driver, the bugs,

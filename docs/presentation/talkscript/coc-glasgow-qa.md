@@ -112,24 +112,29 @@ non-zero. The matrix says 'not exercised,' not 'passed.'"
 ## upstream・提出状況
 
 **Q. もうPRは出したのか? マージされているのか?**
-いいえ。fork上でリベースと再検証は済ませ、`crypto:` → ドライバ → apps
-の3本のPR系列として整理してありますが、**forkのpush、PRの作成、
-dev@nuttx.apache.org への投稿はまだ**です。これは意図的な順序で、
+まだupstream PRは出していません。リベースと再検証を済ませ、`crypto:` → ドライバ → apps
+の3本の署名済み候補branchを**自分のforkへpush済み**です。
+**PRの作成とdev@nuttx.apache.org への投稿はまだ**です。これは意図的な順序で、
 upstreamへの実際の投稿は自分の責任で行い、この場では「こう作った、
 こう検証した」という提出候補を示しています。
-*Say:* "Not yet. The series is rebased, split into a crypto PR, a driver
-PR, and an apps PR, and re-verified — but nothing has been pushed to a
-fork or opened as a PR yet. That's a deliberate next step, not something
-skipped."
+*Say:* "Not upstream yet. The rebased and re-verified series is published as
+three signed candidate branches on my forks. The dev-list discussion and the
+actual upstream PRs are the next step."
 
 **Q. checkpatch や nxstyle は通っているのか?**
-ファイル単位(`nxstyle -f`)では継続的にクリーンです。ただし
-**`checkpatch.sh -g <range>` — CIが実際にPRに対して行う、パッチ形式
-(リネームやdiff中の空白)を見るチェック — はまだ実行していません**。
-次の作業の一つです。
-*Say:* "Clean per-file with nxstyle throughout. The patch-form check CI
-actually runs — `checkpatch.sh -g` over the commit range — hasn't been run
-yet; that's still ahead of me."
+はい。ファイル単位の`nxstyle -f`に加え、CIがPRに対して行うパッチ形式の
+**`checkpatch.sh -g <range>`も3系列で実施済み**です。候補branchはその状態で
+自分のforkへpushしています。
+*Say:* "Yes. Both per-file nxstyle and the patch-form `checkpatch.sh -g`
+checks pass for all three published candidate branches."
+
+**Q. これはGSoCプロジェクトだったのか?**
+出発点にはGSoC提案としての検討もありましたが、この発表で示すコードと検証は、
+採否とは切り離して継続したコミュニティ向けの開発成果です。だから発表の軸も
+制度ではなく、実装、失敗、検証、upstream reviewに置いています。
+*Say:* "It began with work around a GSoC proposal, but the engineering continued
+independently. This talk is about the implementation, the evidence, and the
+upstream contribution, not the program outcome."
 
 **Q. NuttX自身のバグ(ChaCha20-Poly1305のnonce)は誰が直すのか?
 このプロジェクトの成果に含まれるのか?**
@@ -254,8 +259,8 @@ config line without erroring — and fixed it."
 
 ## 台本と合わせて使う補足
 
-- 質問が来る可能性が高いのに**スライドに一切載っていない**もの:
-  upstream提出状況(push/PR/dev@は未実施)、checkpatch -gの未実施、
+- 質問が来る可能性が高いもの:
+  upstream提出状況(fork push済み、PR/dev@は未実施)、
   TZ/TIの狭さ、ESP32-S3の資源実測待ち、#17のSmartFS電源断待ち。
   すべてこの資料で答えられるようにしてある。
 - 逆にスライドに載っている数字を聞かれたら、スライド18・19・20を

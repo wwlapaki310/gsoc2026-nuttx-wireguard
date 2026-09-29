@@ -162,7 +162,7 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 - *note:* the design decision from slide 8/9 validated across 4 architectures — with the apps version; label it so, don't conflate with the kernel driver.
 
 ### 24. Contributing back — The Apache Way `[NEW+reuse s27]`
-- Upstreaming plan: a small `crypto:` PR (the nonce fix) first, then the driver PR (`net/wireguard`), then the `apps/system/wg` PR; design shared on `dev@nuttx.apache.org`.
+- Upstreaming plan: a small `crypto:` PR (the nonce fix) first, then the driver PR (`net/wireguard`), then the `apps/system/wg` PR. Three signed candidate branches are published on the author's forks; design discussion on `dev@nuttx.apache.org` and upstream PRs are not open yet.
 - checkpatch/nxstyle clean; vendored source kept byte-identical and licensed; PR-shaped directory layout.
 - *note:* close the loop with the room's values — community over code. The contribution includes bugs fixed *for* the project.
 

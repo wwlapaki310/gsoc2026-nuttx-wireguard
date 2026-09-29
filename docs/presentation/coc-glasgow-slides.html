@@ -337,6 +337,21 @@
     border-collapse: collapse;
     font-size: 21px;
   }
+  table.compact {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  table.compact th,
+  table.compact td { padding: 7px 9px; }
+  table.tight {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+  table.tight th,
+  table.tight td { padding: 9px 12px; }
+  .demo-layout { grid-template-columns: 1.35fr .65fr; }
+  .demo-layout .photo { height: 330px; padding: 0; }
+  .demo-layout .photo img { width: 100%; height: 100%; object-fit: cover; }
   th, td {
     padding: 14px 18px;
     border-bottom: 1px solid var(--line-2);
@@ -674,7 +689,7 @@
         <div><b>ESP32-S3 &amp; SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
         <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
         <div><b>rv-virt knetnsh64</b><span>RUNS IN A REAL KERNEL BUILD (BUILD_KERNEL)</span></div>
-        <div><b>NuttX 13.0.1 / master / 12.7.0</b><span>ONE SOURCE</span></div>
+        <div><b>NuttX 13.0.1 / master / 12.7.0</b><span>APPS V0.1.1 &middot; ONE SOURCE</span></div>
       </div>
       <p class="speaker">Satoru Akita / Sony Semiconductor Solutions</p>
     </div>
@@ -696,7 +711,7 @@
     <div class="notes-src">
 Today I will talk about bringing WireGuard to Apache NuttX.
 ||
-It is a WireGuard VPN implemented as a wg0 network device. The tunnel is up over real Wi-Fi on ESP32-S3 and on SPRESENSE, the peers are always real WireGuard implementations &mdash; the Linux kernel module and the official Windows client &mdash; and the same source builds on three NuttX versions. Later in the talk it also runs inside a real kernel build, which is the harder and more interesting half.
+It is a WireGuard VPN implemented as a wg0 network device. The tunnel is up over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the peers are always real WireGuard implementations &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk the new driver also runs inside real KERNEL and PROTECTED builds, which is the harder and more interesting half.
 ||
 But the point of this talk is not that it works. It is what "works" hid, and what pushing it into the kernel forced into the open.
     </div>
@@ -746,6 +761,8 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
 Here is the whole idea in one picture.
 ||
 Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface: applications see an ordinary interface, and underneath, the encrypted transport is a UDP socket. The peer on the other end is a real WireGuard endpoint &mdash; Linux, Windows, or another gateway.
+||
+That POSIX and BSD-socket shape is why NuttX is a good fit for this work. This is not a claim that FreeRTOS or Zephyr cannot run a VPN; it is a claim about how naturally a VPN can become an ordinary network device here.
     </div>
   </section>
 
@@ -786,7 +803,7 @@ I mention this because it changes what "done" means. The goal is not a demo that
     <p class="eyebrow">Why This Topic</p>
     <h2>How do you reach a device you left in the field?</h2>
     <div class="body">
-      <p class="lead">I wanted secure remote access to my NuttX devices, but NuttX has <span class="hl red">no native, lightweight VPN</span>. It is a real, unsolved problem across edge AI, industrial IoT and remote installations &mdash; and every alternative is unappealing:</p>
+      <p class="lead">I wanted secure remote access to my NuttX devices, but NuttX has <span class="hl red">no native, lightweight VPN</span>. Wi-Fi protects one radio hop; WireGuard protects the path <span class="hl">end to end</span>. The alternatives are unappealing:</p>
       <div class="two">
         <div class="panel wg">
           <p><strong>Expose a global IP</strong> &mdash; open a port, point SSH or HTTP at the internet, and get scanned and brute-forced.</p>
@@ -801,6 +818,8 @@ I mention this because it changes what "done" means. The goal is not a demo that
 Why work on this at all.
 ||
 I wanted to reach the NuttX devices I work with, securely, after they are installed. Today your options are to expose a global IP and get scanned, to build a bespoke protocol and own its bugs, or to accept a vendor cloud. None is good. And this is not niche &mdash; it is the same problem across edge AI cameras, industrial IoT, and remote or satellite-linked equipment.
+||
+Wi-Fi security is necessary, but it protects only the local radio hop. The problem I needed to solve begins after that hop: one authenticated path from the engineer to the device, regardless of whether the underlay is Wi-Fi, LTE, Ethernet, or a satellite link.
     </div>
   </section>
 
@@ -1094,7 +1113,7 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
     <p class="eyebrow">Verification</p>
     <h2>Seven places it has to hold.</h2>
     <div class="body">
-      <table>
+      <table class="compact">
         <tr><th>Environment</th><th>Implementation</th><th>Confirmed</th></tr>
         <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds clean (the config CI compiles)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> a separate ELF across the syscall boundary</td></tr>
@@ -1105,6 +1124,7 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
         <tr><td>same two boards</td><td class="old">apps v0.1.1</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
       </table>
       <div class="claim"><p><span class="hl">Both boards</span>, <span class="hl">both privilege models</span>, <span class="hl">more than one CPU</span> &mdash; and the resources <span class="hl">measured</span>, not assumed.</p></div>
+      <div class="sources">Hardware runs used the feature revision before the final upstream rebase; KERNEL/SMP tunnels were rerun on the rebased submission candidate.</div>
     </div>
     <div class="num">18 / 26</div>
     <div class="notes-src">
@@ -1123,12 +1143,12 @@ And it now runs on real hardware &mdash; both boards. The kernel driver flashed 
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Verification</p>
+    <p class="eyebrow">Verification &middot; the limits</p>
     <h2>A working tunnel is not evidence.</h2>
     <div class="body">
-      <table>
+      <table class="tight">
         <tr><th>Failure</th><th>Does a passing ping notice?</th><th>What was measured</th></tr>
-        <tr><td>The <b>same private key on every boot</b> &mdash; NuttX's default <code>/dev/urandom</code> is seeded from compile&#8209;time constants</td><td class="old">no &mdash; every functional test still passes</td><td class="new">3 restarts on the board &rarr; 3 different keys; the pool path, not xorshift128</td></tr>
+        <tr><td>The <b>same private key on every boot</b> &mdash; the xorshift128 <code>/dev/urandom</code> backend can use compile&#8209;time seed material</td><td class="old">no &mdash; every functional test still passes</td><td class="new">3 restarts &rarr; 3 different keys; a sanity check of the pool path, not entropy certification</td></tr>
         <tr><td>Session keys <b>outliving the tunnel</b></td><td class="old">no</td><td class="new">read the live process memory: transport keys 32/32 bytes set while up &rarr; <b>all zero</b> after <code>down</code>; exactly <b>one</b> copy of the static key, before and after</td></tr>
         <tr><td>A <b>leak that only shows after hours</b></td><td class="old">no</td><td class="new">151 forced rekeys past the expiration horizon, 10 endpoint moves, 100 <code>down</code>/<code>up</code>: buffer pool whole, live allocations back to the boot count <b>exactly</b>, RX&#8209;thread stack high&#8209;water 2.5&nbsp;KB and unmoved</td></tr>
       </table>
@@ -1138,7 +1158,7 @@ And it now runs on real hardware &mdash; both boards. The kernel driver flashed 
     <div class="notes-src">
 The previous slide was where it runs. This one is what a working tunnel cannot tell you.
 ||
-Take key generation. NuttX's default /dev/urandom is an xorshift PRNG seeded from compile-time constants. A board left on that path hands out the same private key on every single boot. The handshake works. The ping works. The demo works. The tunnel is worthless, and nothing I showed you so far would notice. So: reset the board three times, read one key each time, compare &mdash; three different keys, and the config is on the entropy pool rather than the constant seed. It is a cheap check, and the only reason to skip it is not having thought of it.
+Take key generation. NuttX can provide /dev/urandom through an xorshift128 backend whose seed material is compile-time configuration. A board left on that path can hand out the same private key on every boot. The handshake works. The ping works. The demo works. The tunnel is worthless, and nothing I showed you so far would notice. So I reset the board three times and compared one generated key from each boot: three different keys, with the entropy-pool backend selected rather than xorshift128. That is a useful regression check, not a certification of entropy quality.
 ||
 Second, what survives bringing the interface down. Here I stopped reading the code and read the memory: find the device in the running process by matching the key I set, then check the secret fields by name, at offsets computed from the driver's own headers. The transport keys are fully populated while the tunnel is up and every byte is zero after down, and the handshake state is already gone while it is up, because it is wiped the moment the keys are derived. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in the whole writable address space, before and after. That asymmetry is a decision, so it is now written in the driver's documentation rather than left for a reviewer to guess at.
 ||
@@ -1183,7 +1203,7 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
     <p class="eyebrow">The Demo</p>
     <h2>An ordinary host at the other end of the tunnel.</h2>
     <div class="body">
-      <div class="two">
+      <div class="two demo-layout">
         <div class="photo"><img src="assets/demo-thumb.jpg" alt="Demo: ESP32-S3 reached over the tunnel"></div>
         <div class="panel">
           <p>telnet into the board <strong>through the tunnel</strong> and run commands. Start a web server on the board and open it in a browser.</p>
@@ -1201,8 +1221,8 @@ I telnet into the board through the tunnel and run commands, and I start a web s
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Production Readiness</p>
-    <h2>From a demo to something operable.</h2>
+    <p class="eyebrow">Operability</p>
+    <h2>From a demo toward something operable.</h2>
     <div class="body">
       <table>
         <tr><th></th><th>Before</th><th>After</th></tr>
@@ -1251,14 +1271,15 @@ Isolating the OS behind a few functions was a bet. Here is the check, with the a
         <li>A small <code>crypto:</code> PR first <span>the ChaCha20-Poly1305 nonce fix &mdash; a bug fixed <em>for</em> the project, on its own.</span></li>
         <li>Then the driver PR <span><code>net/wireguard</code> &mdash; the kernel device, ABI, and its documentation.</span></li>
         <li>Then the command PR <span><code>apps/system/wg</code> &mdash; the ioctl client.</span></li>
-        <li>Design shared on <code>dev@nuttx.apache.org</code> <span>checkpatch / nxstyle clean, PR-shaped, licensed &mdash; community over code.</span></li>
+        <li>Design prepared for <code>dev@nuttx.apache.org</code> <span>checkpatch / nxstyle clean, PR-shaped, licensed &mdash; community over code.</span></li>
       </ul>
+      <div class="sources">Status: three signed candidate branches are published on the author's forks; upstream discussion and PRs are not open yet.</div>
     </div>
     <div class="num">24 / 26</div>
     <div class="notes-src">
 Closing the loop with this room's values.
 ||
-The contribution is staged: a small crypto PR first, for the nonce fix, because that stands on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. The design goes to the dev list first, the code is style-clean and PR-shaped, and the licensing is handled. Community over code.
+The contribution is staged: a small crypto PR first, for the nonce fix, because that stands on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. Three signed candidate branches are published on my forks and the patch-form checks pass. The design discussion and upstream PRs are the next step; they are not open yet. Community over code means saying where the work actually is, then letting review change it.
     </div>
   </section>
 
