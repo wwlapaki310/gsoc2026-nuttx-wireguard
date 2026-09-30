@@ -767,59 +767,75 @@ That POSIX and BSD-socket shape is why NuttX is a good fit for this work. This i
   </section>
 
   <section class="slide">
-    <p class="eyebrow">The ASF and Community Over Code</p>
-    <h2>Apache NuttX is an ASF project.</h2>
+    <p class="eyebrow">Where NuttX Sits</p>
+    <h2>A small RTOS with a Unix-shaped surface.</h2>
     <div class="body">
       <div class="two">
-        <div class="panel dense">
-          <div class="logo-row"><img src="assets/asf-logo-wide.svg" alt="The Apache Software Foundation logo"></div>
-          <p>&ldquo;Exists to provide software for the <span class="hl">public good</span>.&rdquo;</p>
-          <p>A <strong>501(c)(3) nonprofit</strong>, founded in <strong>1999</strong>, run almost entirely by <strong>volunteers</strong> across <strong>hundreds of projects</strong>.</p>
-          <p>Its way of working is &ldquo;The Apache Way&rdquo; &mdash; <span class="hl">community over code</span>.</p>
+        <div class="panel nx">
+          <div class="logo-row"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo"></div>
+          <p><strong>Standards first:</strong> POSIX / ANSI APIs, BSD sockets, filesystems and a shell, scaled down for MCUs from 8 to 64 bit.</p>
+          <p><strong>Apache top-level project:</strong> developed in public by its contributor community under the Apache License 2.0.</p>
         </div>
-        <div class="panel dense">
-          <div class="logo-row"><img src="assets/community-over-code-logo.svg" alt="Community Over Code logo"></div>
-          <p>The <span class="hl">official conference</span> of the ASF, for the developers, users, contributors and committers behind Apache projects.</p>
-          <p><strong>Glasgow: October 2026</strong>, with the <strong>NuttX International Workshop</strong> co-located.</p>
+        <div>
+          <table class="tight">
+            <tr><th>RTOS</th><th>Design center</th><th>Project home</th></tr>
+            <tr><td>FreeRTOS</td><td>small kernel + libraries</td><td>AWS-maintained &middot; MIT</td></tr>
+            <tr><td>Zephyr</td><td>connected-device platform; POSIX subset is opt-in</td><td>Linux Foundation</td></tr>
+            <tr><td class="new">NuttX</td><td class="new">Unix-like OS surface on constrained hardware</td><td class="new">Apache Software Foundation</td></tr>
+          </table>
+          <div class="aside" style="margin-top:16px"><p>Not a ranking. It explains why a VPN can become an ordinary <code>netdev</code> here.</p></div>
         </div>
-      </div>
-      <div class="claim ok">
-        <p>The code is headed for <code>apache/nuttx</code> and <code>apache/nuttx-apps</code>.</p>
-        <small>So this is not just a port that runs &mdash; it is a contribution meant to be merged, and reviewed, by this community.</small>
       </div>
     </div>
-    <div class="sources">Quotations: apache.org/foundation, communityovercode.apache.org &middot; Logos: ASF Brand Guidelines</div>
+    <div class="sources">Sources: nuttx.apache.org &middot; freertos.org &middot; docs.zephyrproject.org &middot; zephyrproject.org</div>
     <div class="num">3 / 26</div>
     <div class="notes-src">
-A word on where this is going.
+Before the implementation, where NuttX sits.
 ||
-The ASF is a nonprofit that exists to provide software for the public good, run by volunteers across hundreds of projects. NuttX is one of them. Community Over Code is its official conference, and the NuttX International Workshop is co-located with Glasgow.
+FreeRTOS, Zephyr and NuttX are all capable embedded operating systems; this is not a scorecard. Their centers of gravity differ. FreeRTOS presents a deliberately small kernel with a growing set of libraries. Zephyr is an integrated platform for connected devices, with POSIX available as an opt-in subset. NuttX starts from a different promise: a standards-oriented, Unix-like OS surface &mdash; POSIX and ANSI APIs, BSD sockets, filesystems and a shell &mdash; scaled down to microcontrollers.
 ||
-I mention this because it changes what "done" means. The goal is not a demo that runs on my desk. It is code that this community can merge and maintain &mdash; community over code.
+NuttX is also an Apache Software Foundation top-level project. The kernel, applications and documentation are developed in public by the contributor community. That affects both halves of this talk: the Unix-shaped network stack is why WireGuard fits naturally as a netdev, and the Apache project is why "done" means reviewed and maintainable upstream, not only working on my desk.
     </div>
   </section>
 
   <section class="slide">
     <p class="eyebrow">Why This Topic</p>
-    <h2>How do you reach a device you left in the field?</h2>
+    <h2>I wanted secure remote access to the NuttX devices I work with.</h2>
     <div class="body">
-      <p class="lead">I wanted secure remote access to my NuttX devices, but NuttX has <span class="hl red">no native, lightweight VPN</span>. Wi-Fi protects one radio hop; WireGuard protects the path <span class="hl">end to end</span>. The alternatives are unappealing:</p>
-      <div class="two">
-        <div class="panel wg">
-          <p><strong>Expose a global IP</strong> &mdash; open a port, point SSH or HTTP at the internet, and get scanned and brute-forced.</p>
+      <div class="split">
+        <div class="stack">
+          <div class="claim">
+            <p>NuttX had no native, lightweight VPN.</p>
+            <small>Wi-Fi protects one radio hop. I needed an authenticated path <strong>all the way to the MCU</strong>.</small>
+          </div>
+          <div class="fact wg">
+            <b>Without a VPN</b>
+            <p>Expose a global IP, invent a protocol, or accept a vendor cloud. The same problem appears in edge AI, industrial IoT and remote infrastructure.</p>
+          </div>
         </div>
-        <div class="panel wg">
-          <p><strong>Build a bespoke protocol</strong> &mdash; reinvent authenticated encryption, and own every bug in it forever.</p>
+        <div class="mini">
+          <div class="photo-card">
+            <div class="photo wide"><img src="assets/aitrios-signage.jpg" alt="An AITRIOS edge AI device built around the Sony IMX500 intelligent vision sensor"></div>
+            <div class="cap"><b>AITRIOS edge AI</b><span>ESP32 + NUTTX</span></div>
+          </div>
+          <div class="photo-card">
+            <div class="shots">
+              <div class="photo"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards"></div>
+              <div class="photo"><img src="assets/spresense-satellite.jpg" alt="ARICA CubeSat using SPRESENSE"></div>
+            </div>
+            <div class="cap"><b>SPRESENSE</b><span>REMOTE SENSING &middot; SPACE</span></div>
+          </div>
         </div>
       </div>
     </div>
+    <div class="sources">Images: Sony Semiconductor Solutions / SPRESENSE / AITRIOS &middot; CubeSat: ARICA project</div>
     <div class="num">4 / 26</div>
     <div class="notes-src">
-Why work on this at all.
+The reason for this topic came from the devices I work with.
 ||
-I wanted to reach the NuttX devices I work with, securely, after they are installed. Today your options are to expose a global IP and get scanned, to build a bespoke protocol and own its bugs, or to accept a vendor cloud. None is good. And this is not niche &mdash; it is the same problem across edge AI cameras, industrial IoT, and remote or satellite-linked equipment.
+I work as an edge AI engineer at Sony Semiconductor Solutions, using NuttX from the application side. One setting is AITRIOS edge AI: devices built around ESP32 and NuttX, deployed where walking up with a debug cable is not the operating model. The other is bottom-up work around SPRESENSE, Sony's compact low-power board used for sensing, remote monitoring and space projects.
 ||
-Wi-Fi security is necessary, but it protects only the local radio hop. The problem I needed to solve begins after that hop: one authenticated path from the engineer to the device, regardless of whether the underlay is Wi-Fi, LTE, Ethernet, or a satellite link.
+These are not claims that this WireGuard driver ships in either product. They are the experience that exposed the need: after a device is installed, how do I reach it with ordinary tools without exposing it directly, inventing a security protocol, or requiring a vendor cloud? Wi-Fi security protects only the local radio hop. I wanted one authenticated path from the engineer all the way to the MCU, across whatever network lies underneath.
     </div>
   </section>
 

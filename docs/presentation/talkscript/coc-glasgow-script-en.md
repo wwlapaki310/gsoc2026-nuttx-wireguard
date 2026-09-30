@@ -9,20 +9,21 @@ otherwise (see [../../upstream/handoff.md](../../upstream/handoff.md) ground rul
 on tests that cannot fail — the same logic applies to a script that cannot go
 stale).
 
-**Total: about 25 min, including a 90-second demo** for a 26-slide, 20–30 min slot. Times below
+**Total: about 26 min, including a 90-second demo** for a 26-slide, 20–30 min slot. Times below
 are cumulative, so read them as "should be at roughly this point."
 
 **The centre of gravity is slides 18–20** (verification): together they are
-10.7 of the 25 minutes, and they carry the claims a reviewer will actually
+10.7 of the 26 minutes, and they carry the claims a reviewer will actually
 check. Do not compress that block to protect time elsewhere — cut before it or
 after it, never inside it. Slides 18-19-20 are also a locked sequence in
 meaning: 18 is where it runs, 19 is what "it runs" does not prove, 20 is the one
 place the answer is a judgment call rather than a test. Splitting them loses the
 argument.
 
-**If time is short, drop in this order:** slide 3 (ASF/CoC context — this room
-already knows it), slide 23 (portability table — supporting evidence, not the
-spine), slide 21's live demo (switch immediately to the local recording).
+**If time is short, drop in this order:** slide 23 (portability table — supporting
+evidence, not the spine), then slide 22 (operability). If the live demo stalls,
+switch immediately to the local recording. Keep slides 3–4: they explain what
+NuttX is and why this work exists.
 Do not drop anything in 8–19 or 24–25; those are the shape of the talk.
 
 ---
@@ -60,31 +61,37 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   FreeRTOS or Zephyr cannot run a VPN; I am showing how naturally it becomes an
   ordinary network device in NuttX.
 
-## 3 — The ASF and Community Over Code (1:14 → 1:47) *(cut candidate)*
+## 3 — Where NuttX Sits (1:14 → 2:10)
 
 **Say:**
-- A word on where this is going.
-- The ASF is a nonprofit that exists to provide software for the public good,
-  run by volunteers across hundreds of projects. NuttX is one of them. Community
-  Over Code is its official conference, and the NuttX International Workshop is
-  co-located with Glasgow.
-- I mention this because it changes what "done" means. The goal is not a demo
-  that runs on my desk. It is code that this community can merge and maintain —
-  community over code.
+- Before the implementation, where NuttX sits.
+- FreeRTOS, Zephyr and NuttX are all capable embedded operating systems; this
+  is not a scorecard. FreeRTOS centers on a deliberately small kernel plus
+  libraries. Zephyr is an integrated connected-device platform, with POSIX as
+  an opt-in subset. NuttX starts from a Unix-shaped surface: POSIX and ANSI
+  APIs, BSD sockets, filesystems and a shell, scaled down to microcontrollers.
+- NuttX is also an Apache Software Foundation top-level project. Its kernel,
+  applications and documentation are developed in public by the contributor
+  community. That matters twice here: the Unix shape makes a VPN fit naturally
+  as a network device, and the Apache project makes upstream review — not a
+  desk demo — the definition of done.
 
-## 4 — Why This Topic (1:47 → 2:26)
+## 4 — Why This Topic (2:10 → 3:30)
 
 **Say:**
-- Why work on this at all.
-- I wanted to reach the NuttX devices I work with, securely, after they are
-  installed. Today your options are to expose a global IP and get scanned, to
-  build a bespoke protocol and own its bugs, or to accept a vendor cloud. None
-  is good. And this is not niche — it is the same problem across edge AI
-  cameras, industrial IoT, and remote or satellite-linked equipment.
-- Wi-Fi security protects the local radio hop. WireGuard protects the path end
-  to end, across Wi-Fi, LTE, Ethernet, or a satellite link.
+- The reason for this topic came from the devices I work with.
+- I work as an edge AI engineer at Sony Semiconductor Solutions, using NuttX
+  from the application side. One setting is AITRIOS edge AI: devices built
+  around ESP32 and NuttX, deployed where walking up with a debug cable is not
+  the operating model. The other is bottom-up work around SPRESENSE, Sony's
+  compact low-power board used in remote sensing and space projects.
+- I am not saying this WireGuard driver ships in either product. Those settings
+  exposed the need: after a device is installed, how do I reach it with normal
+  tools without exposing it, inventing a protocol, or requiring a vendor cloud?
+  Wi-Fi security protects one radio hop. I wanted an authenticated path all the
+  way to the MCU, over whatever network lies underneath.
 
-## 5 — Why It Matters (2:26 → 2:57)
+## 5 — Why It Matters (3:30 → 4:01)
 
 **Say:**
 - It is not that you can do new things. It is that the things you already
@@ -94,7 +101,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   but reaches the MCU. And because it is standard WireGuard, the other end can
   be anything — that interoperability is itself the value.
 
-## 6 — The Plan (2:57 → 3:28)
+## 6 — The Plan (4:01 → 4:32)
 
 **Say:**
 - Writing a crypto stack from scratch would be a mistake. So I started from an
@@ -105,7 +112,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   has its own stack. So the whole job is: keep the protocol core untouched, and
   replace the network glue.
 
-## 7 — Design Decision (3:28 → 3:49)
+## 7 — Design Decision (4:32 → 4:53)
 
 **On slide:** lwIP → NuttX mapping table (`netif`→`net_driver_s`, `pbuf`→`iob`,
 `netif_add()`→`netdev_register()`, callback→`devif_poll()`).
@@ -118,7 +125,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   is registered as a TUN-type netdev, and the "wire" underneath it is a UDP
   socket.
 
-## 8 — How It Was Built (3:49 → 4:19)
+## 8 — How It Was Built (4:53 → 5:23)
 
 **Say:**
 - The result of the first version.
@@ -128,7 +135,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   run time, no rebuild. So far, a success story. The rest of the talk is about
   what that success hid.
 
-## 9 — Part 2: The Pattern (4:19 → 4:41)
+## 9 — Part 2: The Pattern (5:23 → 5:45)
 
 **Say:**
 - This is the heart of the talk.
@@ -138,7 +145,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   are instances of that pattern — five in the apps version, and then two more
   when I pushed it into the kernel.
 
-## 10 — Pitfall 1/7: `SO_RCVTIMEO` (4:41 → 5:07)
+## 10 — Pitfall 1/7: `SO_RCVTIMEO` (5:45 → 6:11)
 
 **Say:**
 - The first taste: a success return with no effect.
@@ -147,7 +154,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   a perfect deadlock: the timer never fired, so no initiation was sent, so the
   peer never replied, so `recvfrom` never returned to let the timer fire.
 
-## 11 — Pitfall 2/7: detached pthread (5:07 → 5:47)
+## 11 — Pitfall 2/7: detached pthread (6:11 → 6:51)
 
 **Say:**
 - The second: a lifecycle assumption that did not hold.
@@ -159,7 +166,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   exiting. So when the command exited, the thread went with it. That is why the
   kernel version owns the thread in the driver instead.
 
-## 12 — Pitfall 3/7: ping works, TCP dies (5:47 → 6:47) *(the good one)*
+## 12 — Pitfall 3/7: ping works, TCP dies (6:51 → 7:51) *(the good one)*
 
 **Say:**
 - My favourite bug in the project.
@@ -174,7 +181,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   `struct socket` — just memory — usable from any task. This is exactly why the
   kernel version holds the socket as a `struct socket`.
 
-## 13 — Pitfall 4/7: "no real impact" was 10× (6:47 → 7:37)
+## 13 — Pitfall 4/7: "no real impact" was 10× (7:51 → 8:41)
 
 **Say:**
 - The fourth: an assumption I did not measure.
@@ -185,7 +192,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   it should be. I measured "no impact" and it was ten x. The real fix was a
   proper blocking wait: a callback on `psock_poll` and a semaphore.
 
-## 14 — Pitfall 5/7: sim passes, hardware freezes (7:37 → 8:23)
+## 14 — Pitfall 5/7: sim passes, hardware freezes (8:41 → 9:27)
 
 **Say:**
 - The fifth, and it comes back later: stacks nobody measured.
@@ -196,7 +203,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   encryption too. The default 3072 bytes was a number nobody had measured.
   Stack coloration plus `ps` found it. Hold that thought.
 
-## 15 — Part 3: Into the kernel (8:23 → 8:58)
+## 15 — Part 3: Into the kernel (9:27 → 10:02)
 
 **Say:**
 - This is the additional work since the first version, and the part that
@@ -207,7 +214,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   separated. So I moved the device into the kernel, under `drivers/net/wireguard`,
   and drove it from a tiny user-space `wg` command through ioctl.
 
-## 16 — The Kernel Design (8:58 → 9:30)
+## 16 — The Kernel Design (10:02 → 10:34)
 
 **Say:**
 - The shape of the real driver.
@@ -220,7 +227,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   kernel-side crypto is NuttX's own; the only vendored code is a small MIT
   X25519 in the user-space command, for offline key generation.
 
-## 17 — Two more bugs, same shape (9:30 → 10:37) *(locked with 16)*
+## 17 — Two more bugs, same shape (10:34 → 11:41) *(locked with 16)*
 
 **Say:**
 - And the same pattern held at kernel depth — twice.
@@ -236,7 +243,7 @@ kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / master / 12.7.0.
   large task stacks, it never showed. Exactly the stack lesson from part two,
   one level deeper. Moved to the heap.
 
-## 18 — Verification: seven places it has to hold (10:37 → 14:48) *(core — do not cut)*
+## 18 — Verification: seven places it has to hold (11:41 → 15:52) *(core — do not cut)*
 
 **On slide:** table of sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64
 (BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPUs) / SPRESENSE measured /
@@ -291,7 +298,7 @@ ESP32-S3 + SPRESENSE over real Wi-Fi / the two boards on apps v0.1.1.
   on the two boards — telnet, HTTP, a seven-megabyte transfer, rekey and
   power-cycle recovery — still stands underneath.
 
-## 19 — Verification: a working tunnel is not evidence (14:48 → 17:18) *(core — do not cut)*
+## 19 — Verification: a working tunnel is not evidence (15:52 → 18:22) *(core — do not cut)*
 
 **On slide:** three rows — same private key every boot / session keys outliving
 the tunnel / a leak that only shows after hours — each with "does a passing ping
@@ -329,7 +336,7 @@ notice?" answered "no."
   real rather than assumed. What I am not claiming is a week of uptime, or that
   a simulator's allocator and 64-bit frames behave like the board's.
 
-## 20 — A design call: the timestamp problem (17:18 → 21:04) *(core — do not cut)*
+## 20 — A design call: the timestamp problem (18:22 → 22:08) *(core — do not cut)*
 
 **On slide:** the replay-defence obligation, the four-option table (realtime +
 in-boot high-water / persist every timestamp / durable range reservation / let
@@ -383,7 +390,7 @@ set → 4.1 s).
   clock exists. Fourteen stays open because I decided it should, not because I
   ran out of evidence.
 
-## 21 — The Demo (21:04 → 22:34)
+## 21 — The Demo (22:08 → 23:38)
 
 **Say:**
 - The point of the demo is that there is nothing special to see.
@@ -402,7 +409,7 @@ logs, or `wg showconf` (prints the private key) on screen — the SSID and
 passphrase are plaintext in those places. **Fallback:** the recording,
 youtu.be/1kyX2av5WG4.
 
-## 22 — Operability (22:34 → 22:55)
+## 22 — Operability (23:38 → 23:59)
 
 **Say:**
 - Moving from "it works in a demo" to "you could run it."
@@ -413,7 +420,7 @@ youtu.be/1kyX2av5WG4.
   flowing — so when it goes quiet I can say which layer failed instead of
   guessing.
 
-## 23 — Portability (22:55 → 23:19) *(cut candidate)*
+## 23 — Portability (23:59 → 24:23) *(cut candidate)*
 
 **Say:**
 - The design decision from the start, validated.
@@ -423,7 +430,7 @@ youtu.be/1kyX2av5WG4.
   move between them. The kernel driver then adds sim and the rv-virt kernel
   build on top. The bet paid off.
 
-## 24 — Contributing Back (23:19 → 23:43)
+## 24 — Contributing Back (24:23 → 24:47)
 
 **Say:**
 - Closing the loop with this room's values.
@@ -437,7 +444,7 @@ youtu.be/1kyX2av5WG4.
 **If asked "is it merged yet":** no — this is a submission candidate, not a
 merge-ready declaration. See the Q&A doc.
 
-## 25 — Takeaways (23:43 → 24:49)
+## 25 — Takeaways (24:47 → 25:53)
 
 **Say:**
 - Three things to take away.
@@ -453,7 +460,7 @@ merge-ready declaration. See the Q&A doc.
   fires. And a third was in my own driver, where only a real kernel build
   surfaced it; sim never would have.
 
-## 26 — Thank you (24:49 → 25:00)
+## 26 — Thank you (25:53 → 26:04)
 
 **Say:**
 - Thank you. I am happy to take questions — about the kernel driver, the bugs,

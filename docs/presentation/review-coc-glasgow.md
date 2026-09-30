@@ -421,3 +421,42 @@ caught.
 
 No other staleness was found between `handoff.md`/`verification-matrix.md`
 and the deck/scripts/QA in this pass.
+
+---
+
+## Background and NuttX framing correction — 2026-09-30
+
+The longer deck was compared again with `short-slides.html` after feedback that
+the expansion had added technical depth by deleting the human and product
+context. That feedback was correct. The prior review overvalued claim density
+and treated the short deck's AITRIOS/SPRESENSE imagery as optional decoration;
+it was doing essential narrative work: establishing why this speaker encountered
+the problem and why the audience should care before the implementation begins.
+
+Changes made:
+
+- **Slide 3 was replaced completely.** The standalone explanation of ASF and
+  Community Over Code was removed. In its place is the required NuttX
+  introduction: POSIX/ANSI, BSD sockets, filesystems and shell; a careful,
+  non-ranking comparison with FreeRTOS and Zephyr; and NuttX's position as an
+  Apache Software Foundation top-level project.
+- **Slide 4 restores the short deck's visual background.** The AITRIOS image,
+  SPRESENSE boards and ARICA CubeSat image are back, together with the speaker's
+  application-side Sony/NuttX experience. The script explicitly says this
+  experience motivated the need and does not imply that this WireGuard driver
+  ships in AITRIOS or a space vehicle.
+- **The scripts now give context real time.** Slides 3 and 4 receive about 56
+  and 80 seconds respectively; the talk is about 26 minutes. They are no longer
+  cut candidates. Portability and operability are cut first if necessary.
+- **The outline was brought back into correspondence with the built 26-slide
+  deck.** The duplicated title/hero entries and unused standalone WireGuard
+  slide were removed from the numbering.
+
+Render check at 1920x1080: both replacement slides fit without clipping or
+overlap. Slide 4 once again carries three concrete images rather than relying
+on a speaker name and abstract problem statement to supply the background.
+
+Sources used for the comparison wording are primary project sources:
+`nuttx.apache.org`, `freertos.org`, `docs.zephyrproject.org`, and the Zephyr
+Project charter. The comparison describes design centers, not feature
+superiority.
