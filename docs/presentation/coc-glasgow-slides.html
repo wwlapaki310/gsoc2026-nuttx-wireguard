@@ -638,6 +638,105 @@
   }
   .chip .e { font-size: 16px; }
 
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  /* horizontal timeline — About Me */
+  .timeline-h {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    position: relative;
+  }
+  .timeline-h::before {
+    content: "";
+    position: absolute;
+    top: 37px;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+  }
+  .tlh-node {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 9px;
+  }
+  .tlh-dot {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid var(--wg);
+    background: #fff;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+  }
+  .tlh-dot img { width: 100%; height: 100%; object-fit: cover; }
+  .tlh-node b { font-size: 14.5px; }
+  .tlh-node span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  /* vertical timeline — History */
+  .timeline-v { display: flex; flex-direction: column; }
+  .tlv-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 96px 24px 1fr;
+    gap: 4px;
+    align-items: start;
+    padding: 13px 0;
+  }
+  .tlv-year {
+    padding-top: 2px;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--wg);
+    font-size: 15px;
+  }
+  .tlv-dot-col { position: relative; display: flex; justify-content: center; }
+  .tlv-dot {
+    position: relative;
+    z-index: 1;
+    width: 13px;
+    height: 13px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--wg);
+  }
+  .tlv-item:not(:last-child) .tlv-dot-col::after {
+    content: "";
+    position: absolute;
+    top: 21px;
+    bottom: -13px;
+    left: 50%;
+    width: 2px;
+    background: var(--line);
+    transform: translateX(-50%);
+  }
+  .tlv-body h3 { margin: 0 0 3px; font-size: 18px; }
+  .tlv-body p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.42; }
+
   .demo {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
@@ -809,7 +908,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 28</div>
+    <div class="num">1 / 32</div>
     <div class="notes-src">
 Today I will talk about bringing WireGuard to Apache NuttX.
 ||
@@ -821,13 +920,13 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty minutes.</h2>
+    <h2>Seven chapters, about thirty-three minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item">
           <div class="agenda-num">1</div>
-          <div><h3>Background</h3><p>Where NuttX sits, why a VPN was missing, and what this project adds.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">2</div>
@@ -861,53 +960,59 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
         </div>
       </div>
     </div>
-    <div class="num">2 / 28</div>
+    <div class="num">2 / 32</div>
     <div class="notes-src">
 Here is the shape of the talk.
 ||
-Seven chapters. Background on NuttX and the motivation, the porting strategy that started from an existing lwIP implementation, five hidden pitfalls a working demo never revealed, moving the driver into the kernel, how it was verified, a short demo, and then what to carry out and where this goes upstream. About thirty minutes, then questions.
+Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard &mdash; then the porting strategy that started from an existing lwIP implementation, five hidden pitfalls a working demo never revealed, moving the driver into the kernel, how it was verified, a short demo, and then what to carry out and where this goes upstream. About thirty-three minutes, then questions.
     </div>
   </section>
 
   <section class="slide">
     <p class="eyebrow">About Me</p>
-    <h2>I ported WireGuard to NuttX after hours, not on assignment.</h2>
+    <h2>Not a NuttX kernel developer &mdash; the person who had to reach devices after they shipped.</h2>
     <div class="body">
       <div class="intro-row">
         <img class="intro-avatar" src="assets/aki310-avatar.png" alt="Satoru Akita">
         <p class="lead" style="margin-bottom:0">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
       </div>
-      <div class="three">
-        <div class="fact wg">
-          <b>Day job</b>
-          <p>Edge AI engineer at Sony Semiconductor Solutions, building on Apache NuttX from the application side &mdash; not on its kernel or drivers.</p>
+      <div class="timeline-h">
+        <div class="tlh-node">
+          <div class="tlh-dot"><img src="assets/biomod2015.png" alt="BIOMOD molecular robotics"></div>
+          <b>Robotics</b>
+          <span>Molecular robotics, BIOMOD world champion (2015)</span>
         </div>
-        <div class="fact nx">
-          <b>This project</b>
-          <p>An independent effort, not a company deliverable. It started to solve a problem on my own devices, and kept going after that problem was solved.</p>
+        <div class="tlh-node">
+          <div class="tlh-dot"><img src="assets/sxsw.png" alt="wabisabi, an object-recognition app shown at SXSW"></div>
+          <b>Computer Vision</b>
+          <span>AI / image-processing systems engineering</span>
         </div>
-        <div class="fact blue">
-          <b>Why this talk</b>
-          <p>My first contribution to Apache NuttX &mdash; and the first time this work has left my own machine.</p>
+        <div class="tlh-node">
+          <div class="tlh-dot"><img src="assets/aitrios-signage.jpg" alt="AITRIOS edge AI camera"></div>
+          <b>Edge AI</b>
+          <span>AITRIOS edge AI cameras</span>
+        </div>
+        <div class="tlh-node">
+          <div class="tlh-dot"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE board"></div>
+          <b>Embedded Systems</b>
+          <span>SPRESENSE, embedded app contest &mdash; world 3rd</span>
+        </div>
+        <div class="tlh-node">
+          <div class="tlh-dot"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo" style="padding:12px;object-fit:contain"></div>
+          <b>NuttX / WireGuard</b>
+          <span>This talk</span>
         </div>
       </div>
-      <div class="chips">
-        <span class="chip"><span class="e">🏃</span> Full marathon runner</span>
-        <span class="chip"><span class="e">🪂</span> Hang gliding</span>
-        <span class="chip"><span class="e">⛵</span> Licensed boat pilot</span>
-        <span class="chip"><span class="e">🚀</span> Rockets &amp; robots</span>
-        <span class="chip"><span class="e">🕹️</span> Unity game dev</span>
-        <span class="chip"><span class="e">🌌</span> Space &amp; semiconductor nerd</span>
-        <span class="chip"><span class="e">🎤</span> Serial hackathon &amp; conference volunteer</span>
+      <div class="claim">
+        <p>I came to NuttX from the application and deployment side &mdash; not by writing its kernel.</p>
+        <small>Every step on this path is a system I had to <strong>integrate and run</strong>, not one I built from the silicon up. That is the vantage point for everything that follows.</small>
       </div>
     </div>
-    <div class="num">3 / 28</div>
+    <div class="num">3 / 32</div>
     <div class="notes-src">
-Quickly, who is talking.
+Quickly, who is talking &mdash; and from where.
 ||
-I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side &mdash; not as a kernel or driver contributor, at least not until this project. This work is independent: it is not something my employer asked for or ships. It started because I personally needed secure remote access to devices I work with, and once that problem was solved I kept going. This talk, and the upstream contribution behind it, is the first time this work has left my own machine.
-||
-And a little outside of work: I run full marathons, fly hang gliders, and I'm a licensed small-boat pilot. I've built rockets and robots, shipped a small Unity game, and I'm generally a space and semiconductor nerd. I go to a lot of hackathons, and volunteer at a lot of conferences &mdash; this one included.
+I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side. The path that got me here runs through molecular robotics, computer vision and AI systems work, edge AI cameras, and embedded systems on SPRESENSE &mdash; and NuttX and WireGuard are the latest stop, not the start. I want that to be explicit: I am not a NuttX kernel developer who decided to add a VPN. I am someone who kept running into NuttX from the application and deployment side, and eventually ran into a problem I couldn't solve from there. That is the story the next few slides tell.
     </div>
   </section>
 
@@ -951,7 +1056,7 @@ And a little outside of work: I run full marathons, fly hang gliders, and I'm a 
       <p class="lead" style="max-width:100%">Packets routed to <code>wg0</code> are encrypted and sent as UDP; UDP arriving on the port is decrypted and delivered as if it had arrived on <code>wg0</code>. The peer can be any existing WireGuard endpoint.</p>
       <div class="takeaway"><b>Takeaway</b><p>wg0 looks like an ordinary interface to applications; only the "wire" underneath is a UDP socket instead of a physical link.</p></div>
     </div>
-    <div class="num">4 / 28</div>
+    <div class="num">4 / 32</div>
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
@@ -962,127 +1067,309 @@ That POSIX and BSD-socket shape is why NuttX is a good fit for this work. This i
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Where NuttX Sits</p>
-    <h2>A small RTOS with a Unix-shaped surface.</h2>
+    <p class="eyebrow">Background</p>
+    <h2>What is Apache NuttX?</h2>
+    <div class="body" style="gap:18px">
+      <svg viewBox="0 0 760 250" role="img" aria-label="NuttX software stack: applications, POSIX and BSD APIs, networking/VFS/drivers, the NuttX kernel, and the MCU or MPU underneath" style="width:640px;height:auto;margin:0 auto;display:block;">
+        <rect x="0" y="0" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="25" text-anchor="middle" font-size="17" font-weight="700">Applications</text>
+        <rect x="0" y="48" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="73" text-anchor="middle" font-size="17" font-weight="700">POSIX / ANSI &amp; BSD socket APIs</text>
+        <rect x="0" y="96" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="121" text-anchor="middle" font-size="17" font-weight="700">Networking &middot; VFS &amp; filesystems &middot; device drivers &middot; NSH shell</text>
+        <rect x="0" y="144" width="760" height="46" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="380" y="172" text-anchor="middle" font-size="18" font-weight="800" fill="#8d1f24">NuttX kernel</text>
+        <rect x="0" y="198" width="760" height="40" fill="#f5f7f8" stroke="#d5dde2"></rect>
+        <text x="380" y="223" text-anchor="middle" font-size="16" fill="#5c6c78">MCU / MPU &mdash; 8 to 64 bit</text>
+      </svg>
+      <div class="tags" style="justify-content:center">
+        <span class="tag">RTOS</span>
+        <span class="tag">POSIX-oriented</span>
+        <span class="tag">BSD sockets</span>
+        <span class="tag">Filesystem / VFS</span>
+        <span class="tag">NSH shell</span>
+        <span class="tag">Native networking</span>
+        <span class="tag">Device drivers</span>
+        <span class="tag">Apache Software Foundation TLP</span>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>NuttX brings a Unix-like programming model &mdash; POSIX APIs, BSD sockets, filesystems, and devices &mdash; to constrained embedded systems.</p></div>
+    </div>
+    <div class="num">5 / 32</div>
+    <div class="notes-src">
+Before anything else: what NuttX actually is.
+||
+NuttX is a real-time operating system built around a standards-first promise. It is POSIX and ANSI-API oriented, it speaks BSD sockets for networking, it has a real filesystem and VFS layer, a shell called NSH, native networking, and a device-driver model &mdash; all scaled down to run on microcontrollers from 8 to 64 bit. It is also an Apache Software Foundation top-level project, developed in public by its contributor community.
+||
+The point I want to land here is narrow but important: NuttX is a small RTOS with a Unix-like programming model. That combination is unusual, and it is why almost everything later in this talk &mdash; sockets, netdevs, a POSIX-shaped port &mdash; is possible at all.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Positioning</p>
+    <h2>Where NuttX fits &mdash; and where it is used.</h2>
     <div class="body">
       <div class="two">
-        <div class="panel nx">
-          <div class="logo-row"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo"></div>
-          <p><strong>Standards first:</strong> POSIX / ANSI APIs, BSD sockets, filesystems and a shell, scaled down for MCUs from 8 to 64 bit.</p>
-          <p><strong>Apache top-level project:</strong> developed in public by its contributor community under the Apache License 2.0.</p>
-        </div>
         <div>
           <table class="tight">
-            <tr><th>RTOS</th><th>Design center</th><th>Project home</th></tr>
-            <tr><td>FreeRTOS</td><td>small kernel + libraries</td><td>AWS-maintained &middot; MIT</td></tr>
-            <tr><td>Zephyr</td><td>connected-device platform; POSIX subset is opt-in</td><td>Linux Foundation</td></tr>
-            <tr><td class="new">NuttX</td><td class="new">Unix-like OS surface on constrained hardware</td><td class="new">Apache Software Foundation</td></tr>
+            <tr><th>RTOS</th><th>Design center</th><th>Typical use</th></tr>
+            <tr><td>FreeRTOS</td><td>Lightweight RT kernel</td><td>MCU firmware, control, IoT</td></tr>
+            <tr><td>Zephyr</td><td>Integrated connected-device platform</td><td>Wearables, industrial &amp; connected IoT</td></tr>
+            <tr><td class="new">NuttX</td><td class="new">Unix-like embedded OS</td><td class="new">Networking, filesystems, drones, sensing</td></tr>
           </table>
-          <div class="aside" style="margin-top:16px"><p>Not a ranking. It explains why a VPN can become an ordinary <code>netdev</code> here.</p></div>
+          <div class="aside" style="margin-top:14px"><p><code>FreeRTOS/FreeRTOS</code> 7.8k&#9733; &middot; <code>zephyrproject-rtos/zephyr</code> 16.5k&#9733; &middot; <code>apache/nuttx</code> 4.1k&#9733;<br>Stars measure developer visibility, not deployment volume.</p></div>
+        </div>
+        <div class="four" style="grid-template-columns:1fr 1fr">
+          <div class="fact wg"><b>Architectures</b><p>15+ CPU architectures</p></div>
+          <div class="fact nx"><b>Boards</b><p>300+ supported boards</p></div>
+          <div class="fact blue"><b>Configs</b><p>1,500+ configuration templates</p></div>
+          <div class="fact gold"><b>In production</b><p>Sony &middot; PX4 drones &middot; Xiaomi OpenVela (1,000+ SKUs) &middot; Japan's 2024 lunar mission</p></div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>NuttX exposes a Unix-like programming model despite targeting MCU-class systems &mdash; which is why a VPN can be an ordinary netdev instead of a bespoke subsystem.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>NuttX is niche next to FreeRTOS and Zephyr by star count, but it already ships in production hardware, from drones to space missions.</p></div>
     </div>
-    <div class="sources">Sources: nuttx.apache.org &middot; freertos.org &middot; docs.zephyrproject.org &middot; zephyrproject.org</div>
-    <div class="num">5 / 28</div>
+    <div class="sources">Sources: nuttx.apache.org &middot; nuttx.apache.org/market-share &middot; docs.px4.io &middot; GitHub star counts, October 2026</div>
+    <div class="num">6 / 32</div>
     <div class="notes-src">
-Before the implementation, where NuttX sits.
+Thirty seconds on where NuttX sits, and whether it is a toy.
 ||
-FreeRTOS, Zephyr and NuttX are all capable embedded operating systems; this is not a scorecard. Their centers of gravity differ. FreeRTOS presents a deliberately small kernel with a growing set of libraries. Zephyr is an integrated platform for connected devices, with POSIX available as an opt-in subset. NuttX starts from a different promise: a standards-oriented, Unix-like OS surface &mdash; POSIX and ANSI APIs, BSD sockets, filesystems and a shell &mdash; scaled down to microcontrollers.
+Three capable RTOSes, three different centers of gravity. FreeRTOS is a deliberately small real-time kernel for MCU firmware and control. Zephyr is an integrated platform for connected devices, wearables and industrial IoT. NuttX is the Unix-like one: networking, filesystems, drivers, used in drones and sensing. Not a ranking &mdash; a shape. By GitHub stars NuttX is the smallest of the three, and I want to say that plainly rather than hide it; stars are developer visibility, not deployment volume.
 ||
-NuttX is also an Apache Software Foundation top-level project. The kernel, applications and documentation are developed in public by the contributor community. That affects both halves of this talk: the Unix-shaped network stack is why WireGuard fits naturally as a netdev, and the Apache project is why "done" means reviewed and maintainable upstream, not only working on my desk.
+And the deployment side is real: fifteen-plus architectures, three hundred-plus boards, fifteen hundred-plus configuration templates upstream. In production it runs Sony devices, PX4 flight controllers, more than a thousand Xiaomi OpenVela SKUs, and it flew on Japan's 2024 lunar mission. Niche next to the giants, not a toy project.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Why This Topic</p>
-    <h2>I wanted secure remote access to the NuttX devices I work with.</h2>
-    <div class="body">
-      <div class="split">
-        <div class="stack">
-          <div class="claim">
-            <p>NuttX had no native, lightweight VPN.</p>
-            <small>Wi-Fi protects one radio hop. I needed an authenticated path <strong>all the way to the MCU</strong>.</small>
-          </div>
-          <div class="fact wg">
-            <b>Without a VPN</b>
-            <p>Expose a global IP, invent a protocol, or accept a vendor cloud. The same problem appears in edge AI, industrial IoT and remote infrastructure.</p>
-          </div>
+    <p class="eyebrow">History</p>
+    <h2>NuttX at Sony &mdash; from audio to edge sensing.</h2>
+    <div class="body" style="gap:10px">
+      <div class="timeline-v">
+        <div class="tlv-item">
+          <div class="tlv-year">2015</div>
+          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+          <div class="tlv-body"><h3>Sony audio products</h3><p>NuttX shipping in production audio devices.</p></div>
         </div>
-        <div class="mini">
-          <div class="photo-card">
-            <div class="photo wide"><img src="assets/aitrios-signage.jpg" alt="An AITRIOS edge AI device built around the Sony IMX500 intelligent vision sensor"></div>
-            <div class="cap"><b>AITRIOS edge AI</b><span>ESP32 + NUTTX</span></div>
-          </div>
-          <div class="photo-card">
-            <div class="shots">
-              <div class="photo"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards"></div>
-              <div class="photo"><img src="assets/spresense-satellite.jpg" alt="ARICA CubeSat using SPRESENSE"></div>
-            </div>
-            <div class="cap"><b>SPRESENSE</b><span>REMOTE SENSING &middot; SPACE</span></div>
-          </div>
+        <div class="tlv-item">
+          <div class="tlv-year">2018&ndash;19</div>
+          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+          <div class="tlv-body"><h3>SPRESENSE / CXD56xx</h3><p>Audio, GNSS, camera and multicore support land in NuttX; presented at Open Source Summit + ELC Europe 2019.</p></div>
+        </div>
+        <div class="tlv-item">
+          <div class="tlv-year">2020</div>
+          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+          <div class="tlv-body"><h3>Upstream collaboration</h3><p>Sony engineers become major NuttX upstream contributors &mdash; &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020.</p></div>
+        </div>
+        <div class="tlv-item">
+          <div class="tlv-year">2020s</div>
+          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+          <div class="tlv-body"><h3>Sensing &amp; edge devices</h3><p>Camera, GNSS and sensing use cases broaden across deployed products.</p></div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Wi-Fi security stops at the radio hop; the gap this project closes is an authenticated path all the way to the MCU.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Sony's use of NuttX predates edge AI; years of shipped audio and SPRESENSE experience paved the way into sensing and camera systems.</p></div>
     </div>
-    <div class="sources">Images: Sony Semiconductor Solutions / SPRESENSE / AITRIOS &middot; CubeSat: ARICA project</div>
-    <div class="num">6 / 28</div>
+    <div class="sources">Sources: M. Ishikawa (Sony), &ldquo;NuttX for Embedded Linux Developers,&rdquo; OSS+ELC Europe 2019 &middot; A. Jerpelea (Sony), &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020 &middot; nuttx.apache.org/docs (CXD56xx)</div>
+    <div class="num">7 / 32</div>
     <div class="notes-src">
-The reason for this topic came from the devices I work with.
+This is Sony's history with NuttX, not mine yet &mdash; and it is longer than edge AI.
 ||
-I work as an edge AI engineer at Sony Semiconductor Solutions, using NuttX from the application side. One setting is AITRIOS edge AI: devices built around ESP32 and NuttX, deployed where walking up with a debug cable is not the operating model. The other is bottom-up work around SPRESENSE, Sony's compact low-power board used for sensing, remote monitoring and space projects.
+Sony has shipped audio products running NuttX since around 2015. SPRESENSE and its CXD56xx chip, introduced a few years later, brought audio, GNSS, camera and multicore support into NuttX, and Masayuki Ishikawa from Sony presented that work at Open Source Summit plus Embedded Linux Conference Europe in 2019. From there, Sony engineers &mdash; including Alin Jerpelea, who later chaired the NuttX project management committee &mdash; became significant upstream contributors; his 2020 talk was literally titled "A Journey from Fork to Mainline."
 ||
-These are not claims that this WireGuard driver ships in either product. They are the experience that exposed the need: after a device is installed, how do I reach it with ordinary tools without exposing it directly, inventing a security protocol, or requiring a vendor cloud? Wi-Fi security protects only the local radio hop. I wanted one authenticated path from the engineer all the way to the MCU, across whatever network lies underneath.
+I am not claiming one engineer caused Sony's adoption of NuttX &mdash; I don't have a source for that, so I won't say it. What I can say from public talks and the docs is simpler: Sony's NuttX usage predates edge AI by the better part of a decade, and it broadened over time into camera, GNSS and sensing work. That is the ground my own experience stands on.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Why It Matters</p>
-    <h2>The ordinary way of working, extended to the MCU.</h2>
-    <div class="body">
-      <ul class="big">
-        <li>Maintenance <span>ssh / telnet into a field device, pull logs, update firmware &mdash; with your usual tools.</span></li>
-        <li>Data collection <span>pull the cloud into the device's network, instead of bending the device to a cloud.</span></li>
-        <li>Zero trust to the edge <span>an authenticated, encrypted tunnel that reaches all the way to the microcontroller.</span></li>
-        <li>Interop <span>the peer can be Linux, Windows, or an existing WireGuard server &mdash; not a bespoke protocol.</span></li>
-      </ul>
-      <div class="takeaway"><b>Takeaway</b><p>The value isn't a new capability &mdash; it's that maintenance, data collection, and zero trust now reach the MCU with the tools teams already use.</p></div>
-    </div>
-    <div class="num">7 / 28</div>
-    <div class="notes-src">
-It is not that you can do new things. It is that the things you already wanted to do become ordinary.
-||
-Maintenance with the usual tools. Pulling the cloud into the device's network rather than the other way around. Zero trust that does not stop at a gateway but reaches the MCU. And because it is standard WireGuard, the other end can be anything &mdash; that interoperability is itself the value.
-    </div>
-  </section>
-
-  <section class="slide">
-    <p class="eyebrow">The Plan</p>
-    <h2>Don't write it from scratch.</h2>
-    <div class="body">
+    <p class="eyebrow">Experience</p>
+    <h2>NuttX in SPRESENSE and AITRIOS &mdash; my side of it.</h2>
+    <div class="body" style="gap:16px">
       <div class="two">
-        <div class="panel nx">
-          <h3>The reference</h3>
-          <p><code>smartalock/wireguard-lwip</code> implements WireGuard as an lwIP netif. All OS-specific behaviour is isolated behind <code>wireguard-platform.h</code> &mdash; <strong>four functions</strong>. The protocol core and crypto are portable C. BSD-licensed, consistent with NuttX.</p>
+        <div class="photo-card">
+          <div class="photo wide" style="height:120px"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards"></div>
+          <div class="copy" style="min-height:0;padding:14px 18px">
+            <h3 style="font-size:18px;margin-bottom:6px">SPRESENSE</h3>
+            <p style="font-size:15px">NuttX SDK &middot; sensing &amp; camera &middot; GNSS / LTE &middot; prototyping and embedded development.</p>
+          </div>
         </div>
-        <div class="panel">
-          <h3>What had to change</h3>
-          <p>NuttX does not use lwIP. It has its own TCP/IP stack; headers like <code>lwip/netif.h</code> do not exist here. So the plan is simple to state: <span class="hl">keep the protocol core, replace the network glue.</span></p>
+        <div class="photo-card">
+          <div class="photo wide" style="height:120px"><img src="assets/aitrios-signage.jpg" alt="AITRIOS edge AI camera signage"></div>
+          <div class="copy" style="min-height:0;padding:14px 18px">
+            <h3 style="font-size:18px;margin-bottom:6px">AITRIOS / edge AI camera</h3>
+            <p style="font-size:15px">Edge AI &middot; camera deployment &middot; ESP32 + NuttX &middot; operation in the field, not on a bench.</p>
+          </div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Isolating OS-specific behaviour behind four functions is what makes a full protocol stack portable in one afternoon of reading, not a rewrite.</p></div>
+      <div class="claim ok" style="text-align:center;padding:14px 28px">
+        <p style="font-size:19px">My perspective: <span class="hl">application development</span> &rarr; <span class="hl">system integration</span> &rarr; <span class="hl">deployment &amp; operation</span>.</p>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>My problem was not getting NuttX to run &mdash; it was reaching NuttX devices after they were deployed.</p></div>
     </div>
-    <div class="num">8 / 28</div>
+    <div class="num">8 / 32</div>
     <div class="notes-src">
-Writing a crypto stack from scratch would be a mistake. So I started from an existing implementation.
+That was Sony's history. This is mine &mdash; same hardware family, a different vantage point.
 ||
-wireguard-lwip implements WireGuard as an lwIP netif, and crucially it isolates everything OS-specific behind one header with four functions. The protocol and the crypto are portable C. NuttX does not use lwIP, though &mdash; it has its own stack. So the whole job is: keep the protocol core untouched, and replace the network glue.
+On SPRESENSE, I work with the NuttX SDK for sensing, camera, GNSS and LTE work &mdash; prototyping and embedded development, application side. On AITRIOS edge AI cameras, built around ESP32 and NuttX, the work is about getting a camera deployed and operating in the field, not sitting on a bench next to a debugger.
+||
+The common thread is the direction I approach NuttX from: application development, then system integration, then deployment and operation. I never had to write a NuttX driver to do any of that &mdash; until this project. And the problem that got me there was not "how do I get NuttX to run." It was "how do I reach a NuttX device after it has already been deployed."
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Design Decision</p>
-    <h2>A NuttX netdev, not an lwIP netif.</h2>
+    <p class="eyebrow">Problem</p>
+    <h2>The remote access gap.</h2>
+    <div class="body" style="gap:18px">
+      <svg viewBox="0 0 1136 210" role="img" aria-label="Wi-Fi security protects only the last hop to the device; an authenticated path is needed all the way from the engineer to the NuttX device" style="width:100%;height:auto;">
+        <text x="568" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#8d1f24">NEEDED &mdash; AUTHENTICATED PATH ALL THE WAY TO THE DEVICE</text>
+        <line x1="40" y1="32" x2="1096" y2="32" stroke="#8d1f24" stroke-width="2"></line>
+        <line x1="40" y1="26" x2="40" y2="38" stroke="#8d1f24" stroke-width="2"></line>
+        <line x1="1096" y1="26" x2="1096" y2="38" stroke="#8d1f24" stroke-width="2"></line>
+
+        <rect x="40" y="70" width="180" height="56" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="130" y="103" text-anchor="middle" font-size="16" font-weight="700">Engineer</text>
+
+        <line x1="220" y1="98" x2="288" y2="98" stroke="#87939b" stroke-width="2"></line>
+        <rect x="292" y="70" width="230" height="56" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="407" y="96" text-anchor="middle" font-size="16" font-weight="700">Internet</text>
+        <text class="small" x="407" y="115" text-anchor="middle">router / network</text>
+
+        <line x1="522" y1="98" x2="590" y2="98" stroke="#87939b" stroke-width="2"></line>
+        <rect x="594" y="70" width="180" height="56" fill="#f5edd8" stroke="#8a650c"></rect>
+        <text x="684" y="103" text-anchor="middle" font-size="16" font-weight="700" fill="#8a650c">Wi-Fi</text>
+
+        <line x1="774" y1="98" x2="842" y2="98" stroke="#87939b" stroke-width="2"></line>
+        <rect x="846" y="70" width="250" height="56" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="971" y="103" text-anchor="middle" font-size="16" font-weight="800" fill="#8d1f24">NuttX device</text>
+
+        <line x1="594" y1="150" x2="1096" y2="150" stroke="#87939b" stroke-width="2"></line>
+        <line x1="594" y1="144" x2="594" y2="156" stroke="#87939b" stroke-width="2"></line>
+        <line x1="1096" y1="144" x2="1096" y2="156" stroke="#87939b" stroke-width="2"></line>
+        <text class="small" x="845" y="172" text-anchor="middle">WPA2 / WPA3 protects only this hop</text>
+      </svg>
+      <div class="three">
+        <div class="fact wg"><b>Public exposure</b><p>Open a global IP straight to the device.</p></div>
+        <div class="fact gold"><b>Bespoke protocol</b><p>Invent and maintain your own secure channel.</p></div>
+        <div class="fact blue"><b>Vendor cloud</b><p>Depend on someone else's cloud to reach your own device.</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>The missing piece was a standard authenticated network path all the way to the NuttX device.</p></div>
+    </div>
+    <div class="num">9 / 32</div>
+    <div class="notes-src">
+Now the problem itself, stated plainly.
+||
+Wi-Fi security is real, but it protects one hop: the radio link between the device and the access point. Everything before that &mdash; the engineer, the internet, the router &mdash; is outside what WPA2 or WPA3 can promise. What I needed was authentication and encryption for the whole path, engineer to device, not just the last few meters of it.
+||
+Without that, the practical options are all worse: expose the device with a public IP and hope, invent and maintain a bespoke secure protocol, or hand the connection to a vendor's cloud. The same gap shows up in edge AI, industrial IoT, and remote infrastructure generally &mdash; it is not specific to this one project.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Solution</p>
+    <h2>Why WireGuard fits this problem.</h2>
+    <div class="body" style="gap:18px">
+      <svg viewBox="0 0 1136 150" role="img" aria-label="Engineer, Linux and Windows peers connect to the NuttX device through a WireGuard tunnel" style="width:100%;height:auto;">
+        <rect x="40" y="40" width="330" height="70" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="205" y="70" text-anchor="middle" font-size="17" font-weight="700">Engineer &middot; Linux &middot; Windows</text>
+        <text class="small" x="205" y="92" text-anchor="middle">real, existing WireGuard peers</text>
+        <line x1="370" y1="75" x2="440" y2="75" stroke="#176c67" stroke-width="4"></line>
+        <text x="568" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#176c67">WIREGUARD TUNNEL</text>
+        <line x1="696" y1="75" x2="766" y2="75" stroke="#176c67" stroke-width="4"></line>
+        <rect x="770" y="40" width="326" height="70" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="933" y="70" text-anchor="middle" font-size="17" font-weight="800" fill="#8d1f24">NuttX device</text>
+        <text class="small" x="933" y="92" text-anchor="middle" fill="#8d1f24">wg0</text>
+      </svg>
+      <ul class="big" style="gap:10px">
+        <li style="font-size:20px">Modern IP-layer VPN <span style="font-size:15px">small, simple design &mdash; a fraction of the codebase of IPsec or OpenVPN.</span></li>
+        <li style="font-size:20px">UDP transport, public-key peers <span style="font-size:15px">no certificate authority or session negotiation to operate.</span></li>
+        <li style="font-size:20px">Already everywhere <span style="font-size:15px">mainline Linux kernel, an official Windows client, interoperable with existing endpoints &mdash; not a bespoke protocol.</span></li>
+      </ul>
+      <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol instead of a bespoke security layer or proprietary cloud.</p></div>
+    </div>
+    <div class="num">10 / 32</div>
+    <div class="notes-src">
+Given that problem, why WireGuard specifically.
+||
+WireGuard is a modern, IP-layer VPN: small and simple by design, a tiny fraction of the code size of IPsec or OpenVPN, which matters a lot on a microcontroller. It runs over plain UDP, and peers are identified by public keys rather than certificates or a negotiated session. And critically, it is not exotic: it has been in the mainline Linux kernel for years, there is an official Windows client, and the other end of the tunnel can be any existing WireGuard peer.
+||
+So the choice was not "adopt a product." It was "adopt a standard protocol instead of inventing a bespoke one or leaning on a vendor's cloud." That is what makes it fit this specific problem.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Architecture</p>
+    <h2>WireGuard on the NuttX network stack.</h2>
+    <div class="body" style="gap:16px">
+      <svg viewBox="0 0 900 340" role="img" aria-label="Application traffic flows down through TCP/UDP/IP, wg0, WireGuard encryption, a UDP socket, and out over wlan0 or usrsock; replies flow back up the same path" style="width:620px;height:auto;margin:0 auto;display:block;">
+        <rect x="120" y="0" width="520" height="42" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="26" text-anchor="middle" font-size="16" font-weight="700">Application</text>
+        <rect x="120" y="54" width="520" height="42" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="80" text-anchor="middle" font-size="16" font-weight="700">TCP / UDP / IP</text>
+        <rect x="120" y="108" width="520" height="42" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="380" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#8d1f24">wg0 (NET_LL_TUN netdev)</text>
+        <rect x="120" y="162" width="520" height="42" fill="#dff0ee" stroke="#176c67" stroke-width="2"></rect>
+        <text x="380" y="188" text-anchor="middle" font-size="16" font-weight="700" fill="#176c67">WireGuard encrypt / decrypt</text>
+        <rect x="120" y="216" width="520" height="42" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="242" text-anchor="middle" font-size="16" font-weight="700">UDP socket</text>
+        <rect x="120" y="270" width="520" height="42" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="380" y="296" text-anchor="middle" font-size="16" font-weight="700">wlan0 / usrsock &middot; physical network</text>
+
+        <line x1="380" y1="42" x2="380" y2="52" stroke="#87939b" stroke-width="2"></line>
+        <line x1="380" y1="96" x2="380" y2="106" stroke="#87939b" stroke-width="2"></line>
+        <line x1="380" y1="150" x2="380" y2="160" stroke="#87939b" stroke-width="2"></line>
+        <line x1="380" y1="204" x2="380" y2="214" stroke="#87939b" stroke-width="2"></line>
+        <line x1="380" y1="258" x2="380" y2="268" stroke="#87939b" stroke-width="2"></line>
+
+        <defs>
+          <marker id="arrow-tx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8d1f24"></path></marker>
+          <marker id="arrow-rx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#245c9a"></path></marker>
+        </defs>
+        <line x1="78" y1="20" x2="78" y2="290" stroke="#8d1f24" stroke-width="2" marker-end="url(#arrow-tx)"></line>
+        <text x="60" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#8d1f24" transform="rotate(-90 60 160)">TX</text>
+        <line x1="700" y1="290" x2="700" y2="20" stroke="#245c9a" stroke-width="2" marker-end="url(#arrow-rx)"></line>
+        <text x="718" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#245c9a" transform="rotate(90 718 160)">RX</text>
+      </svg>
+      <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is an ordinary network device; WireGuard turns its packets into encrypted UDP underneath.</p></div>
+    </div>
+    <div class="num">11 / 32</div>
+    <div class="notes-src">
+One level more technical than the overview: this is where implementation starts.
+||
+Outbound, a packet comes down from the application through TCP or UDP over IP, reaches wg0 like any other netdev, gets encrypted by WireGuard, and leaves as a UDP datagram over wlan0 on a board, or over usrsock where Wi-Fi is itself a socket-based peripheral. Inbound traffic is the same path in reverse: a UDP datagram arrives, WireGuard decrypts it, and it is handed back up to wg0 as if it had arrived on an ordinary interface.
+||
+Everything from here is about building that middle section &mdash; wg0 and the encryption step &mdash; without touching the layers above or below it.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Porting Strategy</p>
+    <h2>Reusing wireguard-lwip without lwIP.</h2>
+    <div class="body">
+      <div class="stack" style="gap:14px">
+        <div class="fact nx" style="border-top-width:4px">
+          <b>Protocol &amp; crypto &mdash; KEEP</b>
+          <p>Handshake, transport, BLAKE2s, ChaCha20-Poly1305, Curve25519. Portable C, no OS dependency. Used as-is.</p>
+        </div>
+        <div class="fact gold" style="border-top-width:4px">
+          <b>Platform hooks &mdash; ADAPT</b>
+          <p>All OS-specific behaviour isolated behind <code>wireguard-platform.h</code> &mdash; four functions: clock, random bytes, TAI64N time, load signal.</p>
+        </div>
+        <div class="fact wg" style="border-top-width:4px">
+          <b>lwIP network glue &mdash; REPLACE</b>
+          <p><code>wireguardif.c</code>'s lwIP <code>netif</code> registration and buffers. NuttX has no lwIP; this layer becomes the actual porting work.</p>
+        </div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>A clean platform boundary let the protocol and crypto move unchanged; only the OS and network glue had to be replaced.</p></div>
+    </div>
+    <div class="num">12 / 32</div>
+    <div class="notes-src">
+Why start from smartalock/wireguard-lwip instead of writing a crypto stack from scratch.
+||
+wireguard-lwip splits cleanly into three layers. The protocol and crypto &mdash; handshake, transport, BLAKE2s, ChaCha20-Poly1305, Curve25519 &mdash; are portable C with no OS dependency, so they come across untouched. All OS-specific behaviour was already isolated behind one header, wireguard-platform.h, as four functions. Only the lwIP network glue, the part that registers an lwIP netif and manages lwIP buffers, needed to be replaced, because NuttX does not have lwIP at all.
+||
+The fact that I didn't have to rewrite anything is not luck &mdash; it's what a clean platform boundary buys you. That boundary is the reason this port was weeks, not months.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Design</p>
+    <h2>Mapping lwIP onto NuttX netdev.</h2>
     <div class="body">
       <table>
         <tr><th>Concept</th><th>lwIP</th><th>NuttX</th></tr>
@@ -1094,9 +1381,9 @@ wireguard-lwip implements WireGuard as an lwIP netif, and crucially it isolates 
       <div class="claim ok">
         <p><code>wg0</code> is a <code>NET_LL_TUN</code> netdev, and its wire is a UDP socket.</p>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Porting means mapping abstractions onto the target stack's own primitives, not carrying the source stack's abstractions along with it.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Porting meant mapping onto NuttX's native abstractions, not carrying lwIP into NuttX.</p></div>
     </div>
-    <div class="num">9 / 28</div>
+    <div class="num">13 / 32</div>
     <div class="notes-src">
 The single most important porting decision.
 ||
@@ -1105,8 +1392,8 @@ Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. ne
   </section>
 
   <section class="slide">
-    <p class="eyebrow">How It Was Built</p>
-    <h2>Keep the protocol core, replace the glue.</h2>
+    <p class="eyebrow">Result</p>
+    <h2>A working tunnel is only the beginning.</h2>
     <div class="body">
       <table>
         <tr><th>Layer</th><th>Porting cost</th><th>In this port</th></tr>
@@ -1118,9 +1405,9 @@ Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. ne
         <p>It worked: <code>wg genkey / set / setconf</code> at run time &mdash; no rebuild to change keys or peers.</p>
         <small>And that is exactly where the interesting part begins &mdash; because working was the easy part.</small>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>A tunnel that comes up is the cheapest milestone in this project &mdash; almost everything that follows is about what "it works" doesn't prove.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Getting a tunnel up was the cheapest milestone; almost everything interesting came after it already &ldquo;worked.&rdquo;</p></div>
     </div>
-    <div class="num">10 / 28</div>
+    <div class="num">14 / 32</div>
     <div class="notes-src">
 The result of the first version.
 ||
@@ -1129,15 +1416,39 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Part 2 &middot; The pattern</p>
-    <h2>Every hard bug had the same shape.</h2>
+    <p class="eyebrow">Pattern</p>
+    <h2>Shallow tests pass, deeper tests fail.</h2>
     <div class="body">
+      <svg viewBox="0 0 1136 190" role="img" aria-label="A shallow test such as handshake or ping passes, leading to the assumption that area is correct, until a deeper test such as TCP, real hardware, kernel, or security fails" style="width:100%;height:auto;">
+        <defs>
+          <marker id="arrow-pattern" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="20" width="280" height="80" fill="#dff0ee" stroke="#176c67" stroke-width="2"></rect>
+        <text x="160" y="50" text-anchor="middle" font-size="15" font-weight="700" fill="#176c67">SHALLOW TEST</text>
+        <text x="160" y="72" text-anchor="middle" font-size="14" fill="#176c67">handshake / ping</text>
+        <text x="160" y="92" text-anchor="middle" font-size="16" font-weight="800" fill="#176c67">&#10003; PASS</text>
+
+        <line x1="300" y1="60" x2="366" y2="60" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-pattern)"></line>
+
+        <rect x="370" y="20" width="360" height="80" fill="#fbfcfd" stroke="#d5dde2" stroke-dasharray="6 5"></rect>
+        <text x="550" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#5c6c78">ASSUMPTION</text>
+        <text x="550" y="76" text-anchor="middle" font-size="14" fill="#5c6c78">&ldquo;that part is correct&rdquo;</text>
+
+        <line x1="730" y1="60" x2="796" y2="60" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-pattern)"></line>
+
+        <rect x="800" y="20" width="316" height="80" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="958" y="50" text-anchor="middle" font-size="15" font-weight="700" fill="#8d1f24">DEEPER TEST</text>
+        <text x="958" y="72" text-anchor="middle" font-size="14" fill="#8d1f24">TCP / real HW / kernel / security</text>
+        <text x="958" y="92" text-anchor="middle" font-size="16" font-weight="800" fill="#8d1f24">&#10007; FAIL</text>
+      </svg>
       <div class="claim">
         <p>A shallow test passes. A deeper one fails.</p>
         <small>And because the shallow test passed, you trust that area and spend hours looking somewhere else. That loop repeated all the way through this project &mdash; and it did not stop at the apps version.</small>
       </div>
     </div>
-    <div class="num">11 / 28</div>
+    <div class="num">15 / 32</div>
     <div class="notes-src">
 This is the heart of the talk.
 ||
@@ -1161,7 +1472,7 @@ Every difficult bug in this project had the same shape. A shallow test passes; a
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A successful setsockopt() return does not prove the option took effect &mdash; and an unhandled option can hide behind a deadlock instead of an obvious error.</p></div>
     </div>
-    <div class="num">12 / 28</div>
+    <div class="num">16 / 32</div>
     <div class="notes-src">
 The first taste: a success return with no effect.
 ||
@@ -1185,7 +1496,7 @@ Setting a receive timeout returned zero, success. But recvfrom still blocked for
       </div>
       <div class="takeaway"><b>Takeaway</b><p>pthread_detach() controls resource reclamation, not lifetime &mdash; a detached thread still dies with the task group that launched it.</p></div>
     </div>
-    <div class="num">13 / 28</div>
+    <div class="num">17 / 32</div>
     <div class="notes-src">
 The second: a lifecycle assumption that did not hold.
 ||
@@ -1210,7 +1521,7 @@ The receive thread was created detached. When the launching command exited, the 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>In NuttX, file descriptors are scoped to the task group, not global &mdash; a socket created in one task's fd table is not usable by another task's fd, even against the same kernel object.</p></div>
     </div>
-    <div class="num">14 / 28</div>
+    <div class="num">18 / 32</div>
     <div class="notes-src">
 My favourite bug in the project.
 ||
@@ -1233,7 +1544,7 @@ The cause: in NuttX, file descriptors are scoped to the task group, not to the w
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The 50&nbsp;ms polling workaround preserved correctness but reduced throughput by roughly an order of magnitude &mdash; an unmeasured stopgap can look free and cost 10&times;.</p></div>
     </div>
-    <div class="num">15 / 28</div>
+    <div class="num">19 / 32</div>
     <div class="notes-src">
 The fourth: an assumption I did not measure.
 ||
@@ -1256,7 +1567,7 @@ The fd-less fix also broke poll, which is fd-based, so as a stopgap I polled the
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A task's default stack size is a guess until it's measured on the hardware that will actually run the deepest call path &mdash; sim's generous stacks hide the deficit.</p></div>
     </div>
-    <div class="num">16 / 28</div>
+    <div class="num">20 / 32</div>
     <div class="notes-src">
 The fifth, and it comes back later: stacks nobody measured.
 ||
@@ -1280,7 +1591,7 @@ Persisting the config by redirecting into a file froze the board, but only on re
       </div>
       <div class="takeaway"><b>Takeaway</b><p>An apps/-space port proves the protocol; only an in-tree kernel driver is a first-class device that survives PROTECTED and KERNEL builds.</p></div>
     </div>
-    <div class="num">17 / 28</div>
+    <div class="num">21 / 32</div>
     <div class="notes-src">
 This is the additional work since the first version, and the part that makes it mergeable.
 ||
@@ -1300,7 +1611,7 @@ Version one lives in apps and reaches into socket internals. That is fine for a 
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>The socket, the thread, and the pointer-free ABI are one fix: don't trust code that can exit, or a boundary it can't cross.</p></div>
     </div>
-    <div class="num">18 / 28</div>
+    <div class="num">22 / 32</div>
     <div class="notes-src">
 The shape of the real driver.
 ||
@@ -1324,7 +1635,7 @@ wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receiv
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A successful WireGuard handshake does not prove that data-path crypto or kernel behavior is correct &mdash; both bugs here only surfaced past the handshake, on a real kernel build.</p></div>
     </div>
-    <div class="num">19 / 28</div>
+    <div class="num">23 / 32</div>
     <div class="notes-src">
 And the same pattern held at kernel depth &mdash; twice.
 ||
@@ -1352,7 +1663,7 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
       <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim isn't verification &mdash; it must survive both privilege models, multiple CPUs, and hardware measurement.</p></div>
       <div class="sources">Hardware runs used the feature revision before the final upstream rebase; KERNEL/SMP tunnels were rerun on the rebased submission candidate.</div>
     </div>
-    <div class="num">20 / 28</div>
+    <div class="num">24 / 32</div>
     <div class="notes-src">
 Be precise about which implementation was verified where.
 ||
@@ -1381,7 +1692,7 @@ And it now runs on real hardware &mdash; both boards. The kernel driver flashed 
       <div class="claim"><p>Each of these <span class="hl">passes every functional test</span> while being broken.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>A working tunnel proves none of: unique keys, wiped secrets, or stable resources &mdash; each needs its own targeted check.</p></div>
     </div>
-    <div class="num">21 / 28</div>
+    <div class="num">25 / 32</div>
     <div class="notes-src">
 The previous slide was where it runs. This one is what a working tunnel cannot tell you.
 ||
@@ -1409,7 +1720,7 @@ Third, the soak. A hundred and fifty-one rekeys forced past the point where sess
       <div class="claim"><p>Took the contract Linux and wireguard-go use &mdash; and made the case it misses <span class="hl">say so</span>.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>No RTC, no timestamp progress: a device can be unable to dial out and still pass a ping test.</p></div>
     </div>
-    <div class="num">22 / 28</div>
+    <div class="num">26 / 32</div>
     <div class="notes-src">
 This is the one where I had to decide rather than test. Then I went and measured the decision.
 ||
@@ -1440,7 +1751,7 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
         </div>
       </div>
     </div>
-    <div class="num">23 / 28</div>
+    <div class="num">27 / 32</div>
     <div class="notes-src">
 The point of the demo is that there is nothing special to see.
 ||
@@ -1462,7 +1773,7 @@ I telnet into the board through the tunnel and run commands, and I start a web s
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Runtime keys and layer-by-layer health signals turn "the tunnel is down" into "the router side is down" &mdash; the difference between a demo and something you can run unattended.</p></div>
     </div>
-    <div class="num">24 / 28</div>
+    <div class="num">28 / 32</div>
     <div class="notes-src">
 Moving from "it works in a demo" to "you could run it."
 ||
@@ -1485,7 +1796,7 @@ Keys are no longer baked into the build &mdash; you generate and set them at run
       <div class="takeaway"><b>Takeaway</b><p>Four functions of OS glue carried one source across four architectures, unchanged &mdash; the porting bet paid off.</p></div>
       <div class="sources">Verified with the apps (FLAT) implementation; the kernel driver adds sim, rv-virt (BUILD_KERNEL) and both boards over real Wi-Fi (ESP32-S3 native, SPRESENSE over usrsock) on top.</div>
     </div>
-    <div class="num">25 / 28</div>
+    <div class="num">29 / 32</div>
     <div class="notes-src">
 The design decision from the start, validated.
 ||
@@ -1506,7 +1817,7 @@ Isolating the OS behind a few functions was a bet. Here is the check, with the a
       <div class="takeaway"><b>Takeaway</b><p>Splitting the crypto fix into its own PR lets it land in NuttX on its own merits, independent of whether the driver itself is accepted.</p></div>
       <div class="sources">Status: three signed candidate branches are published on the author's forks; upstream discussion and PRs are not open yet.</div>
     </div>
-    <div class="num">26 / 28</div>
+    <div class="num">30 / 32</div>
     <div class="notes-src">
 Closing the loop with this room's values.
 ||
@@ -1524,7 +1835,7 @@ The contribution is staged: a small crypto PR first, for the nonce fix, because 
         <li>Porting into a project can improve the project <span>two latent NuttX bugs found on the way in &mdash; its ChaCha20-Poly1305 nonce, and a boot regression that stops a clean release from reaching a shell on this board at all.</span></li>
       </ul>
     </div>
-    <div class="num">27 / 28</div>
+    <div class="num">31 / 32</div>
     <div class="notes-src">
 Three things to take away.
 ||
@@ -1547,7 +1858,7 @@ First, shallow tests pass and deep tests fail &mdash; so build your tests for de
         </div>
       </div>
     </div>
-    <div class="num">28 / 28</div>
+    <div class="num">32 / 32</div>
     <div class="notes-src">
 Thank you. I am happy to take questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
     </div>
