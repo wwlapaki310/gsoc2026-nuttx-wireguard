@@ -607,6 +607,37 @@
   }
   .stack { display: grid; gap: 18px; }
 
+  .intro-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .intro-avatar {
+    flex: none;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--wg);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .chip .e { font-size: 16px; }
+
   .demo {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
@@ -842,7 +873,10 @@ Seven chapters. Background on NuttX and the motivation, the porting strategy tha
     <p class="eyebrow">About Me</p>
     <h2>I ported WireGuard to NuttX after hours, not on assignment.</h2>
     <div class="body">
-      <p class="lead">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+      <div class="intro-row">
+        <img class="intro-avatar" src="assets/aki310-avatar.png" alt="Satoru Akita">
+        <p class="lead" style="margin-bottom:0">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+      </div>
       <div class="three">
         <div class="fact wg">
           <b>Day job</b>
@@ -857,12 +891,23 @@ Seven chapters. Background on NuttX and the motivation, the porting strategy tha
           <p>My first contribution to Apache NuttX &mdash; and the first time this work has left my own machine.</p>
         </div>
       </div>
+      <div class="chips">
+        <span class="chip"><span class="e">🏃</span> Full marathon runner</span>
+        <span class="chip"><span class="e">🪂</span> Hang gliding</span>
+        <span class="chip"><span class="e">⛵</span> Licensed boat pilot</span>
+        <span class="chip"><span class="e">🚀</span> Rockets &amp; robots</span>
+        <span class="chip"><span class="e">🕹️</span> Unity game dev</span>
+        <span class="chip"><span class="e">🌌</span> Space &amp; semiconductor nerd</span>
+        <span class="chip"><span class="e">🎤</span> Serial hackathon &amp; conference volunteer</span>
+      </div>
     </div>
     <div class="num">3 / 28</div>
     <div class="notes-src">
 Quickly, who is talking.
 ||
 I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side &mdash; not as a kernel or driver contributor, at least not until this project. This work is independent: it is not something my employer asked for or ships. It started because I personally needed secure remote access to devices I work with, and once that problem was solved I kept going. This talk, and the upstream contribution behind it, is the first time this work has left my own machine.
+||
+And a little outside of work: I run full marathons, fly hang gliders, and I'm a licensed small-boat pilot. I've built rockets and robots, shipped a small Unity game, and I'm generally a space and semiconductor nerd. I go to a lot of hackathons, and volunteer at a lot of conferences &mdash; this one included.
     </div>
   </section>
 
