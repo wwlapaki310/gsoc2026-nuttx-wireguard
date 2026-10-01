@@ -74,6 +74,9 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 デッキ本体(HTML / PDF)はここ、台本はすべて [presentation/talkscript/](presentation/talkscript/) に
 デッキと同じ名前で置く。
 
+発表の技術背景を用語から学ぶ場合は
+[大学1年生向け初心者ガイド](presentation/coc-glasgow-beginner-guide-ja.md)を入口にする。
+
 | デッキ | 台本 | |
 |---|---|---|
 | [slides.html](presentation/slides.html) | [talkscript/slides.md](presentation/talkscript/slides.md) | 本編 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧。台本は時間配分と削る順番つき |

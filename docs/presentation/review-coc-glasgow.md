@@ -460,3 +460,80 @@ Sources used for the comparison wording are primary project sources:
 `nuttx.apache.org`, `freertos.org`, `docs.zephyrproject.org`, and the Zephyr
 Project charter. The comparison describes design centers, not feature
 superiority.
+
+---
+
+## Japanese script review — 2026-10-02
+
+Reviewed the rewritten 39-slide Japanese rehearsal script against the current
+deck and `verification-matrix.md`. The overall narrative now works: personal
+background leads to the product need, NuttX positioning leads to the porting
+choice, and the second half pays off the "shallow pass, deep fail" thesis.
+The new background is relevant rather than an ASF/CoC introduction, as
+requested. Three correctness mismatches must be fixed before this script is
+used as the source for the English talk.
+
+### Correctness findings
+
+1. **Slide 27 reverses the ChaCha20-Poly1305 symptom.** The first transport
+   packet uses counter zero, where the two nonce layouts coincide, so that
+   first packet succeeds and packets from counter one onward fail. The current
+   Japanese wording, "the first data packet and everything after it fails,"
+   says the first packet fails. It should say: "最初のデータパケットだけは
+   通り、2つ目以降がすべて復号に失敗します。"
+2. **Slide 29 calls IOB exhaustion uncovered, but TI is now PASS.** The sim test
+   drove the pool to zero, observed no assertion or death, recovered all 12
+   buffers, and restored tunnel traffic. The remaining limitation is narrower:
+   hardware IOB exhaustion was not reached; Wi-Fi loss mid-send and sustained
+   hardware load remain uncovered. Say "実機での IOB 枯渇" rather than "IOB
+   枯渇."
+3. **Slide 30 describes the obsolete first TZ probe.** The expanded TZ probe
+   deliberately observes nonzero handshake and pending-next material before
+   `down`, then verifies it is zero afterward. The current statement that the
+   handshake state is already gone while the interface is up conflicts with
+   both `verification-matrix.md` and the updated Q&A. Replace it with the
+   measured scope: handshake, next/current/previous key material was made
+   nonzero in controlled states and every named secret field was zero after
+   `down`; the static key intentionally remained as one copy.
+
+### Timing and delivery
+
+- The cumulative script time is **30:50**, outside the outline's stated
+  20–30-minute range before any transition delay, applause, network delay, or
+  recovery from a demo problem. A live English delivery normally needs more
+  margin than a Japanese read-through. For a hard 30-minute slot, rehearse to
+  **27–28 minutes** or obtain explicit confirmation that the slot excludes
+  Q&A and permits an over-30-minute talk.
+- The seven chapter estimates shown on the agenda add up to about **33
+  minutes**, not the script's stated 31 minutes. The displayed estimates and
+  spoken total need one source of truth.
+- Slides 29–31 occupy about 10.6 minutes. Keeping their claims is justified,
+  but reading every datum will flatten the climax. For each slide, speak one
+  claim, one decisive measurement, and one limitation; leave the remaining
+  table entries visible for reviewers and Q&A.
+- Seven repeated agenda returns cost only about 70 seconds on paper, but also
+  reset momentum. Keep them as silent chapter markers or remove some of them
+  if rehearsal exceeds the slot; do not compress the timestamp reasoning to
+  pay for navigation slides.
+
+### Claim audit
+
+- The 2026-10-02 GitHub counts are consistent with the rounded slide values:
+  FreeRTOS 7,850, Zephyr 16,664, NuttX 4,054. They are volatile and must be
+  refreshed immediately before the talk, or dated visibly.
+- The NuttX project market-share page supports the 1,000+ Xiaomi/OpenVela SKUs,
+  Sony devices, PX4, and 2024 Japanese lunar-mission examples. These are
+  defensible as project-sourced adoption claims, not independent market data.
+- "数か月ではなく数週間で終わりました" is too broad for this repository's
+  March-to-September history. If it means only the first implementation sprint,
+  name that scope and its dates; otherwise replace it with the causal claim
+  that the platform boundary reduced the porting work.
+- Replace "simでは絶対に見つかりませんでした" with "通常のsim構成では
+  見つかりませんでした." The stack fault depends on target stack sizing, not
+  on an absolute inability to reproduce it in a simulator.
+
+**Verdict:** the script has a strong conference-talk arc and the restored
+background fixes the earlier loss of motivation. It is not yet the final
+English-script source because of the three verification mismatches and the
+missing timing margin above. After those corrections and one timed spoken
+rehearsal, it is presentation-grade.

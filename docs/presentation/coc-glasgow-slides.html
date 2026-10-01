@@ -925,7 +925,7 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item">
@@ -936,22 +936,22 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
         <div class="agenda-item">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">6</div>
@@ -961,7 +961,7 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
         <div class="agenda-item">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -969,13 +969,13 @@ But the point of this talk is not that it works. It is what "works" hid, and wha
     <div class="notes-src">
 Here is the shape of the talk.
 ||
-Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard &mdash; then the porting strategy that started from an existing lwIP implementation, five hidden pitfalls a working demo never revealed, moving the driver into the kernel, how it was verified, a short demo, and then what to carry out and where this goes upstream. About thirty-three minutes, then questions.
+Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard &mdash; then the porting strategy that started from an existing lwIP implementation, five hidden pitfalls a working demo never revealed, moving the driver into the kernel, how it was verified, a short demo, and then what to carry out and where this goes upstream. About thirty minutes, then questions.
     </div>
   </section>
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item current">
@@ -986,22 +986,22 @@ Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's histor
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -1011,7 +1011,7 @@ Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's histor
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -1023,11 +1023,92 @@ Here we go &mdash; chapter one.
 
   <section class="slide">
     <p class="eyebrow">About Me</p>
-    <h2>Not a NuttX kernel developer &mdash; the person who had to reach devices after they shipped.</h2>
-    <div class="body">
+    <h2>From Nagoya, by way of space, robotics, and a lot of conferences.</h2>
+    <div class="body" style="gap:9px">
       <div class="intro-row">
-        <img class="intro-avatar" src="assets/aki310-avatar.png" alt="Satoru Akita">
+        <img class="intro-avatar" src="assets/profile-avatar.jpg" alt="Satoru Akita">
         <p class="lead" style="margin-bottom:0">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+      </div>
+      <div class="two">
+        <div class="photo-card" style="padding:10px">
+          <svg viewBox="150 280 750 650" role="img" aria-label="Map of Japan marking Nagoya (born), Sendai (university), and Kawasaki (now)" style="width:215px;height:auto;display:block;margin:0 auto">
+            <g fill="#e4e9ec" stroke="#c3ccd2" stroke-width="1.2" stroke-linejoin="round">
+              <path d="M591 250l-1 6h-3v-9l6 -2zM620 271l-1 -11 -4 -7 -5 -1 -2 -5 -4 -1 -2 -5 4 -8 -1 -11 2 -3 8 -2 6 -9 3 4 2 -1 4 -9 6 -5 -9 -13v-7l7 -3 14 11 10 -3v3l7 2 6 -2 5 -10 -5 -24 2 -5 8 -4 4 -5 -1 -23 4 -8 1 -11 -3 -17 -8 -19 3 -10 -1 -6 2 3h5l6 -8 26 28 8 13 16 17 29 18 28 6 1 4 6 5h19l22 -27 2 5 -11 24v9l4 6 9 3 -2 2 2 -3h-6l4 13 6 6 5 1 6 -8 8 -1 -11 8 -1 7 -17 3 -2 6 -5 5h-5l-2 -2 1 -2 -2 -1 -4 6 3 2 -15 1 -8 -3 -15 8 -14 16 -8 14 -3 8v16l-2 8 -14 -12 -23 -8 -28 -18 -13 -2 4 -2 -16 8 -15 15 -4 -2 4 -1 -5 -1 -2 -6 -8 -7h-10l-6 8 -3 9 1 5 12 8 10 -1 10 12 8 4 2 3 -6 5 -4 1 -9 -4 -3 3v-5h-3l-2 5 -7 4v9l-8 3 -3 6 -8 -3 -2 -7 1 -9zM659 58l2 -2 4 1 2 5 -4 4 -4 -4zM653 45v-1l2 2 -1 9 -4 -10zM957 29l-2 -5h-2l-2 4 2 7 -1 3 -5 1 -2 8 -7 -2 1 7 -10 10 -1 4 -5 -1v3l4 1v4l-4 4 -4 -1 1 5 -3 -4 1 5 -3 7 4 1 4 -9 6 -1 4 -9 10 -9 3 -10 5 2 6 -1 15 -18 13 -9 9 -1 1 -4 -2 -3 2 -4 -5 -2 -6 2 -12 17 -11 3zM878 110l5 -6 8 -2 5 -6 3 1 3 -7 -11 3 -7 -5 -4 2 -3 11 -10 14v3l-13 15 2 7 5 -1v5l1 -14 8 -4 1 -6h3v-7zM910 136l11 -9 -4 -3 -4 3 1 2 -7 1v4l2 -1zM888 154l3 -5 -6 1zM878 157l2 -2h-4z" />
+              <path d="M613 358v-7l-4 -4 7 -8h5l7 -4 2 -16 -3 -5 3 -1 1 -7 6 5 4 -3 4 2 2 15 3 7 6 -3 -1 -4 2 -4 11 8 3 -2 4 -16 -4 -7 -6 6 -14 3 6 -26 17 12 9 -5 -3 31 3 14 4 11 4 -1 5 5 -6 7 -5 -1 -4 2 -2 -2 -14 10 -3 -2 1 -11 -5 1v-6l-11 7 -3 -2 -2 2 -7 -5 -3 3 -13 -1 -2 3z" />
+              <path d="M698 447l-7 -1 -2 13 -7 -2 -3 5 -7 -5 2 -3h-7l-11 -5 2 -6 -3 -5 2 -3 -8 -13 4 -11 4 -5 -2 -5 3 -4 -3 -5h4l-1 -19 4 -5 3 2 14 -10 2 2 4 -2 5 1 6 -7 7 12 -1 4 4 3 -2 5 7 5 2 14 -2 11 4 -5v5l2 2 -5 5 1 2 4 -3 -1 4h-3l-1 4 -2 1 4 -1 -5 3 2 3 -2 1h4l-6 7 4 2h-5l3 3h-3l2 2 -6 1v-3l1 4h-2v4l-1 -4z" />
+              <path d="M666 515l-4 1 1 5h-5l1 2 -5 -1 -1 -6h-9l-4 -5h-6l-1 -5 7 -1 3 -7v-5l7 -12 -5 -11 3 -1 2 -8 -5 -7h5l6 -5 11 5h7l-2 3 7 5 3 -5 7 2 2 -13 7 1 2 7 -5 -3 2 5 -4 4 2 5 -2 -2 -4 3 5 2 -4 6h4v3l-3 -2 2 5h-3l1 3h4l-3 1 3 3 -1 4 -4 -3 1 -2h-2l2 -1 -2 -2 -17 2 -2 4 3 1 -4 2h2l-5 10zM676 487l1 1h-2z" />
+              <path d="M656 449l-6 5h-5l-4 -2 -2 -4 -13 -4 -5 -5 -9 1 2 -9 5 -9 1 -23 -7 -7 -8 2 -3 -8 6 2 6 -8 4 -8v-8l-5 -6 4 1 2 -3 13 1 3 -3 7 5 2 -2 3 2 11 -7v6l5 -1 -1 11 -4 5 1 19h-4l3 5 -3 4 2 5 -4 5 -4 11 8 13 -2 3 3 5z" />
+              <path d="M612 440l9 -1 5 5 13 4 2 4 4 2 5 7 -2 8 -3 1 5 11 -7 12v5l-3 7 -7 1 1 5 -1 9 2 2 -3 4 -6 1 -3 -3 -3 1 -3 -4 -6 2 -7 -3 -2 -4 3 -9 -1 -7 9 -4 2 -4 -10 -6 1 -7 -9 -3 13 -22z" />
+              <path d="M661 580l-10 -5v5l-6 5 -10 -8 -1 -6 -6 -5 -12 -3 -25 16 -8 -2 1 -14 -5 -4 4 -7 -2 -4 1 -3h9l1 -4h8l-2 -8 9 -11 -3 -2 7 3 6 -2 3 4 3 -1 3 3 6 -1 3 -4 -2 -2 1 -9h6l4 5h9l1 6 5 1 -1 -2h5l-1 -5 4 -1 6 15v26l-2 17z" />
+              <path d="M611 630v0h-2l-2 -7 6 -3 2 -4 3 1 3 -5 11 -2 3 -7 -2 -11 3 -2 -2 -3 1 -10 10 8 6 -5v-5l10 5 -8 24 1 7 -3 6 2 11 5 8 -2 3 2 3 1 -5 7 13 -17 -13 -1 3 -17 5 -11 -6z" />
+              <path d="M607 623h-1l-2 -4h-9l-5 -7 6 -13 -8 -2 1 -9 3 -4 -3 -1 2 -4 25 -16 12 3 6 5 1 6 -1 10 2 3 -3 2 2 11 -3 7 -11 2 -3 5 -3 -1 -2 4z" />
+              <path d="M606 623l-11 1 -5 -4 -11 -2 -5 10 -16 9 -4 -2v-6l-3 -3h3l-2 -7 3 -2 -1 -6h-9l-3 -5 1 -7 5 -4 -1 -2 9 -3 12 -6v-3l3 -1 -1 -5 4 -1 2 -4 7 7 8 2 -2 4 3 1 -3 4 -1 9 8 2 -6 13 5 7h9z" />
+              <path d="M606 623h1l2 7h2v0l7 13v6l-7 -2 -1 2 -4 -1 -6 3v-3l-8 3 -4 -5 -15 -3 -4 2 -10 -3 -1 -5 16 -9 5 -10 11 2 5 4z" />
+              <path d="M617 658l2 -4 -1 -5v-6l-7 -13 9 9 11 6 17 -5 1 -3 17 13 1 3 -10 1 -11 10 -3 22 -13 4 -11 14 -7 -4 5 -2 -3 -2 2 -3 -1 -6 2 -4 -4 -5 3 -4 3 1v-4l6 -2 5 -7 -7 -7 -5 4z" />
+              <path d="M756 1183l2 4h-2zM618 815v5l-5 -6zM603 756l-2 2 -3 -2 3 -3zM581 746l2 2 -3 1zM588 740l-2 -2 2 -4zM592 717v-6l4 2v5zM618 649l1 5 -2 4 -6 -1 2 5h-4h4v3l-14 -7 -4 2 3 2h-1l-1 5 -3 -5 -14 -5 -5 -3 -5 -9 4 -2 15 3 4 5 8 -3v3l6 -3 4 1 1 -2z" />
+              <path d="M579 657l14 5 3 5 1 -5h1l-3 -2 4 -2 14 7 -4 4h-4l3 4 -3 -1v8l6 2 -5 5 2 2h-4l1 -4 -3 -5 -7 -2 -12 3 -3 3 1 6h-2l-7 -4 1 -12h-5l10 -9z" />
+              <path d="M510 589l-3 -11 -4 -3 14 -5 9 -7h7l15 -12 10 -15 5 -13 19 -13 1 3 -1 -2 7 -6 8 -29 9 3 -1 7 10 6 -2 4 -9 4 1 7 -3 9 2 4 3 2 -9 11 2 8h-8l-1 4h-9l-1 3 2 4 -4 7 5 4 -1 14 -7 -7 -2 4 -4 1 1 5 -3 1v3l-12 6v-7l-5 -4v-4l-3 -3 -7 2 -5 6v4l-4 -2 -8 5 -2 -2v-5l-7 -1v3zM539 522l-8 1 7 -9 -2 -3 -3 2v-5l4 -9 10 -8 -4 15 7 1 -4 9z" />
+              <path d="M501 612l-10 -4 -4 2v-2l-5 2 -3 -2 -9 11 -1 -4 -4 -2 -4 5 -1 -9 2 -7 -2 -4 3 -4 -2 -3 3 -2 2 -10 8 -3 -3 7 12 7 8 -4 2 -8 10 -3 4 3 3 11 -1 11 -3 1 1 3z" />
+              <path d="M470 567l-3 -3h7zM461 618l3 3 -5 10 -5 1 -5 -5 -10 -1 -6 -9 14 -14 12 -18 1 -11 -2 -4v-5l-3 -1 5 -13 25 -10 4 1 1 4 -6 1 -1 9 -4 -1 -7 7 -2 -3 -3 1 -2 9 6 2 3 -4v9l-8 3 -2 10 -3 2 2 3 -3 4 2 4 -2 7z" />
+              <path d="M433 617l6 9 10 1 5 5 5 -1 -2 6 5 8 -2 4h-13l-1 3 -7 -3 -5 8 -6 -2 1 8 -3 -1 -1 3 -5 3 -3 -2 -3 7 -4 -1 -2 4 -12 -2 -4 -6 2 -5 2 4 7 -3 -4 3 6 1 3 -3h-2l-1 -3 6 3 -1 -3 3 -1 -2 -3 8 1 -1 -6 3 -3v6l3 1 1 -7 -7 -13 9 -13v-4z" />
+              <path d="M533 659l-2 -5 3 -2 -3 -3 9 -11 6 5 6 -2 4 4 3 -3 10 3 5 9 5 3 -1 8 -10 9 -12 3 -5 -6 -3 8 1 7 -5 2 -4 -9 -6 -1 1 -11z" />
+              <path d="M556 590l-9 3 1 2 -5 4 -1 7 3 5h9l1 6 -3 2 2 7h-3l3 3v6l4 2 1 5 -3 3 -4 -4 -6 2 -6 -5 -9 11 3 3 -3 2 2 5 -4 5v12l-16 10 -8 -2 -5 3 -1 -6 2 -3 -1 -4h3l-2 -3 2 -4 -6 -6 2 -3 -5 -7 -7 -3 3 -5h5l6 -7 1 -4 -3 -4 5 -10 -3 -6 6 -8 -1 -3 3 -1 1 -11 5 -7v-3l7 1v5l2 2 8 -5 4 2v-4l5 -6 7 -2 3 3v4l5 4z" />
+              <path d="M501 612l3 6 -5 10 3 4 -1 4 -6 7h-5l-3 5 7 3 5 7 -2 3 6 6 -2 4 2 3h-3l1 4 -2 3 -6 4 -7 -4 -6 2 -5 -2 -6 -8 -10 3 -5 8v6l-7 -7 -6 2 -2 -2 3 -9v-3l-3 -7h-3l-2 -7 5 -8 7 3 1 -3h13l2 -4 -5 -8 2 -6 5 -10 -3 -3 4 -5 4 2 1 4 9 -11 3 2 5 -2v2l4 -2z" />
+              <path d="M568 674h5l-1 12 7 4 -3 5 5 6 -1 4 -7 10v5l-8 4 -5 -6 2 -14 -1 -3 1 -4 6 -1 -11 -6 -7 3 -3 4 1 3 -8 4 -3 9 -5 7 1 4 -13 -4 -25 -1v-8l8 -5 10 -20 16 -10v-12l4 -5 2 8 -1 11 6 1 4 9 5 -2 -1 -7 3 -8 5 6z" />
+              <path d="M495 719l-24 6 3 -5 2 2 9 -6 1 3 3 -3 -1 -3 -6 -3 -2 4 -8 -1 -4 -3 2 -8 -4 11 3 4h-2l-5 -3 2 -5 -3 -3v-5l4 -7 -6 3 -5 -7v-6l5 -8 10 -3 6 8 5 2 6 -2 7 4 6 -4 1 6 5 -3 8 2 -10 20 -8 5z" />
+              <path d="M418 778l-5 -3 -2 -7 1 1v-3h1l6 -3 -1 -3 6 -1v-3l-1 -7 2 -4 -2 -3 2 -1 -3 -5 9 -6 -10 -6 2 -3 -2 -2h2l-1 -4 -2 -4 4 -1 1 -6 7 3 6 -3 4 -10 -1 -9 6 -2 7 7 5 7 -6 2v4l-7 12v8l16 7 2 5 2 -2v5h-5h5l-1 6h-3l1 -1 -3 -2v2h-6l2 -3h-3l-3 5 -1 -2 -2 2 -2 -1v3l-2 -2 -8 3 -2 3 1 4h-3l1 -2 -3 3 4 3 -2 1 1 3 -3 -2 1 3 -7 4z" />
+              <path d="M434 657l2 7h3l3 7v3l-3 9 2 2 1 9 -4 10 -6 3 -7 -3 -1 6 -4 1 -4 -6h-4l-2 -10 2 -15 -4 -4 2 -4 4 1 3 -7 3 2 5 -3 1 -3 3 1 -1 -8z" />
+              <path d="M405 712l-2 -8 -4 -2v-2l-3 3 -9 -8 1 -6 -9 -2 -2 -6 -5 1 -7 -5v-6l6 1v-7v-2l-6 2 -3 -5 1 -4 2 3 -1 -3 17 -7 4 7 -8 6 2 2 3 -4 -1 4 5 1 -1 4 2 -2 2 1 -3 -5 7 -3 1 3 -2 5 4 6 12 2 4 4 -2 15 2 10h4l4 6 2 4 -2 1 -5 -3 -4 3z" />
+              <path d="M387 695l9 8 3 -3v2l4 2 2 8 -4 10 2 10 -2 4 -26 6 -3 -2 6 -2 7 -6 3 -10 3 3 -3 -9 3 -2 -2 -11 3 -1 -6 -2 -1 -5z" />
+              <path d="M360 744l-7 3 -1 -4 -3 1v-4l19 -19 1 3 -7 9 2 9zM333 713l1 -3 -4 -5 2 -3 -2 -7 8 -9v-5l6 -2v-5l-7 -17 9 -3 17 2 -1 4 3 5 6 -2v2v7l-6 -1v6l7 5 5 -1 2 6 9 2 -1 6h-2l1 5 6 2 -3 1 2 11 -3 2 -5 -1 -13 5 -15 -9h-14l-1 -3 -2 5 -3 -2z" />
+              <path d="M418 760l-4 2 -1 4h-1v3l-1 -1 -14 -2 2 -5 -4 -7 5 -7 4 -1 -3 -10 2 -4 -2 -10 4 -10 6 4 4 -3 5 3 2 -1 1 4h-2l2 2 -2 3 10 6 -9 6 3 5 -2 1 2 3 -2 4 1 7v3z" />
+              <path d="M411 768l2 7 5 3 -4 5 2 4 -9 5 -1 3h-1v-2l-16 -5 -6 -8 4 -3 -9 -4 -5 -6h-4l3 -5 -2 -1 5 -3 -4 -3 3 -2 -1 -2 5 -1 -8 -7 2 -3 3 2 26 -6 3 10 -4 1 -5 7 4 7 -2 5zM418 760l1 3 -6 3 1 -4z" />
+              <path d="M280 690l-7 -2 3 -5 -2 -4 8 -2 1 -9 -6 -8 3 -1 2 4 6 2 8 -4 11 2 21 -1 9 -5 7 17v5l-6 2 -12 4 -1 -7 -7 -2 1 -3 -10 6 -4 -4 -8 -2 -2 6 -3 1 1 3 -6 -1v4l-6 1z" />
+              <path d="M269 624l5 -2 -3 5 -3 -2 1 3 -3 -3zM275 626l-3 2v-4l3 -1 2 3zM279 615l5 -6 5 5 -1 4 -3 1 2 2h-5zM198 709l8 -2 14 -14 11 -6 6 -8 11 -5 2 -6 -2 -3 18 -5 6 -5 3 3h8l-3 1 -3 1 6 8 -1 9 -8 2 2 4 -3 5 -13 -2 -7 9 -6 3 3 4 -8 2 -6 -2 -2 3 -8 -2 -6 5 2 2 -2 6 -5 5 1 2 -3 2v4l-3 4 -2 -2 -5 2 -3 -4 2 -5h-5l-1 -4 3 -5z" />
+              <path d="M338 681v5l-8 9 2 7 -2 3 4 5 -1 3 -7 -1 3 2 -7 7 -9 -1 5 2 -2 4 -2 -1 -2 4 -5 -2 -2 3 -3 -6v4l-3 -5 -4 4 -6 -3 2 4 -4 -2 -4 -16 2 -4 -4 -6 1 -7 -2 -3 1 -3 6 -1v-4l6 1 -1 -3 3 -1 2 -6 8 2 4 4 10 -6 -1 3 7 2 1 7z" />
+              <path d="M287 726v2l-3 -2 3 3h-2l-2 4 -6 -2v-3l-9 2 -2 5h-13l-2 4 -6 3 -2 -2 -3 2 1 -3 -3 -6 1 -2h-8l-7 6 1 3 -6 -2v-6l-3 -2v-7l-1 -2 5 -5 2 -6 -2 -2 6 -5 8 2 2 -3 6 2 8 -2 -3 -4 6 -3 7 -9 13 2 7 2 2 3 -1 7 4 6 -2 4zM260 740l-3 2 -2 -2 5 -3zM236 740l-1 -4 3 1 -1 8h-3l1 -3 -4 -5zM229 734l1 2 -4 3zM249 744l-2 -2h4zM239 744h2l-2 3h3l-2 2 -5 -1 3 -6h2zM273 735l1 3 -3 -3zM271 736l-4 3 1 -3zM275 730l1 1 -3 2z" />
+              <path d="M198 709l1 6 -3 5 1 4h5l-2 5 3 4 5 -2 2 2 3 -4v-4l3 -2v7l3 2v6l6 2 -1 5h-2v8l-5 3 1 7 -4 -6h-5l-5 -6 -4 2 2 -3 -4 -3 -10 4 -4 -3 -2 3v-2l-2 2v-4l-2 5 -5 2 -2 -2 -2 2 -2 -5 -5 -4 -7 7v-7l-2 -4 4 -6 -3 -5 2 -4h7l-5 -2 2 -3 8 2 1 3h8l6 -2 -1 -3 11 -11 3 1zM217 763l-5 2 2 -4zM228 759l7 -2 -5 2v3l-4 -3 -5 3 -1 -5 2 -2zM171 724l-1 -2 5 1zM204 755h-3l3 -3z" />
+              <path d="M346 745l2 -1 -1 3zM338 745l7 -1v2l3 1 -4 9 7 7 -4 5 6 1 -19 11 -5 6 -5 -1 -3 -4 2 -3 -6 -1 -1 -9 -6 2 -13 -6 1 -8 10 -5 6 2 10 -6 12 2z" />
+              <path d="M298 756l-4 -2 3 -9 -5 -5 6 3 14 -10 7 3 4 -3 1 4 2 -2 3 2v3l9 5 -2 4 -12 -2 -10 6 -6 -2zM319 728l-1 -1h3zM333 723h2l-2 8 -3 -1 1 -2 -4 4 1 -4 -4 -2z" />
+              <path d="M243 757l-2 -1 4 -3zM264 742h-4l4 -6 3 3zM269 741l2 1 -2 1 -3 -1zM267 746l-3 2 1 -5 4 1zM242 821l-8 -2 1 3h-3l1 -5 4 1 -6 -5 2 -1 -2 -4h4l-4 -1 2 -2 -3 -2 4 3 4 -4 -1 -3h-3l2 -3h-8l3 -2 -2 -2 2 -5 -6 -1 -8 6 -7 1 34 -20 7 -18 8 -4 -1 -4 2 -1 9 14 10 -4 10 2 5 -4 4 2 -1 8 -25 4 -6 9 -4 10 -11 1 5 9 -6 3 -5 8 -4 -3 3 13z" />
+              <path d="M297 764l13 6 6 -2 1 9 6 1 -2 3 3 4 5 1 -7 19 -12 -16 -10 -3 -9 2 -1 -3 1 3 -12 4h6l-6 1 -1 3 -2 -3 -3 5 1 4 -2 6h-3l-4 8 -5 1v8l-3 3 3 7 -4 -5 -7 3 -5 -4 -4 2 2 -6 3 -1v-3h-3l2 -3 -3 -13 4 3 5 -8 6 -3 -5 -9 11 -1 4 -10 6 -9zM237 833l-2 2v-4z" />
+              <path d="M148 804l-8 -5 -2 4 -4 -1 -4 4v3l-5 -1v-5l-2 -3 1 -7 9 -5v-6l-6 2 -7 -6h-12l6 -4 -3 -3 6 -5 3 6 7 -1 2 -5 -4 2 -3 -3 5 1 4 -3 1 -8 10 -1 1 -3 6 1 -3 3 3 1 1 -3 4 2 7 -4 -4 8 2 2 -1 1 5 10 5 1 -1 7 -8 -1 -7 4 -4 6 2 5 -2 1 3 4z" />
+              <path d="M108 778h12l7 6 6 -2v6l-9 5 -1 7 -6 -5 -5 5 2 10 -7 -2 -7 -7 1 -5 -6 -2 -3 -6 2 -3 4 4 -2 -4 3 -4 -5 -3 2 -2 2 2v-6l1 2h5v4z" />
+              <path d="M81 700l3 -2 2 3 -4 3 2 4 -6 6 -1 4 3 -2 -3 4 3 -1 -3 4v-5l-2 3v-4l-2 3 -3 -1 3 -1v-4l2 -1 -2 -1 4 -3 -2 -3 2 -5 4 1zM75 727l-3 6 -6 1 3 -14 1 3 3 1 -1 -3 2 3 2 -1zM95 758l1 2 -4 2 -3 -5 2 1 -2 -3 3 -3 4 1 -2 3 3 1zM56 809l-3 5 2 -6 -4 -2 3 -1v-4h2l2 -9 -2 11 5 1 -2 3 -2 -2zM52 810h-3v-2l2 1 -1 -3zM47 812l1 -3v5l-4 -4zM35 817l3 -2 1 2 2 -3 3 10 -6 -1v4l-9 -3 1 -2 1 3 1 -2h-1l2 -2 -1 -7zM94 778l-3 2 2 -4zM96 781l2 2 -3 1zM58 786l2 -2 1 2zM83 775h-3l3 -2zM94 785l-2 3 3 6 6 2 -1 5 7 7 7 2 -7 6 13 1 2 5 -2 6 -10 5 -1 -6 4 -4 -1 -3h-5l-7 1 -3 6 -9 5 4 -5 -1 -2h3l2 -3 -3 1 -2 -6 -4 -1 -3 -6 3 -11 4 4 -1 3 1 -2 3 3 -2 7 11 3 -3 -6 1 -5 -4 -4 -3 2v-7l-4 1v-3l-3 4 2 -2 -4 -2 1 -4 -1 2 -4 -2 4 -5 -3 -1 1 -4 5 -1 1 3h5zM78 786l-1 5 -6 1 4 -2 -1 -2 2 -6 5 1 1 -4 1 4zM43 814l1 -3 2 3 -3 2zM92 799v4l-2 -4 2 -2z" />
+              <path d="M108 836h4v11l-8 9 -4 1v-6l4 -1 -5 -2 5 -9 -2 -3zM119 846h-6l-1 -4 6 -4h8l-4 8zM123 832l3 1 -1 4 -2 -1zM137 866l-5 -6 -9 4 -4 -4 12 -16 -2 -5 2 1 -1 -2 6 -6 -10 1 8 -6 1 -5 -9 -8 -1 -6 5 1v-3l4 -4 4 1 2 -4 8 5 7 5 2 -4 -1 -6 6 1 7 13v6l3 3 -3 1 -9 14 -5 2 -1 7 5 7 -4 5 3 5z" />
+              <path d="M148 804l3 -5 -3 -4 2 -1 -2 -5 4 -6 7 -4 8 1 1 -7 12 4 5 -7 9 4 2 6 -2 8 -4 -1 1 3 -8 2v4l4 2 17 -1 -6 9h5l-3 2 3 2 5 -2 1 3h-5l-2 4 10 4h-6l2 2 -4 3 4 1 -7 1v4h-2l1 -5 -5 -1 -3 4h-8l-4 -5 -6 1 -2 -2 -3 -3v-6l-7 -13 -6 -1 1 6 -2 4z" />
+              <path d="M172 822l2 2 6 -1 4 5h8l3 -4 5 1 -1 5h2l-11 10 -1 4 3 1 -4 1 -1 2 2 1 -5 8 -6 17 -3 23 -5 5 -2 12 -5 -2 -5 -5 2 -3v-7l-7 -1 -3 -9 -5 -2 2 -5 -6 -5 -5 -7 1 -2 21 -3 -3 -5 4 -5 -5 -7 1 -7 5 -2 9 -14z" />
+              <path d="M4 1148l-4 2v-5l9 -1zM21 1126v-8l4 -1v5l3 3 -1 3 -5 3 -2 -4zM82 1097l-2 2 -1 -3 6 -3zM64 1089l-13 9 3 2 -4 4 -3 -2 1 4 -5 -5 1 -2 -8 -3h7l2 -1 -5 -2 14 -5 2 2 3 -5h4l-2 3 2 -2 2 2 2 -6 1 6zM43 1107l-1 -2 -3 2 -1 -7 5 2 -2 3 6 1 -2 3v-2zM103 965l3 2h-3zM113 976l-1 -6 7 -4 9 6 -1 5 -6 4 -6 -1zM144 969v5l-6 1v-8l3 -3 2 -9 7 -10 1 9zM119 860l4 4 9 -4 5 6 -1 2 5 7 6 5 -2 5 5 2 3 9 7 1v7l-2 3 -3 -1 -5 6 5 3 -2 3h3l-6 3 -4 5 -16 8v-5l5 -3 4 -13 -5 -8v-6l-6 -2 5 -2 1 4h3l4 -6 -7 -5 -4 2 -6 13 2 11 5 3 -2 5 -6 1 -3 -6 -13 -1 1 -3 -3 -2 2 -1 -5 -5 9 1 4 -11 -3 -8 -5 -5 3 -7 -2 -11 4 -2 3 2zM112 853l2 -1 -1 2zM107 863l-2 -5 4 -3 2 5zM85 884l2 -3 1 2 -6 8 -2 -1zM93 880l-4 -3h6zM75 1012l-3 4v-3zM81 1001l2 -2 2 4z" />
+              <path d="M-321 1283l3 1 -2 1 -5 -1zM-276 1295l6 3 -4 6 -11 -5 2 -2 3 2 1 -7zM-198 1281l-1 -4 3 2zM-192 1287l-3 -2h2l-1 -3 2 -2 -1 -5 3 8 7 6zM-100 1198v5l-5 -5 3 -2zM143 1255l-1 -3h2zM-45 1183v-2l3 2zM-31 1187v2l-2 -2zM-252 1292l5 -6 1 2 -6 6v7h-6l-2 -2 2 -2 -3 -3 8 1zM-37 1195l3 -3 -5 -2v-6l6 1 1 4 6 -1 -1 -2 10 -10 3 4 -1 5 -5 6 -5 -1 -1 5 -5 -1 1 2 -7 5 -6 -1 4 9 -4 -2 -5 7 4 3 -10 4 -1 -8 7 -6 -2 -8 5 1z" />
+            </g>
+            <path d="M510 690 L665 420 L615 655" fill="none" stroke="#8d1f24" stroke-width="3" stroke-dasharray="10 8" opacity="0.55"/>
+            <circle cx="510" cy="690" r="22" fill="#8d1f24" stroke="#fff" stroke-width="5"/>
+            <text x="510" y="698" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">1</text>
+            <circle cx="665" cy="420" r="22" fill="#8d1f24" stroke="#fff" stroke-width="5"/>
+            <text x="665" y="428" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">2</text>
+            <circle cx="615" cy="655" r="22" fill="#8d1f24" stroke="#fff" stroke-width="5"/>
+            <text x="615" y="663" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">3</text>
+            <text x="510" y="732" text-anchor="middle" font-size="28" font-weight="700" fill="#11181d">&#9312; Nagoya &mdash; born</text>
+            <text x="645" y="414" text-anchor="end" font-size="28" font-weight="700" fill="#11181d">&#9313; Sendai &mdash; university</text>
+            <text x="593" y="648" text-anchor="end" font-size="28" font-weight="700" fill="#11181d">&#9314; Kawasaki &mdash; now</text>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+          <div>
+            <p style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin-bottom:7px">University</p>
+            <div class="tags">
+              <span class="tag">Space</span>
+              <span class="tag">Robotics</span>
+              <span class="tag">MEMS</span>
+              <span class="tag">Semiconductors</span>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip"><span class="e">&#127919;</span> Hackathon regular</span>
+            <span class="chip"><span class="e">&#127908;</span> SW conference organizer</span>
+            <span class="chip"><span class="e">&#128214;</span> Published an OSS book</span>
+          </div>
+        </div>
       </div>
       <div class="timeline-h">
         <div class="tlh-node">
@@ -1056,16 +1137,14 @@ Here we go &mdash; chapter one.
           <span>This talk</span>
         </div>
       </div>
-      <div class="claim">
-        <p>I came to NuttX from the application and deployment side &mdash; not by writing its kernel.</p>
-        <small>Every step on this path is a system I had to <strong>integrate and run</strong>, not one I built from the silicon up. That is the vantage point for everything that follows.</small>
-      </div>
     </div>
     <div class="num">4 / 39</div>
     <div class="notes-src">
-Quickly, who is talking &mdash; and from where.
+Quickly, who is talking.
 ||
-I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side. The path that got me here runs through molecular robotics, computer vision and AI systems work, edge AI cameras, and embedded systems on SPRESENSE &mdash; and NuttX and WireGuard are the latest stop, not the start. I want that to be explicit: I am not a NuttX kernel developer who decided to add a VPN. I am someone who kept running into NuttX from the application and deployment side, and eventually ran into a problem I couldn't solve from there. That is the story the next few slides tell.
+I am an edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side. I was born in Nagoya, went to university in Sendai where I studied space, robotics, MEMS and semiconductors, and am based in Kawasaki now. I go to a lot of hackathons, help organize software conferences, and have a book on open source out as well.
+||
+The path that got me into this specific project runs through molecular robotics, computer vision and AI systems work, edge AI cameras, and embedded systems on SPRESENSE &mdash; NuttX and WireGuard are the latest stop on that path, not the start.
     </div>
   </section>
 
@@ -1392,7 +1471,7 @@ Everything from here is about building that middle section &mdash; wg0 and the e
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1403,22 +1482,22 @@ Everything from here is about building that middle section &mdash; wg0 and the e
         <div class="agenda-item current">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -1428,7 +1507,7 @@ Everything from here is about building that middle section &mdash; wg0 and the e
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -1518,7 +1597,7 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1529,22 +1608,22 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -1554,7 +1633,7 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -1726,7 +1805,7 @@ Persisting the config by redirecting into a file froze the board, but only on re
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1737,22 +1816,22 @@ Persisting the config by redirecting into a file froze the board, but only on re
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -1762,7 +1841,7 @@ Persisting the config by redirecting into a file froze the board, but only on re
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -1844,7 +1923,7 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1855,22 +1934,22 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -1880,7 +1959,7 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -1985,7 +2064,7 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1996,22 +2075,22 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">6</div>
@@ -2021,7 +2100,7 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>
@@ -2054,7 +2133,7 @@ I telnet into the board through the tunnel and run commands, and I start a web s
 
   <section class="slide">
     <p class="eyebrow">Agenda</p>
-    <h2>Seven chapters, about thirty-three minutes.</h2>
+    <h2>Seven chapters, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -2065,22 +2144,22 @@ I telnet into the board through the tunnel and run commands, and I start a web s
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
           <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; two more wait in the kernel.</p></div>
-          <div class="agenda-time">~7 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
           <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
           <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~11 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
@@ -2090,7 +2169,7 @@ I telnet into the board through the tunnel and run commands, and I start a web s
         <div class="agenda-item current">
           <div class="agenda-num">7</div>
           <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
-          <div class="agenda-time">~4 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
       </div>
     </div>

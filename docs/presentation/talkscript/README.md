@@ -3,6 +3,9 @@
 発表資料の「話す方」をまとめた場所。デッキ本体(HTML / PDF)は一つ上の
 [docs/presentation/](../) にあり、台本はデッキと同じ名前で置く。
 
+技術背景から学び直す場合は、大学1年生向けの
+[初心者ガイド](../coc-glasgow-beginner-guide-ja.md)を先に読む。
+
 | デッキ | 台本 | 中身 |
 |---|---|---|
 | [coc-glasgow-slides.html](../coc-glasgow-slides.html)(**Community Over Code, Glasgow 本番**・カーネル移植後・39 枚) | [coc-glasgow-script-en.md](coc-glasgow-script-en.md)(英語・本番用、**要更新**)/ [coc-glasgow-script-ja.md](coc-glasgow-script-ja.md)(日本語・リハーサル/理解用) | 読み上げ台本。デッキ内の発表者ノート(`N`キー)と1対1対応。時間配分と削る順番つき |
