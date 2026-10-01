@@ -842,63 +842,10 @@
     white-space: nowrap;
   }
 
-  /* chapter-roadmap divider slides */
-  .roadmap {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .roadmap-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: #fff;
-    font-size: 14.5px;
-    font-weight: 600;
-    color: var(--quiet);
-    white-space: nowrap;
-  }
-  .roadmap-item .n {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .roadmap-item.done {
-    color: var(--muted);
-    border-color: var(--line);
-    opacity: .5;
-  }
-  .roadmap-item.upcoming {
-    color: var(--quiet);
-    opacity: .4;
-  }
-  .roadmap-item.current {
-    background: var(--wg);
-    border-color: var(--wg);
-    color: #fff;
-    font-weight: 800;
-    font-size: 16px;
-    padding: 12px 22px;
-  }
-  .roadmap-item.current .n { color: #f5c8ca; }
-  .roadmap-arrow {
-    color: var(--quiet);
-    opacity: .4;
-    font-size: 13px;
-  }
-  .roadmap-next {
-    text-align: center;
-    color: var(--quiet);
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-  }
+  /* chapter-divider state on the same .agenda-item used by the Agenda slide */
+  .agenda-item.dim { opacity: .38; }
+  .agenda-item.current .agenda-num { background: var(--wg); color: #fff; }
+  .agenda-item.current h3 { color: var(--wg); }
 
   .notes-src { display: none; }
   #notes {
@@ -1398,17 +1345,44 @@ Everything from here is about building that middle section &mdash; wg0 and the e
   <section class="slide">
     <p class="eyebrow">Chapter 2 / 7</p>
     <h2>Porting Strategy.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item current"><span class="n">2/7</span> Porting Strategy</div>
-        <div class="roadmap-item upcoming">Hidden Pitfalls</div>
-        <div class="roadmap-item upcoming">Kernel Driver</div>
-        <div class="roadmap-item upcoming">Verification</div>
-        <div class="roadmap-item upcoming">Demo</div>
-        <div class="roadmap-item upcoming">Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p>
     </div>
     <div class="num">12 / 38</div>
     <div class="notes-src">
@@ -1497,17 +1471,44 @@ The protocol and crypto came across byte-identical &mdash; over three thousand l
   <section class="slide">
     <p class="eyebrow">Chapter 3 / 7</p>
     <h2>Hidden Pitfalls.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Porting Strategy</div>
-        <div class="roadmap-item current"><span class="n">3/7</span> Hidden Pitfalls</div>
-        <div class="roadmap-item upcoming">Kernel Driver</div>
-        <div class="roadmap-item upcoming">Verification</div>
-        <div class="roadmap-item upcoming">Demo</div>
-        <div class="roadmap-item upcoming">Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">Five bugs a working demo never revealed &mdash; and the shape they share.</p>
     </div>
     <div class="num">16 / 38</div>
     <div class="notes-src">
@@ -1678,17 +1679,44 @@ Persisting the config by redirecting into a file froze the board, but only on re
   <section class="slide">
     <p class="eyebrow">Chapter 4 / 7</p>
     <h2>Kernel Driver.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Porting Strategy</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Hidden Pitfalls</div>
-        <div class="roadmap-item current"><span class="n">4/7</span> Kernel Driver</div>
-        <div class="roadmap-item upcoming">Verification</div>
-        <div class="roadmap-item upcoming">Demo</div>
-        <div class="roadmap-item upcoming">Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p>
     </div>
     <div class="num">23 / 38</div>
     <div class="notes-src">
@@ -1769,17 +1797,44 @@ Second, a crash that only happened in a kernel build. Setting the key snapshotte
   <section class="slide">
     <p class="eyebrow">Chapter 5 / 7</p>
     <h2>Verification.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Porting Strategy</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Hidden Pitfalls</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Kernel Driver</div>
-        <div class="roadmap-item current"><span class="n">5/7</span> Verification</div>
-        <div class="roadmap-item upcoming">Demo</div>
-        <div class="roadmap-item upcoming">Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">Seven environments, what a passing ping can't tell you, and one design call.</p>
     </div>
     <div class="num">27 / 38</div>
     <div class="notes-src">
@@ -1883,17 +1938,44 @@ So: send the board nothing at all, and watch its own view of the session. Two ru
   <section class="slide">
     <p class="eyebrow">Chapter 6 / 7</p>
     <h2>Demo.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Porting Strategy</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Hidden Pitfalls</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Kernel Driver</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Verification</div>
-        <div class="roadmap-item current"><span class="n">6/7</span> Demo</div>
-        <div class="roadmap-item upcoming">Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">An ordinary host, reached through the tunnel, on real hardware.</p>
     </div>
     <div class="num">31 / 38</div>
     <div class="notes-src">
@@ -1925,17 +2007,44 @@ I telnet into the board through the tunnel and run commands, and I start a web s
   <section class="slide">
     <p class="eyebrow">Chapter 7 / 7</p>
     <h2>Toward Upstream.</h2>
-    <div class="body" style="justify-content:center;gap:28px">
-      <div class="roadmap">
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Background</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Porting Strategy</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Hidden Pitfalls</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Kernel Driver</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Verification</div>
-        <div class="roadmap-item done"><span class="n">&#10003;</span> Demo</div>
-        <div class="roadmap-item current"><span class="n">7/7</span> Toward Upstream</div>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Background</h3><p>What NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard.</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>Porting Strategy</h3><p>Starting from wireguard-lwip and mapping it onto NuttX's own netdev.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>Hidden Pitfalls</h3><p>Five bugs a working demo never revealed &mdash; and the shape they share.</p></div>
+          <div class="agenda-time">~7 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Kernel Driver</h3><p>Moving <code>wg0</code> from apps/ into a real in-tree kernel device.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Verification</h3><p>Seven environments, what a passing ping can't tell you, and one design call.</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Demo</h3><p>An ordinary host, reached through the tunnel, on real hardware.</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">7</div>
+          <div><h3>Toward Upstream</h3><p>Operability, portability, contributing back, and what to carry out.</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
       </div>
-      <p class="lead" style="text-align:center;max-width:820px;margin:0 auto">Operability, portability, contributing back, and what to carry out.</p>
     </div>
     <div class="num">33 / 38</div>
     <div class="notes-src">
