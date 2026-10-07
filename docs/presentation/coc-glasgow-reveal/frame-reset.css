@@ -1,0 +1,89 @@
+/*
+ * Undo the reveal.js / cocglasgow theme element styles inside a .frame, so
+ * the component CSS lifted from the standalone deck renders as it does there
+ * (browser defaults underneath). Loaded before the lifted CSS, which wins.
+ */
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("vendor/fonts/open-sans/OpenSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("vendor/fonts/open-sans/OpenSans-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("vendor/fonts/open-sans/OpenSans-SemiBold.ttf") format("truetype");
+  font-weight: 500 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("vendor/fonts/open-sans/OpenSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("vendor/fonts/open-sans/OpenSans-ExtraBold.ttf") format("truetype");
+  font-weight: 800 900;
+  font-style: normal;
+}
+
+.reveal-viewport { background: #fff; }
+.reveal .slides { text-align: left; }
+.reveal .slides > section {
+  height: 720px;
+  padding: 0;
+}
+
+.reveal .frame {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  font-size: 16px;
+  line-height: normal;
+  text-align: left;
+}
+
+.reveal .frame h1,
+.reveal .frame h2,
+.reveal .frame h3,
+.reveal .frame h4 {
+  margin: 0 0 .67em;
+  color: inherit;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  text-shadow: none;
+  word-wrap: normal;
+}
+.reveal .frame p { margin: 0 0 1em; line-height: inherit; }
+.reveal .frame img {
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+.reveal .frame ul,
+.reveal .frame ol {
+  display: block;
+  margin: 1em 0;
+  padding-left: 40px;
+}
+.reveal .frame table { margin: 0; }
+.reveal .frame th,
+.reveal .frame td { padding: 1px; border-bottom: 0; }
+.reveal .frame small {
+  display: inline;
+  vertical-align: baseline;
+  font-size: smaller;
+  line-height: inherit;
+}
+.reveal .frame a { transition: none; }

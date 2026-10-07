@@ -1,0 +1,177 @@
+/*
+ * Community Over Code Glasgow look, applied on top of the lifted deck CSS.
+ * Colours and fonts follow the official template theme (cocglasgow.scss):
+ * Montserrat Bold headings in #7c297d, Open Sans body, #f79a23 accent, and
+ * the #dd552c -> #7c297d -> #d22128 footer gradient.
+ *
+ * Diagram colours (WireGuard red, NuttX teal, blue, gold) are left alone:
+ * they carry meaning inside the figures. Only the slide chrome changes.
+ */
+
+:root {
+  --coc-purple: #7c297d;
+  --coc-purple-soft: #f3e6f3;
+  --coc-orange: #f79a23;
+  --coc-night: #271122;
+  --coc-gradient: linear-gradient(90deg, #dd552c, #7c297d, #d22128);
+  --sans: "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --heading: "Montserrat Bold", "Open Sans", sans-serif;
+}
+
+.reveal .frame {
+  padding: 40px 72px 80px;
+  border: 0;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+/* ---- slide chrome ------------------------------------------------------ */
+
+.reveal .frame .eyebrow {
+  margin-bottom: 10px;
+  color: var(--coc-purple);
+  font-family: var(--heading);
+  font-size: 38px;
+  font-weight: normal;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.reveal .frame h2 {
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom: 2px solid;
+  border-image: var(--coc-gradient) 1;
+}
+
+.reveal .frame .num {
+  top: 24px;
+  bottom: auto;
+}
+.reveal .frame .sources { bottom: 61px; }
+
+.coc-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 54px;
+  padding: 0 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--coc-gradient);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-style: italic;
+}
+.reveal .frame .coc-footer img { height: 50px; width: auto; }
+
+/* ---- accents that were WireGuard red as decoration, not meaning --------- */
+
+.reveal .frame .takeaway {
+  border-top: 3px solid;
+  border-image: var(--coc-gradient) 1;
+}
+.reveal .frame .takeaway b,
+.reveal .frame .flow b,
+.reveal .frame .tlv-year,
+.reveal .frame .new { color: var(--coc-purple); }
+.reveal .frame .tlv-dot { background: var(--coc-purple); }
+.reveal .frame .intro-avatar,
+.reveal .frame .tlh-dot { border-color: var(--coc-purple); }
+.reveal .frame ul.big li::before { background: var(--coc-orange); }
+
+.reveal .frame .agenda-num {
+  background: var(--coc-purple-soft);
+  color: var(--coc-purple);
+}
+.reveal .frame .agenda-item.current .agenda-num {
+  background: var(--coc-purple);
+  color: #fff;
+}
+.reveal .frame .agenda-item.current h3 { color: var(--coc-purple); }
+
+.reveal .frame a {
+  color: var(--coc-purple);
+  border-bottom-color: rgba(124, 41, 125, .35);
+}
+.reveal .frame .thumb .play { background: rgba(124, 41, 125, .92); }
+
+/* ---- title and closing: the template's dark skyline slide --------------- */
+
+.reveal .frame.coc-dark {
+  padding: 0;
+  background: var(--coc-night);
+  color: #fff;
+}
+.reveal .frame.coc-dark .coc-dark-body {
+  position: relative;
+  z-index: 1;
+  padding: 58px 84px 0;
+}
+.reveal .frame.coc-dark .kicker {
+  margin-bottom: 16px;
+  color: var(--coc-orange);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.reveal .frame.coc-dark h1 {
+  margin-bottom: 16px;
+  color: #fff;
+  font-family: var(--heading);
+  font-size: 62px;
+  font-weight: normal;
+  line-height: 1.08;
+}
+.reveal .frame.coc-dark .subtitle {
+  max-width: 980px;
+  margin-bottom: 22px;
+  color: rgba(255, 255, 255, .84);
+  font-size: 22px;
+  line-height: 1.45;
+}
+.reveal .frame.coc-dark code {
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+}
+.reveal .frame.coc-dark .facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 40px;
+}
+.reveal .frame.coc-dark .facts b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.reveal .frame.coc-dark .facts span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, .6);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .07em;
+}
+.reveal .frame.coc-dark .speaker {
+  margin: 22px 0 0;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.reveal .frame.coc-dark .skyline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1280px;
+  height: auto;
+  z-index: 0;
+}
