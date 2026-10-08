@@ -16,5 +16,11 @@
 | 同上(英語で話す場合) | [short-slides-en.md](short-slides-en.md) | 同じ 9 枚・同じ削る順番の英語版。140 words/min 換算 |
 | (共通) | [presentation-script.md](presentation-script.md) | 進行表と想定 Q&A。「聞かれたら何を答えるか」 |
 
+Glasgow 用はデッキと台本・想定 Q&A の PDF もある:
+[coc-glasgow-slides.pdf](../coc-glasgow-slides.pdf)(39 枚)、
+[coc-glasgow-script-en.pdf](coc-glasgow-script-en.pdf)、[coc-glasgow-script-ja.pdf](coc-glasgow-script-ja.pdf)、
+[coc-glasgow-qa.pdf](coc-glasgow-qa.pdf)。Markdown を直したら
+`python ../coc-glasgow-reveal/pdf.py` で作り直す(英語台本は内容が **要更新** のまま PDF にしている)。
+
 台本の型はどれも同じ: `〔秒数〕` / **[スライド]**(画面にあるもの、読まない)/ **[話す]**(読み上げ文)/
 **[間]**(間・操作・視線)。秒数は 330 字/分換算。

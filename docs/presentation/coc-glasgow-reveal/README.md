@@ -20,10 +20,11 @@ Plex Mono 以外のフォントは同梱品で表示される）。
 | `F` | 全画面 |
 | `Esc` / `O` | 一覧 |
 
-PDF にする場合は reveal.js 標準の手順で、`index.html?print-pdf` を Chrome で開き、
-印刷 → PDF に保存（余白なし・背景グラフィックあり）。**未確認**: ヘッドレス Chrome では
-この版でもテンプレート原本でも印刷レイアウトが起動せず白紙になり、通常の Chrome での
-確認はまだしていない。画像が要るだけなら `check.py --shots` の PNG を使う。
+PDF は `python pdf.py` で作る。各スライドを 2 倍解像度（2560x1440）で撮り、1 枚 1 ページ
+（1280x720）で並べて [../coc-glasgow-slides.pdf](../coc-glasgow-slides.pdf) に印刷する。
+reveal.js 標準の `index.html?print-pdf` は、ヘッドレス Chrome ではこの版でもテンプレート原本でも
+白紙になるため使っていない。発表者ノートは PDF に入らない（台本の PDF を使う）。
+同じスクリプトで台本と想定 Q&A も A4 の PDF にする（`python pdf.py scripts`、要 `markdown` パッケージ）。
 
 ## 更新の手順
 
