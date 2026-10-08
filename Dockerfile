@@ -413,6 +413,126 @@ RUN ls -lh /opt/nuttx/nuttx.bin
 WORKDIR /workspace
 
 # =============================================================================
+# esp32s3-stackchan ステージ: esp32s3 + StackChan (M5Stack CoreS3) デモ
+# esp32s3 ステージの構成 (Wi-Fi・wg0・telnetd・webserver) をそのまま使い、
+# 顔表示・LED・サーボの stackchan アプリと、そのためのバス設定を足す。
+# ピンとレジスタ手順は docs/development/stackchan-hardware-check-2026-10-08.md
+# で MicroPython を使って確かめたもの (scripts/stackchan/mpy_*.py)。
+#
+#   I2C0  SCL=G11 SDA=G12        AXP2101 / AW9523B / PY32 (/dev/i2c0)
+#   SPI3  SCK=G36 MOSI=G37 CS=G3 ILI9342 LCD (/dev/spi3)、DC=G35
+#   UART1 TX=G6 RX=G7 1 Mbps     Feetech SCS サーボ (/dev/ttyS0。UART0 を外すため)
+#
+# ボードは esp32s3-devkit の流用 (CoreS3 用のボードは NuttX にまだ無い)。
+# =============================================================================
+FROM esp32s3 AS esp32s3-stackchan
+
+COPY demo/stackchan/ /opt/apps/examples/stackchan/
+RUN cd /opt/apps/examples && \
+    bash /opt/apps/tools/mkkconfig.sh -m "Examples" -o Kconfig
+
+# LCD の DC 線。esp32s3-devkit の SPI3 用 cmddata は MISO ピンを DC として
+# 書く (CoreS3 も G35 が MISO と DC の兼用) が、そのピンを出力に設定する
+# 処理が無い。SPI ドライバは MISO を入力として初期化するので、最初の
+# cmddata 呼び出しで出力に切り替える。
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/esp32s3_board_spi.c"
+src = open(path).read()
+old = "      esp_gpiowrite(CONFIG_ESP32S3_SPI3_MISOPIN, !cmd);\n"
+new = ("      static bool dc_output;\n"
+       "\n"
+       "      if (!dc_output)\n"
+       "        {\n"
+       "          esp_configgpio(CONFIG_ESP32S3_SPI3_MISOPIN, OUTPUT);\n"
+       "          dc_output = true;\n"
+       "        }\n"
+       "\n" + old)
+assert src.count(old) == 1, "esp32s3_board_spi.c: SPI3 cmddata pattern not found"
+open(path, "w").write(src.replace(old, new, 1))
+print("esp32s3_board_spi.c: SPI3 DC pin configured as output on first use")
+PYEOF
+
+# 電源投入だけでデモが揃うように、rcS (esp32s3 ステージで wg を起動して
+# いるもの) の後ろに webserver と stackchan を足す。Wi-Fi は
+# "wapi save_config wlan0" で /data/wapi.conf に、WireGuard は
+# "wg saveconf" で /data/wg0.conf に保存したものが起動時に読まれる。
+# webserver を telnet セッションから起動すると、セッションを閉じた後の
+# 出力で道連れになるので、ここ (コンソール) から上げる。
+# 認証情報をビルドに入れないので esp32s3 ステージでは NETINIT_DHCPC が
+# 入らない (WIFI_SSID 指定時のみ)。保存した wapi.conf でつながっても
+# アドレスが既定の 10.0.0.2 のままになるため、下で常に有効にする。
+RUN printf '%s\n' '' \
+      '#ifdef CONFIG_EXAMPLES_WEBSERVER' 'webserver &' '#endif' \
+      '' '#ifdef CONFIG_EXAMPLES_STACKCHAN' 'stackchan start' '#endif' \
+    >> /opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/etc/init.d/rcS
+
+# PY32 が 400 kHz に応答しない件はアプリ側で i2c_msg_s.frequency を
+# メッセージ単位で 100 kHz にして対処している (バス既定は 400 kHz のまま)。
+# i2ctool は切り分け用 (i2c dev -b 0 0x03 0x77 など)。
+#
+# コンソールは USB-Serial/JTAG に移す。esp32s3-devkit:wifi は UART0
+# (G43/G44、DevKit では USB-UART 変換チップ経由) をコンソールにするが、
+# CoreS3 の USB-C はチップ内蔵の USB-Serial/JTAG につながっていて UART0
+# は外に出ていない。UART0 のままだと書き込みは通るのに COM ポートには何も
+# 出ない (実機で踏んだ)。esp32s3-box:nsh と同じく UART0 を外して
+# ESP32S3_USBSERIAL をコンソールにする。
+#
+# TCP の接続数: 既定は 8 本固定で TIME_WAIT が 120 秒。ブラウザと telnet を
+# トンネル越しに何度か使うだけで全部 TIME_WAIT に埋まり、webserver が
+# リクエストを受けた直後に RST を返すようになった (実機で踏んだ)。16 本 +
+# 動的に最大 32 本、TIME_WAIT 10 秒にする。
+WORKDIR /opt/nuttx
+RUN kconfig-tweak --disable CONFIG_ESP32S3_UART0     && \
+    kconfig-tweak --disable CONFIG_UART0_SERIAL_CONSOLE && \
+    kconfig-tweak --enable CONFIG_ESP32S3_USBSERIAL  && \
+    kconfig-tweak --enable CONFIG_ESP32S3_I2C        && \
+    kconfig-tweak --enable CONFIG_ESP32S3_I2C0       && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_I2C0_SCLPIN 11 && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_I2C0_SDAPIN 12 && \
+    kconfig-tweak --enable CONFIG_I2C                && \
+    kconfig-tweak --enable CONFIG_I2C_DRIVER         && \
+    kconfig-tweak --enable CONFIG_ESP32S3_SPI        && \
+    kconfig-tweak --enable CONFIG_ESP32S3_SPI3       && \
+    kconfig-tweak --enable CONFIG_ESP32S3_SPI_SWCS   && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_SPI3_CSPIN 3   && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_SPI3_CLKPIN 36 && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_SPI3_MOSIPIN 37 && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_SPI3_MISOPIN 35 && \
+    kconfig-tweak --enable CONFIG_SPI                && \
+    kconfig-tweak --enable CONFIG_SPI_EXCHANGE       && \
+    kconfig-tweak --enable CONFIG_SPI_CMDDATA        && \
+    kconfig-tweak --enable CONFIG_SPI_DRIVER         && \
+    kconfig-tweak --enable CONFIG_ESP32S3_UART1      && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_UART1_TXPIN 6 && \
+    kconfig-tweak --set-val CONFIG_ESP32S3_UART1_RXPIN 7 && \
+    kconfig-tweak --enable CONFIG_SERIAL_TERMIOS     && \
+    kconfig-tweak --set-val CONFIG_NET_TCP_PREALLOC_CONNS 16 && \
+    kconfig-tweak --set-val CONFIG_NET_TCP_ALLOC_CONNS 4 && \
+    kconfig-tweak --set-val CONFIG_NET_TCP_MAX_CONNS 32 && \
+    kconfig-tweak --set-val CONFIG_NET_TCP_WAIT_TIMEOUT 2 && \
+    kconfig-tweak --enable CONFIG_NETINIT_DHCPC      && \
+    kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_SINGLECONNECT && \
+    make olddefconfig >/dev/null 2>&1 && \
+    kconfig-tweak --set-val CONFIG_UART1_BAUD 1000000 && \
+    kconfig-tweak --enable CONFIG_SYSTEM_I2CTOOL     && \
+    kconfig-tweak --enable CONFIG_EXAMPLES_STACKCHAN && \
+    make olddefconfig >/dev/null 2>&1 && \
+    for c in ESP32S3_I2C0 I2C_DRIVER ESP32S3_SPI3 SPI_CMDDATA SPI_DRIVER \
+             ESP32S3_UART1 SERIAL_TERMIOS SYSTEM_I2CTOOL EXAMPLES_STACKCHAN \
+             NET_WIREGUARD ESP32S3_USBSERIAL; do \
+      grep -q "^CONFIG_$c=y" .config || { echo "missing CONFIG_$c"; exit 1; }; \
+    done && \
+    ! grep -q '^CONFIG_UART0_SERIAL_CONSOLE=y' .config && \
+    grep -E '^CONFIG_(UART1_BAUD|ESP32S3_SPI3_(CS|CLK|MOSI|MISO)PIN|ESP32S3_I2C0_S(CL|DA)PIN|.*SERIAL_CONSOLE)=' .config
+
+RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
+    (tail -200 /tmp/nuttx-build.log && false)
+RUN grep -iE 'warning:.*stackchan' /tmp/nuttx-build.log || true; \
+    ls -lh /opt/nuttx/nuttx.bin
+
+WORKDIR /workspace
+
+# =============================================================================
 # spresense ステージ: spresense:nsh (実機ビルド用、Sony Spresense メインボード)
 # ARM Cortex-M4F。base で既に用意済みの arm-none-eabi-gcc をそのまま使う。
 # 書き込みには Sony 提供の flash_writer (NuttX リポジトリには同梱されておらず、

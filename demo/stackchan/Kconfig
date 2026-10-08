@@ -1,0 +1,40 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_STACKCHAN
+	tristate "StackChan (M5Stack CoreS3) face and servo demo"
+	default n
+	depends on I2C_DRIVER && SPI_DRIVER && SPI_CMDDATA && SERIAL_TERMIOS
+	---help---
+		Draws a face on the CoreS3 LCD (/dev/spi3), drives the 12 LEDs
+		and the servo power switch through the PY32 in the StackChan base
+		(/dev/i2c0), and moves the pan/tilt Feetech SCS servos
+		(UART1 at 1 Mbps).  "stackchan start" keeps blinking and
+		looking around in a background task.
+
+if EXAMPLES_STACKCHAN
+
+config EXAMPLES_STACKCHAN_PROGNAME
+	string "Program name"
+	default "stackchan"
+
+config EXAMPLES_STACKCHAN_PRIORITY
+	int "stackchan task priority"
+	default 100
+
+config EXAMPLES_STACKCHAN_STACKSIZE
+	int "stackchan stack size"
+	default 4096
+
+config EXAMPLES_STACKCHAN_SERVO_DEVPATH
+	string "Servo UART device"
+	default "/dev/ttyS0"
+	---help---
+		The UART wired to the servos (G6/G7 on the StackChan base).
+		Serial devices are numbered in the order they are enabled, so
+		with the console on USB-Serial/JTAG and UART0 disabled, UART1
+		is /dev/ttyS0.
+
+endif
