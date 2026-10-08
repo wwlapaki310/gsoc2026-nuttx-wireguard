@@ -112,3 +112,84 @@ issue #20 の S0〜S5 に相当する確認。目的は「初期ファームで�
 3. Wi-Fi の SSID・パスフレーズと WireGuard の鍵は**ビルドに入れない**。起動後に NSH(`wapi`、`wg genkey` / `wg set`)で設定する
 4. WireGuard の相手(Linux か Windows の公式クライアント)と、UDP が通るネットワークを用意する
 5. 確認順:NSH → 顔 → LED → サーボ → Wi-Fi → `wg0` → telnet / Web を、顔と首振りを動かしたまま
+
+## 6. NuttX での再確認(同日夜、WSL + Docker Desktop で再ビルド)
+
+§3 の 1〜5 を入れた `stackchan` アプリ([demo/stackchan/](../../demo/stackchan/))を作り、`esp32s3` ステージに
+重ねる `esp32s3-stackchan` ステージ(Dockerfile)でビルドして COM5 に書き込んだ。§4 の「書き戻し」は
+不要になった(書き込み前の実機は MicroPython ではなく、同日 12:22 ビルドの NuttX 13.0.1 が COM5 で動いていた)。
+
+```bash
+docker build --target esp32s3-stackchan -t nuttx-wireguard:esp32s3-stackchan .
+docker run --rm -v "C:\Users\<user>\stackchan-build:/out" --entrypoint bash \
+  nuttx-wireguard:esp32s3-stackchan -c 'cp /opt/nuttx/nuttx.bin /out/'
+python -m esptool -c esp32s3 -p COM5 -b 921600 write-flash -fs detect -fm dio -ff 40m 0x0000 nuttx.bin
+```
+
+### 構成で踏んだこと
+
+| 内容 | 対処 |
+|---|---|
+| `esp32s3-devkit:wifi` はコンソールが UART0(G43/G44)。CoreS3 の USB-C は内蔵 USB-Serial/JTAG なので、書き込みは通るのに COM5 に何も出ない | `ESP32S3_UART0` を外して `ESP32S3_USBSERIAL` をコンソールに(esp32s3-box:nsh と同じ) |
+| UART0 を外すと UART1 は `/dev/ttyS0` になる(`/dev/ttyS1` ではない) | アプリの `CONFIG_EXAMPLES_STACKCHAN_SERVO_DEVPATH`(既定 `/dev/ttyS0`) |
+| esp32s3-devkit の SPI3 用 `cmddata` は MISO ピンを DC として書くが、そのピンを出力にしていない | Dockerfile で、最初の呼び出し時に `esp_configgpio(MISO, OUTPUT)` するパッチを当てる |
+| LED を更新した直後は PY32 が I2C に応答しない(デモの起動直後に `servo_power` が -EIO) | 更新後 50 ms 待つ。I2C 転送は 10 ms 間隔で最大 5 回再試行 |
+
+### 結果(コマンドの戻り値と読み戻しで確認。画面と LED は目視が未確認)
+
+| 確認 | 結果 |
+|---|---|
+| NSH | COM5(USB-Serial/JTAG)。`/dev/i2c0`・`/dev/spi3`・`/dev/ttyS0`・`/dev/ttyACM0` あり |
+| `i2c dev -b 0 0x08 0x77` | 0x23, 0x34, 0x40, 0x41, 0x50, 0x51, 0x58, 0x68, 0x69, **0x6F**(i2ctool の既定 100 kHz) |
+| `stackchan face` / `blink` / `led r g b` | すべて ok(I2C・SPI の転送エラーなし) |
+| `stackchan servo ping` | ID 1・2 とも応答 |
+| `stackchan servo move 440 650` → `pos` | pan 442 / tilt 650 |
+| `stackchan servo move 480 670` → `pos` | pan 477 / tilt 668 |
+| `stackchan start`(バックグラウンド) | 約 10 秒間に pan/tilt の読み戻しが 452/649 → 471/632 → 467/680 と変化。NSH は応答し続ける。`free` は約 200 KB 空き |
+| `stackchan stop` | 中央に戻してトルク解放、LED 消灯、タスク終了(`status` → stopped)。NSH は固まらない |
+
+### S6〜S7:WireGuard 越しの telnet / Web(顔と首振りを動かしたまま)
+
+**動作した。** 電源投入だけで Wi-Fi → `wg0` → webserver → `stackchan start` → telnetd の順に上がり
+(rcS と `/data` の保存設定)、PC 側からトンネル越しに telnet と Web がつながる。顔(白い目と口)は目視で確認済み。
+
+構成:
+
+| 側 | 内容 |
+|---|---|
+| StackChan | `wlan0` 192.168.0.184(TP-Link_5FB2、DHCP)、`wg0` 10.10.0.2。`wg saveconf` → `/data/wg0.conf`。Wi-Fi のパスフレーズは平文になるので保存しない(確認後に `/data/wapi.conf` を削除)。電源を入れ直したら USB から `nsh_wifi.py` でつなぎ直す |
+| PC | Docker Desktop のコンテナ([docker/wg-peer/](../../docker/wg-peer/))でカーネル版 WireGuard、`wg0` 10.10.0.1。`localhost:8080` → 10.10.0.2:80、`localhost:2323` → 10.10.0.2:23 を socat で転送 |
+| 向き | **PC 側から張る。** PC は Windows ファイアウォールが Public プロファイルで受信を拒否し、ローカルルールも追加できない。コンテナ側に StackChan のエンドポイントと keepalive 25 秒を設定し、StackChan 側のピアはエンドポイントなし(最初の正しいハンドシェイクで学習する) |
+
+手順([scripts/stackchan/](../../scripts/stackchan/)):
+
+```
+python nsh_wifi.py COM5                     # SSID とパスフレーズを入力(出力では伏せる)。--save で /data/wapi.conf に平文保存
+python wg_setup.py COM5 <StackChan の wlan0 IP>  # 鍵の生成・両側の設定・保存。鍵は %USERPROFILE%\stackchan-wg\
+```
+
+| 確認 | 結果 |
+|---|---|
+| ハンドシェイク | 成立(PC 側から) |
+| `ping 10.10.0.2`(コンテナから) | 10/10、RTT 9〜28 ms |
+| telnet(トンネル越し) | `uname -a`・`ps`・`stackchan status` / `servo pos` が通る。デモ実行中も首の位置が変わり続ける(405/661 → 448/680 → 496/674) |
+| Web(トンネル越し) | 1 秒間隔で 30/30、`localhost:8080` 経由でも 15/15(TIME_WAIT 2 秒の構成) |
+| 再起動 | リセット後、操作なしでトンネル・webserver・デモ・telnetd が上がる |
+
+### 途中で踏んだこと(S6〜S7)
+
+| 内容 | 対処 |
+|---|---|
+| `/data` に保存したはずの `wg0.conf` / `wapi.conf` が再起動後に見えない(`df` では使用中、`ls` は空) | 書き込み前に入っていたファームと SPIFFS の形式が合っていなかった。`esptool erase-region 0x180000 0x100000` で消してから設定し直した |
+| `wapi.conf` で Wi-Fi にはつながるが、アドレスが既定の 10.0.0.2 / 0.0.0.0 のまま | `esp32s3` ステージは SSID 指定時しか `NETINIT_DHCPC` を入れない。stackchan ステージで常に有効化 |
+| NSH に 44 文字の鍵を含む行を一度に送ると、USB-Serial/JTAG で文字が落ちて鍵が壊れる | `wg_setup.py` は 16 バイトずつ 30 ms 間隔で送る |
+| telnet セッションから `webserver &` を起動すると、セッションを閉じた後に webserver が落ちる | rcS(コンソール)から起動する |
+| `nc -zv` のように接続してすぐ切ると telnetd / webserver が終了する | NuttX apps 側の `accept()` エラー処理(エラーでループを抜ける)。デモでは避ける |
+| Web が数回成功した後、しばらく RST になる。handshake は成立し、GET の再送に対して RST(ボードがその接続を失っている) | TCP の接続数を 16 + 動的 32、TIME_WAIT を 2 秒にして、1 秒間隔なら安定。**連続で叩くと 30 回中 12 回しか成功せず、まだ接続を取り切っているものがある**。根本原因は未調査(NuttX TCP 側。成功回数が接続数に比例し、TIME_WAIT 満了で回復する)。SYN-ACK の ISN が接続ごとにほぼ同じ値なのも気になる |
+| Docker Desktop が社内の PAC プロキシを覚えたままで、社外でビルドが失敗 | Docker Desktop を再起動 |
+
+### 残り
+
+- **LED が白く見える。** デモは青(`led_set(0, 0, 24)`)を指定し、PY32 への書き込みはエラーなし。RGB565 の並びか、PY32 側の LED 設定(0x24)の解釈が違う可能性。`stackchan led 40 0 0` などで色ごとに確かめる
+- Web が連続アクセスで落ちる件の根本原因(上表)
+- `docker/wg-peer` を使わず、Windows の公式 WireGuard クライアントを相手にする場合は管理者権限のある PC が要る

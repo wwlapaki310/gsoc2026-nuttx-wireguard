@@ -218,6 +218,7 @@ ESP32 系の `wlan0` は通常の NuttX netdev だが、GS2200M は **`usrsock`*
 ```bash
 docker build --target esp32 -t nuttx-wireguard:esp32 .                   # nuttx.bin (ESP32-WROOM-32)
 docker build --target esp32s3 -t nuttx-wireguard:esp32s3 .               # nuttx.bin (ESP32-S3)
+docker build --target esp32s3-stackchan -t nuttx-wireguard:esp32s3-stackchan . # nuttx.bin (StackChan / M5Stack CoreS3、顔・サーボのデモ込み)
 docker build --target spresense -t nuttx-wireguard:spresense .           # nuttx.spk (メインボード単体、wg0 起動確認用)
 docker build --target spresense-wifi -t nuttx-wireguard:spresense-wifi . # nuttx.spk (iS110B Wi-Fi Add-on 込み)
 ```
