@@ -8,6 +8,8 @@
 | ファイル | 用途 |
 |---|---|
 | `nsh_console.py` | NSH にコマンドを流して出力を取る。**DTR/RTS を False のまま開く**(USB-Serial/JTAG では両線がリセットとブート選択につながっている)。例: `python nsh_console.py COM5 20 "uname -a" "stackchan face"` |
+| `nsh_wifi.py` | Wi-Fi に接続(`wapi psk` / `essid` / `renew`、`--save` で `/data/wapi.conf` に保存。ただしパスフレーズが平文で残るので、通常は付けない)。SSID とパスフレーズは入力させ、出力では伏せる。`WIFI_SSID` / `WIFI_PASS` 環境変数でも渡せる |
+| `wg_setup.py` | WireGuard の鍵を作り、PC 側([docker/wg-peer/](../../docker/wg-peer/) のコンテナ)と StackChan 側を設定して `wg saveconf` まで行う。鍵は `%USERPROFILE%\stackchan-wg\` に置き、表示しない。例: `python wg_setup.py COM5 192.168.0.184` |
 
 秘密鍵や SSID を表示するコマンド(`wg showconf`、設定ファイルの `cat`、`wapi show` の ESSID)は流さないこと。
 
