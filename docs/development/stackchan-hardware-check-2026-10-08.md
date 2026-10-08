@@ -176,6 +176,12 @@ python wg_setup.py COM5 <StackChan の wlan0 IP>  # 鍵の生成・両側の設�
 | Web(トンネル越し) | 1 秒間隔で 30/30、`localhost:8080` 経由でも 15/15(TIME_WAIT 2 秒の構成) |
 | 再起動 | リセット後、操作なしでトンネル・webserver・デモ・telnetd が上がる |
 
+### 表情の切り替え
+
+`stackchan face <neutral|happy|sad|angry|sleepy|surprised>` で目と口の形を変えられる(目視で確認)。デモの実行中は
+値を渡すだけで、描画はデモのタスクが行う(2 つのタスクが同時に SPI に描かないため)。まばたきも今の表情のまま行う。
+telnet からトンネル越しに `stackchan face happy` で切り替わることも確認した。
+
 ### 途中で踏んだこと(S6〜S7)
 
 | 内容 | 対処 |
@@ -190,6 +196,10 @@ python wg_setup.py COM5 <StackChan の wlan0 IP>  # 鍵の生成・両側の設�
 
 ### 残り
 
-- **LED が白く見える。** デモは青(`led_set(0, 0, 24)`)を指定し、PY32 への書き込みはエラーなし。RGB565 の並びか、PY32 側の LED 設定(0x24)の解釈が違う可能性。`stackchan led 40 0 0` などで色ごとに確かめる
+- **胴体の LED が光らない。**(「白く見える」は画面の顔のことだった)赤・緑・青・消灯を 1 秒ずつ繰り返しても変化なし。
+  PY32 の LED RAM には正しく入っている(赤で 0x30/0x31 = `00 f8`、0x24 = `0c` で更新ビットは PY32 がクリア)。
+  ピン 13 の設定(0x04 = 0x20、0x0A = 0x20、0x14 の bit5 = 0)も公式 BSP(StackChan-BSP の `PY32IOExpander`)と同じ。
+  BSP は先に `M5.begin()`(M5Unified)を呼ぶので、CoreS3 の外部 5V 出力(AW9523B / AXP2101 側)が LED の電源で、
+  NuttX では入っていない可能性が高い。次はそこを確かめる
 - Web が連続アクセスで落ちる件の根本原因(上表)
 - `docker/wg-peer` を使わず、Windows の公式 WireGuard クライアントを相手にする場合は管理者権限のある PC が要る

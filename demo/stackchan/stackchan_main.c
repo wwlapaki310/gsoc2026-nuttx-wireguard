@@ -119,6 +119,16 @@
 #define MOUTH_H       8
 #define MOUTH_Y       168
 
+/* Expressions */
+
+#define EXPR_NEUTRAL   0
+#define EXPR_HAPPY     1
+#define EXPR_SAD       2
+#define EXPR_ANGRY     3
+#define EXPR_SLEEPY    4
+#define EXPR_SURPRISED 5
+#define NEXPR          6
+
 /****************************************************************************
  * Private Types
  ****************************************************************************/
@@ -146,6 +156,18 @@ struct stackchan_s
 
 static volatile bool g_running;
 static volatile pid_t g_demo_pid = -1;
+
+/* Current expression.  While the demo runs, "stackchan face <expr>" only
+ * sets these and the demo task redraws, so two tasks never draw at once.
+ */
+
+static volatile int g_expr = EXPR_NEUTRAL;
+static volatile bool g_redraw;
+
+static FAR const char * const g_expr_names[NEXPR] =
+{
+  "neutral", "happy", "sad", "angry", "sleepy", "surprised"
+};
 
 /* Safe ranges from the official BSP: pan zero 460 +/-128 deg, tilt
  * 620 (0 deg) .. 908 (90 deg).  Kept a little inside.
@@ -564,28 +586,136 @@ static int lcd_init(FAR struct stackchan_s *sc)
   return ret;
 }
 
-static void face_eyes(FAR struct stackchan_s *sc, bool open)
+/* Eye and mouth areas, cleared before each redraw.  Large enough for the
+ * biggest variant (surprised eyes, happy/sad mouth).
+ */
+
+#define EYE_BOX       28
+#define MOUTH_X0      100
+#define MOUTH_Y0      130
+#define MOUTH_X1      220
+#define MOUTH_Y1      230
+
+static void face_eye(FAR struct stackchan_s *sc, int cx, bool left,
+                     int expr, bool open)
 {
-  int i;
+  int y;
 
-  for (i = 0; i < 2; i++)
+  lcd_fill(sc, cx - EYE_BOX, EYE_Y - EYE_BOX, 2 * EYE_BOX + 1,
+           2 * EYE_BOX + 1, COLOR_BLACK);
+
+  if (!open || expr == EXPR_SLEEPY)
     {
-      int cx = i == 0 ? EYE_LX : EYE_RX;
+      lcd_fill(sc, cx - EYE_R, EYE_Y - 3, 2 * EYE_R + 1, 6, COLOR_WHITE);
+      return;
+    }
 
-      lcd_fill(sc, cx - EYE_R, EYE_Y - EYE_R, 2 * EYE_R + 1, 2 * EYE_R + 1,
-               COLOR_BLACK);
-      if (open)
-        {
-          lcd_circle(sc, cx, EYE_Y, EYE_R, COLOR_WHITE);
-        }
-      else
-        {
-          lcd_fill(sc, cx - EYE_R, EYE_Y - 3, 2 * EYE_R + 1, 6, COLOR_WHITE);
-        }
+  switch (expr)
+    {
+      case EXPR_HAPPY:
+
+        /* Upper crescent: closed, smiling eyes */
+
+        lcd_circle(sc, cx, EYE_Y, EYE_R, COLOR_WHITE);
+        lcd_circle(sc, cx, EYE_Y + 8, EYE_R, COLOR_BLACK);
+        break;
+
+      case EXPR_SAD:
+        lcd_circle(sc, cx, EYE_Y + 4, EYE_R - 4, COLOR_WHITE);
+        break;
+
+      case EXPR_ANGRY:
+
+        /* Round eye with the top cut by a brow that slopes down towards
+         * the middle of the face.
+         */
+
+        lcd_circle(sc, cx, EYE_Y, EYE_R, COLOR_WHITE);
+        for (y = EYE_Y - EYE_R; y <= EYE_Y; y++)
+          {
+            int cut = 2 * (y - (EYE_Y - EYE_R - 2));
+
+            if (left)
+              {
+                lcd_fill(sc, cx - EYE_R + cut, y, 2 * EYE_R + 1 - cut, 1,
+                         COLOR_BLACK);
+              }
+            else
+              {
+                lcd_fill(sc, cx - EYE_R, y, 2 * EYE_R + 1 - cut, 1,
+                         COLOR_BLACK);
+              }
+          }
+        break;
+
+      case EXPR_SURPRISED:
+        lcd_circle(sc, cx, EYE_Y, EYE_R + 6, COLOR_WHITE);
+        break;
+
+      default:
+        lcd_circle(sc, cx, EYE_Y, EYE_R, COLOR_WHITE);
+        break;
     }
 }
 
-static int face_draw(FAR struct stackchan_s *sc)
+static void face_eyes(FAR struct stackchan_s *sc, int expr, bool open)
+{
+  face_eye(sc, EYE_LX, true, expr, open);
+  face_eye(sc, EYE_RX, false, expr, open);
+}
+
+static void face_mouth(FAR struct stackchan_s *sc, int expr)
+{
+  int cx = LCD_W / 2;
+
+  lcd_fill(sc, MOUTH_X0, MOUTH_Y0, MOUTH_X1 - MOUTH_X0,
+           MOUTH_Y1 - MOUTH_Y0, COLOR_BLACK);
+
+  switch (expr)
+    {
+      case EXPR_HAPPY:
+
+        /* Lower crescent: a smile */
+
+        lcd_circle(sc, cx, 160, 30, COLOR_WHITE);
+        lcd_circle(sc, cx, 148, 30, COLOR_BLACK);
+        break;
+
+      case EXPR_SAD:
+
+        /* Upper crescent: a frown */
+
+        lcd_circle(sc, cx, 196, 30, COLOR_WHITE);
+        lcd_circle(sc, cx, 208, 30, COLOR_BLACK);
+        break;
+
+      case EXPR_ANGRY:
+        lcd_fill(sc, cx - 30, 172, 60, 6, COLOR_WHITE);
+        break;
+
+      case EXPR_SLEEPY:
+        lcd_fill(sc, cx - 15, 170, 30, 6, COLOR_WHITE);
+        break;
+
+      case EXPR_SURPRISED:
+        lcd_circle(sc, cx, 175, 14, COLOR_WHITE);
+        lcd_circle(sc, cx, 175, 8, COLOR_BLACK);
+        break;
+
+      default:
+        lcd_fill(sc, cx - MOUTH_W / 2, MOUTH_Y, MOUTH_W, MOUTH_H,
+                 COLOR_WHITE);
+        break;
+    }
+}
+
+static void face_expr(FAR struct stackchan_s *sc, int expr)
+{
+  face_eyes(sc, expr, true);
+  face_mouth(sc, expr);
+}
+
+static int face_draw(FAR struct stackchan_s *sc, int expr)
 {
   int ret;
 
@@ -595,17 +725,31 @@ static int face_draw(FAR struct stackchan_s *sc)
       return ret;
     }
 
-  lcd_fill(sc, 0, 0, LCD_W, LCD_H, COLOR_BLACK);
-  face_eyes(sc, true);
-  return lcd_fill(sc, (LCD_W - MOUTH_W) / 2, MOUTH_Y, MOUTH_W, MOUTH_H,
-                  COLOR_WHITE);
+  ret = lcd_fill(sc, 0, 0, LCD_W, LCD_H, COLOR_BLACK);
+  face_expr(sc, expr);
+  return ret;
 }
 
-static void face_blink(FAR struct stackchan_s *sc)
+static void face_blink(FAR struct stackchan_s *sc, int expr)
 {
-  face_eyes(sc, false);
+  face_eyes(sc, expr, false);
   usleep(120 * 1000);
-  face_eyes(sc, true);
+  face_eyes(sc, expr, true);
+}
+
+static int expr_parse(FAR const char *name)
+{
+  int i;
+
+  for (i = 0; i < NEXPR; i++)
+    {
+      if (strcmp(name, g_expr_names[i]) == 0)
+        {
+          return i;
+        }
+    }
+
+  return -1;
 }
 
 /* Servos (Feetech SCS protocol) */
@@ -831,7 +975,7 @@ static int demo_task(int argc, FAR char *argv[])
   clock_gettime(CLOCK_MONOTONIC, &ts);
   srand(ts.tv_nsec);
 
-  face_draw(sc);
+  face_draw(sc, g_expr);
   led_set(sc, 0, 0, 24);
   servo_ok = servo_power(sc, true) == OK;
 
@@ -839,9 +983,15 @@ static int demo_task(int argc, FAR char *argv[])
 
   for (tick = 0; g_running; tick++)
     {
+      if (g_redraw)
+        {
+          g_redraw = false;
+          face_expr(sc, g_expr);
+        }
+
       if (tick >= next_blink)
         {
-          face_blink(sc);
+          face_blink(sc, g_expr);
           next_blink = tick + 30 + rand() % 20;
         }
 
@@ -879,7 +1029,9 @@ static void usage(void)
 {
   printf("Usage: stackchan <command>\n"
          "  start | stop | status     background face + head motion\n"
-         "  face | blink              draw the face / blink once\n"
+         "  face [<expression>]       neutral happy sad angry sleepy\n"
+         "                            surprised\n"
+         "  blink                     blink once\n"
          "  led <r> <g> <b>           all 12 LEDs (0-255)\n"
          "  servo on | off            servo power (VM_EN) / torque off\n"
          "  servo ping                ping pan (1) and tilt (2)\n"
@@ -1008,14 +1160,33 @@ int main(int argc, FAR char *argv[])
 
   if (strcmp(argv[1], "face") == 0)
     {
-      report("face", face_draw(sc));
+      int expr = argc > 2 ? expr_parse(argv[2]) : g_expr;
+
+      if (expr < 0)
+        {
+          usage();
+          ret = 1;
+        }
+      else if (g_demo_pid >= 0)
+        {
+          /* Let the demo task draw it */
+
+          g_expr   = expr;
+          g_redraw = true;
+          printf("face: %s\n", g_expr_names[expr]);
+        }
+      else
+        {
+          g_expr = expr;
+          report("face", face_draw(sc, expr));
+        }
     }
   else if (strcmp(argv[1], "blink") == 0)
     {
       ret = open_once(&sc->spi, SPI_DEV, O_RDWR);
       if (ret >= 0)
         {
-          face_blink(sc);
+          face_blink(sc, g_expr);
         }
 
       report("blink", ret);
