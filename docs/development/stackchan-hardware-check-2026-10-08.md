@@ -88,6 +88,27 @@ issue #20 の S0〜S5 に相当する確認。目的は「初期ファームで�
 | 4 | LCD の向き:物理は 320x240 横長。現行は 240x320 縦として描画している | §1、M5GFX は `offset_rotation = 3` |
 | 5 | `i2c` ツール(i2ctool)を入れる | 次回の切り分け用 |
 
-## 4. 片付け
+## 4. 片付け(未完了)
 
-確認後、バックアップを書き戻して元の NuttX に戻す(§対象のバックアップ)。
+**バックアップの書き戻しはまだできていない。** 実機は MicroPython が入ったままで、その USB(COM6)は
+`machine.bootloader()` を試した後に止まっている(Windows がエラー 31 を返す)。esptool の自動リセット
+(`default-reset` / `usb-reset`)も効かなかった。
+
+戻すには、CoreS3 側面のリセットボタンを緑 LED が点くまで約 3 秒長押ししてダウンロードモードに入れ、
+`python -m esptool --port <COM> --baud 921600 write-flash 0 <backup.bin>` を実行する。
+
+- バックアップの実体は**確認に使った PC のローカル**(`C:\Users\0000400096\stackchan-backup\`)にだけある。
+  ビルド済みイメージには Wi-Fi の設定が入っている可能性があるので、**公開リポジトリには入れない**
+- 書き戻しても、PY32 を 400 kHz で叩く問題はビルドに含まれたままなので、サーボは動かない。
+  §3 の修正を入れたファームを作り直すのが本筋
+
+## 5. 次の作業(ビルドできる PC で)
+
+目標:NuttX 上で顔表示・まばたき・首振りを続けながら、WireGuard 越しに telnet と Web で接続するデモ(#20 S6〜S7)。
+
+1. `stackchan` アプリを §3 の手順で作る(元のソースはこの環境に無かった。scripts/stackchan/ の MicroPython 版が
+   動作確認済みの手順の参照実装)。I2C は `struct i2c_msg_s.frequency = 100000`、サーボ UART は `/dev/ttyS1` 1 Mbps
+2. ボードは esp32s3-devkit 構成を流用中(CoreS3 専用 board は NuttX にまだ無い)。コンソールは USB-Serial/JTAG
+3. Wi-Fi の SSID・パスフレーズと WireGuard の鍵は**ビルドに入れない**。起動後に NSH(`wapi`、`wg genkey` / `wg set`)で設定する
+4. WireGuard の相手(Linux か Windows の公式クライアント)と、UDP が通るネットワークを用意する
+5. 確認順:NSH → 顔 → LED → サーボ → Wi-Fi → `wg0` → telnet / Web を、顔と首振りを動かしたまま
