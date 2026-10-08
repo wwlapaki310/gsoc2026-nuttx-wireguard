@@ -50,7 +50,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 
 | | |
 |---|---|
-| [upstream-strategy.md](upstream/upstream-strategy.md) | 提出計画・PR の分割方針・論点 |
+| [merge-strategy.md](upstream/merge-strategy.md) | **提出の進め方の正本**(2026-10-07)。最新 upstream への再適用結果、6 PR への組み直し、提出前に塞ぐ穴、PR ごとのゲート |
+| [upstream-strategy.md](upstream/upstream-strategy.md) | 提出計画・PR の分割方針・論点(apps 版の旧計画。履歴) |
 | [dev-list-proposal.md](upstream/dev-list-proposal.md) | `dev@nuttx.apache.org` への投稿ドラフト |
 | [license-appendix-draft.md](upstream/license-appendix-draft.md) | `LICENSE` に追記する著作権表示の案 |
 | [gs2200m-usrsock-issue-draft.md](upstream/gs2200m-usrsock-issue-draft.md) | `apache/nuttx` への報告ドラフト: GS2200M usrsock の ioctl 2 件(未提出) |
@@ -76,6 +77,8 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 
 発表の技術背景を用語から学ぶ場合は
 [大学1年生向け初心者ガイド](presentation/coc-glasgow-beginner-guide-ja.md)を入口にする。
+スライドの順番どおりに、読み方つきの用語・図・数字で追うなら
+[スライド解説書](presentation/coc-glasgow-slide-guide-ja.html)。
 
 | デッキ | 台本 | |
 |---|---|---|
