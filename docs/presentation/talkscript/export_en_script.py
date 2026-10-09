@@ -40,7 +40,7 @@ SLIDES = [
         "(~2) / bugs that a working demo hid (~4) / moving the driver into "
         "the kernel (~2) / how I checked that it really works (~10) / using "
         "a real board through the tunnel (~2) / what comes next (~3).", []),
-    ("Agenda: ① Background", "divider", None, []),
+    ("Agenda: ① Why I Needed a VPN", "divider", None, []),
     ("About Me", "",
         "Photo, and a timeline Robotics → Computer Vision → Edge AI → "
         "Embedded Systems → NuttX / WireGuard with a picture per step.", []),
@@ -60,7 +60,7 @@ SLIDES = [
         "networking, VFS, file systems, device drivers, NSH / NuttX kernel / "
         "MCU, MPU) and tags: RTOS, POSIX-oriented, BSD sockets, VFS, NSH, "
         "native networking, device drivers, ASF top-level project.", []),
-    ("Positioning: Where NuttX Fits", "",
+    ("Where NuttX Fits", "",
         "FreeRTOS / Zephyr / NuttX table (design centre, typical use), GitHub "
         "stars with the note that stars are visibility, not deployment; "
         "number cards: 15+ architectures, 300+ boards, 1500+ configs, Sony, "
@@ -97,7 +97,7 @@ SLIDES = [
          "Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard "
          "encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX "
          "and RX arrows.", []),
-    ("Agenda: ② Porting Strategy", "divider", None, []),
+    ("Agenda: ② Reusing an Existing WireGuard", "divider", None, []),
     ("Porting Strategy: Reusing wireguard-lwip Without lwIP", "",
          "Three cards: protocol & crypto (KEEP) / platform hooks (ADAPT, the "
          "four functions in wireguard-platform.h) / lwIP network glue "
@@ -109,31 +109,31 @@ SLIDES = [
          "Protocol & crypto: 3,079 lines unchanged / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
-    ("Agenda: ③ Hidden Pitfalls", "divider", None, []),
+    ("Agenda: ③ Bugs a Working Demo Hid", "divider", None, []),
     ("The Testing Pattern: Simple Tests Pass, Deep Tests Fail", "",
          "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
          "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
          "security, FAIL).", []),
-    ("Pitfall 1/7: SO_RCVTIMEO", "", None, []),
-    ("Pitfall 2/7: The Detached pthread", "", None, []),
-    ("Pitfall 3/7: ping Works, TCP Dies", "the good one", None, []),
-    ("Pitfall 4/7: \"No Real Impact\" Was 10×", "", None, []),
-    ("Pitfall 5/7: sim Passes, Hardware Freezes", "", None, []),
-    ("Agenda: ④ Kernel Driver", "divider", None, []),
+    ("Bug 1/7: SO_RCVTIMEO", "", None, []),
+    ("Bug 2/7: The Detached pthread", "", None, []),
+    ("Bug 3/7: ping Works, TCP Dies", "my favorite", None, []),
+    ("Bug 4/7: \"No Real Impact\" Was 10×", "", None, []),
+    ("Bug 5/7: sim Passes, Hardware Freezes", "", None, []),
+    ("Agenda: ④ Into the Kernel", "divider", None, []),
     ("Part 3: Into the Kernel", "", None, []),
     ("The Kernel Design", "", None, []),
     ("Two More Bugs, Same Shape", "locked with 26", None, []),
-    ("Agenda: ⑤ Verification", "divider", None, []),
-    ("Verification: Seven Places It Has to Hold", "core — do not cut",
-         "Table: sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64 "
+    ("Agenda: ⑤ Checking That It Really Works", "divider", None, []),
+    ("Testing: Seven Places It Must Work", "core — do not cut",
+         "Table (where / version / what I checked): sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64 "
          "(BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPUs) / SPRESENSE "
          "measured / ESP32-S3 + SPRESENSE over real Wi-Fi / apps v0.1.1 on "
          "both boards.", []),
-    ("Verification: A Working Tunnel Is Not Evidence", "core — do not cut",
+    ("Testing: A Working Tunnel Does Not Prove Enough", "core — do not cut",
          "Three rows (same private key every boot / session keys that "
          "outlive the tunnel / a leak that shows after hours), each with "
          '"would ping notice?" → no.', []),
-    ("A Design Call: The Timestamp Problem Has No Easy Answer",
+    ("A Design Choice: The Timestamp Problem Has No Easy Answer",
          "core — do not cut",
          "What replay protection obliges, the four options (real-time clock "
          "+ in-boot high-water mark / persist every time / durable range "
@@ -151,10 +151,10 @@ SLIDES = [
           "SSID and passphrase are in plain text in those places.",
           "**Fallback:** the recording, youtu.be/1kyX2av5WG4. Switch at once "
           "if the live demo stalls."]),
-    ("Agenda: ⑦ Toward Upstream", "divider", None, []),
-    ("Operability", "cut candidate 3", None, []),
-    ("Portability", "cut candidate 2", None, []),
-    ("Contributing Back", "cut first", None,
+    ("Agenda: ⑦ What Comes Next", "divider", None, []),
+    ("Running It for Real", "cut candidate 3", None, []),
+    ("Other CPUs", "cut candidate 2", None, []),
+    ("Giving Back", "cut first", None,
          ['**If asked "is it merged?":** not yet. These are submission '
           "candidates, not a claim that it is mergeable. See the Q&A file.",
           "**If time is short:** skip the whole slide. The talk's argument "
@@ -170,46 +170,47 @@ SLIDES = [
 HEADER = """\
 # Speaking script — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
-Deck: [`coc-glasgow-slides.html`](../coc-glasgow-slides.html) (and its
-official-template edition [`coc-glasgow-reveal/`](../coc-glasgow-reveal/)),
-{count} slides, English. **Generated** by
+Deck: [`coc-glasgow-slides.html`](../coc-glasgow-slides.html) (and the
+version on the official template, [`coc-glasgow-reveal/`](../coc-glasgow-reveal/)),
+{count} slides, English. This file is **made by**
 [`export_en_script.py`](export_en_script.py) from the speaker notes in the
-deck (press `N` there to see them live): the "Say" text below *is* those
-notes. Do not edit this file by hand. Edit the notes in the deck and
-re-run the script, or the two will drift. The Japanese
-[rehearsal script](coc-glasgow-script-ja.md) follows the same slide order.
+deck (press `N` there to see them). The "Say" text below *is* those notes.
+Do not edit this file by hand. Change the notes in the deck and run the
+script again, or the two will stop matching. The Japanese
+[practice script](coc-glasgow-script-ja.md) uses the same slide order.
 
-**Total: about {total}, including a 90-second demo.** Times are cumulative
-("you should be at roughly this point") at {wpm} words per minute. That is
-already a little over a 30-minute slot, so rehearse to land the main body at
-27–28 minutes and keep the cut list below ready.
+**Total: about {total}, including a 90-second demo.** The times add up
+from the start ("you should be at about this point"), at {wpm} words per
+minute. This is longer than a 30-minute slot, so practice to finish the
+main talk in 27–28 minutes, and keep the cut list below ready.
 
-**The centre of gravity is slides {core_range}** (verification): together they are
-{core} of the talk, and they carry the claims a reviewer will actually
-check. Do not compress that block to protect time elsewhere. Cut before it
-or after it, never inside it. They are one argument: the first is where it
-runs, the second is what "it runs" does not prove, the third is the one
-place the answer is a judgment call rather than a test. Splitting them
-loses the argument.
+**The most important part is slides {core_range}** (testing). Together they take
+{core} of the talk, and they hold the claims that a reviewer will really
+check. Do not make them shorter to save time somewhere else. Cut before
+them or after them, never inside. They are one story: the first is where
+it runs, the second is what "it runs" does not prove, and the third is the
+one place where I had to decide instead of test. If you split them, the
+story breaks.
 
-**Do not cut slides 4–{arch} either** (About Me through Architecture). What
-NuttX is, where it is used, Sony's history with it, where I met it and why
-that led to WireGuard: everything after depends on that chain.
+**Do not cut slides 4–{arch} either** (About Me to Architecture). What
+NuttX is, where it is used, Sony's history with it, how I met it, and why
+that led to WireGuard: everything after that depends on this.
 
-**If time is short, drop in this order:**
-1. Slide {cut1} (Contributing Back). It supports the talk but is not its
-   spine; if dropped, answer it in Q&A if asked.
-2. Slide {cut2} (portability table). Supporting evidence, not the spine.
-3. Slide {cut3} (operability).
+**If time is short, cut in this order:**
+1. Slide {cut1} (Giving Back). It helps the talk, but the talk does not
+   depend on it. If you cut it, answer it in Q&A if someone asks.
+2. Slide {cut2} (Other CPUs, the portability table). It adds support, but it is
+   not the main story.
+3. Slide {cut3} (Running It for Real).
 
-If the live demo stalls, switch to the recording at once. **The agenda
-dividers ({dividers}) are a ten-second breath each**: point
-at the highlighted line and pause, do not read the list. With no time at
-all, advance through them silently. They save almost nothing, so cut the
+If the live demo stops, switch to the recording right away. **The agenda
+slides ({dividers}) are a ten-second pause each**: point
+at the highlighted line and pause. Do not read the list. If you have no
+time at all, skip them without a word. They save almost no time, so cut the
 three slides above instead.
 
-**Check before the talk:** the GitHub star counts on slide {stars} change. Re-check
-them on the day, or leave the date on the slide.
+**Check before the talk:** the GitHub star numbers on slide {stars} change. Check
+them again on the day, or keep the date on the slide.
 
 ---
 """
@@ -266,7 +267,7 @@ def main():
         cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
         cut3=find(lambda sl: sl[1] == "cut candidate 3")[0],
         dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),
-        stars=find(lambda sl: sl[0].startswith("Positioning"))[0])]
+        stars=find(lambda sl: sl[0].startswith("Where NuttX Fits"))[0])]
 
     for i, paras in enumerate(all_notes, 1):
         heading, tag, on_slide, extra = SLIDES[i - 1]

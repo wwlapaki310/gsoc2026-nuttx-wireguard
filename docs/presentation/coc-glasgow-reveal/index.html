@@ -729,9 +729,9 @@
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Today I will talk about bringing WireGuard to Apache NuttX.</p>
-      <p>It is a WireGuard VPN implemented as a wg0 network device. The tunnel is up over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the peers are always real WireGuard implementations &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk the new driver also runs inside real KERNEL and PROTECTED builds, which is the harder and more interesting half.</p>
-      <p>But the point of this talk is not that it works. It is what "works" hid, and what pushing it into the kernel forced into the open.</p>
+      <p>Today I will talk about adding WireGuard to Apache NuttX.</p>
+      <p>It is a WireGuard VPN that works as a network device called wg0. The tunnel runs over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the other side is always a real WireGuard program &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk, the new driver also runs inside real KERNEL and PROTECTED builds. That is the harder and more interesting half.</p>
+      <p>But this talk is not about &ldquo;it works.&rdquo; It is about what &ldquo;it works&rdquo; was hiding, and what moving it into the kernel brought out.</p>
     </aside>
   </section>
 
@@ -782,8 +782,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is the shape of the talk.</p>
-      <p>Seven chapters. Background &mdash; what NuttX is, where it's used, Sony's history with it, my own path into it, and the problem that led to WireGuard &mdash; then the porting strategy that started from an existing lwIP implementation, five hidden pitfalls a working demo never revealed, moving the driver into the kernel, how it was verified, a short demo, and then what to carry out and where this goes upstream. About thirty minutes, then questions.</p>
+      <p>Here is the plan for this talk.</p>
+      <p>There are seven parts. First, why I needed a VPN on a NuttX device: what NuttX is, how this project started, and the problem I had to solve. Second, how I reused an existing WireGuard. Third, five bugs that a working demo hid. Fourth, moving the driver into the kernel. Fifth, how I checked that it really works. Sixth, a short demo. And last, what comes next, and what to take home. About thirty minutes, then questions.</p>
     </aside>
   </section>
 
@@ -834,7 +834,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here we go &mdash; chapter one.</p>
+      <p>Let's start with part one.</p>
     </aside>
   </section>
 
@@ -960,9 +960,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Quickly, who is talking.</p>
-      <p>I am an edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side. I was born in Nagoya, went to university in Sendai where I studied space, robotics, MEMS and semiconductors, and am based in Kawasaki now. I go to a lot of hackathons, help organize software conferences, and have a book on open source out as well.</p>
-      <p>The path that got me into this specific project runs through molecular robotics, computer vision and AI systems work, edge AI cameras, and embedded systems on SPRESENSE &mdash; NuttX and WireGuard are the latest stop on that path, not the start.</p>
+      <p>First, a little about me.</p>
+      <p>I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side. I was born in Nagoya. I went to university in Sendai, where I studied space, robots, MEMS and semiconductors. Now I live in Kawasaki. I often join hackathons, I help run software conferences, and I wrote a book about open source.</p>
+      <p>My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road, not the start.</p>
     </aside>
   </section>
 
@@ -1012,8 +1012,8 @@
   </div>
     <aside class="notes">
       <p>Here is the whole idea in one picture.</p>
-      <p>Apache NuttX is a POSIX-compliant RTOS with its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface: applications see an ordinary interface, and underneath, the encrypted transport is a UDP socket. The peer on the other end is a real WireGuard endpoint &mdash; Linux, Windows, or another gateway.</p>
-      <p>That POSIX and BSD-socket shape is why NuttX is a good fit for this work. This is not a claim that FreeRTOS or Zephyr cannot run a VPN; it is a claim about how naturally a VPN can become an ordinary network device here.</p>
+      <p>Apache NuttX is an RTOS that follows POSIX and has its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface. Applications see a normal interface. Under it, the encrypted data travels over a UDP socket. The other side is a real WireGuard peer &mdash; Linux, Windows, or another gateway.</p>
+      <p>Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work. I am not saying that FreeRTOS or Zephyr cannot run a VPN. I am saying that here, a VPN can become a normal network device very naturally.</p>
     </aside>
   </section>
 
@@ -1035,10 +1035,10 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is how this project happened, month by month.</p>
-      <p>In the middle of February I read the GSoC idea list and started to study. In early March I wrote my plan as an issue and proposed it. On March 20, Alan told me about this conference, so I sent a talk. In early April I sent my GSoC proposal.</p>
-      <p>In early May I got two answers: the talk was accepted, and the GSoC proposal was not. I decided to build it anyway.</p>
-      <p>From June I worked on it a little at a time. Most of the work happened in the summer holiday in August. In September I moved it from a FLAT app into a kernel driver &mdash; that is the second half of this talk.</p>
+      <p>Here is how this project went, month by month.</p>
+      <p>In the middle of February, I read the GSoC idea list and started to look into it. In early March, I wrote my plan as an issue and proposed it. On March 20, Alan told me about this conference, so I sent a talk proposal. In early April, I sent my GSoC proposal.</p>
+      <p>In early May, I got two answers. The talk was accepted, and the GSoC proposal was not. I decided to build it anyway.</p>
+      <p>From June, I worked on it a little at a time. I did most of the work in the summer holiday in August. In September, I moved it from a FLAT app into a kernel driver. That is the second half of this talk.</p>
     </aside>
   </section>
 
@@ -1075,15 +1075,15 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Before anything else: what NuttX actually is.</p>
-      <p>NuttX is a real-time operating system built around a standards-first promise. It is POSIX and ANSI-API oriented, it speaks BSD sockets for networking, it has a real filesystem and VFS layer, a shell called NSH, native networking, and a device-driver model &mdash; all scaled down to run on microcontrollers from 8 to 64 bit. It is also an Apache Software Foundation top-level project, developed in public by its contributor community.</p>
-      <p>The point I want to land here is narrow but important: NuttX is a small RTOS with a Unix-like programming model. That combination is unusual, and it is why almost everything later in this talk &mdash; sockets, netdevs, a POSIX-shaped port &mdash; is possible at all.</p>
+      <p>First, what is NuttX?</p>
+      <p>NuttX is a real-time operating system that puts standards first. It follows the POSIX and ANSI APIs, it uses BSD sockets for networking, and it has a real file system, a shell called NSH, built-in networking and device drivers. All of this is made small enough to run on microcontrollers, from 8-bit to 64-bit. It is also a top-level project of the Apache Software Foundation, and its community develops it in the open.</p>
+      <p>The one point I want you to remember: NuttX is a small RTOS, but you program it like Unix. That is rare. And that is why almost everything later in this talk &mdash; sockets, network devices, a POSIX-style port &mdash; is possible at all.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Positioning</p>
+    <p class="eyebrow">Compared with others</p>
     <h2>Where NuttX fits &mdash; and where it is used.</h2>
     <div class="body">
       <div class="two">
@@ -1092,7 +1092,7 @@
             <tr><th>RTOS</th><th>Main focus</th><th>Typical use</th></tr>
             <tr><td>FreeRTOS</td><td>Small real-time kernel</td><td>MCU firmware, control, IoT</td></tr>
             <tr><td>Zephyr</td><td>All-in-one platform for connected devices</td><td>Wearables, industrial &amp; connected IoT</td></tr>
-            <tr><td class="new">NuttX</td><td class="new">Unix-like embedded OS</td><td class="new">Networking, filesystems, drones, sensing</td></tr>
+            <tr><td class="new">NuttX</td><td class="new">Unix-like embedded OS</td><td class="new">Networking, file systems, drones, sensing</td></tr>
           </table>
           <div class="aside" style="margin-top:14px"><p><code>FreeRTOS/FreeRTOS</code> 7.8k&#9733; &middot; <code>zephyrproject-rtos/zephyr</code> 16.5k&#9733; &middot; <code>apache/nuttx</code> 4.1k&#9733;<br>Stars show how many developers notice a project, not how many devices use it.</p></div>
         </div>
@@ -1100,7 +1100,7 @@
           <div class="fact wg"><b>Architectures</b><p>15+ CPU architectures</p></div>
           <div class="fact nx"><b>Boards</b><p>300+ supported boards</p></div>
           <div class="fact blue"><b>Configs</b><p>1,500+ configuration templates</p></div>
-          <div class="fact gold"><b>In production</b><p>Sony &middot; PX4 drones &middot; Xiaomi OpenVela (1,000+ SKUs) &middot; Japan's 2024 lunar mission</p></div>
+          <div class="fact gold"><b>In production</b><p>Sony &middot; PX4 drones &middot; Xiaomi OpenVela (1,000+ SKUs) &middot; Japan's 2024 Moon mission</p></div>
         </div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>NuttX has fewer stars than FreeRTOS and Zephyr, but it already runs in real products, from drones to the Moon.</p></div>
@@ -1110,9 +1110,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Thirty seconds on where NuttX sits, and whether it is a toy.</p>
-      <p>Three capable RTOSes, three different centers of gravity. FreeRTOS is a deliberately small real-time kernel for MCU firmware and control. Zephyr is an integrated platform for connected devices, wearables and industrial IoT. NuttX is the Unix-like one: networking, filesystems, drivers, used in drones and sensing. Not a ranking &mdash; a shape. By GitHub stars NuttX is the smallest of the three, and I want to say that plainly rather than hide it; stars are developer visibility, not deployment volume.</p>
-      <p>And the deployment side is real: fifteen-plus architectures, three hundred-plus boards, fifteen hundred-plus configuration templates upstream. In production it runs Sony devices, PX4 flight controllers, more than a thousand Xiaomi OpenVela SKUs, and it flew on Japan's 2024 lunar mission. Niche next to the giants, not a toy project.</p>
+      <p>Thirty seconds on where NuttX fits, and whether it is a toy.</p>
+      <p>These are three good RTOSes, and each has a different focus. FreeRTOS is a small real-time kernel, on purpose, for MCU firmware and control. Zephyr is an all-in-one platform for connected devices, wearables and industrial IoT. NuttX is the Unix-like one: networking, file systems and drivers, used in drones and sensing. This is not a ranking. It is about shape. By GitHub stars, NuttX is the smallest of the three, and I want to say that clearly. But stars show how many developers notice a project, not how many devices use it.</p>
+      <p>And it is really used. Upstream there are more than fifteen CPU architectures, more than three hundred boards, and more than fifteen hundred configurations. In real products it runs in Sony devices, PX4 flight controllers, and more than a thousand Xiaomi OpenVela products, and it flew on Japan's 2024 Moon mission. It is small next to the big ones, but it is not a toy.</p>
     </aside>
   </section>
 
@@ -1150,9 +1150,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is Sony's history with NuttX, not mine yet &mdash; and it is longer than edge AI.</p>
-      <p>Sony has shipped audio products running NuttX since around 2015. SPRESENSE and its CXD56xx chip, introduced a few years later, brought audio, GNSS, camera and multicore support into NuttX, and Masayuki Ishikawa from Sony presented that work at Open Source Summit plus Embedded Linux Conference Europe in 2019. From there, Sony engineers &mdash; including Alin Jerpelea, who later chaired the NuttX project management committee &mdash; became significant upstream contributors; his 2020 talk was literally titled "A Journey from Fork to Mainline."</p>
-      <p>I am not claiming one engineer caused Sony's adoption of NuttX &mdash; I don't have a source for that, so I won't say it. What I can say from public talks and the docs is simpler: Sony's NuttX usage predates edge AI by the better part of a decade, and it broadened over time into camera, GNSS and sensing work. That is the ground my own experience stands on.</p>
+      <p>This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.</p>
+      <p>Sony has sold audio products running NuttX since around 2015. A few years later, SPRESENSE and its CXD56xx chip added audio, GNSS, camera and multi-core support to NuttX. In 2019, Masayuki Ishikawa from Sony presented this work at Open Source Summit and Embedded Linux Conference Europe. After that, Sony engineers became major upstream contributors. One of them, Alin Jerpelea, later chaired the NuttX project management committee. His 2020 talk was called &ldquo;A Journey from Fork to Mainline.&rdquo;</p>
+      <p>I am not saying that one engineer made Sony choose NuttX. I have no source for that, so I will not say it. What public talks and documents do show is simpler: Sony used NuttX for many years before edge AI, and over time it spread into camera, GNSS and sensing work. My own experience stands on that.</p>
     </aside>
   </section>
 
@@ -1186,9 +1186,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That was Sony's history. This is mine &mdash; same hardware family, a different vantage point.</p>
-      <p>On SPRESENSE, I work with the NuttX SDK for sensing, camera, GNSS and LTE work &mdash; prototyping and embedded development, application side. On AITRIOS edge AI cameras, built around ESP32 and NuttX, the work is about getting a camera deployed and operating in the field, not sitting on a bench next to a debugger.</p>
-      <p>The common thread is the direction I approach NuttX from: application development, then system integration, then deployment and operation. I never had to write a NuttX driver to do any of that &mdash; until this project. And the problem that got me there was not "how do I get NuttX to run." It was "how do I reach a NuttX device after it has already been deployed."</p>
+      <p>That was Sony's history. This is mine. Same hardware family, but I see it from a different place.</p>
+      <p>On SPRESENSE, I use the NuttX SDK for sensing, camera, GNSS and LTE &mdash; prototypes and embedded development, on the application side. On AITRIOS edge AI cameras, which are built with ESP32 and NuttX, my job is to set up cameras and keep them running on site, not on a desk next to a debugger.</p>
+      <p>In both cases, I come to NuttX from the same direction: first application development, then putting the system together, then setting it up and running it. I never had to write a NuttX driver for any of that &mdash; until this project. And the question that brought me here was not &ldquo;How do I make NuttX run?&rdquo; It was &ldquo;How do I reach a NuttX device after it is installed?&rdquo;</p>
     </aside>
   </section>
 
@@ -1235,9 +1235,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Now the problem itself, stated plainly.</p>
-      <p>Wi-Fi security is real, but it protects one hop: the radio link between the device and the access point. Everything before that &mdash; the engineer, the internet, the router &mdash; is outside what WPA2 or WPA3 can promise. What I needed was authentication and encryption for the whole path, engineer to device, not just the last few meters of it.</p>
-      <p>Without that, the practical options are all worse: expose the device with a public IP and hope, invent and maintain a bespoke secure protocol, or hand the connection to a vendor's cloud. The same gap shows up in edge AI, industrial IoT, and remote infrastructure generally &mdash; it is not specific to this one project.</p>
+      <p>Now, the problem itself.</p>
+      <p>Wi-Fi security is real, but it protects only one part of the path: the radio link between the device and the access point. Everything before that &mdash; the engineer, the Internet, the router &mdash; is outside what WPA2 or WPA3 can protect. What I needed was a secure path for the whole way, from the engineer to the device, not just the last few meters.</p>
+      <p>Without that, every choice is worse. You can give the device a public IP and hope. You can make your own secure protocol and keep it working forever. Or you can hand the connection to a vendor's cloud. The same problem appears in edge AI, industrial IoT, and remote systems in general. It is not only this project.</p>
     </aside>
   </section>
 
@@ -1264,9 +1264,9 @@
   </div>
     <aside class="notes">
       <p>Before I chose WireGuard, I compared the usual ways to reach a device.</p>
-      <p>Opening a port is easy, but then the whole Internet can reach it. HTTPS and MQTT are what most IoT products use. The device connects out to a server, so NAT is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.</p>
-      <p>A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours &mdash; but the last hop on the LAN is open, and at a customer site the router is usually not yours. A carrier closed network works only over cellular and needs a contract.</p>
-      <p>A VPN on the device is the only row that gets all of it: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.</p>
+      <p>Opening a port is easy, but then the whole Internet can reach the device. HTTPS and MQTT are what most IoT products use. The device connects out to a server, so NAT is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.</p>
+      <p>A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours &mdash; but the last part of the path, on the LAN, is not protected, and at a customer's site the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.</p>
+      <p>A VPN on the device is the only row that has it all: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.</p>
     </aside>
   </section>
 
@@ -1297,9 +1297,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Given that problem, why WireGuard specifically.</p>
-      <p>WireGuard is a modern, IP-layer VPN: small and simple by design, a tiny fraction of the code size of IPsec or OpenVPN, which matters a lot on a microcontroller. It runs over plain UDP, and peers are identified by public keys rather than certificates or a negotiated session. And critically, it is not exotic: it has been in the mainline Linux kernel for years, there is an official Windows client, and the other end of the tunnel can be any existing WireGuard peer.</p>
-      <p>So the choice was not "adopt a product." It was "adopt a standard protocol instead of inventing a bespoke one or leaning on a vendor's cloud." That is what makes it fit this specific problem.</p>
+      <p>So, why WireGuard?</p>
+      <p>WireGuard is a modern VPN that works at the IP layer. It is small and simple by design, with much less code than IPsec or OpenVPN, and that matters a lot on a microcontroller. It runs over plain UDP, and each peer is known by its public key, not by certificates or a long setup. And most important, it is not unusual. It has been in the Linux kernel for years, there is an official Windows client, and the other end can be any WireGuard peer.</p>
+      <p>So I did not choose a product. I chose a standard protocol, instead of making my own or depending on a vendor's cloud. That is why it fits this problem.</p>
     </aside>
   </section>
 
@@ -1343,9 +1343,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>One level more technical than the overview: this is where implementation starts.</p>
-      <p>Outbound, a packet comes down from the application through TCP or UDP over IP, reaches wg0 like any other netdev, gets encrypted by WireGuard, and leaves as a UDP datagram over wlan0 on a board, or over usrsock where Wi-Fi is itself a socket-based peripheral. Inbound traffic is the same path in reverse: a UDP datagram arrives, WireGuard decrypts it, and it is handed back up to wg0 as if it had arrived on an ordinary interface.</p>
-      <p>Everything from here is about building that middle section &mdash; wg0 and the encryption step &mdash; without touching the layers above or below it.</p>
+      <p>This is one step more technical than the overview. Here the implementation starts.</p>
+      <p>Going out, a packet comes down from the application through TCP or UDP and IP, and reaches wg0 like any other network device. WireGuard encrypts it, and it leaves as a UDP packet &mdash; through wlan0 on a board, or through usrsock when the Wi-Fi chip itself works through sockets. Coming in is the same path the other way: a UDP packet arrives, WireGuard decrypts it, and it is passed up to wg0 as if it came in on a normal interface.</p>
+      <p>From here on, the work is building this middle part &mdash; wg0 and the encryption &mdash; without changing the layers above or below it.</p>
     </aside>
   </section>
 
@@ -1396,7 +1396,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Quick check-in: background is done, porting strategy is next.</p>
+      <p>That is the background. Next: how I reused an existing WireGuard.</p>
     </aside>
   </section>
 
@@ -1425,9 +1425,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Why start from smartalock/wireguard-lwip instead of writing a crypto stack from scratch.</p>
-      <p>wireguard-lwip splits cleanly into three layers. The protocol and crypto &mdash; handshake, transport, BLAKE2s, ChaCha20-Poly1305, Curve25519 &mdash; are portable C with no OS dependency, so they come across untouched. All OS-specific behaviour was already isolated behind one header, wireguard-platform.h, as four functions. Only the lwIP network glue, the part that registers an lwIP netif and manages lwIP buffers, needed to be replaced, because NuttX does not have lwIP at all.</p>
-      <p>The fact that I didn't have to rewrite anything is not luck &mdash; it's what a clean platform boundary buys you. That boundary is the reason this port was weeks, not months.</p>
+      <p>Why I started from smartalock/wireguard-lwip, and did not write the crypto myself.</p>
+      <p>wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS, so I used them without changes. Everything that depends on the OS was already kept behind one header, wireguard-platform.h, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.</p>
+      <p>I did not have to rewrite anything, and that was not luck. That is what a clean line between the protocol and the OS gives you. Because of it, this port took weeks, not months.</p>
     </aside>
   </section>
 
@@ -1452,8 +1452,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The single most important porting decision.</p>
-      <p>Rather than drag lwIP into NuttX, I mapped the abstractions onto NuttX's own. netif becomes net_driver_s, pbuf becomes iob, netif_add becomes netdev_register, and the send callback becomes NuttX's devif_poll. wg0 is registered as a TUN-type netdev, and the "wire" underneath it is a UDP socket.</p>
+      <p>This was the most important porting decision.</p>
+      <p>Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. netif becomes net_driver_s, pbuf becomes iob, netif_add becomes netdev_register, and the send callback becomes NuttX's devif_poll. wg0 is registered as a TUN-type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.</p>
     </aside>
   </section>
 
@@ -1478,8 +1478,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The result of the first version.</p>
-      <p>The protocol and crypto came across byte-identical &mdash; over three thousand lines unchanged. The four OS hooks are small. The real work was the network glue. And it worked: you can generate a key, set peers, load a config, all at run time, no rebuild. So far, a success story. The rest of the talk is about what that success hid.</p>
+      <p>Here is the result of the first version.</p>
+      <p>The protocol and crypto came over exactly as they were &mdash; more than three thousand lines, unchanged. The four OS functions are small. The real work was the network glue. And it worked: you can make a key, set peers and load a config, all at run time, with no rebuild. So far, a success story. The rest of this talk is about what that success was hiding.</p>
     </aside>
   </section>
 
@@ -1530,7 +1530,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Background and porting strategy are done. Now the part of the talk this whole thing is organized around.</p>
+      <p>That was the porting. Now, the part this whole talk is built around.</p>
     </aside>
   </section>
 
@@ -1573,13 +1573,13 @@
   </div>
     <aside class="notes">
       <p>This is the heart of the talk.</p>
-      <p>Every difficult bug in this project had the same shape. A shallow test passes; a deeper one fails. Worse, the passing shallow test convinces you that area is fine, so you search everywhere else for hours. The next slides are instances of that pattern &mdash; five in the apps version, and then two more when I pushed it into the kernel.</p>
+      <p>Every hard bug in this project looked the same. A simple test passes, but a deeper one fails. Even worse, the passing test makes you believe that part is fine, so you look everywhere else for hours. The next slides are examples of this pattern &mdash; five in the apps version, and two more after I moved it into the kernel.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Pitfall 1 / 7</p>
+    <p class="eyebrow">Bug 1 / 7</p>
     <h2>A return code of 0 that did nothing.</h2>
     <div class="body">
       <div class="two">
@@ -1598,14 +1598,14 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The first taste: a success return with no effect.</p>
-      <p>Setting a receive timeout returned zero, success. But recvfrom still blocked forever &mdash; the option was accepted and silently ignored. That produced a perfect deadlock: the timer never fired, so no initiation was sent, so the peer never replied, so recvfrom never returned to let the timer fire.</p>
+      <p>The first one: a success code that did nothing.</p>
+      <p>Setting a receive timeout returned zero, which means success. But recvfrom still waited forever. The option was accepted and then quietly ignored. And that made a perfect deadlock: the timer never fired, so no handshake was sent, so the peer never answered, so recvfrom never returned to let the timer fire.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Pitfall 2 / 7</p>
+    <p class="eyebrow">Bug 2 / 7</p>
     <h2>Created successfully. Did not survive.</h2>
     <div class="body">
       <div class="two">
@@ -1624,14 +1624,14 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The second: a lifecycle assumption that did not hold.</p>
-      <p>The receive thread was created detached. When the launching command exited, the thread stopped &mdash; it did not even show up in ps. A short sleep after creation let its printf run, so it really was created. My mistake was reading detach as "it will outlive the command" &mdash; detach only controls when the thread's resources are reclaimed, not whether it survives its launcher exiting. So when the command exited, the thread went with it. That is why the kernel version owns the thread in the driver instead.</p>
+      <p>The second: something I believed about a thread's life that was not true.</p>
+      <p>The receive thread was created as detached. When the command that started it finished, the thread stopped too &mdash; it did not even appear in ps. When I added a short sleep after creating it, its printf ran, so it really was created. My mistake was thinking that &ldquo;detached&rdquo; means &ldquo;it lives longer than the command.&rdquo; Detach only decides when the thread's memory is freed, not whether it keeps running after the command exits. So when the command ended, the thread ended with it. That is why, in the kernel version, the driver itself owns the thread.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Pitfall 3 / 7 &middot; the good one</p>
+    <p class="eyebrow">Bug 3 / 7 &middot; my favorite</p>
     <h2>ping works. TCP dies.</h2>
     <div class="body">
       <div class="two">
@@ -1651,15 +1651,15 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>My favourite bug in the project.</p>
-      <p>On the same tunnel, ping was perfect and even a TCP handshake completed &mdash; then the connection died. Instrumenting the send path showed EBADF, bad file descriptor. The sends that worked all happened inside the receive task itself &mdash; handshake replies, keepalives, the ping echo, the SYN-ACK. Sends from any other task failed.</p>
-      <p>The cause: in NuttX, file descriptors are scoped to the task group, not to the whole system, and not global. The fix was to stop going through fds entirely and use NuttX's internal socket API, which operates on a struct socket &mdash; just memory &mdash; usable from any task. This is exactly why the kernel version holds the socket as a struct socket.</p>
+      <p>This is my favorite bug in the project.</p>
+      <p>On the same tunnel, ping was perfect, and even a TCP handshake finished &mdash; and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself &mdash; handshake replies, keepalives, ping replies, the SYN-ACK. Sends from any other task failed.</p>
+      <p>The reason: in NuttX, a file descriptor belongs to one task group. It is not shared by the whole system. The fix was to stop using file descriptors and use NuttX's internal socket API. It works on a struct socket, which is just memory, so any task can use it. That is exactly why the kernel version keeps the socket as a struct socket.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Pitfall 4 / 7</p>
+    <p class="eyebrow">Bug 4 / 7</p>
     <h2>&ldquo;No real impact&rdquo; was 10&times;.</h2>
     <div class="body">
       <div class="claim">
@@ -1675,14 +1675,14 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The fourth: an assumption I did not measure.</p>
-      <p>The fd-less fix also broke poll, which is fd-based, so as a stopgap I polled the socket every fifty milliseconds. I assumed the only cost was waking the CPU when idle. Wrong. Every arriving packet waited up to fifty milliseconds, and that alone capped throughput &mdash; about ten times slower than it should be. I measured "no impact" and it was ten x. The real fix was a proper blocking wait: a callback on psock_poll and a semaphore.</p>
+      <p>The fourth: something I never measured.</p>
+      <p>The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed &mdash; about ten times slower than it should be. I thought it had no real cost, and it cost ten times. The real fix was a proper wait: a callback on psock_poll and a semaphore.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Pitfall 5 / 7</p>
+    <p class="eyebrow">Bug 5 / 7</p>
     <h2>sim passes. Hardware freezes.</h2>
     <div class="body">
       <div class="two">
@@ -1700,8 +1700,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The fifth, and it comes back later: stacks nobody measured.</p>
-      <p>Persisting the config by redirecting into a file froze the board, but only on real hardware's flash filesystem, never in sim. The cause was the receive task's stack. It calls into the IP stack on its own stack, so the whole TCP call depth lands there, and for packets it answers immediately, the reply encryption too. The default 3072 bytes was a number nobody had measured. Stack coloration plus ps found it. Hold that thought.</p>
+      <p>The fifth, and it will come back later: stack sizes nobody had measured.</p>
+      <p>Saving the config into a file froze the board &mdash; but only on the flash file system of real hardware, never in sim. The cause was the receive task's stack. That task calls into the IP stack on its own stack, so the whole TCP call chain sits on it, and for packets it answers right away, so does encrypting the reply. The default size, 3072 bytes, was a number nobody had measured. I found it with stack coloration and ps. Please remember this one.</p>
     </aside>
   </section>
 
@@ -1752,7 +1752,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Five pitfalls down. Now the harder half: making this a real kernel driver.</p>
+      <p>Those were the five bugs. Now the harder half: making this a real kernel driver.</p>
     </aside>
   </section>
 
@@ -1777,8 +1777,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is the additional work since the first version, and the part that makes it mergeable.</p>
-      <p>Version one lives in apps and reaches into socket internals. That is fine for a flat build, but it can never be a proper in-tree driver, and it does not fit the protected and kernel builds where user space and kernel are separated. So I moved the device into the kernel, under drivers/net/wireguard, and drove it from a tiny user-space wg command through ioctl.</p>
+      <p>This is the work I did after the first version, and it is the part that makes it ready to merge.</p>
+      <p>Version one lives in apps and uses socket internals. That is fine for a FLAT build. But it can never be a proper in-tree driver, and it does not work in PROTECTED and KERNEL builds, where user space and the kernel are kept apart. So I moved the device into the kernel, under drivers/net/wireguard, and I control it from a small user-space wg command through ioctl.</p>
     </aside>
   </section>
 
@@ -1799,8 +1799,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The shape of the real driver.</p>
-      <p>wg0 is now a lower-half netdev in the kernel, owning the UDP socket and a receive kernel thread &mdash; so the socket-ownership and launcher-lifetime problems from part two go away by design. Configuration is a flat, pointer-free ioctl ABI, pointer-free because the kernel copies the caller's structure directly. The private key is write-only: the get ioctl never hands it back &mdash; though it still lives in the config file on the user side. The kernel-side crypto is NuttX's own; the only vendored code is a small MIT X25519 in the user-space command, for offline key generation.</p>
+      <p>This is the shape of the real driver.</p>
+      <p>wg0 is now a lower-half network device in the kernel. It owns its UDP socket and its receive thread, so the socket and thread problems from part three cannot happen, by design. The settings go through a simple ioctl ABI with no pointers. No pointers, because the kernel copies the caller's struct as it is. The private key is write-only: no ioctl ever gives it back &mdash; but it is still in the config file on the user side. The crypto in the kernel is NuttX's own. The only copied code is a small MIT-licensed X25519 in the user-space command, for making keys offline.</p>
     </aside>
   </section>
 
@@ -1825,9 +1825,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>And the same pattern held at kernel depth &mdash; twice.</p>
-      <p>First, a bug in NuttX's own ChaCha20-Poly1305: the counter went into the wrong bytes of the nonce. For counter zero the two layouts are identical, so the handshake completes and then every data packet after the first fails to decrypt. Shallow passes, deep fails. There was no in-tree caller, so it had never been exercised. A two-line fix, and it is going upstream as its own crypto PR &mdash; porting into the project found a latent bug in the project.</p>
-      <p>Second, a crash that only happened in a kernel build. Setting the key snapshotted the peers into a six-kilobyte array on the stack, and the kernel stack is three kilobytes &mdash; overflow, heap corruption, panic. On sim, with large task stacks, it never showed. Exactly the stack lesson from part two, one level deeper. Moved to the heap.</p>
+      <p>And the same pattern came back in the kernel &mdash; twice.</p>
+      <p>First, a bug in NuttX's own ChaCha20-Poly1305: the counter was written into the wrong bytes of the nonce. When the counter is zero, both layouts are the same, so the handshake works, and then every data packet after the first one fails to decrypt. Simple test passes, deep test fails. Nothing in NuttX had called this code before, so nobody had hit it. It is a two-line fix, and it goes upstream as its own crypto PR. Porting to the project found a hidden bug in the project.</p>
+      <p>Second, a crash that happened only in a kernel build. Setting the key copied the peers into a six-kilobyte array on the stack, but the kernel stack is only three kilobytes. Overflow, a broken heap, panic. In sim, with big task stacks, it never showed up. It was the same stack lesson as before, one level deeper. I moved the array to the heap.</p>
     </aside>
   </section>
 
@@ -1878,17 +1878,17 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The driver exists. Now, how do I know it's actually correct.</p>
+      <p>The driver is done. Now: how do I know it really works?</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Verification</p>
-    <h2>Seven places it has to hold.</h2>
+    <p class="eyebrow">Testing</p>
+    <h2>Seven places it must work.</h2>
     <div class="body" style="gap:16px">
       <table class="compact">
-        <tr><th>Environment</th><th>Implementation</th><th>Confirmed</th></tr>
+        <tr><th>Where</th><th>Version</th><th>What I checked</th></tr>
         <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds with no errors (the config CI builds)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> is a separate program that calls in through syscalls</td></tr>
         <tr><td>rv-virt pnsh64</td><td class="new">kernel &middot; BUILD_<b>PROTECTED</b></td><td class="new">tunnel with the <b>MPU split</b> on &mdash; <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary, <b>no fault</b></td></tr>
@@ -1897,30 +1897,30 @@
         <tr><td>ESP32-S3 + SPRESENSE</td><td class="new">kernel &middot; real Wi-Fi</td><td class="new">tunnel to the Windows client &mdash; ESP32 native 4/4, SPRESENSE via <b>usrsock</b> 6/6</td></tr>
         <tr><td>same two boards</td><td class="old">apps v0.1.1</td><td>Linux &amp; Windows peers; telnet, HTTP, 7&nbsp;MB, rekey, power-cycle</td></tr>
       </table>
-      <div class="claim"><p><span class="hl">Both boards</span>, <span class="hl">both privilege models</span>, <span class="hl">more than one CPU</span> &mdash; and the memory <span class="hl">measured</span>, not guessed.</p></div>
-      <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim is not enough &mdash; it has to work with both privilege models and many CPUs, and be measured on hardware.</p></div>
-      <div class="sources">Hardware tests used the version before the final rebase onto upstream; KERNEL/SMP tunnels were run again on the rebased version.</div>
+      <div class="claim"><p><span class="hl">Both boards</span>, <span class="hl">PROTECTED and KERNEL</span>, <span class="hl">many CPUs</span> &mdash; <span class="hl">measured</span>, not guessed.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim is not enough &mdash; test real builds, many CPUs, and real hardware.</p></div>
     </div>
+    <div class="sources">Hardware tests used the version before the final rebase onto upstream; KERNEL/SMP tunnels were run again on the rebased version.</div>
     <div class="num">31 / 41</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Be precise about which implementation was verified where.</p>
-      <p>The kernel driver builds clean in the sim config &mdash; the configuration CI compiles &mdash; and it runs as a full tunnel in a real kernel build: rv-virt's knetnsh64 in QEMU, over virtio-net to Linux kernel WireGuard, with the wg command loaded as a separate ELF and the driver reached across the syscall boundary.</p>
-      <p>And then the other privilege model. The ioctl ABI is a fixed struct with no pointers inside it, so that the kernel never has to reach into user memory &mdash; and the way an assumption like that fails is not a compile error, it is an MPU exception on the first call. PROTECTED had only ever been built, on a board with no emulator. So I brought it up on rv-virt's protected config: the split boots, the wg command lives in the user blob, every configuration ioctl crosses the boundary, and the tunnel reaches Linux kernel WireGuard with no exception, no assertion, no panic. The memory map is the stock one &mdash; the kernel takes eighty percent of its side, the user command eight percent of the other.</p>
-      <p>And the locking. The driver puts its protocol state under the device lock, not under there being only one CPU &mdash; and until this week that was an argument I made from the code rather than something I had contended. So: four CPUs, a two-thousand-packet flood arriving while another CPU is running configuration ioctls and a down-up cycle. No exception, no assertion, and the tunnel came back. One scripted interleaving on an emulator is not a race search, so a race that needs a specific window can still be hiding. But the claim is no longer only on paper.</p>
-      <p>Last row, and the one I would put in front of a reviewer first. The sim soak said the resources come back exactly to where they started. Fine, but the simulator's allocator is the host's and its frames are sixty-four bit, so none of the heap numbers transfer to a board. So I measured the board: a hundred and twenty seconds of load, then forty down-up cycles, each one closing and reopening a socket that belongs to the Wi-Fi module through usrsock and re-handshaking over real Wi-Fi. Heap, allocation count, buffer pool, every stack high-water: identical before and after. And the number I actually wanted, the receive thread's deepest observed use, is one thousand four hundred and seventy-two bytes against a six-kilobyte default. That default used to be a guess. It is a measurement now.</p>
-      <p>And it now runs on real hardware &mdash; both boards. The kernel driver flashed to an ESP32-S3, tunnelling to the official Windows WireGuard client over real Wi-Fi; and to a SPRESENSE, whose GS2200M Wi-Fi is a usrsock device, so the driver's sends really do go out through usrsock on hardware. And then the fault case that design exists for was forced on that board: a datagram held outstanding on the real usrsock backend while control operations arrive. A query answered, a peer update was accepted, the stop reported a timeout instead of hanging, the held ciphertext was untouched, and a repeated down reaped it so the interface came back. What that still does not cover is IOB exhaustion, losing Wi-Fi mid-send, and sustained load. The older apps version on the two boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekey and power-cycle recovery &mdash; still stands underneath.</p>
+      <p>Let me be exact about which version was checked where.</p>
+      <p>The kernel driver builds with no errors in the sim config &mdash; the config that CI builds &mdash; and it runs as a full tunnel in a real kernel build: rv-virt knetnsh64 in QEMU, over virtio-net to WireGuard in the Linux kernel. The wg command is loaded as a separate program, and it reaches the driver through system calls.</p>
+      <p>Next, the other build type. The ioctl ABI is a fixed struct with no pointers inside, so the kernel never has to read user memory. If that idea is wrong, you do not get a compile error. You get an MPU fault on the first call. PROTECTED had only been built before, on a board with no emulator. So I ran it on rv-virt's protected config: it boots with the memory split, the wg command lives on the user side, every ioctl crosses the boundary, and the tunnel reaches Linux WireGuard with no fault, no assertion and no panic. The memory map is the default one &mdash; the kernel uses eighty percent of its part, and the user command uses eight percent of the other.</p>
+      <p>Then, locking. The driver protects its protocol state with the device lock. It does not depend on there being only one CPU. Until this week, I could only argue that from the code; I had never really tested it. So: four CPUs, two thousand packets coming in, while another CPU changes the settings and takes the interface down and up. No fault, no assertion, and the tunnel came back. One scripted test on an emulator is not a full search for race conditions, so a race that needs very exact timing could still be hiding. But the claim is no longer only on paper.</p>
+      <p>The last row is the one I would show a reviewer first. The long test in sim said that memory came back exactly to where it started. That is good, but the simulator uses the host's memory allocator and 64-bit frames, so none of those numbers apply to a board. So I measured the board itself: a hundred and twenty seconds of traffic, then forty down-and-up cycles. Each one closes and reopens a socket on the Wi-Fi module through usrsock and does a new handshake over real Wi-Fi. Heap, number of allocations, buffer pool, and the peak of every stack: exactly the same before and after. And the number I really wanted &mdash; the most stack the receive thread ever used &mdash; is one thousand four hundred and seventy-two bytes, out of a six-kilobyte default. That default used to be a guess. Now it is a measurement.</p>
+      <p>And now it runs on real hardware &mdash; both boards. I flashed the kernel driver to an ESP32-S3, with a tunnel to the official Windows WireGuard client over real Wi-Fi. I also flashed it to a SPRESENSE. Its GS2200M Wi-Fi works through usrsock, so the driver really sends through usrsock on real hardware. Then I forced the exact failure this design is for, on that board: a packet stuck waiting on the real usrsock side while control commands arrive. A query got an answer, a peer update was accepted, the stop command reported a timeout instead of hanging, the stuck packet was left alone, and a second down cleaned it up, so the interface came back. This still does not cover running out of IOBs, losing Wi-Fi in the middle of a send, or long heavy traffic. The older apps version on both boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekeying, and recovery after power loss &mdash; is still checked as well.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Verification &middot; the limits</p>
-    <h2>A working tunnel is not evidence.</h2>
+    <p class="eyebrow">Testing &middot; what ping misses</p>
+    <h2>A working tunnel does not prove enough.</h2>
     <div class="body" style="gap:16px">
       <table class="tight">
-        <tr><th>Failure</th><th>Would ping notice?</th><th>What was measured</th></tr>
+        <tr><th>Problem</th><th>Would ping notice?</th><th>What I measured</th></tr>
         <tr><td>The <b>same private key on every boot</b> &mdash; the xorshift128 <code>/dev/urandom</code> backend can be seeded from build&#8209;time values</td><td class="old">no &mdash; every normal test still passes</td><td class="new">3 restarts &rarr; 3 different keys; a basic check of the entropy pool path, not proof of good randomness</td></tr>
         <tr><td>Session keys <b>left in memory after down</b></td><td class="old">no</td><td class="new">read the running memory: transport keys 32/32 bytes set while up &rarr; <b>all zero</b> after <code>down</code>; exactly <b>one</b> copy of the static key, before and after</td></tr>
         <tr><td>A <b>leak that only shows after hours</b></td><td class="old">no</td><td class="new">151 forced rekeys past the key lifetime, 10 endpoint changes, 100 <code>down</code>/<code>up</code>: no buffers lost, allocations back to the boot count <b>exactly</b>, RX&#8209;thread stack peak 2.5&nbsp;KB and not growing</td></tr>
@@ -1932,16 +1932,16 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The previous slide was where it runs. This one is what a working tunnel cannot tell you.</p>
-      <p>Take key generation. NuttX can provide /dev/urandom through an xorshift128 backend whose seed material is compile-time configuration. A board left on that path can hand out the same private key on every boot. The handshake works. The ping works. The demo works. The tunnel is worthless, and nothing I showed you so far would notice. So I reset the board three times and compared one generated key from each boot: three different keys, with the entropy-pool backend selected rather than xorshift128. That is a useful regression check, not a certification of entropy quality.</p>
-      <p>Second, what survives bringing the interface down. Here I stopped reading the code and read the memory: find the device in the running process by matching the key I set, then check the secret fields by name, at offsets computed from the driver's own headers. The transport keys are fully populated while the tunnel is up and every byte is zero after down, and the handshake state is already gone while it is up, because it is wiped the moment the keys are derived. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in the whole writable address space, before and after. That asymmetry is a decision, so it is now written in the driver's documentation rather than left for a reviewer to guess at.</p>
-      <p>Third, the soak. A hundred and fifty-one rekeys forced past the point where sessions expire, ten endpoint moves, a hundred down-up cycles, and the resources sampled throughout: the buffer pool comes back whole, the live allocation count returns to exactly what it was at boot &mdash; not close, equal &mdash; and the receive thread's stack high-water mark is two and a half kilobytes and does not move after the first sample. That last number is worth having on its own: the default stack for that thread is six kilobytes, so the margin is real rather than assumed. What I am not claiming is a week of uptime, or that a simulator's allocator and 64-bit frames behave like the board's.</p>
+      <p>The last slide was about where it runs. This one is about what a working tunnel cannot tell you.</p>
+      <p>Take making keys. NuttX can provide /dev/urandom with an xorshift128 backend, and its seed can come from build-time settings. A board left like that can give out the same private key every time it starts. The handshake works. Ping works. The demo works. But the tunnel is worthless, and nothing I have shown you so far would notice. So I reset the board three times and compared one new key from each start: three different keys, with the entropy pool backend chosen, not xorshift128. That is a useful check that the problem has not come back, but it does not prove the randomness is good.</p>
+      <p>Second, what is left after you take the interface down. Here I stopped reading the code and read the memory instead. I found the device in the running system by searching for the key I had set, and then checked each secret field by name, at offsets taken from the driver's own headers. The transport keys are filled while the tunnel is up, and every byte is zero after down. The handshake data is already gone while it is up, because it is erased as soon as the keys are made. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in all writable memory, before and after. This difference is a decision, so it is now written in the driver's documentation, and a reviewer does not have to guess.</p>
+      <p>Third, the long test. A hundred and fifty-one forced rekeys, past the point where sessions expire. Ten endpoint changes. A hundred down-and-up cycles. And memory checked the whole time. The buffer pool comes back complete, and the number of live allocations goes back to exactly the number at start-up &mdash; not close, the same. The receive thread's stack peak is two and a half kilobytes, and it does not grow after the first sample. That last number is useful by itself: the default stack for that thread is six kilobytes, so the safety margin is real, not just hoped for. What I am not saying is that it ran for a week, or that the simulator's allocator and 64-bit frames act like the board.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">A design call</p>
+    <p class="eyebrow">A design choice</p>
     <h2>The timestamp problem has no easy answer.</h2>
     <div class="body" style="gap:14px">
       <p>A peer drops any handshake whose timestamp is not newer than the newest it has seen. So the device must always send a newer one &mdash; <span class="hl">even after a reboot</span>.</p>
@@ -1960,13 +1960,13 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is the one where I had to decide rather than test. Then I went and measured the decision.</p>
-      <p>WireGuard's replay defence puts an obligation on the initiator: every handshake must carry a timestamp greater than anything that peer already accepted, and that has to hold across a reboot. The device is usually the one dialling out, and it is the one least likely to have a battery-backed clock.</p>
-      <p>The reproduction said recovery took seventy-five seconds, and that number is misleading. The device has to climb back past the last handshake of its previous session, so the outage is as long as the previous uptime. Seventy-five seconds only because that session was short. Something that ran for a month cannot reconnect for a month. That kills the do-nothing option outright.</p>
-      <p>Writing the timestamp every handshake means a flash write every couple of minutes, forever, on the path that most needs to stay quick. Reserving a range durably and spending it from RAM is the right long-term answer, and I have written it up &mdash; but it needs a storage backend that will state its ordering and durability guarantees, and I could not get one. Locally, hostfs sync calls a void function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved.</p>
-      <p>So: realtime plus a high-water mark within the boot, which is exactly what Linux and wireguard-go do, and never fall back to uptime. What I added is the part a desktop never needed, because a desktop always has a clock. Without an RTC, NuttX seeds the clock from a configured year, so if the clock is still below the year after it, it was never set &mdash; and the driver says so once, naming the consequence. It still issues the timestamp, because a peer meeting this key for the first time will accept it and refusing would break first pairing on exactly those boards. The failure I am turning into one line of console output is not a crash. It is a tunnel that quietly never comes back, on a device that is not on your desk.</p>
-      <p>And I did measure it, on the board, because a design argument you cannot demonstrate is just an opinion. The trap is that the obvious test passes. Reset the board, ping it, and the tunnel is back in sixteen seconds &mdash; because your ping made the *peer* initiate, and a responder needs no timestamp of its own. The device can be completely unable to dial out and that test still goes green.</p>
-      <p>So: send the board nothing at all, and watch its own view of the session. Two runs, same board, same peer, same image, one variable. Clock as it boots: the driver warns, and there is no handshake after seventy-five seconds. Clock set from my laptop: the warning goes quiet, and the handshake completes in four point one seconds. That is both halves at once &mdash; the uncovered case is real on hardware, not just in a simulator, and the design is right wherever a clock exists. Fourteen stays open because I decided it should, not because I ran out of evidence.</p>
+      <p>This is the one place where I had to decide, not test. And then I measured my decision.</p>
+      <p>WireGuard's replay protection gives the side that starts the handshake a rule: every handshake must have a newer timestamp than anything that peer has already accepted &mdash; and this must stay true after a reboot. The device is usually the side that starts, and it is also the side least likely to have a clock with a battery.</p>
+      <p>In my test, recovery took seventy-five seconds, but that number is misleading. The device has to get past the last handshake of its previous session, so it is cut off for as long as it ran last time. It was seventy-five seconds only because that session was short. A device that ran for a month cannot reconnect for a month. So doing nothing is not an option.</p>
+      <p>Saving the timestamp at every handshake means writing to flash every few minutes, forever, on the path that most needs to be fast. Reserving a range in flash and using it up from RAM is the right long-term answer, and I have written up that design. But it needs storage that promises the order and safety of its writes, and I could not get that. On my machine, hostfs sync calls an empty function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved.</p>
+      <p>So I chose the real-time clock plus the highest value used in this boot. That is exactly what Linux and wireguard-go do, and it never falls back to uptime. What I added is the part a desktop never needed, because a desktop always has a clock. Without an RTC, NuttX starts the clock from a set year. So if the clock is still before the next year, it was never set &mdash; and the driver prints a warning once, and says what will happen. It still sends the timestamp, because a peer that meets this key for the first time will accept it, and refusing would break first pairing on exactly those boards. This one line of output is about a failure that is not a crash. It is a tunnel that silently never comes back, on a device that is not on your desk.</p>
+      <p>And I did measure it on the board, because a design idea you cannot show is just an opinion. The trap is that the obvious test passes. Reset the board, ping it, and the tunnel is back in sixteen seconds &mdash; because your ping made the peer start the handshake, and the side that answers does not need its own timestamp. The device could be completely unable to connect out, and that test still passes.</p>
+      <p>So I sent the board nothing at all, and watched how it saw its own session. Two runs, same board, same peer, same image, only one change. With the clock as it boots, the driver warns, and there is no handshake after seventy-five seconds. With the clock set from my laptop, the warning stops, and the handshake finishes in four point one seconds. That shows both sides at once: the unsolved case is real on hardware, not just in a simulator, and the design works wherever there is a clock. Issue fourteen stays open because I decided it should, not because I ran out of evidence.</p>
     </aside>
   </section>
 
@@ -2017,7 +2017,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Everything so far was engineering. Now, what it actually looks like.</p>
+      <p>That was all engineering. Now, what it actually looks like.</p>
     </aside>
   </section>
 
@@ -2039,8 +2039,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The point of the demo is that there is nothing special to see.</p>
-      <p>I telnet into the board through the tunnel and run commands, and I start a web server on the board and open it in a browser. The USB cable is unplugged; the board is on a power adapter. The peer is the official Windows client over home Wi-Fi. The board is just an ordinary host at the far end of an encrypted tunnel &mdash; which is exactly the goal.</p>
+      <p>The point of this demo is that there is nothing special to see.</p>
+      <p>I telnet into the board through the tunnel and run commands. Then I start a web server on the board and open it in a browser. The USB cable is unplugged, and the board runs on a power adapter. The other side is the official Windows client over home Wi-Fi. The board is just a normal computer at the far end of an encrypted tunnel &mdash; and that is exactly the goal.</p>
     </aside>
   </section>
 
@@ -2091,13 +2091,13 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Last chapter: what it takes to go from a demo to something maintainable, and what to carry out.</p>
+      <p>Last part: going from a demo to something you can run, and what to take home.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Operability</p>
+    <p class="eyebrow">Running it for real</p>
     <h2>From a demo to something you can run.</h2>
     <div class="body">
       <table>
@@ -2114,14 +2114,14 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Moving from "it works in a demo" to "you could run it."</p>
-      <p>Keys are no longer baked into the build &mdash; you generate and set them at run time, and they never end up in the firmware image. And for long runs I sample four independent signals every minute &mdash; is the router side alive, is the board on the network, is WireGuard carrying, is the application data flowing &mdash; so when it goes quiet I can say which layer failed instead of guessing.</p>
+      <p>Going from &ldquo;it works in a demo&rdquo; to &ldquo;you can really run it.&rdquo;</p>
+      <p>Keys are no longer built into the firmware. You make them and set them at run time, and they never end up in the firmware image. And for long runs, I check four separate signals every minute &mdash; is the router side alive, is the board on the network, is WireGuard carrying traffic, is the application data moving &mdash; so when it goes quiet, I can say which part failed instead of guessing.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Portability</p>
+    <p class="eyebrow">Other CPUs</p>
     <h2>Did the &ldquo;four functions&rdquo; bet work?</h2>
     <div class="body" style="gap:18px">
       <p class="lead">The apps (FLAT) version ran on four CPU types with <span class="hl">no code change</span>:</p>
@@ -2139,15 +2139,15 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The design decision from the start, validated.</p>
-      <p>Isolating the OS behind a few functions was a bet. Here is the check, with the apps FLAT implementation: four architectures &mdash; x86, ARM Cortex-A7, Xtensa on the ESP32, and Cortex-M4F on SPRESENSE &mdash; with no code change to move between them. The kernel driver then adds sim and the rv-virt kernel build on top. The bet paid off.</p>
+      <p>Did the decision from the start work?</p>
+      <p>Keeping the OS behind a few functions was a bet. Here is the check, with the apps FLAT version: four CPU types &mdash; x86, ARM Cortex-A7, Xtensa on the ESP32, and Cortex-M4F on SPRESENSE &mdash; and no code change to move between them. The kernel driver also runs on sim and on the rv-virt kernel build. The bet paid off.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Contributing Back</p>
-    <h2>The Apache Way.</h2>
+    <p class="eyebrow">Giving back</p>
+    <h2>The Apache Way: small steps, in the open.</h2>
     <div class="body">
       <ul class="big">
         <li>A small <code>crypto:</code> PR first <span>the ChaCha20-Poly1305 nonce fix &mdash; it helps NuttX on its own.</span></li>
@@ -2162,8 +2162,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Closing the loop with this room's values.</p>
-      <p>The contribution is staged: a small crypto PR first, for the nonce fix, because that stands on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. Three signed candidate branches are published on my forks and the patch-form checks pass. The design discussion and upstream PRs are the next step; they are not open yet. Community over code means saying where the work actually is, then letting review change it.</p>
+      <p>Let me end this part with the values of this community.</p>
+      <p>I will send the work in steps. First, a small crypto PR for the nonce fix, because it is useful on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. Three signed branches are ready on my forks, and they pass the patch checks. The design discussion and the upstream PRs are the next step; they have not started yet. Community over code means being honest about where the work really is, and then letting review change it.</p>
     </aside>
   </section>
 
@@ -2182,8 +2182,8 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Three things to take away.</p>
-      <p>First, shallow tests pass and deep tests fail &mdash; so build your tests for depth: sustained traffic, real hardware, a real kernel build, not just a handshake. Second, a clean OS-abstraction boundary is worth the effort &mdash; four architectures and three versions with no changes. Third, porting into a project is a chance to improve it. One bug was in NuttX's own crypto, and that fix goes upstream on its own. The second I only found by insisting my board image be reproducible from a clean checkout: a stock release tag does not boot to a shell on this board, because before the RTC comes up the clock reads zero and the watchdog that would finish bringing the RTC up never fires. And a third was in my own driver, where only a real kernel build surfaced it; sim never would have.</p>
+      <p>Three things to take home.</p>
+      <p>First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; four CPU types and three NuttX versions, with no changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix goes upstream by itself. I found the second only because I wanted my board image to build from a clean checkout: a normal release tag does not boot to the shell on this board, because before the RTC starts, the clock reads zero, and the watchdog that should finish starting the RTC never fires. And the third was in my own driver, and only a real kernel build showed it; sim never would have.</p>
     </aside>
   </section>
 
@@ -2202,7 +2202,7 @@
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Thank you. I am happy to take questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
+      <p>Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
     </aside>
   </section>
 
