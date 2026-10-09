@@ -82,7 +82,7 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 
 | デッキ | 台本 | |
 |---|---|---|
-| [coc-glasgow-slides.html](presentation/coc-glasgow-slides.html) | [talkscript/coc-glasgow-script-ja.md](presentation/talkscript/coc-glasgow-script-ja.md) / [英語版](presentation/talkscript/coc-glasgow-script-en.md) | CoC Glasgow 本編 39 枚。単体 HTML で、スライド内容の正本 |
+| [coc-glasgow-slides.html](presentation/coc-glasgow-slides.html) | [talkscript/coc-glasgow-script-ja.md](presentation/talkscript/coc-glasgow-script-ja.md) / [英語版](presentation/talkscript/coc-glasgow-script-en.md) | CoC Glasgow 本編 41 枚。単体 HTML で、スライド内容の正本 |
 | [coc-glasgow-reveal/](presentation/coc-glasgow-reveal/README.md) | （同上） | 上記を CoC 公式テンプレート（reveal.js）に載せた版。`build.py` で上から生成する。`S` で発表者ビュー |
 | [slides.html](presentation/slides.html) | [talkscript/slides.md](presentation/talkscript/slides.md) | 本編 27 枚。`←→` 送り、`N` で発表者ノート、`O` で一覧。台本は時間配分と削る順番つき |
 | [returns-slides.html](presentation/returns-slides.html) / [.pdf](presentation/returns-slides.pdf) | [talkscript/returns-slides.md](presentation/talkscript/returns-slides.md) | Sechack365 Returns 向け 8 枚（公開済み・凍結）。台本側が構成・話すこと・出典の単一の情報源 |

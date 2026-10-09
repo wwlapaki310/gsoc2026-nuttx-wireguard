@@ -8,7 +8,7 @@
 
 | デッキ | 台本 | 中身 |
 |---|---|---|
-| [coc-glasgow-slides.html](../coc-glasgow-slides.html)(**Community Over Code, Glasgow 本番**・カーネル移植後・39 枚) | [coc-glasgow-script-en.md](coc-glasgow-script-en.md)(英語・本番用、デッキのノートから [export_en_script.py](export_en_script.py) で生成。手で直さない)/ [coc-glasgow-script-ja.md](coc-glasgow-script-ja.md)(日本語・リハーサル/理解用) | 読み上げ台本。デッキ内の発表者ノート(`N`キー)と1対1対応。時間配分と削る順番つき |
+| [coc-glasgow-slides.html](../coc-glasgow-slides.html)(**Community Over Code, Glasgow 本番**・カーネル移植後・41 枚) | [coc-glasgow-script-en.md](coc-glasgow-script-en.md)(英語・本番用、デッキのノートから [export_en_script.py](export_en_script.py) で生成。手で直さない)/ [coc-glasgow-script-ja.md](coc-glasgow-script-ja.md)(日本語・リハーサル/理解用) | 読み上げ台本。デッキ内の発表者ノート(`N`キー)と1対1対応。時間配分と削る順番つき |
 | 同上 | [coc-glasgow-qa.md](coc-glasgow-qa.md) | 想定Q&A。**このデッキ専用**(`presentation-script.md` の想定Q&Aは古い apps 版向けで合わない) |
 | [slides.html](../slides.html)(本編 27 枚・カーネル移植より前) | [slides.md](slides.md) | 読み上げ台本。時間配分と、枠に合わせて削る順番つき |
 | [returns-slides.html](../returns-slides.html)(Sechack365 Returns、8 枚) | [returns-slides.md](returns-slides.md) | 構成・各スライドに載せるもの・**話すこと**・出典。Returns デッキの単一の情報源 |
@@ -17,7 +17,7 @@
 | (共通) | [presentation-script.md](presentation-script.md) | 進行表と想定 Q&A。「聞かれたら何を答えるか」 |
 
 Glasgow 用はデッキと台本・想定 Q&A の PDF もある:
-[coc-glasgow-slides.pdf](../coc-glasgow-slides.pdf)(39 枚)、
+[coc-glasgow-slides.pdf](../coc-glasgow-slides.pdf)(41 枚)、
 [coc-glasgow-script-en.pdf](coc-glasgow-script-en.pdf)、[coc-glasgow-script-ja.pdf](coc-glasgow-script-ja.pdf)、
 [coc-glasgow-qa.pdf](coc-glasgow-qa.pdf)。Markdown を直したら
 `python ../coc-glasgow-reveal/pdf.py` で作り直す。英語台本はデッキのノートを直してから

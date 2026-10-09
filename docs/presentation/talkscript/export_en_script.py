@@ -10,7 +10,8 @@ re-run this. What the notes do not carry (section titles, what is on the
 slide, pauses, demo checklist, cut order) lives in SLIDES below.
 
 Times are cumulative and computed, not typed: 150 words per minute for
-the notes, 10 s for each agenda divider, 90 s for the demo.
+the notes, 10 s for each agenda divider, 90 s for the demo. Slide numbers
+in the header (core block, cut order, dividers) come from the tags.
 """
 
 import html
@@ -25,102 +26,121 @@ WPM = 150
 DIVIDER_S = 10
 DEMO_S = 90
 
-# number: (heading, tag, on-slide text, extra cue lines)
-SLIDES = {
-    1: ("Title", "",
+# In deck order: (heading, tag, on-slide text, extra cue lines). Tags:
+# "divider", "demo", "core ...", "cut first", "cut candidate N".
+SLIDES = [
+    ("Title", "",
         '"WireGuard for Apache NuttX." ESP32-S3 & SPRESENSE tunnel over real '
         "Wi-Fi · real WireGuard peers (Linux kernel, Windows client) · runs in "
         "a real kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
         "master / 12.7.0.", []),
-    2: ("Agenda", "",
-        "The seven chapters with their times: Background (~6 min) / Porting "
-        "Strategy (~4) / Hidden Pitfalls (~7) / Kernel Driver (~5) / "
-        "Verification (~5) / Demo (~2) / Toward Upstream (~4).", []),
-    3: ("Agenda: ① Background", "divider", None, []),
-    4: ("About Me", "",
+    ("Agenda", "",
+        "The seven parts as sentences with their times: why I needed a VPN "
+        "on a NuttX device (~10 min) / how I reused an existing WireGuard "
+        "(~2) / bugs that a working demo hid (~4) / moving the driver into "
+        "the kernel (~2) / how I checked that it really works (~10) / using "
+        "a real board through the tunnel (~2) / what comes next (~3).", []),
+    ("Agenda: ① Background", "divider", None, []),
+    ("About Me", "",
         "Photo, and a timeline Robotics → Computer Vision → Edge AI → "
         "Embedded Systems → NuttX / WireGuard with a picture per step.", []),
-    5: ("Project Overview", "",
+    ("Project Overview", "",
         "The wg0 netdev picture: application / NSH, the NuttX network stack, "
         "wg0 next to eth0 / wlan0, a UDP socket underneath, the Internet, "
         "the peer.", []),
-    6: ("Background: What Is NuttX", "",
+    ("How It Started: February to October", "",
+        "A month axis Feb → Oct. Above it: mid Feb, read the GSoC idea "
+        "list / early Mar, plan written up as an issue / Mar 20, heard "
+        "about this conference from Alan, sent a talk / early Apr, GSoC "
+        "proposal / early May, talk accepted, GSoC not selected / Oct, "
+        "Glasgow. Below it: Jun–Jul a little at a time, August holiday "
+        "most of the work, September FLAT app → kernel driver.", []),
+    ("Background: What Is NuttX", "",
         "Software stack (applications / POSIX, ANSI, BSD socket API / "
         "networking, VFS, file systems, device drivers, NSH / NuttX kernel / "
         "MCU, MPU) and tags: RTOS, POSIX-oriented, BSD sockets, VFS, NSH, "
         "native networking, device drivers, ASF top-level project.", []),
-    7: ("Positioning: Where NuttX Fits", "",
+    ("Positioning: Where NuttX Fits", "",
         "FreeRTOS / Zephyr / NuttX table (design centre, typical use), GitHub "
         "stars with the note that stars are visibility, not deployment; "
         "number cards: 15+ architectures, 300+ boards, 1500+ configs, Sony, "
         "PX4, Xiaomi OpenVela 1000+ SKUs, Japan's 2024 lunar mission.",
         ["**Check before the talk:** the star counts move. Re-check them on "
          "the day, or leave the date on the slide as it is."]),
-    8: ("History: NuttX at Sony", "",
+    ("History: NuttX at Sony", "",
         "Timeline: 2015 Sony audio products / 2018–19 SPRESENSE, CXD56xx "
         "(OSS + ELC Europe 2019) / 2020 upstream collaboration (NuttX Online "
         'Workshop, "A Journey from Fork to Mainline") / 2020s sensing and '
         "edge devices.", []),
-    9: ("Experience: SPRESENSE and AITRIOS", "",
+    ("Experience: SPRESENSE and AITRIOS", "",
         "Photos of SPRESENSE and the AITRIOS edge AI camera; the flow "
         '"application development → system integration → deployment & '
         'operation".', []),
-    10: ("Problem: The Remote Access Gap", "",
+    ("Problem: Reaching a Device From Far Away", "",
          "Engineer → Internet → router → Wi-Fi → NuttX device, showing that "
-         "WPA2/WPA3 covers only the Wi-Fi hop; cards: public exposure / "
-         "bespoke protocol / vendor cloud.", []),
-    11: ("Solution: Why WireGuard", "",
+         "WPA2/WPA3 covers only the Wi-Fi hop; cards: open it to the "
+         "Internet / make your own protocol / use a vendor's cloud.", []),
+    ("Options: Other Ways to Reach a Device", "",
+         "A table of seven ways (open a port / HTTPS to a cloud API / MQTT "
+         "broker / reverse tunnel or relay / VPN on the router / carrier "
+         "closed network / VPN on the device) against: who connects, any "
+         "service or not, server in the middle, where security ends, what "
+         "NuttX already has.",
+         ["**If asked about Tailscale or ZeroTier:** they are also a VPN on "
+          "the device, but they usually need a bigger OS than a "
+          "microcontroller has today (footnote on the slide)."]),
+    ("Solution: Why WireGuard", "",
          "Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device; "
          "modern IP-layer VPN / UDP transport, public-key peers / already "
          "everywhere.", []),
-    12: ("Architecture: WireGuard on the NuttX Network Stack", "",
+    ("Architecture: WireGuard on the NuttX Network Stack", "",
          "Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard "
          "encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX "
          "and RX arrows.", []),
-    13: ("Agenda: ② Porting Strategy", "divider", None, []),
-    14: ("Porting Strategy: Reusing wireguard-lwip Without lwIP", "",
+    ("Agenda: ② Porting Strategy", "divider", None, []),
+    ("Porting Strategy: Reusing wireguard-lwip Without lwIP", "",
          "Three cards: protocol & crypto (KEEP) / platform hooks (ADAPT, the "
          "four functions in wireguard-platform.h) / lwIP network glue "
          "(REPLACE).", []),
-    15: ("Design: Mapping lwIP onto NuttX netdev", "",
+    ("Design: Mapping lwIP onto NuttX netdev", "",
          "netif → net_driver_s, pbuf → iob, netif_add() → netdev_register(), "
          "callbacks → devif_poll().", []),
-    16: ("Result: A Working Tunnel Is Only the Beginning", "",
+    ("Result: A Working Tunnel Is Only the Beginning", "",
          "Protocol & crypto: 3,079 lines unchanged / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
-    17: ("Agenda: ③ Hidden Pitfalls", "divider", None, []),
-    18: ("The Testing Pattern: Shallow Passes, Deep Fails", "",
-         "SHALLOW TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
+    ("Agenda: ③ Hidden Pitfalls", "divider", None, []),
+    ("The Testing Pattern: Simple Tests Pass, Deep Tests Fail", "",
+         "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
          "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
          "security, FAIL).", []),
-    19: ("Pitfall 1/7: SO_RCVTIMEO", "", None, []),
-    20: ("Pitfall 2/7: The Detached pthread", "", None, []),
-    21: ("Pitfall 3/7: ping Works, TCP Dies", "the good one", None, []),
-    22: ("Pitfall 4/7: \"No Real Impact\" Was 10×", "", None, []),
-    23: ("Pitfall 5/7: sim Passes, Hardware Freezes", "", None, []),
-    24: ("Agenda: ④ Kernel Driver", "divider", None, []),
-    25: ("Part 3: Into the Kernel", "", None, []),
-    26: ("The Kernel Design", "", None, []),
-    27: ("Two More Bugs, Same Shape", "locked with 26", None, []),
-    28: ("Agenda: ⑤ Verification", "divider", None, []),
-    29: ("Verification: Seven Places It Has to Hold", "core — do not cut",
+    ("Pitfall 1/7: SO_RCVTIMEO", "", None, []),
+    ("Pitfall 2/7: The Detached pthread", "", None, []),
+    ("Pitfall 3/7: ping Works, TCP Dies", "the good one", None, []),
+    ("Pitfall 4/7: \"No Real Impact\" Was 10×", "", None, []),
+    ("Pitfall 5/7: sim Passes, Hardware Freezes", "", None, []),
+    ("Agenda: ④ Kernel Driver", "divider", None, []),
+    ("Part 3: Into the Kernel", "", None, []),
+    ("The Kernel Design", "", None, []),
+    ("Two More Bugs, Same Shape", "locked with 26", None, []),
+    ("Agenda: ⑤ Verification", "divider", None, []),
+    ("Verification: Seven Places It Has to Hold", "core — do not cut",
          "Table: sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64 "
          "(BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPUs) / SPRESENSE "
          "measured / ESP32-S3 + SPRESENSE over real Wi-Fi / apps v0.1.1 on "
          "both boards.", []),
-    30: ("Verification: A Working Tunnel Is Not Evidence", "core — do not cut",
+    ("Verification: A Working Tunnel Is Not Evidence", "core — do not cut",
          "Three rows (same private key every boot / session keys that "
          "outlive the tunnel / a leak that shows after hours), each with "
          '"would ping notice?" → no.', []),
-    31: ("A Design Call: The Timestamp Problem Has No Free Answer",
+    ("A Design Call: The Timestamp Problem Has No Easy Answer",
          "core — do not cut",
          "What replay protection obliges, the four options (real-time clock "
          "+ in-boot high-water mark / persist every time / durable range "
          "reservation / wait to catch up), and the measured pair: clock "
          "unset → no handshake in 75 s, clock set → 4.1 s.", []),
-    32: ("Agenda: ⑥ Demo", "divider", None, []),
-    33: ("The Demo", "", None,
+    ("Agenda: ⑥ Demo", "divider", None, []),
+    ("The Demo", "demo", None,
          ["**Live:** `uname -a` / `ifconfig` (wg0 = 10.10.0.2) / `wg show` "
           "(handshake, transfer bytes) / `ps` (wg_rx running) / "
           "`webserver &`, then `http://10.10.0.2/` in the browser. Show "
@@ -131,21 +151,21 @@ SLIDES = {
           "SSID and passphrase are in plain text in those places.",
           "**Fallback:** the recording, youtu.be/1kyX2av5WG4. Switch at once "
           "if the live demo stalls."]),
-    34: ("Agenda: ⑦ Toward Upstream", "divider", None, []),
-    35: ("Operability", "cut candidate 3", None, []),
-    36: ("Portability", "cut candidate 2", None, []),
-    37: ("Contributing Back", "cut first", None,
+    ("Agenda: ⑦ Toward Upstream", "divider", None, []),
+    ("Operability", "cut candidate 3", None, []),
+    ("Portability", "cut candidate 2", None, []),
+    ("Contributing Back", "cut first", None,
          ['**If asked "is it merged?":** not yet. These are submission '
           "candidates, not a claim that it is mergeable. See the Q&A file.",
           "**If time is short:** skip the whole slide. The talk's argument "
           "(the pattern, the verification) does not rest on it; just keep "
           "the answer above ready for questions."]),
-    38: ("Takeaways", "", None, []),
-    39: ("Thank You", "", None,
+    ("Takeaways", "", None, []),
+    ("Thank You", "", None,
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "
           "exhaustion, checkpatch) are answered there and on no slide."]),
-}
+]
 
 HEADER = """\
 # Speaking script — WireGuard for Apache NuttX (Community Over Code, Glasgow)
@@ -164,30 +184,31 @@ re-run the script, or the two will drift. The Japanese
 already a little over a 30-minute slot, so rehearse to land the main body at
 27–28 minutes and keep the cut list below ready.
 
-**The centre of gravity is slides 29–31** (verification): together they are
+**The centre of gravity is slides {core_range}** (verification): together they are
 {core} of the talk, and they carry the claims a reviewer will actually
 check. Do not compress that block to protect time elsewhere. Cut before it
-or after it, never inside it. 29 → 30 → 31 is one argument: 29 is where it
-runs, 30 is what "it runs" does not prove, 31 is the one place the answer
-is a judgment call rather than a test. Splitting them loses the argument.
+or after it, never inside it. They are one argument: the first is where it
+runs, the second is what "it runs" does not prove, the third is the one
+place the answer is a judgment call rather than a test. Splitting them
+loses the argument.
 
-**Do not cut slides 4–12 either** (About Me through Architecture). What
+**Do not cut slides 4–{arch} either** (About Me through Architecture). What
 NuttX is, where it is used, Sony's history with it, where I met it and why
 that led to WireGuard: everything after depends on that chain.
 
 **If time is short, drop in this order:**
-1. Slide 37 (Contributing Back). It supports the talk but is not its
+1. Slide {cut1} (Contributing Back). It supports the talk but is not its
    spine; if dropped, answer it in Q&A if asked.
-2. Slide 36 (portability table). Supporting evidence, not the spine.
-3. Slide 35 (operability).
+2. Slide {cut2} (portability table). Supporting evidence, not the spine.
+3. Slide {cut3} (operability).
 
 If the live demo stalls, switch to the recording at once. **The agenda
-dividers (3, 13, 17, 24, 28, 32, 34) are a ten-second breath each**: point
+dividers ({dividers}) are a ten-second breath each**: point
 at the highlighted line and pause, do not read the list. With no time at
 all, advance through them silently. They save almost nothing, so cut the
 three slides above instead.
 
-**Check before the talk:** the GitHub star counts on slide 7 change. Re-check
+**Check before the talk:** the GitHub star counts on slide {stars} change. Re-check
 them on the day, or leave the date on the slide.
 
 ---
@@ -218,27 +239,40 @@ def mmss(s):
 def main():
     all_notes = notes()
     count = len(all_notes)
-    if sorted(SLIDES) != list(range(1, count + 1)):
+    if len(SLIDES) != count:
         raise SystemExit("SLIDES covers %d slides but the deck has %d"
                          % (len(SLIDES), count))
+
+    def find(pred):
+        return [i for i, sl in enumerate(SLIDES, 1) if pred(sl)]
 
     spans, t = [], 0
     for i, paras in enumerate(all_notes, 1):
         words = sum(len(p.split()) for p in paras)
-        tag = SLIDES[i][1]
+        tag = SLIDES[i - 1][1]
         d = (DIVIDER_S if tag == "divider" else
-             DEMO_S if i == 33 else round(words / WPM * 60))
+             DEMO_S if tag == "demo" else round(words / WPM * 60))
         spans.append((t, t + d))
         t += d
 
-    core = spans[30][1] - spans[28][0]
-    body = [HEADER.format(count=count, total=mmss(t), wpm=WPM,
-                          core="%.1f minutes" % (core / 60))]
+    core = find(lambda sl: sl[1].startswith("core"))
+    core_s = spans[core[-1] - 1][1] - spans[core[0] - 1][0]
+    body = [HEADER.format(
+        count=count, total=mmss(t), wpm=WPM,
+        core="%.1f minutes" % (core_s / 60),
+        core_range="%d–%d" % (core[0], core[-1]),
+        arch=find(lambda sl: sl[0].startswith("Architecture"))[0],
+        cut1=find(lambda sl: sl[1] == "cut first")[0],
+        cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
+        cut3=find(lambda sl: sl[1] == "cut candidate 3")[0],
+        dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),
+        stars=find(lambda sl: sl[0].startswith("Positioning"))[0])]
 
     for i, paras in enumerate(all_notes, 1):
-        heading, tag, on_slide, extra = SLIDES[i]
+        heading, tag, on_slide, extra = SLIDES[i - 1]
         a, b = spans[i - 1]
-        suffix = " *(%s)*" % tag if tag and tag != "divider" else ""
+        suffix = (" *(%s)*" % tag if tag and tag not in ("divider", "demo")
+                  else "")
         body.append("## %d — %s (%s → %s)%s\n" % (i, heading, mmss(a),
                                                   mmss(b), suffix))
         if on_slide:

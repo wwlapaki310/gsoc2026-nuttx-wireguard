@@ -39,7 +39,7 @@ TITLE = """\
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
     <h1>WireGuard for Apache NuttX</h1>
-    <p class="subtitle">A WireGuard VPN implemented as a <code>wg0</code> network device &mdash; on real hardware, and inside a real NuttX kernel build.</p>
+    <p class="subtitle">A WireGuard VPN that works as a normal network device, <code>wg0</code> &mdash; on real boards, and inside a real NuttX kernel build.</p>
     <div class="facts">
       <div><b>ESP32-S3 &amp; SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
       <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
@@ -59,7 +59,7 @@ CLOSING = """\
     <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
     <div class="facts">
       <div><b>youtu.be/1kyX2av5WG4</b><span>DEMO</span></div>
-      <div><b>apache/nuttx &middot; apache/nuttx-apps</b><span>HEADING UPSTREAM</span></div>
+      <div><b>apache/nuttx &middot; apache/nuttx-apps</b><span>GOING UPSTREAM</span></div>
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
