@@ -79,7 +79,14 @@
 #define ADDR_PY32     0x6f
 
 #define FREQ_PY32     100000   /* does not answer at 400 kHz */
-#define FREQ_DEFAULT  400000
+
+/* Everything else on the bus would run at 400 kHz, but the PY32 shares
+ * the bus and only ever worked when nothing used 400 kHz while it was
+ * starting (MicroPython ran the whole bus at 100 kHz).  Keep the whole
+ * bus at 100 kHz.
+ */
+
+#define FREQ_DEFAULT  100000
 #define I2C_RETRIES   5
 #define I2C_RETRY_US  10000
 
@@ -313,6 +320,29 @@ static int sc_i2c_setbits(FAR struct stackchan_s *sc, uint8_t addr,
 
   val = on ? (val | mask) : (val & ~mask);
   return sc_i2c_w8(sc, addr, reg, val);
+}
+
+/* The official BSP waits for the PY32 to boot: it polls the version
+ * register every 200 ms and gives up after 1.2 s.  Do the same (2 s).
+ */
+
+static int py32_wait(FAR struct stackchan_s *sc)
+{
+  uint8_t ver = 0;
+  int i;
+
+  for (i = 0; i < 10; i++)
+    {
+      if (sc_i2c_read(sc, ADDR_PY32, PY32_VERSION, &ver, 1) >= 0 &&
+          ver != 0 && ver != 0xff)
+        {
+          return OK;
+        }
+
+      usleep(200 * 1000);
+    }
+
+  return -ETIMEDOUT;
 }
 
 /* Servo power */
@@ -989,6 +1019,7 @@ static int demo_task(int argc, FAR char *argv[])
   srand(ts.tv_nsec);
 
   face_draw(sc, g_expr);
+  py32_wait(sc);
   led_set(sc, 0, 0, 24);
   servo_ok = servo_power(sc, true) == OK;
 

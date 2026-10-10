@@ -452,8 +452,35 @@ open(path, "w").write(src.replace(old, new, 1))
 print("esp32s3_board_spi.c: SPI3 DC pin configured as output on first use")
 PYEOF
 
+# I2C のハードウェアタイムアウト。esp32s3_i2c.c は「約 10 バスサイクル」
+# (100 kHz で約 0.1 ms) に設定するが、胴体の PY32 はマイコンなので返答の
+# 準備中に SCL を引き延ばす (clock stretching)。引き延ばしが長いと毎回
+# タイムアウトになり、アドレスには ACK するのにレジスタの読み書きが全部
+# 失敗する (実機で踏んだ。同じ状態の PY32 に MicroPython からは普通に読めた。
+# MicroPython / ESP-IDF の既定は 50 ms)。2^21 クロック (40 MHz で約 52 ms) にする。
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/arch/xtensa/src/esp32s3/esp32s3_i2c.c"
+src = open(path).read()
+old = ("  timeout  = sizeof(half_cycle) * 8;\n"
+       "  timeout -= __builtin_clz(5 * half_cycle);\n"
+       "  timeout += 2;\n")
+new = old + ("\n"
+       "  /* Clock-stretching targets (an MCU acting as an I/O expander) can\n"
+       "   * hold SCL far longer than ten bus cycles.  Allow ~50 ms like\n"
+       "   * ESP-IDF: 2^21 cycles of the 40 MHz source clock.\n"
+       "   */\n"
+       "\n"
+       "  timeout = 21;\n")
+assert src.count(old) == 1, "esp32s3_i2c.c: timeout pattern not found"
+open(path, "w").write(src.replace(old, new, 1))
+print("esp32s3_i2c.c: I2C bus timeout raised to 2^21 cycles")
+PYEOF
+
 # 電源投入だけでデモが揃うように、rcS (esp32s3 ステージで wg を起動して
-# いるもの) の後ろに webserver と stackchan を足す。Wi-Fi は
+# いるもの) に webserver と stackchan を足す。wg の「前」に置く: NSH の
+# スクリプトは 1 行失敗するとそこで止まるので、/data/wg0.conf が無い
+# (鍵が未設定の) ときに wg が -22 で失敗すると、後ろの行が走らない
+# (実機で踏んだ。顔もまばたきも出なかった)。Wi-Fi は
 # "wapi save_config wlan0" で /data/wapi.conf に、WireGuard は
 # "wg saveconf" で /data/wg0.conf に保存したものが起動時に読まれる。
 # webserver を telnet セッションから起動すると、セッションを閉じた後の
@@ -461,10 +488,16 @@ PYEOF
 # 認証情報をビルドに入れないので esp32s3 ステージでは NETINIT_DHCPC が
 # 入らない (WIFI_SSID 指定時のみ)。保存した wapi.conf でつながっても
 # アドレスが既定の 10.0.0.2 のままになるため、下で常に有効にする。
-RUN printf '%s\n' '' \
-      '#ifdef CONFIG_EXAMPLES_WEBSERVER' 'webserver &' '#endif' \
-      '' '#ifdef CONFIG_EXAMPLES_STACKCHAN' 'stackchan start' '#endif' \
-    >> /opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/etc/init.d/rcS
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/boards/xtensa/esp32s3/esp32s3-devkit/src/etc/init.d/rcS"
+src = open(path).read()
+anchor = "#ifdef CONFIG_NET_WIREGUARD\n"
+block = ("#ifdef CONFIG_EXAMPLES_WEBSERVER\nwebserver &\n#endif\n\n"
+         "#ifdef CONFIG_EXAMPLES_STACKCHAN\nstackchan start\n#endif\n\n")
+assert src.count(anchor) == 1, "rcS: wireguard block not found"
+open(path, "w").write(src.replace(anchor, block + anchor, 1))
+print("rcS: webserver and stackchan start before wg")
+PYEOF
 
 # PY32 が 400 kHz に応答しない件はアプリ側で i2c_msg_s.frequency を
 # メッセージ単位で 100 kHz にして対処している (バス既定は 400 kHz のまま)。
