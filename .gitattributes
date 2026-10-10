@@ -1,1 +1,2 @@
 docs/upstream/patches/**/*.patch -text -diff
+*.sh text eol=lf
