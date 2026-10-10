@@ -476,6 +476,30 @@ open(path, "w").write(src.replace(old, new, 1))
 print("esp32s3_i2c.c: I2C bus timeout raised to 2^21 cycles")
 PYEOF
 
+# I2S の送信完了割り込みの無限ループ。esp_i2s.c の TX 側は、バッファの最後の
+# DMA ディスクリプタを探すループで bfdesc は進めるのに bfdesc_ctrl を更新しない。
+# 1 バッファが複数のディスクリプタにまたがる (8 KB > 4095 B) と、最初の完了
+# 割り込みで止まらなくなり、割り込み禁止のまま全体が固まる (実機で踏んだ:
+# 最初の 0.5 秒だけ鳴って、USB コンソールもネットワークも止まる)。RX 側の
+# 同じループは既に直っているので、それに合わせる。
+RUN python3 - <<'PYEOF'
+path = "/opt/nuttx/arch/xtensa/src/common/espressif/esp_i2s.c"
+src = open(path).read()
+old = ("      while (!(bfdesc_ctrl->dw0.suc_eof))\n"
+       "        {\n"
+       "          DEBUGASSERT(bfdesc->next);\n"
+       "          bfdesc = bfdesc->next;\n"
+       "        }\n")
+new = ("      while (bfdesc->next != NULL && !(bfdesc_ctrl->dw0.suc_eof))\n"
+       "        {\n"
+       "          bfdesc = bfdesc->next;\n"
+       "          bfdesc_ctrl = (dma_descriptor_t *)bfdesc;\n"
+       "        }\n")
+assert src.count(old) == 1, "esp_i2s.c: TX descriptor walk not found"
+open(path, "w").write(src.replace(old, new, 1))
+print("esp_i2s.c: TX EOF descriptor walk fixed")
+PYEOF
+
 # 電源投入だけでデモが揃うように、rcS (esp32s3 ステージで wg を起動して
 # いるもの) に webserver と stackchan を足す。wg の「前」に置く: NSH の
 # スクリプトは 1 行失敗するとそこで止まるので、/data/wg0.conf が無い
@@ -545,18 +569,44 @@ RUN kconfig-tweak --disable CONFIG_ESP32S3_UART0     && \
     kconfig-tweak --set-val CONFIG_NET_TCP_WAIT_TIMEOUT 2 && \
     kconfig-tweak --enable CONFIG_NETINIT_DHCPC      && \
     kconfig-tweak --enable CONFIG_NETUTILS_HTTPD_SINGLECONNECT && \
+    kconfig-tweak --enable CONFIG_AUDIO && \
+    kconfig-tweak --enable CONFIG_DRIVERS_AUDIO && \
+    kconfig-tweak --enable CONFIG_ESPRESSIF_I2S1 && \
     make olddefconfig >/dev/null 2>&1 && \
     kconfig-tweak --set-val CONFIG_UART1_BAUD 1000000 && \
+    kconfig-tweak --enable CONFIG_AUDIO_I2S && \
+    kconfig-tweak --enable CONFIG_AUDIO_FORMAT_PCM && \
+    kconfig-tweak --enable CONFIG_ESPRESSIF_I2S1_TX && \
+    kconfig-tweak --disable CONFIG_ESPRESSIF_I2S1_RX && \
+    kconfig-tweak --enable CONFIG_ESPRESSIF_I2S1_ROLE_MASTER && \
+    kconfig-tweak --enable CONFIG_ESPRESSIF_I2S1_DATA_BIT_WIDTH_16BIT && \
+    kconfig-tweak --disable CONFIG_ESPRESSIF_I2S1_MCLK && \
+    kconfig-tweak --set-val CONFIG_ESPRESSIF_I2S1_SAMPLE_RATE 16000 && \
+    kconfig-tweak --set-val CONFIG_ESPRESSIF_I2S1_BCLKPIN 34 && \
+    kconfig-tweak --set-val CONFIG_ESPRESSIF_I2S1_WSPIN 33 && \
+    kconfig-tweak --enable CONFIG_SYSTEM_NXPLAYER && \
+    kconfig-tweak --enable CONFIG_AUDIO_EXCLUDE_TONE && \
+    kconfig-tweak --enable CONFIG_AUDIO_EXCLUDE_BALANCE && \
+    kconfig-tweak --enable CONFIG_AUDIO_EXCLUDE_FFORWARD && \
+    kconfig-tweak --set-val CONFIG_AUDIO_NUM_BUFFERS 4 && \
+    kconfig-tweak --set-val CONFIG_I2S_DMADESC_NUM 4 && \
+    kconfig-tweak --set-val CONFIG_NXPLAYER_PLAYTHREAD_STACKSIZE 6144 && \
+    kconfig-tweak --set-val CONFIG_NXPLAYER_MAINTHREAD_STACKSIZE 4096 && \
+    kconfig-tweak --set-val CONFIG_SCHED_HPWORKSTACKSIZE 3072 && \
+    make olddefconfig >/dev/null 2>&1 && \
+    kconfig-tweak --set-val CONFIG_ESPRESSIF_I2S1_DOUTPIN 13 && \
+    kconfig-tweak --enable CONFIG_NXPLAYER_HTTP_STREAMING_SUPPORT && \
     kconfig-tweak --enable CONFIG_SYSTEM_I2CTOOL     && \
     kconfig-tweak --enable CONFIG_EXAMPLES_STACKCHAN && \
     make olddefconfig >/dev/null 2>&1 && \
     for c in ESP32S3_I2C0 I2C_DRIVER ESP32S3_SPI3 SPI_CMDDATA SPI_DRIVER \
              ESP32S3_UART1 SERIAL_TERMIOS SYSTEM_I2CTOOL EXAMPLES_STACKCHAN \
-             NET_WIREGUARD ESP32S3_USBSERIAL; do \
+             NET_WIREGUARD ESP32S3_USBSERIAL ESPRESSIF_I2S1 ESPRESSIF_I2S1_TX \
+             AUDIO_I2S SYSTEM_NXPLAYER NXPLAYER_HTTP_STREAMING_SUPPORT; do \
       grep -q "^CONFIG_$c=y" .config || { echo "missing CONFIG_$c"; exit 1; }; \
     done && \
     ! grep -q '^CONFIG_UART0_SERIAL_CONSOLE=y' .config && \
-    grep -E '^CONFIG_(UART1_BAUD|ESP32S3_SPI3_(CS|CLK|MOSI|MISO)PIN|ESP32S3_I2C0_S(CL|DA)PIN|.*SERIAL_CONSOLE)=' .config
+    grep -E '^CONFIG_(UART1_BAUD|ESP32S3_SPI3_(CS|CLK|MOSI|MISO)PIN|ESP32S3_I2C0_S(CL|DA)PIN|.*SERIAL_CONSOLE|ESPRESSIF_I2S1_[A-Z]*PIN|ESPRESSIF_I2S1_SAMPLE_RATE)=' .config
 
 RUN make -j$(nproc) >/tmp/nuttx-build.log 2>&1 || \
     (tail -200 /tmp/nuttx-build.log && false)

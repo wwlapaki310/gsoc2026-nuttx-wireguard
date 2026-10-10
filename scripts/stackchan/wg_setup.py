@@ -106,6 +106,18 @@ def main():
        % (sc_pub, board_ip))
     print('peer container up: wg0 10.10.0.1 -> %s:51820' % board_ip)
 
+    # Speech clips from make_voice.py, served through the tunnel for
+    # "stackchan say http://10.10.0.1:8000/<name>.wav"
+
+    voice = os.path.join(os.path.expanduser('~'), 'stackchan-voice')
+    if os.path.isdir(voice):
+        sh('docker', 'exec', NAME, 'mkdir', '-p', '/srv/voice')
+        sh('docker', 'cp', voice + os.sep + '.', NAME + ':/srv/voice')
+        sh('docker', 'exec', '-d', NAME, 'sh', '-c',
+           'cd /srv/voice && exec python3 -m http.server 8000 '
+           '--bind 10.10.0.1 > /tmp/http.log 2>&1')
+        print('speech clips served at http://10.10.0.1:8000/')
+
     # Board
 
     s = serial.Serial()

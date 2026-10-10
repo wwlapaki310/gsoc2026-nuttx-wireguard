@@ -66,6 +66,11 @@
 #include <nuttx/spi/spi.h>
 #include <nuttx/spi/spi_transfer.h>
 
+#ifdef CONFIG_SYSTEM_NXPLAYER
+#  include <nuttx/audio/audio.h>
+#  include "system/nxplayer.h"
+#endif
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -77,6 +82,7 @@
 #define ADDR_AXP2101  0x34
 #define ADDR_AW9523   0x58
 #define ADDR_PY32     0x6f
+#define ADDR_AW88298  0x36     /* speaker amplifier on the CoreS3 */
 
 #define FREQ_PY32     100000   /* does not answer at 400 kHz */
 
@@ -172,6 +178,12 @@ static volatile pid_t g_demo_pid = -1;
 static volatile int g_expr = EXPR_NEUTRAL;
 static volatile bool g_redraw;
 static volatile bool g_py32_warned;
+
+/* Set by "stackchan say" while audio plays: the demo task moves the
+ * mouth instead of the command, so only one task draws.
+ */
+
+static volatile bool g_talking;
 
 static FAR const char * const g_expr_names[NEXPR] =
 {
@@ -963,6 +975,173 @@ static int servo_torque(FAR struct stackchan_s *sc, uint8_t id, bool on)
   return servo_xfer(sc, id, 0x03, args, 2, NULL, 0);
 }
 
+/* Speaker (AW88298 amplifier on I2S1: BCK=G34, WS=G33, DOUT=G13).
+ * Register values from M5Unified's CoreS3 speaker callback.
+ */
+
+static int amp_write(FAR struct stackchan_s *sc, uint8_t reg, uint16_t val)
+{
+  uint8_t buf[2];
+
+  buf[0] = val >> 8;
+  buf[1] = val & 0xff;
+  return sc_i2c_write(sc, ADDR_AW88298, reg, buf, 2);
+}
+
+static int amp_on(FAR struct stackchan_s *sc, uint32_t rate)
+{
+  static const uint8_t rate_tbl[] =
+  {
+    4, 5, 6, 8, 10, 11, 15, 20, 22, 44
+  };
+
+  uint32_t r = (rate + 1102) / 2205;
+  uint16_t reg06 = 0;
+  int ret;
+
+  /* AW9523B P0.2 releases the amplifier from reset.  Port 0 comes up
+   * open-drain; make it push-pull and the pin an output first.
+   */
+
+  ret = sc_i2c_setbits(sc, ADDR_AW9523, 0x11, 0x10, true);
+  if (ret >= 0)
+    {
+      ret = sc_i2c_setbits(sc, ADDR_AW9523, 0x04, 0x04, false);
+    }
+
+  if (ret >= 0)
+    {
+      ret = sc_i2c_setbits(sc, ADDR_AW9523, 0x02, 0x04, true);
+    }
+
+  if (ret < 0)
+    {
+      return ret;
+    }
+
+  usleep(10 * 1000);
+
+  while (reg06 < sizeof(rate_tbl) - 1 && r > rate_tbl[reg06])
+    {
+      reg06++;
+    }
+
+  ret = amp_write(sc, 0x61, 0x0673);              /* boost off */
+  if (ret >= 0)
+    {
+      ret = amp_write(sc, 0x04, 0x4040);          /* I2S on, amp on */
+    }
+
+  if (ret >= 0)
+    {
+      ret = amp_write(sc, 0x05, 0x0008);          /* unmute */
+    }
+
+  if (ret >= 0)
+    {
+      ret = amp_write(sc, 0x06, reg06 | 0x14c0);  /* rate, 16-bit x2 */
+    }
+
+  if (ret >= 0)
+    {
+      ret = amp_write(sc, 0x0c, 0x0064);          /* volume */
+    }
+
+  return ret;
+}
+
+static void amp_off(FAR struct stackchan_s *sc)
+{
+  amp_write(sc, 0x04, 0x4000);
+  sc_i2c_setbits(sc, ADDR_AW9523, 0x02, 0x04, false);
+}
+
+#ifdef CONFIG_SYSTEM_NXPLAYER
+/* Play a WAV file or http:// URL and move the mouth while it plays */
+
+static int say(FAR struct stackchan_s *sc, FAR const char *src,
+               uint32_t rate)
+{
+  FAR struct nxplayer_s *player;
+  bool open = false;
+  int ret;
+
+  ret = amp_on(sc, rate);
+  if (ret < 0)
+    {
+      fprintf(stderr, "stackchan: speaker amplifier: %d\n", ret);
+      return ret;
+    }
+
+  player = nxplayer_create();
+  if (player == NULL)
+    {
+      amp_off(sc);
+      return -ENOMEM;
+    }
+
+  ret = nxplayer_playfile(player, src, AUDIO_FMT_UNDEF, AUDIO_FMT_UNDEF);
+  if (ret >= 0)
+    {
+      int i;
+
+      /* The play thread sets the state to "playing" only once the stream
+       * has started, so wait for that before waiting for the end.
+       */
+
+      for (i = 0; i < 50 && player->state == 0; i++)
+        {
+          usleep(100 * 1000);
+        }
+
+      if (player->state == 0)
+        {
+          ret = -ETIMEDOUT;
+        }
+    }
+
+  if (ret < 0)
+    {
+      fprintf(stderr, "stackchan: cannot play %s: %d\n", src, ret);
+    }
+  else if (g_demo_pid >= 0)
+    {
+      /* The demo task moves the mouth */
+
+      g_talking = true;
+      while (player->state != 0)
+        {
+          usleep(100 * 1000);
+        }
+
+      g_talking = false;
+    }
+  else
+    {
+      if (open_once(&sc->spi, SPI_DEV, O_RDWR) >= 0)
+        {
+          while (player->state != 0)
+            {
+              open = !open;
+              face_mouth(sc, open ? EXPR_SURPRISED : g_expr);
+              usleep(150 * 1000);
+            }
+
+          face_mouth(sc, g_expr);
+        }
+    }
+
+  /* The player goes idle once the last buffer is handed over; let the
+   * I2S finish sending it before the amplifier is switched off.
+   */
+
+  usleep(800 * 1000);
+  nxplayer_release(player);
+  amp_off(sc);
+  return ret < 0 ? ret : OK;
+}
+#endif
+
 /* Demo loop */
 
 static FAR struct stackchan_s *sc_alloc(void)
@@ -1005,6 +1184,7 @@ static int demo_task(int argc, FAR char *argv[])
   struct timespec ts;
   int next_blink = 30;
   int next_look = 12;
+  bool talk_open = false;
   bool servo_ok;
   int tick;
 
@@ -1027,6 +1207,19 @@ static int demo_task(int argc, FAR char *argv[])
 
   for (tick = 0; g_running; tick++)
     {
+      if (g_talking)
+        {
+          /* Speaking: open and close the mouth every tick */
+
+          talk_open = !talk_open;
+          face_mouth(sc, talk_open ? EXPR_SURPRISED : g_expr);
+        }
+      else if (talk_open)
+        {
+          talk_open = false;
+          face_mouth(sc, g_expr);
+        }
+
       if (g_redraw)
         {
           g_redraw = false;
@@ -1084,6 +1277,7 @@ static void usage(void)
          "  face [<expression>]       neutral happy sad angry sleepy\n"
          "                            surprised\n"
          "  blink                     blink once\n"
+         "  say <file|http://url> [rate]  play a WAV and move the mouth\n"
          "  led <r> <g> <b>           all 12 LEDs (0-255)\n"
          "  servo on | off            servo power (VM_EN) / torque off\n"
          "  servo ping                ping pan (1) and tilt (2)\n"
@@ -1252,6 +1446,13 @@ int main(int argc, FAR char *argv[])
           report("face", face_draw(sc, expr));
         }
     }
+#ifdef CONFIG_SYSTEM_NXPLAYER
+  else if (strcmp(argv[1], "say") == 0 && argc >= 3)
+    {
+      report("say", say(sc, argv[2],
+                        argc >= 4 ? strtoul(argv[3], NULL, 10) : 16000));
+    }
+#endif
   else if (strcmp(argv[1], "blink") == 0)
     {
       ret = open_once(&sc->spi, SPI_DEV, O_RDWR);

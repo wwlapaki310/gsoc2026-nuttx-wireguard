@@ -237,3 +237,25 @@ MicroPython から NuttX に戻すには: `machine.bootloader()` の後は USB �
 会場の Wi-Fi(Apache)にはつながる(2.4 GHz、WPA2 パスフレーズ)が、**端末どうしの通信が遮断されていて**、
 PC からスタックちゃんへは ARP も通らない。スマホのテザリングに PC とスタックちゃんの両方をつなげば、家と同じ
 構成(PC 側の Docker コンテナから張るトンネル)で動く。日本語の SSID でも `nsh_wifi.py` で問題なくつながった。
+
+## 8. しゃべらせる(2026-10-10)
+
+`stackchan say <file|http://url> [rate]` で WAV を再生し、再生中は口を動かす。音声は PC の Windows 音声合成で作り
+([scripts/stackchan/make_voice.py](../../scripts/stackchan/make_voice.py)、Zira・高めの声)、WireGuard の相手の
+コンテナ(10.10.0.1:8000)から HTTP で配る。外部の API やクラウドは使っていない。
+
+構成: CoreS3 のスピーカーアンプ AW88298(I2C 0x36)を I2S1(BCK=G34、WS=G33、DOUT=G13)で鳴らす。
+アンプのリセット解除は AW9523B P0.2、初期化値は M5Unified の CoreS3 用コールバックと同じ。NuttX 側は汎用 I2S
+オーディオ(`/dev/audio/pcm1`)+ PCM デコーダ + nxplayer(HTTP ストリーミング)。
+
+踏んだこと:
+
+| 内容 | 対処 |
+|---|---|
+| 再生開始から約 0.5 秒で全体が固まる(USB コンソールもネットワークも止まる) | **NuttX の `esp_i2s.c` のバグ。** TX 完了割り込みで最後の DMA ディスクリプタを探すループが `bfdesc_ctrl` を更新せず、1 バッファが複数ディスクリプタにまたがると割り込み内で無限ループになる(RX 側は修正済みだった)。Dockerfile でパッチ。upstream に出す価値あり |
+| `pcm_enqueuebuffer: ERROR: Invalid PCM WAV file` の後、nxplayer が 0 バッファのまま「再生中」で止まる | Windows 音声合成の WAV は fmt チャンクが 18 バイト。16 バイトに書き直す(`make_voice.py`) |
+| 声が倍速・高音になる | モノラルが I2S でステレオとして流れる。ステレオで作る |
+| 口が動かない・語尾が切れる | nxplayer は再生開始後に play スレッドの中で状態を「再生中」にするので、それを待ってから終わりを待つ。終わった後 0.8 秒待ってアンプを切る。WAV の末尾にも 0.5 秒の無音を付けた |
+| デバッグログが USB コンソールに出ない | syslog の既定の出力先(up_putc)は UART0 で、USB-Serial/JTAG には出ない。調べるときは RAMLOG にして `dmesg` で読む |
+
+再生は 20 回強のうち 1 回だけ途中で止まったことがある(I2S 修正後)。原因は未特定。メモリリークは無い。
