@@ -8,10 +8,13 @@ first (the driver depends on it), then the driver PR, then the apps PR.
 - **PR-K1 (driver)** — below.
 - **PR-A1 (apps)** — below.
 
-Last updated: 2026-09-29. Local submission branches `review/pr-series-20260928`:
-NuttX `c0ead14d83` on `68dd87f4df`, apps `e4f910dc18` on `b66303e2`.
-Original development branches remain unchanged. These drafts do not authorize
-fork publication; final validation and source scope are recorded separately.
+Last updated: 2026-10-10. The series is now split per
+[merge-strategy.md](merge-strategy.md) §2 into the local branches listed in
+[submission-checklist.md](submission-checklist.md) (`pr/crypto-chachapoly`,
+`pr/wireguard-driver`, `pr/nxstyle-wg`, `pr/doc-system-wg`, apps
+`pr/system-wg`). The PR-N (nxstyle) and PR-D (wg documentation) bodies are
+short and are drafted in the checklist. These drafts do not authorize fork
+publication.
 
 ---
 
@@ -89,6 +92,10 @@ Against a real Linux kernel WireGuard peer unless noted (see the
 - **PROTECTED and SMP** — the rebased candidate passed rv-virt protected
   userspace ioctl/tunnel runtime and a four-CPU kernel concurrency scenario.
   They do not establish silicon MPU behavior or exhaustive race freedom.
+  **Update 2026-10-10:** repeated PROTECTED runs fault intermittently in user
+  space while `wg` configures `wg0` (2/8 on the split series, 1/9 on the
+  unsplit candidate); see submission-checklist.md §2.3. Do not claim a clean
+  PROTECTED runtime until that is understood.
 - **Crypto KATs** — ChaCha20-Poly1305 (u64 counter), XChaCha20-Poly1305 (cookie path, incl.
   HChaCha20), X25519 (RFC 7748), BLAKE2s-256, against NuttX's `crypto/` sources.
 
@@ -114,8 +121,18 @@ to `kmm_malloc`/`kmm_free`.
 
 ### Commit structure
 
-Two commits on this branch: the `crypto:` nonce fix (submitted as its own PR first) and the
-`net/wireguard` device (ABI + driver + crypto shim + `sim:wireguard` defconfig + Documentation).
+Six commits, each of which builds on its own (on top of the `crypto:` PR):
+
+1. `net: fix nxstyle issues in netdev_upperhalf.c and netdev_register.c` (whitespace only)
+2. `drivers/net/netdev_upperhalf: accept IP-only lower halves for WireGuard`
+3. `net/netdev: add the WireGuard control ioctls` (ABI)
+4. `drivers/net/wireguard: add the WireGuard device` (+ `LICENSE` entry for the BSD-3-Clause files)
+5. `boards/sim: add the sim:wireguard configuration`
+6. `Documentation: add the WireGuard network device`
+
+The protocol core alone has no use and no way to be tested, so it is kept in one PR with the
+device (CONTRIBUTING 1.7.9). The `wg` command's documentation is a separate PR (PR-D), and
+the `tools/nxstyle.c` exclusion for the apps X25519 is a separate PR (PR-N).
 
 ---
 
@@ -160,8 +177,10 @@ which comes from the kernel.
 
 The algorithm body keeps its upstream MIT formatting so it stays diffable against the STROBE
 source; the path is listed in `tools/nxstyle.c`'s `g_white_files[]` the way the PHY62XX, Infineon
-and GD32VW55x vendor sources are. **That one line lands with PR-K1, so this PR's style check
-depends on PR-K1 going in first.**
+and GD32VW55x vendor sources are. **That exclusion is its own NuttX PR (PR-N), so this PR's style
+check depends on PR-N going in first.** The adaptation block also defines
+`X25519_SUPPORT_VERIFY 0` and silences GCC's `-Wstringop-overread` false positive on the one-limb
+`a24` constant, so the file builds under CI's `-Werror`; the algorithm body is unchanged.
 
 ### Testing
 
@@ -170,7 +189,8 @@ a separate ELF across the syscall boundary). `genkey` output's public key matche
 
 ### Commit structure
 
-One commit: `apps/system/wg`.
+Two commits: `system/wg: add a WireGuard configuration command`, and
+`LICENSE: add the STROBE X25519 used by system/wg`. Documentation is the paired NuttX PR (PR-D).
 
 ---
 

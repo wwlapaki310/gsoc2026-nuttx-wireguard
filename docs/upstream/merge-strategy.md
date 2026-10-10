@@ -1,9 +1,12 @@
 # マージ戦略(2026-10-07 時点の最新 upstream に対して)
 
 [in-kernel-plan.md §4](in-kernel-plan.md#4-マージ戦略) の順序案を、2026-10-07 の upstream と
-現行の提出候補(3 コミット)に当てはめ直したもの。**提出の進め方はこの文書を正とする。**
+当時の提出候補(3 コミット)に当てはめ直したもの。**提出の進め方はこの文書を正とする。**
 §4 の方針(PR は機能単位、PR 内はコミットで割る、K0 で信用を作る)は変えていない。
 変わったのは、PR の切り方を具体化したことと、提出前に塞ぐべき穴が見つかったこと(§3)。
+
+> **2026-10-10 追記:** §2 の分割と §3 の H2〜H5・H7 は、ローカルブランチ `pr/*` として実施済み。
+> ブランチと SHA、検査結果、残る手作業は [submission-checklist.md](submission-checklist.md) にまとめた。
 
 ## 1. 最新 upstream への追従結果
 
@@ -36,7 +39,8 @@ upstream の CONTRIBUTING(10/07 版)で、切り方を決める規則は次の 4
 - 1.7.9:機能を保つために束ねるしかない場合は例外。そのことを PR に明記する
 - 1.8:文書は同じ PR に入れ、コードとは別コミットが推奨。**nuttx-apps のコードの文書は nuttx 側に別 PR が要る**
 
-これに従い、現在の「2 + 1 コミット」を次の **6 PR** に組み直す。
+これに従い、当時の「2 + 1 コミット」を次の **6 PR** に組み直す(組み直し済み。ブランチは
+[submission-checklist.md](submission-checklist.md) §1)。
 
 ```
 PR-K0   nuttx       #9  cxd56 RTC_HIRES 起動回帰の修正          独立・小(任意。信用を作る)
@@ -99,12 +103,12 @@ PR-D    nuttx       Documentation: system/wg                   PR-A と対で出
 | # | 穴 | 根拠 | 対応 |
 |---|---|---|---|
 | H1 | **3 コミットとも `Assisted-by:` が無い** | CONTRIBUTING 1.5:生成 AI を使ったコミットには必須 | 実際に使ったツールとモデルを本人が確定して全コミットに付ける。これまでの記録には Claude Code と Codex の両方が出てくるので、推測では書かない |
-| H2 | **`LICENSE` に wireguard-lwip 由来の表示が無い** | `drivers/net/wireguard/wg_noise.c` は BSD-3-Clause(Daniel Hope)。in-kernel-plan §4.1 の (5) で予定していたが、3 コミットに統合したときに入っていない | nuttx の `LICENSE` に追記(PR-K1 コミット 4)。[license-appendix-draft.md](license-appendix-draft.md) は apps 版のファイル一覧なので、カーネル版のファイルで作り直す |
-| H3 | **nuttx-apps の `LICENSE` に STROBE X25519(MIT)が無い** | `system/wg/wg_x25519.c` | PR-A に別コミットで追記 |
-| H4 | `wg` コマンドの文書が driver コミットに入っている | CONTRIBUTING 1.8:apps のコードの文書は nuttx 側の別 PR | PR-D に移す |
-| H5 | `tools/nxstyle.c` が driver コミットに入っている | 1.7.4:別機能は別 PR | PR-N に移す |
+| H2 | **(対応済み)** `LICENSE` に wireguard-lwip 由来の表示が無い | `drivers/net/wireguard/wg_noise.c` は BSD-3-Clause(Daniel Hope)。in-kernel-plan §4.1 の (5) で予定していたが、3 コミットに統合したときに入っていない | nuttx の `LICENSE` に追記(PR-K1 コミット 4)。[license-appendix-draft.md](license-appendix-draft.md) は apps 版のファイル一覧なので、カーネル版のファイルで作り直す |
+| H3 | **(対応済み)** nuttx-apps の `LICENSE` に STROBE X25519(MIT)が無い | `system/wg/wg_x25519.c` | PR-A に別コミットで追記 |
+| H4 | **(対応済み)** `wg` コマンドの文書が driver コミットに入っている | CONTRIBUTING 1.8:apps のコードの文書は nuttx 側の別 PR | PR-D に移す |
+| H5 | **(対応済み)** `tools/nxstyle.c` が driver コミットに入っている | 1.7.4:別機能は別 PR | PR-N に移す |
 | H6 | 再適用後の候補で、実機の試験を一度もしていない | CONTRIBUTING 1.7.2 / 1.9:**実機のビルド・実行ログは必須**。QEMU は数えない | §4 の G5 |
-| H7 | `scripts/kernel/verify-pr-series.sh` が「nuttx 2 + apps 1 コミット」を前提にしている | 組み直すと必ず FAIL になる | PR ごとのコミット数とブランチを引数で受け取る形に直す |
+| H7 | **(対応済み)** `scripts/kernel/verify-pr-series.sh` が「nuttx 2 + apps 1 コミット」を前提にしている | 組み直すと必ず FAIL になる | PR ごとのコミット数とブランチを引数で受け取る形に直す |
 
 ## 4. 提出前ゲート(PR ごと)
 
