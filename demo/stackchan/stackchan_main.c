@@ -85,6 +85,7 @@
 
 /* PY32 I/O expander registers (low byte = pins 0-7, high = 8-15) */
 
+#define PY32_VERSION  0x02
 #define PY32_DIR_L    0x03
 #define PY32_DIR_H    0x04
 #define PY32_OUT_L    0x05
@@ -163,6 +164,7 @@ static volatile pid_t g_demo_pid = -1;
 
 static volatile int g_expr = EXPR_NEUTRAL;
 static volatile bool g_redraw;
+static volatile bool g_py32_warned;
 
 static FAR const char * const g_expr_names[NEXPR] =
 {
@@ -333,10 +335,21 @@ static int servo_power(FAR struct stackchan_s *sc, bool on)
 
   if (ret < 0)
     {
-      fprintf(stderr, "stackchan: PY32 (0x%02x) not answering: %d\n",
-              ADDR_PY32, ret);
+      /* Say it once; the demo keeps retrying and would flood the
+       * console otherwise.
+       */
+
+      if (!g_py32_warned)
+        {
+          fprintf(stderr, "stackchan: PY32 (0x%02x) not answering: %d "
+                  "(reported once)\n", ADDR_PY32, ret);
+          g_py32_warned = true;
+        }
+
       return ret;
     }
+
+  g_py32_warned = false;
 
   if (on)
     {
@@ -1006,9 +1019,16 @@ static int demo_task(int argc, FAR char *argv[])
             {
               servo_goto(sc, SERVO_PAN, 400 + rand() % 121, 600);
               servo_goto(sc, SERVO_TILT, 630 + rand() % 61, 600);
+              next_look = tick + 20 + rand() % 20;
             }
+          else
+            {
+              /* The PY32 is not answering: try again every 10 s, not
+               * every few seconds, so the bus is left alone meanwhile.
+               */
 
-          next_look = tick + 20 + rand() % 20;
+              next_look = tick + 100;
+            }
         }
 
       usleep(100 * 1000);
@@ -1029,6 +1049,7 @@ static void usage(void)
 {
   printf("Usage: stackchan <command>\n"
          "  start | stop | status     background face + head motion\n"
+         "  py32                      read the PY32 version (body I/O)\n"
          "  face [<expression>]       neutral happy sad angry sleepy\n"
          "                            surprised\n"
          "  blink                     blink once\n"
@@ -1158,7 +1179,26 @@ int main(int argc, FAR char *argv[])
       return 1;
     }
 
-  if (strcmp(argv[1], "face") == 0)
+  if (strcmp(argv[1], "py32") == 0)
+    {
+      uint8_t ver = 0;
+
+      /* The official BSP treats version 0x00 / 0xff as "not booted" */
+
+      ret = sc_i2c_read(sc, ADDR_PY32, PY32_VERSION, &ver, 1);
+      if (ret < 0)
+        {
+          printf("PY32: no answer (%d)\n", ret);
+        }
+      else
+        {
+          printf("PY32: version 0x%02x%s\n", ver,
+                 ver == 0 || ver == 0xff ? " (not running)" : "");
+        }
+
+      ret = 0;
+    }
+  else if (strcmp(argv[1], "face") == 0)
     {
       int expr = argc > 2 ? expr_parse(argv[2]) : g_expr;
 
