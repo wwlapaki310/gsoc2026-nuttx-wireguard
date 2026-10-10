@@ -4,6 +4,6 @@
 # the speech clips (scripts/stackchan/make_voice.py) on 10.10.0.1:8000.
 FROM ubuntu:24.04
 RUN apt-get update -q && apt-get install -y --no-install-recommends \
-    wireguard-tools iproute2 iputils-ping netcat-openbsd curl socat python3 \
+    wireguard-tools iproute2 iputils-ping netcat-openbsd curl socat python3 telnet tcpdump \
   && rm -rf /var/lib/apt/lists/*
 CMD ["sleep", "infinity"]

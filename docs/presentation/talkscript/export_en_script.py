@@ -140,17 +140,31 @@ SLIDES = [
          "reservation / wait to catch up), and the measured pair: clock "
          "unset → no handshake in 75 s, clock set → 4.1 s.", []),
     ("Agenda: ⑥ Demo", "divider", None, []),
-    ("The Demo", "demo", None,
-         ["**Live:** `uname -a` / `ifconfig` (wg0 = 10.10.0.2) / `wg show` "
-          "(handshake, transfer bytes) / `ps` (wg_rx running) / "
-          "`webserver &`, then `http://10.10.0.2/` in the browser. Show "
-          "`wg show` before and after opening the page: the growing byte "
-          "count is the evidence, not the terminal text.",
-          "**Never on screen:** the contents of `.config`, `kconfig-tweak` "
-          "runs, build logs, `wg showconf` (prints the private key). The "
-          "SSID and passphrase are in plain text in those places.",
-          "**Fallback:** the recording, youtu.be/1kyX2av5WG4. Switch at once "
-          "if the live demo stalls."]),
+    ("Demo Setup: One Tunnel on a Phone's Network", "",
+         "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
+         "→ phone hotspot (local network 10.176.112.0/24) → laptop "
+         "(WireGuard peer in Docker, wg0 10.10.0.1; voice clips on :8000) "
+         "and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over wlan0 "
+         "10.176.112.2), joined by one WireGuard tunnel; SPRESENSE as a "
+         "dashed second peer (wg0 10.11.0.2).", []),
+    ("The Demo", "demo",
+         "Seven steps: wg show / telnet 10.10.0.2 / ifconfig / stackchan "
+         "face happy / stackchan say hello.wav / tcpdump outside vs. inside "
+         "/ wg show again. Right panel: outside = only encrypted UDP 51820, "
+         "inside = the telnet text.",
+         ["**Live:** run `scripts/stackchan/demo.sh` step by step (it "
+          "pauses between steps). Put the terminal on the left and the "
+          "StackChan (camera or on the desk) on the right.",
+          "**Before the talk:** phone hotspot on (2.4 GHz / maximize "
+          "compatibility), laptop on it, Docker Desktop running, the "
+          "StackChan joined with `nsh_wifi.py` (the passphrase is not "
+          "saved on the board), `wg_setup.py` run once. Check "
+          "`stackchan say` once.",
+          "**Never on screen:** `wg showconf` (prints the private key), "
+          "the key files in `%USERPROFILE%\\stackchan-wg`, the hotspot "
+          "passphrase.",
+          "**Fallback:** the recording. Switch at once if the live demo "
+          "stalls."]),
     ("Agenda: ⑦ What Comes Next", "divider", None, []),
     ("Running It for Real", "cut candidate 3", None, []),
     ("Other CPUs", "cut candidate 2", None, []),
