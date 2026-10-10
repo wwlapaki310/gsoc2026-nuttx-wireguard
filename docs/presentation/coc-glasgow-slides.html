@@ -1183,7 +1183,7 @@ My road to this project went through molecular robots, computer vision and AI sy
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Project Overview</p>
+    <p class="eyebrow">Overview: the project in one slide</p>
     <h2>This project adds WireGuard to NuttX as a network device.</h2>
     <div class="body" style="gap:16px">
       <svg class="route" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
@@ -1257,7 +1257,7 @@ From June, I worked on it a little at a time. I did most of the work in the summ
     </div>
   </section>
   <section class="slide">
-    <p class="eyebrow">Background</p>
+    <p class="eyebrow">Background: the OS behind this work</p>
     <h2>What is Apache NuttX?</h2>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 760 250" role="img" aria-label="NuttX software stack: applications, POSIX and BSD APIs, networking/VFS/drivers, the NuttX kernel, and the MCU or MPU underneath" style="width:640px;height:auto;margin:0 auto;display:block;">
@@ -1295,7 +1295,7 @@ The one point I want you to remember: NuttX is a small RTOS, but you program it 
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Compared with others</p>
+    <p class="eyebrow">Background: NuttX and other RTOSes</p>
     <h2>Where NuttX fits &mdash; and where it is used.</h2>
     <div class="body">
       <div class="two">
@@ -1329,7 +1329,7 @@ And it is really used. Upstream there are more than fifteen CPU architectures, m
   </section>
 
   <section class="slide">
-    <p class="eyebrow">History</p>
+    <p class="eyebrow">History: a long road with NuttX</p>
     <h2>NuttX at Sony &mdash; from audio to edge sensing.</h2>
     <div class="body" style="gap:10px">
       <div class="timeline-v">
@@ -1368,7 +1368,7 @@ I am not saying that one engineer made Sony choose NuttX. I have no source for t
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Experience</p>
+    <p class="eyebrow">Experience: where I come from</p>
     <h2>NuttX in SPRESENSE and AITRIOS &mdash; my part.</h2>
     <div class="body" style="gap:16px">
       <div class="two">
@@ -1403,7 +1403,7 @@ In both cases, I come to NuttX from the same direction: first application develo
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Problem</p>
+    <p class="eyebrow">Problem: Wi-Fi security stops too early</p>
     <h2>Reaching a device from far away is hard.</h2>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 210" role="img" aria-label="Wi-Fi security protects only the last hop to the device; an authenticated path is needed all the way from the engineer to the NuttX device" style="width:100%;height:auto;">
@@ -1451,7 +1451,7 @@ Without that, every choice is worse. You can give the device a public IP and hop
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Options</p>
+    <p class="eyebrow">Options: MQTT, HTTP, router VPN, ...</p>
     <h2>Other ways to reach a device &mdash; compared.</h2>
     <div class="body" style="gap:12px">
       <table class="options">
@@ -1479,7 +1479,7 @@ A VPN on the device is the only row that has it all: any IP service, no server i
     </div>
   </section>
   <section class="slide">
-    <p class="eyebrow">Solution</p>
+    <p class="eyebrow">Solution: a VPN on the device</p>
     <h2>Why WireGuard is a good fit.</h2>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 150" role="img" aria-label="Engineer, Linux and Windows peers connect to the NuttX device through a WireGuard tunnel" style="width:100%;height:auto;">
@@ -1511,7 +1511,7 @@ So I did not choose a product. I chose a standard protocol, instead of making my
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Architecture</p>
+    <p class="eyebrow">Architecture: where wg0 sits</p>
     <h2>WireGuard on the NuttX network stack.</h2>
     <div class="body" style="gap:16px">
       <svg viewBox="0 0 900 340" role="img" aria-label="Application traffic flows down through TCP/UDP/IP, wg0, WireGuard encryption, a UDP socket, and out over wlan0 or usrsock; replies flow back up the same path" style="width:900px;height:auto;margin:0 auto;display:block;">
@@ -1604,7 +1604,7 @@ That is the background. Next: how I reused an existing WireGuard.
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Porting Strategy</p>
+    <p class="eyebrow">Porting: four functions to write</p>
     <h2>Reusing wireguard-lwip without lwIP.</h2>
     <div class="body">
       <div class="stack" style="gap:14px">
@@ -1634,7 +1634,7 @@ I did not have to rewrite anything, and that was not luck. That is what a clean 
   </section>
 
   <section class="slide">
-    <p class="eyebrow">netdev Design</p>
+    <p class="eyebrow">Design: one virtual network card</p>
     <h2>Mapping lwIP onto NuttX netdev.</h2>
     <div class="body">
       <table>
@@ -1658,7 +1658,7 @@ Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. ne
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Result</p>
+    <p class="eyebrow">Result: the first working tunnel</p>
     <h2>A working tunnel is only the beginning.</h2>
     <div class="body">
       <table>
@@ -1982,7 +1982,7 @@ wg0 is now a lower-half network device in the kernel. It owns its UDP socket and
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Two more bugs &middot; same shape</p>
+    <p class="eyebrow">Two more bugs: same shape</p>
     <h2>Deeper level, same kind of bug.</h2>
     <div class="body">
       <div class="two">
@@ -2056,7 +2056,7 @@ The driver is done. Now: how do I know it really works?
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Testing</p>
+    <p class="eyebrow">Testing: simulator, QEMU, real boards</p>
     <h2>Seven places it must work.</h2>
     <div class="body" style="gap:16px">
       <table class="compact">
@@ -2090,7 +2090,7 @@ And now it runs on real hardware &mdash; both boards. I flashed the kernel drive
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Testing &middot; what ping misses</p>
+    <p class="eyebrow">Testing: what ping misses</p>
     <h2>A working tunnel does not prove enough.</h2>
     <div class="body" style="gap:16px">
       <table class="tight">
@@ -2115,7 +2115,7 @@ Third, the long test. A hundred and fifty-one forced rekeys, past the point wher
   </section>
 
   <section class="slide">
-    <p class="eyebrow">A design choice</p>
+    <p class="eyebrow">Design choice: trust the clock?</p>
     <h2>The timestamp problem has no easy answer.</h2>
     <div class="body" style="gap:14px">
       <p>A peer drops any handshake whose timestamp is not newer than the newest it has seen. So the device must always send a newer one &mdash; <span class="hl">even after a reboot</span>.</p>
@@ -2197,7 +2197,7 @@ That was all engineering. Now, what it actually looks like.
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Demo setup</p>
+    <p class="eyebrow">Demo setup: the network</p>
     <h2>One tunnel, on a phone's local network.</h2>
     <div class="body" style="gap:10px">
       <svg class="route" viewBox="0 0 1136 372" role="img" aria-label="Laptop and StackChan on a phone hotspot, joined by a WireGuard tunnel">
@@ -2213,13 +2213,13 @@ That was all engineering. Now, what it actually looks like.
         <text class="small" x="580" y="81">upstream: venue Wi-Fi or mobile data (not needed for the demo)</text>
         <rect x="428" y="96" width="280" height="62" fill="#e3edf7" stroke="#245c9a"></rect>
         <text x="568" y="121" text-anchor="middle" font-size="18" font-weight="800">Phone hotspot</text>
-        <text class="small" x="568" y="143" text-anchor="middle">local network 10.176.112.0/24</text>
+        <text class="small" x="568" y="143" text-anchor="middle">a small local network of its own</text>
         <line x1="428" y1="140" x2="200" y2="188" stroke="#87939b" stroke-width="2"></line>
         <line x1="708" y1="140" x2="936" y2="188" stroke="#87939b" stroke-width="2"></line>
         <text class="small" x="300" y="158" text-anchor="middle">Wi-Fi</text>
         <text class="small" x="836" y="158" text-anchor="middle">Wi-Fi</text>
         <rect x="0" y="190" width="380" height="176" fill="#f5f7f8" stroke="#d5dde2"></rect>
-        <text class="label" x="18" y="214">LAPTOP (WINDOWS) &middot; 10.176.112.89</text>
+        <text class="label" x="18" y="214">LAPTOP (WINDOWS)</text>
         <rect x="18" y="226" width="344" height="52" fill="#dff0ee" stroke="#176c67"></rect>
         <text x="190" y="248" text-anchor="middle" font-size="16" font-weight="800">WireGuard peer (Linux, in Docker)</text>
         <text class="small" x="190" y="268" text-anchor="middle">wg0 10.10.0.1</text>
@@ -2230,7 +2230,7 @@ That was all engineering. Now, what it actually looks like.
         <text class="label" x="774" y="214">STACKCHAN &middot; ESP32-S3 + APACHE NUTTX</text>
         <rect x="774" y="226" width="344" height="52" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
         <text x="946" y="248" text-anchor="middle" font-size="16" font-weight="800" fill="#8d1f24">wg0 10.10.0.2</text>
-        <text class="small" x="946" y="268" text-anchor="middle" fill="#8d1f24">over wlan0 10.176.112.2</text>
+        <text class="small" x="946" y="268" text-anchor="middle" fill="#8d1f24">over wlan0 (hotspot address)</text>
         <text class="small" x="778" y="302">telnetd &middot; web server</text>
         <text class="small" x="778" y="324">face &middot; head servos &middot; speaker</text>
         <line x1="364" y1="252" x2="770" y2="252" stroke="#8d1f24" stroke-width="7"></line>
@@ -2255,7 +2255,7 @@ Please watch two things: the addresses after I log in, and the packets. Outside 
     </div>
   </section>
   <section class="slide">
-    <p class="eyebrow">The Demo</p>
+    <p class="eyebrow">Demo: live on the StackChan</p>
     <h2>Log in through the tunnel, and talk to the robot.</h2>
     <div class="body">
       <div class="two demo-layout">
@@ -2359,7 +2359,7 @@ Keys are no longer built into the firmware. You make them and set them at run ti
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Other CPUs</p>
+    <p class="eyebrow">Other CPUs: beyond the first board</p>
     <h2>Did the &ldquo;four functions&rdquo; bet work?</h2>
     <div class="body" style="gap:18px">
       <p class="lead">The apps (FLAT) version ran on four CPU types with <span class="hl">no code change</span>:</p>
@@ -2382,7 +2382,7 @@ Keeping the OS behind a few functions was a bet. Here is the check, with the app
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Giving back</p>
+    <p class="eyebrow">Giving back: sending it to NuttX</p>
     <h2>The Apache Way: small steps, in the open.</h2>
     <div class="body">
       <ul class="big">
@@ -2403,7 +2403,7 @@ I will send the work in steps. First, a small crypto PR for the nonce fix, becau
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Takeaways</p>
+    <p class="eyebrow">Takeaways: what to take home</p>
     <h2>Three things to carry out.</h2>
     <div class="body">
       <ul class="big">

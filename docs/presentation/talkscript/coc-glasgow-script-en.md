@@ -322,7 +322,7 @@ them again on the day, or keep the date on the slide.
 
 ## 35 — Demo Setup: One Tunnel on a Phone's Network (30:34 → 31:32)
 
-**On slide:** Diagram: venue Wi-Fi (blocks devices from talking to each other) → phone hotspot (local network 10.176.112.0/24) → laptop (WireGuard peer in Docker, wg0 10.10.0.1; voice clips on :8000) and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over wlan0 10.176.112.2), joined by one WireGuard tunnel; SPRESENSE as a dashed second peer (wg0 10.11.0.2).
+**On slide:** Diagram: venue Wi-Fi (blocks devices from talking to each other) → phone hotspot (its own small local network) → laptop (WireGuard peer in Docker, wg0 10.10.0.1; voice clips on :8000) and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over wlan0 on the hotspot), joined by one WireGuard tunnel; SPRESENSE as a dashed second peer (wg0 10.11.0.2).
 
 **Say:**
 - Here is the demo setup.
@@ -340,9 +340,9 @@ them again on the day, or keep the date on the slide.
 - Now I can control it. Let's make it happy, and let it say hello. The voice comes from the laptop through the same tunnel.
 - Last, the packets. On the left, the phone's network: only encrypted UDP. On the right, inside the tunnel: the same telnet session, in plain text. And wg show again: the byte counts went up.
 
-**Live:** run `scripts/stackchan/demo.sh` step by step (it pauses between steps). Put the terminal on the left and the StackChan (camera or on the desk) on the right.
+**Live:** `scripts/stackchan/demo.sh`: `login` in the left terminal, `outside` and `inside` in two terminals on the right, `show` before and after. Put the terminals on the left and the StackChan (camera or on the desk) on the right.
 
-**Before the talk:** phone hotspot on (2.4 GHz / maximize compatibility), laptop on it, Docker Desktop running, the StackChan joined with `nsh_wifi.py` (the passphrase is not saved on the board), `wg_setup.py` run once. Check `stackchan say` once.
+**Before the talk:** phone hotspot on (2.4 GHz / maximize compatibility), laptop on it, Docker Desktop running, the StackChan joined with `nsh_wifi.py` (the passphrase is not saved on the board), `wg_setup.py` run once. Check `stackchan say` once. If the hotspot was turned off and on, its addresses may change: run `nsh_wifi.py` and `wg_setup.py` again. Rarely (about 1 in 20) the board stops during `say`; power it off and on, then repeat the same steps.
 
 **Never on screen:** `wg showconf` (prints the private key), the key files in `%USERPROFILE%\stackchan-wg`, the hotspot passphrase.
 

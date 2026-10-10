@@ -142,24 +142,28 @@ SLIDES = [
     ("Agenda: ⑥ Demo", "divider", None, []),
     ("Demo Setup: One Tunnel on a Phone's Network", "",
          "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
-         "→ phone hotspot (local network 10.176.112.0/24) → laptop "
+         "→ phone hotspot (its own small local network) → laptop "
          "(WireGuard peer in Docker, wg0 10.10.0.1; voice clips on :8000) "
-         "and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over wlan0 "
-         "10.176.112.2), joined by one WireGuard tunnel; SPRESENSE as a "
+         "and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over "
+         "wlan0 on the hotspot), joined by one WireGuard tunnel; SPRESENSE as a "
          "dashed second peer (wg0 10.11.0.2).", []),
     ("The Demo", "demo",
          "Seven steps: wg show / telnet 10.10.0.2 / ifconfig / stackchan "
          "face happy / stackchan say hello.wav / tcpdump outside vs. inside "
          "/ wg show again. Right panel: outside = only encrypted UDP 51820, "
          "inside = the telnet text.",
-         ["**Live:** run `scripts/stackchan/demo.sh` step by step (it "
-          "pauses between steps). Put the terminal on the left and the "
+         ["**Live:** `scripts/stackchan/demo.sh`: `login` in the left "
+          "terminal, `outside` and `inside` in two terminals on the right, "
+          "`show` before and after. Put the terminals on the left and the "
           "StackChan (camera or on the desk) on the right.",
           "**Before the talk:** phone hotspot on (2.4 GHz / maximize "
           "compatibility), laptop on it, Docker Desktop running, the "
           "StackChan joined with `nsh_wifi.py` (the passphrase is not "
           "saved on the board), `wg_setup.py` run once. Check "
-          "`stackchan say` once.",
+          "`stackchan say` once. If the hotspot was turned off and on, its "
+          "addresses may change: run `nsh_wifi.py` and `wg_setup.py` "
+          "again. Rarely (about 1 in 20) the board stops during `say`; "
+          "power it off and on, then repeat the same steps.",
           "**Never on screen:** `wg showconf` (prints the private key), "
           "the key files in `%USERPROFILE%\\stackchan-wg`, the hotspot "
           "passphrase.",
