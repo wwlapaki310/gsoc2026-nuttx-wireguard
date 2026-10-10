@@ -282,7 +282,7 @@
   <tr><td><a href="#s39">39</a></td><td><a href="#s39">Running it for real</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s40">40</a></td><td><a href="#s40">Other CPUs: beyond the first board</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s41">41</a></td><td><a href="#s41">Giving back: sending it to NuttX</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s42">42</a></td><td><a href="#s42">Takeaways: what to take home</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s42">42</a></td><td><a href="#s42">Summary</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s43">43</a></td><td><a href="#s43">Thanks: the people behind this talk</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s44">44</a></td><td><a href="#s44">Thank you</a></td><td>⑦ Summary</td></tr>
 </table></div>
@@ -511,20 +511,22 @@
   <p><b>話し方:</b>"Let's start with part one: an overview and the background."</p>
 </section>
 <section class="slide" id="s4">
-  <div class="head"><span class="no">4</span><h3>4 — About Me</h3><span class="en">From Nagoya, through space, robots, and many conferences.</span></div>
+  <div class="head"><span class="no">4</span><h3>4 — About Me</h3><span class="en">From Japan: I work at Sony, and I build things as a hobby.</span></div>
   <a class="shot" href="renders/glasgow/slide-04.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-04.png" alt="スライド 4 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-04.png</code> · <a href="coc-glasgow-slides.html#4" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>顔写真、名古屋(生まれ)→ 仙台(大学)→ 川崎(現在)の地図、大学で学んだこと(宇宙・ロボティクス・MEMS・半導体)、活動(ハッカソン、ソフトウェア系カンファレンスの運営、オープンソースの本の執筆)、経歴の流れ(分子ロボティクスで BIOMOD 世界一(2015)→ 画像処理と AI → AITRIOS のエッジ AI カメラ → SPRESENSE の組込み開発(組込みアプリコンテストで世界 3 位)→ この発表)。</p>
+  <p>見出し「From Japan: I work at Sony, and I build things as a hobby.」(日本から。ソニーで働き、趣味でものを作っている)。その下に「Satoru Akita — ソニーセミコンダクタソリューションズのエッジ AI エンジニア。Apache NuttX にはアプリケーションの側から関わっている」。本人の写真と、SNS で使っている狐のアイコン(「my icon on social media」)。日本地図に ① 名古屋(生まれ)→ ② 仙台(大学)→ ③ 川崎(現在)。「Hobby engineer」の札に Space / Semiconductors / Robots(宇宙・半導体・ロボット)の 3 つのタグと、活動 3 つ(多くのハッカソン、ソフトウェア系カンファレンスの運営、オープンソースの本の執筆)。下に横向きの道のり:Robotics(分子ロボティクス、BIOMOD 世界一(2015))→ Computer Vision(AI と画像処理のシステム)→ Edge AI(AITRIOS のエッジ AI カメラ)→ Embedded Systems(SPRESENSE、組込みアプリコンテストで世界 3 位)→ NuttX / WireGuard(この発表)。</p>
   <h4>② 背景知識</h4>
   <p><b>エッジ AI</b>:AI の計算をクラウドのサーバーではなく、現場に置いた機器(カメラなど)の上で行うこと。通信量が減り、映像を外に出さずに済む。その代わり、機器は小さく、電力もメモリも限られる。この「小さな機器が現場に散らばっている」状況が、スライド 10・12 の課題につながる。</p>
-  <p><b>MEMS</b>:半導体の製造技術で作る微小な機械部品(加速度センサー、マイクなど)。<b>組込み(embedded)</b>:家電やセンサーのように、特定の機能のために機器の中に組み込まれたコンピュータとそのソフトウェア。</p>
-  <p>このスライドの役割は自己紹介だけでなく、「自分は NuttX の<b>アプリ側</b>の人間で、ドライバを書くのはこれが初めて」という立ち位置を示すこと。だから後半のカーネルドライバの話に重みが出る。</p>
+  <p><b>ホビーエンジニア(hobby engineer)</b>:仕事とは別に、趣味でハードウェアやソフトウェアを作る人。ここでは宇宙・半導体・ロボットまわりの工作のこと。<b>組込み(embedded)</b>:家電やセンサーのように、特定の機能のために機器の中に組み込まれたコンピュータとそのソフトウェア。</p>
+  <p>このスライドの役割は自己紹介だけでなく、「自分は NuttX の<b>アプリ側</b>の人間で、ドライバを書くのはこれが初めて」という立ち位置を示すこと(画面の「from the application side」)。だから後半のカーネルドライバの話に重みが出る。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:NuttX と WireGuard は、分子ロボット → 画像処理 → エッジ AI → 組込みと続いた道の「最新の停留所」で、出発点ではない。根拠は本人の経歴そのもの(技術的な検証の対象ではない)。</p>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side.</blockquote>
   <p class="gloss">ソニーセミコンダクタソリューションズのエッジ AI エンジニアで、NuttX にはアプリ開発の側から関わっています。</p>
+  <blockquote class="en">Outside work, I am a hobby engineer. I build things around space, semiconductors and robots. On social media, I am the fox in this picture.</blockquote>
+  <p class="gloss">仕事の外ではホビーエンジニアで、宇宙・半導体・ロボットまわりのものを作っています。SNS では、この写真の狐が私です。</p>
   <blockquote class="en">NuttX and WireGuard are the latest stop on that road.</blockquote>
   <p class="gloss">NuttX と WireGuard は、その道の最新の停留所です。</p>
   <h4>⑤ 聞かれそうな質問</h4>
@@ -535,7 +537,7 @@
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
     <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>MEMS</td><td class="yomi">メムス</td><td>微小な機械と電子回路を一体にした部品</td></tr>
+    <tr><td>hobby engineer</td><td class="yomi">ホビー・エンジニア</td><td>仕事とは別に、趣味でものを作る技術者</td></tr>
     <tr><td>BIOMOD</td><td class="yomi">バイオモッド</td><td>分子ロボティクスの国際学生コンテスト</td></tr>
     <tr><td>Edge AI</td><td class="yomi">エッジ・エーアイ</td><td>現場の機器の上で AI を動かすこと</td></tr>
     <tr><td>AITRIOS</td><td class="yomi">アイトリオス</td><td>ソニーのエッジ AI カメラ・センシングの基盤</td></tr>
@@ -2387,12 +2389,22 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
 </section>
 
 <section class="slide" id="s42">
-  <div class="head"><span class="no">42</span><h3>42 — Takeaways: what to take home</h3><span class="en">Three things to carry out.</span></div>
+  <div class="head"><span class="no">42</span><h3>42 — Summary</h3><span class="en">What I built, and three things to remember.</span></div>
   <a class="shot" href="renders/glasgow/slide-42.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-42.png" alt="スライド 42 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-42.png</code> · <a href="coc-glasgow-slides.html#42" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>3 つの教訓。① 簡単な試験は通り、深い試験は落ちる — 深く試す:長いデータ、本物のハードウェア、本物のカーネルビルド。「handshake した」だけでなく。② きれいな OS の境界は報われる — 4 種類の CPU、3 つの NuttX のバージョン、変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX に隠れていたバグを 2 つ見つけた:ChaCha20-Poly1305 の nonce と、このボードで素のリリースがシェルまで起動しない起動のバグ。</p>
+  <p>最初に「作ったもの」の 1 行:<b>Built <code>wg0</code></b> — NuttX のカーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE の上で、普通の Linux と Windows のピアとつながり、upstream に出せるよう小さな PR に分けてある。</p>
+  <p>その下に 3 つの教訓。① 簡単な試験は通り、深い試験は落ちる — 深く試す:長いデータ、本物のハードウェア、本物のカーネルビルド。「handshake した」だけでなく。② きれいな OS の境界は報われる — 4 種類の CPU、3 つの NuttX のバージョン、変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX に隠れていたバグを 2 つ見つけた:ChaCha20-Poly1305 の nonce と、このボードで素のリリースがシェルまで起動しない起動のバグ。</p>
   <h4>② 背景知識</h4>
+  <h5>「作ったもの」の 1 行は、どの版のどの確認か</h5>
+  <p>1 行に 3 つのことが詰まっているので、分けて読む。</p>
+  <div class="tbl"><table>
+    <tr><th>1 行の中の言葉</th><th>確かめた版と場所</th><th>言いすぎにしないために</th></tr>
+    <tr><td>カーネルの中の <code>wg0</code></td><td><span class="tag kern">カーネル版</span>(<code>drivers/net/wireguard</code>、スライド 29・30)</td><td>本命はカーネル版。apps 版(v0.1.1)は第 1 版</td></tr>
+    <tr><td>ESP32-S3 と SPRESENSE で動く</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span> 両ボードで実 Wi-Fi のトンネル(T5:ESP32-S3 内蔵 Wi-Fi 4/4、SPRESENSE は usrsock 経由 6/6、スライド 32)</td><td>実機の試験は最後の載せ替え(rebase)の前の版で行った(スライド 32 の脚注)</td></tr>
+    <tr><td>普通の Linux と Windows のピア</td><td>カーネル版の実機の相手は <b>Windows の公式クライアント</b>(T5)。<b>Linux カーネルの WireGuard</b> が相手なのは sim と QEMU(T1・T6・TS・TP)。apps 版は両ボードで Linux と Windows の両方(スライド 32 の最後の行)</td><td>「カーネル版を実機で Linux とつないだ」とは言わない</td></tr>
+    <tr><td>小さな PR に分けてある</td><td>分割と検査(checkpatch、1 コミットずつのビルド)は済み(スライド 41)</td><td>PR はまだ出していない。dev@ での議論もこれから。「マージされた」「マージ可能」とは言わない</td></tr>
+  </table></div>
   <h5>2 つ目の NuttX のバグ(起動の回帰、#9)</h5>
   <p><b>回帰(regression)</b>は、以前動いていたものが、変更によって動かなくなること。SPRESENSE(cxd56)で <code>CONFIG_RTC_HIRES</code>(高分解能の RTC)を有効にすると、NuttX 13.0.x と master の素のリリースがシェル(NSH)まで起動しなかった。</p>
   <p>仕組み(台本と Dockerfile のコメントより):NuttX の時間を進める仕組み(<b>watchdog</b>、決めた時間後に関数を呼ぶタイマー)が、時刻を RTC から読むようになった。RTC が動き出す前は時刻が 0 のまま進まないので、「RTC の起動を最後まで終わらせる」はずの watchdog が永久に発火しない。鶏と卵で止まる(スライド 22 と同じ形)。</p>
@@ -2401,11 +2413,16 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <p>台本は最後に「3 つ目は自分のドライバの中にあり、本物のカーネルビルドだけがそれを見せた。sim では決して見えなかった」と付け加える。これはスライド 31 の 6 KB の配列のこと。スライドの「two hidden NuttX bugs」は NuttX 本体の 2 つで、3 つ目はドライバ側なので数え方が違う。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <ul>
+    <li>「作ったもの」の根拠:<span class="tag kern">カーネル版</span> の T5(両ボード・Windows 公式クライアント)と T1・T6(Linux カーネルの WireGuard、sim と QEMU)(<a href="../upstream/verification-matrix.md">verification-matrix.md</a>)。PR の分割は <a href="../upstream/submission-checklist.md">submission-checklist.md</a>(push・PR・dev@ への投稿はまだ)。</li>
     <li>① の根拠:スライド 21〜26・31 の 7 つのバグと、31〜33 の試験(<a href="../upstream/verification-matrix.md">verification-matrix.md</a>)。</li>
     <li>② の根拠:<span class="tag apps">apps 版</span> の 4 CPU・3 バージョン(スライド 1・40)。カーネル版の数字ではない。</li>
     <li>③ の根拠:nonce は verification-matrix「Bugs found」(pre-existing NuttX)。起動の回帰は T5 の注記(「cxd56 の <code>CONFIG_RTC_HIRES</code> の回帰、#9。<code>clock_systime_timespec.c</code> の RTC フォールバックだけを当てると起動して ping 6/6」)。</li>
   </ul>
   <h4>④ 話すときのポイント</h4>
+  <blockquote class="en">I built wg0, a WireGuard network device inside the NuttX kernel. It works on an ESP32-S3 and on SPRESENSE, with normal Linux and Windows WireGuard peers, and it is ready to go upstream in small PRs.</blockquote>
+  <p class="gloss">作ったのは wg0、NuttX のカーネルの中の WireGuard ネットワークデバイスです。ESP32-S3 と SPRESENSE の上で、普通の Linux と Windows の WireGuard とつながり、upstream に出せるよう小さな PR に分けてあります。</p>
+  <p>「ready to go upstream」は「出す準備ができた」で、「入った」ではない(スライド 41)。</p>
+  <span class="pause">間</span>
   <blockquote class="en">First, simple tests pass and deep tests fail — so design your tests to go deep.</blockquote>
   <p class="gloss">1 つ目。簡単な試験は通り、深い試験は落ちる。だから深く行く試験を設計してください。</p>
   <blockquote class="en">Second, a clean line between your code and the OS is worth the effort.</blockquote>
@@ -2415,6 +2432,8 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <span class="pause">間(締め)</span>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
+    <dt>カーネル版は実機で Linux ともつながりますか?</dt>
+    <dd>実機で確かめた相手は Windows の公式クライアント(T5)。Linux カーネルの WireGuard とは sim と QEMU(rv-virt)でつないでいる(T1・T6)。apps 版は両ボードで Linux とも Windows ともつないだ。</dd>
     <dt>起動のバグは誰の責任ですか?</dt>
     <dd>NuttX 本体(cxd56 と時刻の仕組みの組み合わせ)の既知の回帰として扱っている。WireGuard とは無関係。修正は小さな独立した PR 候補。</dd>
   </dl>

@@ -1057,11 +1057,15 @@ Let's start with part one: an overview and the background.
 
   <section class="slide">
     <p class="eyebrow">About Me</p>
-    <h2>From Nagoya, through space, robots, and many conferences.</h2>
+    <h2>From Japan: I work at Sony, and I build things as a hobby.</h2>
     <div class="body" style="gap:9px">
       <div class="intro-row">
         <img class="intro-avatar" src="assets/profile-avatar.jpg" alt="Satoru Akita">
-        <p class="lead" style="margin-bottom:0">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+        <p class="lead" style="margin-bottom:0;flex:1">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+        <div style="flex:none;text-align:center">
+          <img class="intro-avatar" src="assets/aki310-avatar.png" alt="Fox icon" style="width:72px;height:72px;border-color:var(--gold)">
+          <p class="mono" style="font-size:12px;margin:4px 0 0;color:var(--quiet)">my icon on social media</p>
+        </div>
       </div>
       <div class="two">
         <div class="photo-card" style="padding:10px">
@@ -1129,12 +1133,11 @@ Let's start with part one: an overview and the background.
         </div>
         <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
           <div>
-            <p style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin-bottom:7px">University</p>
+            <p style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin-bottom:7px">Hobby engineer</p>
             <div class="tags">
               <span class="tag">Space</span>
-              <span class="tag">Robotics</span>
-              <span class="tag">MEMS</span>
               <span class="tag">Semiconductors</span>
+              <span class="tag">Robots</span>
             </div>
           </div>
           <div class="chips">
@@ -1176,7 +1179,7 @@ Let's start with part one: an overview and the background.
     <div class="notes-src">
 First, a little about me.
 ||
-I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side. I was born in Nagoya. I went to university in Sendai, where I studied space, robots, MEMS and semiconductors. Now I live in Kawasaki. I often join hackathons, I help run software conferences, and I wrote a book about open source.
+I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, university in Sendai, and now I live in Kawasaki. Outside work, I am a hobby engineer. I build things around space, semiconductors and robots. On social media, I am the fox in this picture. I often join hackathons, I help run software conferences, and I wrote a book about open source.
 ||
 My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road.
     </div>
@@ -2140,7 +2143,7 @@ The last slide was about where it runs. This one is about what a working tunnel 
 ||
 Take making keys. NuttX can provide /dev/urandom with an xorshift128 backend, and its seed can come from build-time settings. A board left like that can give out the same private key every time it starts. The handshake works. Ping works. The demo works. But the tunnel is worthless, and nothing I have shown you so far would notice. So I reset the board three times and compared one new key from each start: three different keys, with the entropy pool backend chosen, not xorshift128. That is a useful check that the problem has not come back, but it does not prove the randomness is good.
 ||
-Second, what is left after you take the interface down. Here I stopped reading the code and read the memory instead. I found the device in the running system by searching for the key I had set, and then checked each secret field by name, at offsets taken from the driver's own headers. The transport keys are filled while the tunnel is up, and every byte is zero after down. The handshake data is already gone while it is up, because it is erased as soon as the keys are made. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in all writable memory, before and after. This difference is a decision, so it is now written in the driver's documentation, and a reviewer does not have to guess.
+Second, what is left after you take the interface down. Here I stopped reading the code and read the memory instead. I found the device in the running system by searching for the key I had set, and then checked each secret field by name, at offsets taken from the driver's own headers. The transport keys are filled while the tunnel is up, and every byte is zero after down. The handshake data is normally erased as soon as the keys are made. When I held back the last handshake message on purpose, I could catch it, and the next keys, while they were filled, and they were zero after down too. The static key is still there &mdash; on purpose, because up has to work again &mdash; and there is exactly one copy of it in all writable memory, before and after. This difference is a decision, so it is now written in the driver's documentation, and a reviewer does not have to guess.
 ||
 Third, the long test. A hundred and fifty-one forced rekeys, past the point where sessions expire. Ten endpoint changes. A hundred down-and-up cycles. And memory checked the whole time. The buffer pool comes back complete, and the number of live allocations goes back to exactly the number at start-up &mdash; not close, the same. The receive thread's stack peak is two and a half kilobytes, and it does not grow after the first sample. That last number is useful by itself: the default stack for that thread is six kilobytes, so the safety margin is real, not just hoped for. What I am not saying is that it ran for a week, or that the simulator's allocator and 64-bit frames act like the board.
     </div>
@@ -2435,9 +2438,10 @@ I will send the work in steps. First, a small crypto PR for the nonce fix, becau
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Takeaways: what to take home</p>
-    <h2>Three things to remember.</h2>
+    <p class="eyebrow">Summary</p>
+    <h2>What I built, and three things to remember.</h2>
     <div class="body">
+      <div class="takeaway"><b>Built</b><p><code>wg0</code>: a WireGuard network device in the NuttX kernel. It works on ESP32-S3 and SPRESENSE, talks to standard WireGuard peers, and is split into small PRs for upstream.</p></div>
       <ul class="big">
         <li>Simple tests pass, deep tests fail <span>test deeply (long data runs, real hardware, a real kernel build), not just &ldquo;the handshake worked.&rdquo;</span></li>
         <li>A clean OS boundary pays off <span>four CPU types, three NuttX versions, no changes.</span></li>
@@ -2446,9 +2450,11 @@ I will send the work in steps. First, a small crypto PR for the nonce fix, becau
     </div>
     <div class="num">42 / 44</div>
     <div class="notes-src">
-Three things to take home.
+To sum up.
 ||
-First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; four CPU types and three NuttX versions, with no changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix goes upstream by itself. I found the second only because I wanted my board image to build from a clean checkout: a normal release tag does not boot to the shell on this board, because before the RTC starts, the clock reads zero, and the watchdog that should finish starting the RTC never fires. And the third was in my own driver, and only a real kernel build showed it; sim never would have.
+I built wg0, a WireGuard network device inside the NuttX kernel. It works on an ESP32-S3 and on SPRESENSE with the official Windows client, it talks to Linux kernel WireGuard in the simulator and in QEMU, and it is ready to go upstream in small PRs.
+||
+And three things to remember. First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; four CPU types and three NuttX versions, with no changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix goes upstream by itself. I found the second only because I wanted my board image to build from a clean checkout: a normal release tag does not boot to the shell on this board, because before the RTC starts, the clock reads zero, and the watchdog that should finish starting the RTC never fires. And the third was in my own driver, and only a real kernel build showed it; sim never would have.
     </div>
   </section>
 

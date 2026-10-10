@@ -188,7 +188,7 @@ SLIDES = [
           "**If time is short:** skip the whole slide. The talk's argument "
           "(the pattern, the verification) does not rest on it; just keep "
           "the answer above ready for questions."]),
-    ("Takeaways", "", None, []),
+    ("Summary: What I Built, and Three Things to Remember", "", None, []),
     ("Thanks: The People Behind This Talk", "",
          "Four boxes: Alan / the Apache NuttX community / the Apache "
          "Software Foundation and the CoC organizers and volunteers / "

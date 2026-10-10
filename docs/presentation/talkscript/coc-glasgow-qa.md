@@ -43,11 +43,12 @@ every privilege model, not just FLAT."
 apps版ではそれが制約でした(FLATビルド専用)。**カーネル版はもうこれに
 依存していません** — `wg0` はカーネル内の lower-half netdev で、ソケットも
 受信スレッドもドライバ自身が所有し、ユーザー空間とは固定長・ポインタなしの
-ioctl ABI でやり取りします。これが PROTECTED/KERNEL ビルドで動く理由です。
+ioctl ABI でやり取りします。これが KERNEL ビルドと PROTECTED ビルドの MPU 分割の下で動く理由です(PROTECTED には間欠的な失敗が1つ未解決で残っています)。
 *Say:* "That was true of the apps version. The kernel driver doesn't touch
 internal socket APIs at all — it owns the socket itself and talks to user
 space through a flat, pointer-free ioctl ABI, which is why it runs under
-PROTECTED and KERNEL builds."
+KERNEL builds and with the MPU split of PROTECTED builds (where one
+intermittent fault is still open)."
 
 ---
 
