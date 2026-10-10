@@ -947,7 +947,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 42</div>
+    <div class="num">1 / 44</div>
     <div class="notes-src">
 Today I will talk about adding WireGuard to Apache NuttX.
 ||
@@ -964,46 +964,46 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
       <div class="agenda">
         <div class="agenda-item">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item">
           <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">2 / 42</div>
+    <div class="num">2 / 44</div>
     <div class="notes-src">
 Here is the plan for this talk.
 ||
-There are seven parts. First, why I needed a VPN on a NuttX device: what NuttX is, how this project started, and the problem I had to solve. Second, how I reused an existing WireGuard. Third, five bugs that a working demo hid. Fourth, moving the driver into the kernel. Fifth, how I checked that it really works. Sixth, a short demo. And last, what comes next, and what to take home. About thirty minutes, then questions.
+There are seven parts. First, an overview and the background: who I am, what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, version one, an app: the first tunnel, five hidden bugs, and a short video. Fifth, version two, the kernel driver, and how I tested it. Sixth, a live demo with the StackChan. And last, a summary and the next steps. About thirty minutes, then questions.
     </div>
   </section>
 
@@ -1014,44 +1014,44 @@ There are seven parts. First, why I needed a VPN on a NuttX device: what NuttX i
       <div class="agenda">
         <div class="agenda-item current">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">3 / 42</div>
+    <div class="num">3 / 44</div>
     <div class="notes-src">
-Let's start with part one.
+Let's start with part one: an overview and the background.
     </div>
   </section>
 
@@ -1172,7 +1172,7 @@ Let's start with part one.
         </div>
       </div>
     </div>
-    <div class="num">4 / 42</div>
+    <div class="num">4 / 44</div>
     <div class="notes-src">
 First, a little about me.
 ||
@@ -1222,7 +1222,7 @@ My road to this project went through molecular robots, computer vision and AI sy
       <p class="lead" style="max-width:100%">Packets sent to <code>wg0</code> are encrypted and sent out as UDP. UDP that comes in is decrypted and handed over as if it came in on <code>wg0</code>. The other side can be any normal WireGuard peer.</p>
       <div class="takeaway"><b>Takeaway</b><p>Apps see wg0 as a normal network interface. Only the "wire" under it is different: a UDP socket, not a cable.</p></div>
     </div>
-    <div class="num">5 / 42</div>
+    <div class="num">5 / 44</div>
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
@@ -1245,7 +1245,7 @@ Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on. The kernel driver, the harder half, came last.</p></div>
     </div>
-    <div class="num">6 / 42</div>
+    <div class="num">6 / 44</div>
     <div class="notes-src">
 Here is how this project went, month by month.
 ||
@@ -1284,7 +1284,7 @@ From June, I worked on it a little at a time. I did most of the work during the 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>NuttX lets you program small embedded devices the Unix way: POSIX APIs, BSD sockets, files, and devices.</p></div>
     </div>
-    <div class="num">7 / 42</div>
+    <div class="num">7 / 44</div>
     <div class="notes-src">
 First, what is NuttX?
 ||
@@ -1318,7 +1318,7 @@ The one point I want you to remember: NuttX is a small RTOS, but you program it 
       <div class="takeaway"><b>Takeaway</b><p>NuttX has fewer stars than FreeRTOS and Zephyr, but it already runs in real products, from drones to the Moon.</p></div>
     </div>
     <div class="sources">Sources: nuttx.apache.org &middot; nuttx.apache.org/market-share &middot; docs.px4.io &middot; GitHub star counts, October 2026</div>
-    <div class="num">8 / 42</div>
+    <div class="num">8 / 44</div>
     <div class="notes-src">
 Thirty seconds on where NuttX fits, and whether it is a toy.
 ||
@@ -1357,7 +1357,7 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
       <div class="takeaway"><b>Takeaway</b><p>Sony used NuttX long before edge AI. Years of audio products and SPRESENSE led to sensing and camera systems.</p></div>
     </div>
     <div class="sources">Sources: M. Ishikawa (Sony), &ldquo;NuttX for Embedded Linux Developers,&rdquo; OSS+ELC Europe 2019 &middot; A. Jerpelea (Sony), &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020 &middot; nuttx.apache.org/docs (CXD56xx)</div>
-    <div class="num">9 / 42</div>
+    <div class="num">9 / 44</div>
     <div class="notes-src">
 This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.
 ||
@@ -1392,13 +1392,61 @@ I am not saying that one engineer made Sony choose NuttX. I have no source for t
       </div>
       <div class="takeaway"><b>Takeaway</b><p>My problem was not making NuttX run. It was reaching NuttX devices after they were installed.</p></div>
     </div>
-    <div class="num">10 / 42</div>
+    <div class="num">10 / 44</div>
     <div class="notes-src">
 That was Sony's history. This is mine. Same hardware family, but I see it from a different place.
 ||
 On SPRESENSE, I use the NuttX SDK for sensing, camera, GNSS and LTE &mdash; prototypes and embedded development, on the application side. On AITRIOS edge AI cameras, which are built with ESP32 and NuttX, my job is to set up cameras and keep them running on site, not on a desk next to a debugger.
 ||
 In both cases, I come to NuttX from the same direction: first application development, then putting the system together, then setting it up and running it. I never had to write a NuttX driver for any of that &mdash; until this project. And the question that brought me here was not &ldquo;How do I make NuttX run?&rdquo; It was &ldquo;How do I reach a NuttX device after it is installed?&rdquo;
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Agenda</p>
+    <h2>Seven parts, about thirty minutes.</h2>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">2</div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+      </div>
+    </div>
+    <div class="num">11 / 44</div>
+    <div class="notes-src">
+That is the background. Part two: the problem I wanted to solve, and the idea.
     </div>
   </section>
 
@@ -1440,7 +1488,7 @@ In both cases, I come to NuttX from the same direction: first application develo
       </div>
       <div class="takeaway"><b>Takeaway</b><p>What was missing: a standard, secure path all the way to the NuttX device.</p></div>
     </div>
-    <div class="num">11 / 42</div>
+    <div class="num">12 / 44</div>
     <div class="notes-src">
 Now, the problem itself.
 ||
@@ -1467,7 +1515,7 @@ Without that, every choice has a problem. You can give the device a public IP an
       <div class="takeaway"><b>Takeaway</b><p>MQTT and HTTPS are great for data. To log in and fix a device, end to end, with no server in the middle, the VPN has to be on the device.</p></div>
     </div>
     <div class="sources">Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS. NuttX clients: nuttx-apps 13.0.1 <code>netutils/</code> (mqttc, paho_mqtt, webclient, libcurl4nx, libwebsockets, dropbear) and <code>crypto/mbedtls</code>.</div>
-    <div class="num">12 / 42</div>
+    <div class="num">13 / 44</div>
     <div class="notes-src">
 Before I chose WireGuard, I compared the usual ways to reach a device.
 ||
@@ -1500,7 +1548,7 @@ A VPN on the device is the only row that has all three: any IP service, no serve
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol, not a homemade security layer or a vendor cloud.</p></div>
     </div>
-    <div class="num">13 / 42</div>
+    <div class="num">14 / 44</div>
     <div class="notes-src">
 So, why WireGuard?
 ||
@@ -1545,7 +1593,7 @@ So I chose a standard protocol, instead of making my own or depending on a vendo
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is a normal network device. Under it, WireGuard turns its packets into encrypted UDP.</p></div>
     </div>
-    <div class="num">14 / 42</div>
+    <div class="num">15 / 44</div>
     <div class="notes-src">
 This is one step more technical than the overview. This is where the implementation starts.
 ||
@@ -1562,44 +1610,44 @@ From here on, the work is building this middle part &mdash; wg0 and the encrypti
       <div class="agenda">
         <div class="agenda-item dim">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
-        </div>
-        <div class="agenda-item current">
-          <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item dim">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
+          <div class="agenda-num">2</div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
           <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">15 / 42</div>
+    <div class="num">16 / 44</div>
     <div class="notes-src">
-That is the background. Next: how I reused an existing WireGuard.
+Part three: the plan. How do you reuse an existing WireGuard?
     </div>
   </section>
 
@@ -1623,7 +1671,7 @@ That is the background. Next: how I reused an existing WireGuard.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A clean line between the protocol and the OS let the protocol and crypto move unchanged. Only the OS and network glue had to change.</p></div>
     </div>
-    <div class="num">16 / 42</div>
+    <div class="num">17 / 44</div>
     <div class="notes-src">
 Why I started from smartalock/wireguard-lwip, and did not write the crypto myself.
 ||
@@ -1649,11 +1697,59 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
-    <div class="num">17 / 42</div>
+    <div class="num">18 / 44</div>
     <div class="notes-src">
 This was the most important porting decision.
 ||
 Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. netif becomes net_driver_s, pbuf becomes iob, netif_add becomes netdev_register, and the send callback becomes NuttX's devif_poll. wg0 is registered as a TUN-type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">Agenda</p>
+    <h2>Seven parts, about thirty minutes.</h2>
+    <div class="body">
+      <div class="agenda">
+        <div class="agenda-item dim">
+          <div class="agenda-num">1</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">2</div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item current">
+          <div class="agenda-num">4</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">5</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">6</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
+        </div>
+        <div class="agenda-item dim">
+          <div class="agenda-num">7</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+      </div>
+    </div>
+    <div class="num">19 / 44</div>
+    <div class="notes-src">
+Part four: version one, an app. It worked, and then the bugs came.
     </div>
   </section>
 
@@ -1673,59 +1769,11 @@ Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. ne
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Getting a tunnel up was the easy step. Almost everything interesting came after it already &ldquo;worked.&rdquo;</p></div>
     </div>
-    <div class="num">18 / 42</div>
+    <div class="num">20 / 44</div>
     <div class="notes-src">
 Here is the result of the first version.
 ||
 The protocol and crypto came over exactly as they were &mdash; more than three thousand lines, unchanged. The four OS functions are small. The real work was the network glue. And it worked: you can make a key, set peers and load a config, all at run time, with no rebuild. So far, a success story &mdash; but the princess was in another castle. The rest of this talk is about what that success was hiding.
-    </div>
-  </section>
-
-  <section class="slide">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
-    <div class="body">
-      <div class="agenda">
-        <div class="agenda-item dim">
-          <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item current">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
-          <div class="agenda-time">~4 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
-        </div>
-      </div>
-    </div>
-    <div class="num">19 / 42</div>
-    <div class="notes-src">
-That was the porting. Now, the part this whole talk is built around.
     </div>
   </section>
 
@@ -1762,7 +1810,7 @@ That was the porting. Now, the part this whole talk is built around.
         <small>Because the simple test passed, you trust that part and spend hours looking somewhere else. This happened again and again in this project, and not only in the apps version.</small>
       </div>
     </div>
-    <div class="num">20 / 42</div>
+    <div class="num">21 / 44</div>
     <div class="notes-src">
 This is the main point of the talk.
 ||
@@ -1786,7 +1834,7 @@ Every hard bug in this project looked the same. A simple test passes, but a deep
       </div>
       <div class="takeaway"><b>Takeaway</b><p>setsockopt() returning 0 does not prove the option works. An unsupported option can show up as a deadlock, not as a clear error.</p></div>
     </div>
-    <div class="num">21 / 42</div>
+    <div class="num">22 / 44</div>
     <div class="notes-src">
 The first one: a success code that did nothing.
 ||
@@ -1810,7 +1858,7 @@ Setting a receive timeout returned zero, which means success. But recvfrom still
       </div>
       <div class="takeaway"><b>Takeaway</b><p>pthread_detach() decides when memory is freed, not how long the thread lives. A detached thread still dies with the task group that started it.</p></div>
     </div>
-    <div class="num">22 / 42</div>
+    <div class="num">23 / 44</div>
     <div class="notes-src">
 The second: something I believed about a thread's life that was not true.
 ||
@@ -1835,7 +1883,7 @@ The receive thread was created as detached. When the command that started it fin
       </div>
       <div class="takeaway"><b>Takeaway</b><p>In NuttX, a file descriptor belongs to one task group. Another task cannot use it, even though it points to the same socket.</p></div>
     </div>
-    <div class="num">23 / 42</div>
+    <div class="num">24 / 44</div>
     <div class="notes-src">
 This is my favorite bug in the project.
 ||
@@ -1858,7 +1906,7 @@ The reason: in NuttX, a file descriptor belongs to one task group. It is not sha
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The 50&nbsp;ms polling kept things correct but made it about 10&times; slower. A quick fix you never measure can look free and cost 10&times;.</p></div>
     </div>
-    <div class="num">24 / 42</div>
+    <div class="num">25 / 44</div>
     <div class="notes-src">
 The fourth: something I never measured.
 ||
@@ -1881,7 +1929,7 @@ The fix without file descriptors also broke poll, because poll works with file d
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A default stack size is only a guess until you measure it on real hardware. Sim's big stacks hide the problem.</p></div>
     </div>
-    <div class="num">25 / 42</div>
+    <div class="num">26 / 44</div>
     <div class="notes-src">
 The fifth, and it will come back later: stack sizes nobody had measured.
 ||
@@ -1892,55 +1940,85 @@ Second, the receive task's stack. That task calls into the IP stack on its own s
   </section>
 
   <section class="slide">
+    <p class="eyebrow">Version 1 demo: the first video</p>
+    <h2>Version one works: telnet and a web page through the tunnel.</h2>
+    <div class="body">
+      <div class="two demo-layout">
+        <div class="panel">
+          <p class="mono" style="font-size:15px;line-height:1.7">
+          1&nbsp; telnet 10.10.0.2 &nbsp;&nbsp;# log in through wg0<br>
+          2&nbsp; uname -a, ifconfig<br>
+          3&nbsp; webserver &amp;<br>
+          4&nbsp; browser: http://10.10.0.2/</p>
+        </div>
+        <div class="panel">
+          <p><strong>ESP32-S3 DevKit</strong>, apps version (v0.1.1).</p>
+          <p>USB unplugged: the board runs on a power adapter only.</p>
+          <p>The other end: the official Windows WireGuard client, over home Wi-Fi.</p>
+          <p class="mono" style="font-size:15px;margin-top:12px">Video: youtu.be/1kyX2av5WG4</p>
+        </div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>Version one was enough for a demo. Next, I made it a real NuttX driver.</p></div>
+    </div>
+    <div class="num">27 / 44</div>
+    <div class="notes-src">
+Here is version one, on video.
+||
+I log in with telnet through the tunnel, run a few commands, start a small web server on the board, and open it in a browser. The USB cable is out: the board runs on a power adapter only. The other end is the official Windows WireGuard client, over my home Wi-Fi.
+||
+So version one was enough for a demo. Next, I made it a real NuttX driver.
+    </div>
+  </section>
+  <section class="slide">
     <p class="eyebrow">Agenda</p>
     <h2>Seven parts, about thirty minutes.</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
-          <div class="agenda-time">~4 MIN</div>
-        </div>
-        <div class="agenda-item current">
-          <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
         </div>
         <div class="agenda-item dim">
+          <div class="agenda-num">4</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
+        </div>
+        <div class="agenda-item current">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">26 / 42</div>
+    <div class="num">28 / 44</div>
     <div class="notes-src">
-Those were the five bugs. Now the harder half: making this a real kernel driver.
+That was version one. Part five, the harder half: a real kernel driver, and how I checked it.
     </div>
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Part 4 &middot; Going deeper</p>
+    <p class="eyebrow">Part 5 &middot; Going deeper</p>
     <h2>Into the kernel.</h2>
     <div class="body">
       <div class="two">
@@ -1955,7 +2033,7 @@ Those were the five bugs. Now the harder half: making this a real kernel driver.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>An app-level port proves the protocol works. Only a kernel driver is a proper device that also works in PROTECTED and KERNEL builds.</p></div>
     </div>
-    <div class="num">27 / 42</div>
+    <div class="num">29 / 44</div>
     <div class="notes-src">
 This is the work I did after the first version, and it is the part that makes it ready to merge.
 ||
@@ -1975,11 +2053,11 @@ Version one lives in apps and uses socket internals. That is fine for a FLAT bui
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>The socket, the thread and the no-pointer ABI follow one rule: don't depend on code that can exit, or on memory the kernel can't reach.</p></div>
     </div>
-    <div class="num">28 / 42</div>
+    <div class="num">30 / 44</div>
     <div class="notes-src">
 This is the shape of the real driver.
 ||
-wg0 is now a lower-half network device in the kernel. It owns its UDP socket and its receive thread, so the socket and thread problems from part three cannot happen, by design. The settings go through a simple ioctl ABI with no pointers. No pointers, because the kernel copies the caller's struct as it is. The private key is write-only: no ioctl ever gives it back &mdash; but it is still in the config file on the user side. The crypto in the kernel is NuttX's own. The only copied code is a small MIT-licensed X25519 in the user-space command, for making keys offline.
+wg0 is now a lower-half network device in the kernel. It owns its UDP socket and its receive thread, so the socket and thread problems from version one cannot happen, by design. The settings go through a simple ioctl ABI with no pointers. No pointers, because the kernel copies the caller's struct as it is. The private key is write-only: no ioctl ever gives it back &mdash; but it is still in the config file on the user side. The crypto in the kernel is NuttX's own. The only copied code is a small MIT-licensed X25519 in the user-space command, for making keys offline.
     </div>
   </section>
 
@@ -1999,61 +2077,13 @@ wg0 is now a lower-half network device in the kernel. It owns its UDP socket and
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A working handshake does not prove the data path or the kernel code is right. Both bugs only showed up after the handshake, in a real kernel build.</p></div>
     </div>
-    <div class="num">29 / 42</div>
+    <div class="num">31 / 44</div>
     <div class="notes-src">
 And the same pattern came back in the kernel &mdash; twice.
 ||
 First, a bug in NuttX's own ChaCha20-Poly1305: the counter was written into the wrong bytes of the nonce. When the counter is zero, both layouts are the same, so the handshake works, and then every data packet after the first one fails to decrypt. Simple test passes, deep test fails. Nothing in NuttX had called this code before, so nobody had hit it. It is a two-line fix, and it goes upstream as its own crypto PR. So porting to NuttX found a hidden bug in NuttX itself.
 ||
 Second, a crash that happened only in a kernel build. Setting the key copied the peers into a six-kilobyte array on the stack, but the kernel stack is only three kilobytes. Overflow, a broken heap, panic. In sim, with big task stacks, it never showed up. It was the same stack lesson as before, one level deeper. I moved the array to the heap.
-    </div>
-  </section>
-
-  <section class="slide">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
-    <div class="body">
-      <div class="agenda">
-        <div class="agenda-item dim">
-          <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
-          <div class="agenda-time">~4 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item current">
-          <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
-        </div>
-      </div>
-    </div>
-    <div class="num">30 / 42</div>
-    <div class="notes-src">
-The driver is done. Now: how do I know it really works?
     </div>
   </section>
 
@@ -2075,7 +2105,7 @@ The driver is done. Now: how do I know it really works?
       <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim is not enough. Test real builds, many CPUs, and real hardware.</p></div>
     </div>
     <div class="sources">Hardware tests used the version before the final rebase onto upstream; KERNEL/SMP tunnels were run again on the rebased version.</div>
-    <div class="num">31 / 42</div>
+    <div class="num">32 / 44</div>
     <div class="notes-src">
 Let me be exact about which version was checked where.
 ||
@@ -2104,7 +2134,7 @@ And now it runs on real hardware &mdash; both boards. I flashed the kernel drive
       <div class="claim"><p>Each of these <span class="hl">passes every normal test</span> while being broken.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>A working tunnel does not prove unique keys, cleared secrets, or stable memory. Each needs its own check.</p></div>
     </div>
-    <div class="num">32 / 42</div>
+    <div class="num">33 / 44</div>
     <div class="notes-src">
 The last slide was about where it runs. This one is about what a working tunnel cannot tell you.
 ||
@@ -2132,7 +2162,7 @@ Third, the long test. A hundred and fifty-one forced rekeys, past the point wher
       <div class="claim"><p>Used the same rule as Linux and wireguard-go, and made the case it misses <span class="hl">print a warning</span>.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>No clock, no newer timestamp: a device may be unable to connect out and still pass a ping test.</p></div>
     </div>
-    <div class="num">33 / 42</div>
+    <div class="num">34 / 44</div>
     <div class="notes-src">
 This is the one place where I had to decide, not test. And then I measured my decision.
 ||
@@ -2157,44 +2187,44 @@ So I sent the board nothing at all, and watched how it saw its own session. Two 
       <div class="agenda">
         <div class="agenda-item dim">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">34 / 42</div>
+    <div class="num">35 / 44</div>
     <div class="notes-src">
-That was all engineering. Now, what it actually looks like.
+That was all engineering. Part six: what it actually looks like.
     </div>
   </section>
 
@@ -2245,7 +2275,7 @@ That was all engineering. Now, what it actually looks like.
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The phone and the venue only ever see encrypted UDP, with no server in the middle and no cloud.</p></div>
     </div>
-    <div class="num">35 / 42</div>
+    <div class="num">36 / 44</div>
     <div class="notes-src">
 Here is the demo setup.
 ||
@@ -2278,7 +2308,7 @@ Please watch two things: the addresses after I log in, and the packets. Outside 
         </div>
       </div>
     </div>
-    <div class="num">36 / 42</div>
+    <div class="num">37 / 44</div>
     <div class="notes-src">
 The point of this demo is that there is nothing special to see. The StackChan is just a normal computer at the far end of an encrypted tunnel.
 ||
@@ -2297,44 +2327,44 @@ Last, the packets. On the left, the phone's network: only encrypted UDP. On the 
       <div class="agenda">
         <div class="agenda-item dim">
           <div class="agenda-num">1</div>
-          <div><h3>Why I needed a VPN on a NuttX device</h3><p>What NuttX is, how this project started, and the problem I had to solve.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Overview &amp; background</h3><p>Who I am &middot; what NuttX is &middot; how this started</p></div>
+          <div class="agenda-time">~6 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>How I reused an existing WireGuard</h3><p>Take wireguard-lwip and fit it into NuttX's own network device.</p></div>
-          <div class="agenda-time">~2 MIN</div>
-        </div>
-        <div class="agenda-item dim">
-          <div class="agenda-num">3</div>
-          <div><h3>Bugs that a working demo hid</h3><p>Five bugs that only showed up in deeper tests.</p></div>
+          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
+          <div class="agenda-num">3</div>
+          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div class="agenda-time">~1 MIN</div>
+        </div>
+        <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Moving the driver into the kernel</h3><p>From an app to a real kernel device &mdash; and two more bugs.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Version 1: the app</h3><p>First tunnel &middot; five hidden bugs &middot; a short video</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
-          <div><h3>How I checked that it really works</h3><p>Seven test setups, what ping can't tell you, and one design choice.</p></div>
-          <div class="agenda-time">~10 MIN</div>
+          <div><h3>Version 2: the kernel driver</h3><p>Kernel design &middot; two more bugs &middot; testing</p></div>
+          <div class="agenda-time">~13 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div><h3>Live demo</h3><p>StackChan through the tunnel</p></div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">7</div>
-          <div><h3>What comes next, and what to take home</h3><p>Running it for real, other CPUs, sending it to NuttX, and three lessons.</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">37 / 42</div>
+    <div class="num">38 / 44</div>
     <div class="notes-src">
-Last part: going from a demo to something you can run, and what to take home.
+Last part: what comes next, and what to take home.
     </div>
   </section>
 
@@ -2352,7 +2382,7 @@ Last part: going from a demo to something you can run, and what to take home.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Run-time keys and per-layer checks turn "the tunnel is down" into "the router side is down." That is the difference between a demo and something you can leave running.</p></div>
     </div>
-    <div class="num">38 / 42</div>
+    <div class="num">39 / 44</div>
     <div class="notes-src">
 Going from &ldquo;it works in a demo&rdquo; to &ldquo;you can really run it.&rdquo;
 ||
@@ -2375,7 +2405,7 @@ Keys are no longer built into the firmware. You make them and set them at run ti
       <div class="takeaway"><b>Takeaway</b><p>Four small OS functions let one source run on four CPU types, unchanged. The bet paid off.</p></div>
       <div class="sources">Checked with the apps (FLAT) version; the kernel driver was also checked on sim, rv-virt (BUILD_KERNEL) and both boards over real Wi-Fi (ESP32-S3 native, SPRESENSE over usrsock).</div>
     </div>
-    <div class="num">39 / 42</div>
+    <div class="num">40 / 44</div>
     <div class="notes-src">
 Did the decision from the start work?
 ||
@@ -2396,7 +2426,7 @@ Keeping the OS behind a few functions was a bet. Here is the check, with the app
       <div class="takeaway"><b>Takeaway</b><p>Sending the crypto fix as its own PR lets NuttX take it even if the driver is not accepted.</p></div>
       <div class="sources">Status: the work is split into small PRs that pass checkpatch and build one commit at a time; the dev@ discussion and the PRs come next.</div>
     </div>
-    <div class="num">40 / 42</div>
+    <div class="num">41 / 44</div>
     <div class="notes-src">
 Let me end this part with the values of this community.
 ||
@@ -2414,7 +2444,7 @@ I will send the work in steps. First, a small crypto PR for the nonce fix, becau
         <li>Porting to a project can make the project better <span>two hidden NuttX bugs found on the way: its ChaCha20-Poly1305 nonce, and a boot bug that stops a clean release from reaching the shell on this board.</span></li>
       </ul>
     </div>
-    <div class="num">41 / 42</div>
+    <div class="num">42 / 44</div>
     <div class="notes-src">
 Three things to take home.
 ||
@@ -2422,6 +2452,24 @@ First, simple tests pass and deep tests fail &mdash; so design your tests to go 
     </div>
   </section>
 
+  <section class="slide">
+    <p class="eyebrow">Thanks: the people behind this talk</p>
+    <h2>Many people helped me get here.</h2>
+    <div class="body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start;flex:0 0 auto">
+        <div class="panel nx" style="min-height:0"><p><strong>Alan</strong></p><p>for telling me about this conference and encouraging me to submit a talk.</p></div>
+        <div class="panel nx" style="min-height:0"><p><strong>The Apache NuttX community</strong></p><p>for talking with me about my GSoC proposal, and for encouraging me to keep going.</p></div>
+        <div class="panel" style="min-height:0"><p><strong>The Apache Software Foundation</strong></p><p>and the Community Over Code organizers and volunteers, for making this event happen.</p></div>
+        <div class="panel" style="min-height:0"><p><strong>Sony's NuttX developers, past and present</strong></p><p>who brought NuttX into our products and gave so much back to the project.</p></div>
+      </div>
+    </div>
+    <div class="num">43 / 44</div>
+    <div class="notes-src">
+Before I finish, some thanks.
+||
+First, Alan, who told me about this conference and encouraged me to submit a talk. Second, the Apache NuttX community: when I wrote my GSoC proposal, people talked with me and encouraged me, and that is why I kept going after it was not selected. Third, the Apache Software Foundation and everyone who organizes Community Over Code. And last, the Sony engineers before me, who brought NuttX into our products and gave so much back to the project. This work stands on theirs.
+    </div>
+  </section>
   <section class="slide">
     <p class="eyebrow">Thank you</p>
     <h2>WireGuard for Apache NuttX</h2>
@@ -2437,7 +2485,7 @@ First, simple tests pass and deep tests fail &mdash; so design your tests to go 
         </div>
       </div>
     </div>
-    <div class="num">42 / 42</div>
+    <div class="num">44 / 44</div>
     <div class="notes-src">
 Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
     </div>

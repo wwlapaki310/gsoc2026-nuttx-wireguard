@@ -35,12 +35,12 @@ SLIDES = [
         "a real kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
         "master / 12.7.0.", []),
     ("Agenda", "",
-        "The seven parts as sentences with their times: why I needed a VPN "
-        "on a NuttX device (~10 min) / how I reused an existing WireGuard "
-        "(~2) / bugs that a working demo hid (~4) / moving the driver into "
-        "the kernel (~2) / how I checked that it really works (~10) / using "
-        "a real board through the tunnel (~2) / what comes next (~3).", []),
-    ("Agenda: ① Why I Needed a VPN", "divider", None, []),
+        "The seven parts, each a short title with a keyword line and its "
+        "time: overview & background (~6 min) / the problem and the idea "
+        "(~4) / the plan (~1) / version 1: the app (~5) / version 2: the "
+        "kernel driver (~13) / live demo (~3) / summary & next steps (~4).",
+        []),
+    ('Agenda: ① Overview and Background', "divider", None, []),
     ("About Me", "",
         "Photo, and a timeline Robotics → Computer Vision → Edge AI → "
         "Embedded Systems → NuttX / WireGuard with a picture per step.", []),
@@ -76,6 +76,7 @@ SLIDES = [
         "Photos of SPRESENSE and the AITRIOS edge AI camera; the flow "
         '"application development → system integration → deployment & '
         'operation".', []),
+    ('Agenda: ② The Problem and the Idea', "divider", None, []),
     ("Problem: Reaching a Device From Far Away", "",
          "Engineer → Internet → router → Wi-Fi → NuttX device, showing that "
          "WPA2/WPA3 covers only the Wi-Fi hop; cards: open it to the "
@@ -97,7 +98,7 @@ SLIDES = [
          "Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard "
          "encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX "
          "and RX arrows.", []),
-    ("Agenda: ② Reusing an Existing WireGuard", "divider", None, []),
+    ('Agenda: ③ The Plan', "divider", None, []),
     ("Porting Strategy: Reusing wireguard-lwip Without lwIP", "",
          "Three cards: protocol & crypto (KEEP) / platform hooks (ADAPT, the "
          "four functions in wireguard-platform.h) / lwIP network glue "
@@ -105,11 +106,11 @@ SLIDES = [
     ("Design: Mapping lwIP onto NuttX netdev", "",
          "netif → net_driver_s, pbuf → iob, netif_add() → netdev_register(), "
          "callbacks → devif_poll().", []),
+    ('Agenda: ④ Version 1: The App', "divider", None, []),
     ("Result: A Working Tunnel Is Only the Beginning", "",
          "Protocol & crypto: 3,079 lines unchanged / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
-    ("Agenda: ③ Bugs a Working Demo Hid", "divider", None, []),
     ("The Testing Pattern: Simple Tests Pass, Deep Tests Fail", "",
          "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
          "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
@@ -119,11 +120,20 @@ SLIDES = [
     ("Bug 3/7: ping Works, TCP Dies", "my favorite", None, []),
     ("Bug 4/7: \"No Real Impact\" Was 10×", "", None, []),
     ("Bug 5/7: sim Passes, Real Hardware Is Different", "", None, []),
-    ("Agenda: ④ Into the Kernel", "divider", None, []),
-    ("Part 4: Into the Kernel", "", None, []),
+    ("Version 1 Demo: The First Video", "",
+         "Left: telnet 10.10.0.2 / uname -a, ifconfig / webserver & / "
+         "browser http://10.10.0.2/. Right: ESP32-S3 DevKit, apps version "
+         "v0.1.1, USB unplugged, official Windows client over home Wi-Fi, "
+         "youtu.be/1kyX2av5WG4.",
+         ["**Play:** the video from youtu.be/1kyX2av5WG4, about 30 seconds "
+          "of it (login, a command, the web page). Keep a local copy on the "
+          "laptop in case the venue network is slow.",
+          "**It is the apps version (v0.1.1).** Do not mix it with the "
+          "kernel-version results later in the talk."]),
+    ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
+    ("Part 5: Into the Kernel", "", None, []),
     ("The Kernel Design", "", None, []),
-    ("Two More Bugs, Same Shape", "locked with 26", None, []),
-    ("Agenda: ⑤ Checking That It Really Works", "divider", None, []),
+    ("Two More Bugs, Same Shape", "locked with the kernel design", None, []),
     ("Testing: Seven Places It Must Work", "core — do not cut",
          "Table (where / version / what I checked): sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64 "
          "(BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPUs) / SPRESENSE "
@@ -139,7 +149,7 @@ SLIDES = [
          "+ in-boot high-water mark / persist every time / durable range "
          "reservation / wait to catch up), and the measured pair: clock "
          "unset → no handshake in 75 s, clock set → 4.1 s.", []),
-    ("Agenda: ⑥ Demo", "divider", None, []),
+    ('Agenda: ⑥ Live Demo', "divider", None, []),
     ("Demo Setup: One Tunnel on a Phone's Network", "",
          "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
          "→ phone hotspot (its own small local network) → laptop "
@@ -169,7 +179,7 @@ SLIDES = [
           "passphrase.",
           "**Fallback:** the recording. Switch at once if the live demo "
           "stalls."]),
-    ("Agenda: ⑦ What Comes Next", "divider", None, []),
+    ('Agenda: ⑦ Summary and Next Steps', "divider", None, []),
     ("Running It for Real", "cut candidate 3", None, []),
     ("Other CPUs", "cut candidate 2", None, []),
     ("Giving Back", "cut first", None,
@@ -179,6 +189,10 @@ SLIDES = [
           "(the pattern, the verification) does not rest on it; just keep "
           "the answer above ready for questions."]),
     ("Takeaways", "", None, []),
+    ("Thanks: The People Behind This Talk", "",
+         "Four boxes: Alan / the Apache NuttX community / the Apache "
+         "Software Foundation and the CoC organizers and volunteers / "
+         "Sony's NuttX developers, past and present.", []),
     ("Thank You", "", None,
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "

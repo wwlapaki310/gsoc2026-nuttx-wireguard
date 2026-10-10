@@ -1,6 +1,6 @@
 # 想定Q&A — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
-[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、42枚)用の
+[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、44枚)用の
 Q&A。**`presentation-script.md` の想定Q&Aは古い `slides.html`(apps版のみ、
 FLATビルド前提)向けで、この版には合わない** — 特に「PROTECTED/KERNELは
 今後の課題」という回答はもう事実と異なる(検証済み)。このデッキで話す/
@@ -51,7 +51,7 @@ PROTECTED and KERNEL builds."
 
 ---
 
-## 検証の範囲(スライド31・32の深掘り)
+## 検証の範囲(スライド32・33の深掘り)
 
 **Q. 「7つの場所で検証した」というが、実機で足りていないものは何か?**
 ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:knsh`
@@ -293,5 +293,5 @@ config line without erroring — and fixed it."
   すべてこの資料で答えられるようにしてある。TZ・TIはどちらも
   もう閉じている(前者は測定、後者は「到達不能」の確認) — 古い
   資料や記憶で「まだ狭い」と言わないこと。
-- 逆にスライドに載っている数字を聞かれたら、スライド31・32・33を
+- 逆にスライドに載っている数字を聞かれたら、スライド32・33・34を
   直接指させばよい(URLハッシュ `#18` などで即座に飛べる)。
