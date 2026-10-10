@@ -26,7 +26,7 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
 
 > **Demo:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet and a web server, both through the tunnel (apps version)
  
-> **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) (apps version, 9 slides) · [coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html) (in-kernel, Community Over Code)
+> **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) (apps version, 9 slides) · [coc-glasgow-reveal](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html) (in-kernel, Community Over Code, on the official CoC template; `S` for speaker view) · [coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html) (same content, standalone source)
 
 ---
 
@@ -294,7 +294,8 @@ CYW43439 driver on RP2350 — [#1](https://github.com/wwlapaki310/gsoc2026-nuttx
 | [docs/upstream/in-kernel-status.md](docs/upstream/in-kernel-status.md) | Live status of the upstream submission | **in-kernel** |
 | [docs/upstream/in-kernel-plan.md](docs/upstream/in-kernel-plan.md) | Kernel-migration plan (design, order, tests, merge strategy) | **in-kernel** |
 | [docs/upstream/in-kernel-review-brief.md](docs/upstream/in-kernel-review-brief.md) | Self-contained review brief (design, ABI, verification, open questions) | **in-kernel** |
-| [docs/presentation/coc-glasgow-slides.html](docs/presentation/coc-glasgow-slides.html) | Community Over Code deck (`N` for notes) | **in-kernel** |
+| [docs/presentation/coc-glasgow-reveal/index.html](docs/presentation/coc-glasgow-reveal/index.html) | Community Over Code deck on the official CoC template (`S` for speaker view) | **in-kernel** |
+| [docs/presentation/coc-glasgow-slides.html](docs/presentation/coc-glasgow-slides.html) | Same deck, standalone; the source the template version is built from (`N` for notes) | **in-kernel** |
 | [docs/design.html](docs/design.html) | Design document — figures and tables | apps |
 | [docs/presentation/slides.html](docs/presentation/slides.html) | Presentation deck (27 slides; `N` for notes) | apps |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Current state, how to build and test | apps |

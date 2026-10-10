@@ -23,7 +23,7 @@
 
 > **議論:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
 > **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し(apps 版)
-> **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html)（apps 版・9 枚）・[coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html)（カーネル版・Community Over Code）
+> **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html)（apps 版・9 枚）・[coc-glasgow-reveal](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html)（カーネル版・Community Over Code・公式テンプレート版。`S` で発表者ビュー）・[coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html)（同じ内容の単体版。こちらが正本）
 
 ---
 
@@ -260,6 +260,7 @@ ESP32-S3 を 12.7.0 と 13.0.1/master のイメージ間で行き来させると
 | | |
 |---|---|
 | [docs/design.html](docs/design.html) | 設計ドキュメント（図表ベース） |
+| [docs/presentation/coc-glasgow-reveal/index.html](docs/presentation/coc-glasgow-reveal/index.html) | Community Over Code の発表スライド 44 枚（公式テンプレート版。`S` で発表者ビュー） |
 | [docs/presentation/slides.html](docs/presentation/slides.html) | 発表スライド 27 枚（`N` キーで発表者ノート） |
 | [docs/presentation/talkscript/slides.md](docs/presentation/talkscript/slides.md) | 発表台本（時間配分・削る順番つき） |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | 現状・ビルド方法・テスト方法 |
