@@ -1,6 +1,6 @@
 # 想定Q&A — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
-[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、26枚)用の
+[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、42枚)用の
 Q&A。**`presentation-script.md` の想定Q&Aは古い `slides.html`(apps版のみ、
 FLATビルド前提)向けで、この版には合わない** — 特に「PROTECTED/KERNELは
 今後の課題」という回答はもう事実と異なる(検証済み)。このデッキで話す/
@@ -51,7 +51,7 @@ PROTECTED and KERNEL builds."
 
 ---
 
-## 検証の範囲(スライド18・19の深掘り)
+## 検証の範囲(スライド31・32の深掘り)
 
 **Q. 「7つの場所で検証した」というが、実機で足りていないものは何か?**
 ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:knsh`
@@ -111,26 +111,50 @@ confirmation catches `next_keypair` non-zero, and an unanswered
 initiation catches the handshake state non-zero. Both go to zero after
 `down`, on sim, under one controlled delivery schedule."
 
+
+**Q. PROTECTED ビルドは問題なく動くのか?**
+rv-virt の protected 構成で、`wg` をユーザー側に置いたままトンネルが Linux まで届くことは
+確かめました。ただし 10/10 に繰り返し実行したところ、8回中2回ユーザー空間で例外が起きました
+(分割前の候補でも9回中1回)。原因はまだ分かっていないので、「動く、ただし間欠的な失敗が
+未解決」と答えます。PR にも PASS とは書きません。
+*Say:* "The tunnel works with the MPU split on. But in repeated runs, two out of
+eight hit a fault in user space, and I have not found the cause yet. So I call it
+open, not passed."
+
+**Q. 生成 AI の時代に、なぜ NuttX なのか?**
+AI が持っている知識の量では FreeRTOS や Zephyr が上ですが、NuttX は POSIX なので、AI が
+いちばんよく知っている Linux の書き方がそのまま効きます。sim と QEMU で実機なしに
+「ビルド → 実行 → 確認」を回せ、設定も操作(NSH)もテキストなので、AI エージェントが
+自分で試して直せます。この移植もその形で進めました。一方で、学習データが少ないぶん、
+AI は NuttX にない機能をもっともらしく作ることがあるので、試験で確かめることが前提です
+。Zephyr にも native_sim と twister があるので、2つ目の
+点は互角です。
+*Say:* "NuttX speaks POSIX — the language AI already knows best. Most of what an
+AI knows about Linux code just works here, and with sim and QEMU it can build,
+run and check without hardware. But it also means the AI will sometimes invent
+things NuttX does not have, so you still need deep tests."
+
 ---
 
 ## upstream・提出状況
 
 **Q. もうPRは出したのか? マージされているのか?**
-まだupstream PRは出していません。リベースと再検証を済ませ、`crypto:` → ドライバ → apps
-の3本の署名済み候補branchを**自分のforkへpush済み**です。
+まだupstream PRは出していません。作業は CONTRIBUTING の規則に合わせて小さな PR
+(crypto 修正 → nxstyle の除外 → ドライバ → `wg` コマンドと文書)に分け、コミットごとに
+単独でビルドと検査が通る状態にしてあります。
 **PRの作成とdev@nuttx.apache.org への投稿はまだ**です。これは意図的な順序で、
 upstreamへの実際の投稿は自分の責任で行い、この場では「こう作った、
 こう検証した」という提出候補を示しています。
-*Say:* "Not upstream yet. The rebased and re-verified series is published as
-three signed candidate branches on my forks. The dev-list discussion and the
+*Say:* "Not upstream yet. The work is split into small PRs, and every commit
+builds and passes the checks on its own. The dev-list discussion and the
 actual upstream PRs are the next step."
 
 **Q. checkpatch や nxstyle は通っているのか?**
 はい。ファイル単位の`nxstyle -f`に加え、CIがPRに対して行うパッチ形式の
-**`checkpatch.sh -g <range>`も3系列で実施済み**です。候補branchはその状態で
-自分のforkへpushしています。
-*Say:* "Yes. Both per-file nxstyle and the patch-form `checkpatch.sh -g`
-checks pass for all three published candidate branches."
+**`checkpatch.sh -c -u -m -g`を PR に分けた全12コミットで実施し、すべて通っています**。
+本家 CI と同じ `-Werror` でのビルドも、コミットごとに通ることを確かめました。
+*Say:* "Yes. Per-file nxstyle and the patch-form `checkpatch.sh` pass on every
+commit of the split series, and each commit builds on its own with -Werror."
 
 **Q. これはGSoCプロジェクトだったのか?**
 出発点にはGSoC提案としての検討もありましたが、この発表で示すコードと検証は、
@@ -269,5 +293,5 @@ config line without erroring — and fixed it."
   すべてこの資料で答えられるようにしてある。TZ・TIはどちらも
   もう閉じている(前者は測定、後者は「到達不能」の確認) — 古い
   資料や記憶で「まだ狭い」と言わないこと。
-- 逆にスライドに載っている数字を聞かれたら、スライド18・19・20を
+- 逆にスライドに載っている数字を聞かれたら、スライド31・32・33を
   直接指させばよい(URLハッシュ `#18` などで即座に飛べる)。

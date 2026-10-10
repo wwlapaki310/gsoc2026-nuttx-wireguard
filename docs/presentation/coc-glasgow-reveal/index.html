@@ -768,7 +768,7 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item">
@@ -820,7 +820,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1298,7 +1298,7 @@
   </div>
     <aside class="notes">
       <p>So, why WireGuard?</p>
-      <p>WireGuard is a modern VPN that works at the IP layer. It is small and simple by design, with much less code than IPsec or OpenVPN, and that matters a lot on a microcontroller. It runs over plain UDP, and each peer is known by its public key, not by certificates or a long setup. And most important, it is not unusual. It has been in the Linux kernel for years, there is an official Windows client, and the other end can be any WireGuard peer.</p>
+      <p>WireGuard is a modern VPN that works at the IP layer. It is small and simple by design, with much less code than IPsec or OpenVPN, and that matters a lot on a microcontroller. It runs over plain UDP, and each peer is known by its public key, not by certificates or a long setup. If a packet does not carry the right key, WireGuard does not answer at all &mdash; to everyone else, the device is just a brick wall. And most important, it is not unusual. It has been in the Linux kernel for years, there is an official Windows client, and the other end can be any WireGuard peer.</p>
       <p>So I did not choose a product. I chose a standard protocol, instead of making my own or depending on a vendor's cloud. That is why it fits this problem.</p>
     </aside>
   </section>
@@ -1382,7 +1382,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1479,7 +1479,7 @@
   </div>
     <aside class="notes">
       <p>Here is the result of the first version.</p>
-      <p>The protocol and crypto came over exactly as they were &mdash; more than three thousand lines, unchanged. The four OS functions are small. The real work was the network glue. And it worked: you can make a key, set peers and load a config, all at run time, with no rebuild. So far, a success story. The rest of this talk is about what that success was hiding.</p>
+      <p>The protocol and crypto came over exactly as they were &mdash; more than three thousand lines, unchanged. The four OS functions are small. The real work was the network glue. And it worked: you can make a key, set peers and load a config, all at run time, with no rebuild. So far, a success story &mdash; but the princess was in another castle. The rest of this talk is about what that success was hiding.</p>
     </aside>
   </section>
 
@@ -1516,7 +1516,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1683,15 +1683,15 @@
   <section>
   <div class="frame">
     <p class="eyebrow">Bug 5 / 7</p>
-    <h2>sim passes. Hardware freezes.</h2>
+    <h2>sim passes. Real hardware is different.</h2>
     <div class="body">
       <div class="two">
         <div class="panel">
-          <p>Saving the config with <code>wg showconf &gt; /data/wg0.conf</code> froze the board &mdash; only on <strong>real hardware with SPIFFS</strong>, never in sim.</p>
+          <p>Saving the config with <code>wg showconf &gt; /data/wg0.conf</code> froze the board &mdash; only on <strong>real hardware with SPIFFS</strong>, never in sim. Fixed with <code>wg saveconf</code>, which writes the file itself.</p>
         </div>
         <div class="panel wg">
           <p>The <code>wg_rx</code> task calls <code>ipv4_input()</code> on <strong>its own stack</strong> &mdash; so the whole TCP call chain runs on it, plus encrypting the reply.</p>
-          <p>Default <strong>3072 B</strong> was a number nobody had measured. Found with <code>CONFIG_STACK_COLORATION</code> + <code>ps</code>.</p>
+          <p>Default <strong>3072 B</strong> was a number nobody had measured. On the board it was <strong>94% used &mdash; 176 B left</strong> (<code>CONFIG_STACK_COLORATION</code> + <code>ps</code>).</p>
         </div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A default stack size is only a guess until you measure it on the real hardware &mdash; sim's big stacks hide the problem.</p></div>
@@ -1701,7 +1701,8 @@
   </div>
     <aside class="notes">
       <p>The fifth, and it will come back later: stack sizes nobody had measured.</p>
-      <p>Saving the config into a file froze the board &mdash; but only on the flash file system of real hardware, never in sim. The cause was the receive task's stack. That task calls into the IP stack on its own stack, so the whole TCP call chain sits on it, and for packets it answers right away, so does encrypting the reply. The default size, 3072 bytes, was a number nobody had measured. I found it with stack coloration and ps. Please remember this one.</p>
+      <p>Two things only real hardware showed me. First, saving the config into a file through the shell froze the board &mdash; but only on the flash file system of real hardware, never in sim. I fixed it with a wg saveconf command that writes the file itself.</p>
+      <p>Second, the receive task's stack. That task calls into the IP stack on its own stack, so the whole TCP call chain sits on it, and for packets it answers right away, so does encrypting the reply. The default size, 3072 bytes, was a number nobody had measured. When I measured it on the board with stack coloration and ps, it was ninety-four percent full &mdash; only 176 bytes left. Please remember this one.</p>
     </aside>
   </section>
 
@@ -1738,7 +1739,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1758,7 +1759,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Part 3 &middot; Going deeper</p>
+    <p class="eyebrow">Part 4 &middot; Going deeper</p>
     <h2>Into the kernel.</h2>
     <div class="body">
       <div class="two">
@@ -1864,7 +1865,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1891,7 +1892,7 @@
         <tr><th>Where</th><th>Version</th><th>What I checked</th></tr>
         <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds with no errors (the config CI builds)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel &middot; BUILD_KERNEL</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> is a separate program that calls in through syscalls</td></tr>
-        <tr><td>rv-virt pnsh64</td><td class="new">kernel &middot; BUILD_<b>PROTECTED</b></td><td class="new">tunnel with the <b>MPU split</b> on &mdash; <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary, <b>no fault</b></td></tr>
+        <tr><td>rv-virt pnsh64</td><td class="new">kernel &middot; BUILD_<b>PROTECTED</b></td><td class="new">tunnel with the <b>MPU split</b> on &mdash; <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary; tunnel works &mdash; <b>2 of 8 repeated runs hit a fault (open)</b></td></tr>
         <tr><td>rv-virt knetnsh64_smp</td><td class="new">kernel &middot; <b>SMP, 4 CPUs</b></td><td class="new">heavy traffic <b>while</b> changing the config and doing <code>down</code>/<code>up</code> &mdash; no fault, tunnel came back</td></tr>
         <tr><td>SPRESENSE, measured</td><td class="new">kernel &middot; Cortex&#8209;M4F</td><td class="new">under load and 40 <code>down</code>/<code>up</code> cycles: heap, buffers and stacks <b>exactly the same</b> &mdash; receive thread uses <b>1472&nbsp;B of 6096</b></td></tr>
         <tr><td>ESP32-S3 + SPRESENSE</td><td class="new">kernel &middot; real Wi-Fi</td><td class="new">tunnel to the Windows client &mdash; ESP32 native 4/4, SPRESENSE via <b>usrsock</b> 6/6</td></tr>
@@ -1907,8 +1908,8 @@
     <aside class="notes">
       <p>Let me be exact about which version was checked where.</p>
       <p>The kernel driver builds with no errors in the sim config &mdash; the config that CI builds &mdash; and it runs as a full tunnel in a real kernel build: rv-virt knetnsh64 in QEMU, over virtio-net to WireGuard in the Linux kernel. The wg command is loaded as a separate program, and it reaches the driver through system calls.</p>
-      <p>Next, the other build type. The ioctl ABI is a fixed struct with no pointers inside, so the kernel never has to read user memory. If that idea is wrong, you do not get a compile error. You get an MPU fault on the first call. PROTECTED had only been built before, on a board with no emulator. So I ran it on rv-virt's protected config: it boots with the memory split, the wg command lives on the user side, every ioctl crosses the boundary, and the tunnel reaches Linux WireGuard with no fault, no assertion and no panic. The memory map is the default one &mdash; the kernel uses eighty percent of its part, and the user command uses eight percent of the other.</p>
-      <p>Then, locking. The driver protects its protocol state with the device lock. It does not depend on there being only one CPU. Until this week, I could only argue that from the code; I had never really tested it. So: four CPUs, two thousand packets coming in, while another CPU changes the settings and takes the interface down and up. No fault, no assertion, and the tunnel came back. One scripted test on an emulator is not a full search for race conditions, so a race that needs very exact timing could still be hiding. But the claim is no longer only on paper.</p>
+      <p>Next, the other build type. The ioctl ABI is a fixed struct with no pointers inside, so the kernel never has to read user memory. If that idea is wrong, you do not get a compile error. You get an MPU fault on the first call. PROTECTED had only been built before, on a board with no emulator. So I ran it on rv-virt's protected config: it boots with the memory split, the wg command lives on the user side, every ioctl crosses the boundary, and the tunnel reaches Linux WireGuard. But when I ran it again and again, two runs out of eight hit a fault in user space. I have not found the cause yet, so I list it as an open problem, not as a pass. The memory map is the default one &mdash; the kernel uses eighty percent of its part, and the user command uses eight percent of the other.</p>
+      <p>Then, locking. The driver protects its protocol state with the device lock. It does not depend on there being only one CPU. Until late September, I could only argue that from the code; I had never really tested it. So: four CPUs, two thousand packets coming in, while another CPU changes the settings and takes the interface down and up. No fault, no assertion, and the tunnel came back. One scripted test on an emulator is not a full search for race conditions, so a race that needs very exact timing could still be hiding. But the claim is no longer only on paper.</p>
       <p>The last row is the one I would show a reviewer first. The long test in sim said that memory came back exactly to where it started. That is good, but the simulator uses the host's memory allocator and 64-bit frames, so none of those numbers apply to a board. So I measured the board itself: a hundred and twenty seconds of traffic, then forty down-and-up cycles. Each one closes and reopens a socket on the Wi-Fi module through usrsock and does a new handshake over real Wi-Fi. Heap, number of allocations, buffer pool, and the peak of every stack: exactly the same before and after. And the number I really wanted &mdash; the most stack the receive thread ever used &mdash; is one thousand four hundred and seventy-two bytes, out of a six-kilobyte default. That default used to be a guess. Now it is a measurement.</p>
       <p>And now it runs on real hardware &mdash; both boards. I flashed the kernel driver to an ESP32-S3, with a tunnel to the official Windows WireGuard client over real Wi-Fi. I also flashed it to a SPRESENSE. Its GS2200M Wi-Fi works through usrsock, so the driver really sends through usrsock on real hardware. Then I forced the exact failure this design is for, on that board: a packet stuck waiting on the real usrsock side while control commands arrive. A query got an answer, a peer update was accepted, the stop command reported a timeout instead of hanging, the stuck packet was left alone, and a second down cleaned it up, so the interface came back. This still does not cover running out of IOBs, losing Wi-Fi in the middle of a send, or long heavy traffic. The older apps version on both boards &mdash; telnet, HTTP, a seven-megabyte transfer, rekeying, and recovery after power loss &mdash; is still checked as well.</p>
     </aside>
@@ -1962,8 +1963,8 @@
     <aside class="notes">
       <p>This is the one place where I had to decide, not test. And then I measured my decision.</p>
       <p>WireGuard's replay protection gives the side that starts the handshake a rule: every handshake must have a newer timestamp than anything that peer has already accepted &mdash; and this must stay true after a reboot. The device is usually the side that starts, and it is also the side least likely to have a clock with a battery.</p>
-      <p>In my test, recovery took seventy-five seconds, but that number is misleading. The device has to get past the last handshake of its previous session, so it is cut off for as long as it ran last time. It was seventy-five seconds only because that session was short. A device that ran for a month cannot reconnect for a month. So doing nothing is not an option.</p>
-      <p>Saving the timestamp at every handshake means writing to flash every few minutes, forever, on the path that most needs to be fast. Reserving a range in flash and using it up from RAM is the right long-term answer, and I have written up that design. But it needs storage that promises the order and safety of its writes, and I could not get that. On my machine, hostfs sync calls an empty function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved.</p>
+      <p>In my simulator test with the old uptime-based timestamp, recovery took seventy-five seconds, but that number is misleading. The device has to get past the last handshake of its previous session, so it is cut off for as long as it ran last time. It was seventy-five seconds only because that session was short. A device that ran for a month cannot reconnect for a month. So doing nothing is not an option.</p>
+      <p>Saving the timestamp at every handshake means writing to flash every few minutes, forever, on the path that most needs to be fast. Reserving a range in flash and using it up from RAM is the right long-term answer, and I have written up that design. But it needs storage that promises the order and safety of its writes, and I could not get that. On my machine, hostfs sync calls an empty function and returns OK, so a successful write in the simulator proves nothing about power loss. Shipping that would look solved without being solved. Here, the easy choice and the right choice were not the same.</p>
       <p>So I chose the real-time clock plus the highest value used in this boot. That is exactly what Linux and wireguard-go do, and it never falls back to uptime. What I added is the part a desktop never needed, because a desktop always has a clock. Without an RTC, NuttX starts the clock from a set year. So if the clock is still before the next year, it was never set &mdash; and the driver prints a warning once, and says what will happen. It still sends the timestamp, because a peer that meets this key for the first time will accept it, and refusing would break first pairing on exactly those boards. This one line of output is about a failure that is not a crash. It is a tunnel that silently never comes back, on a device that is not on your desk.</p>
       <p>And I did measure it on the board, because a design idea you cannot show is just an opinion. The trap is that the obvious test passes. Reset the board, ping it, and the tunnel is back in sixteen seconds &mdash; because your ping made the peer start the handshake, and the side that answers does not need its own timestamp. The device could be completely unable to connect out, and that test still passes.</p>
       <p>So I sent the board nothing at all, and watched how it saw its own session. Two runs, same board, same peer, same image, only one change. With the clock as it boots, the driver warns, and there is no handshake after seventy-five seconds. With the clock set from my laptop, the warning stops, and the handshake finishes in four point one seconds. That shows both sides at once: the unsolved case is real on hardware, not just in a simulator, and the design works wherever there is a clock. Issue fourteen stays open because I decided it should, not because I ran out of evidence.</p>
@@ -2003,7 +2004,7 @@
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2099,7 +2100,7 @@
         <div class="panel">
           <p><strong>Outside the tunnel</strong> (the phone's network): only encrypted UDP on port 51820.</p>
           <p><strong>Inside the tunnel</strong> (wg0): the telnet text you just typed.</p>
-          <p class="mono" style="font-size:15px;margin-top:12px">Backup video: youtu.be/1kyX2av5WG4</p>
+          <p class="mono" style="font-size:15px;margin-top:12px">Backup video (earlier demo): youtu.be/1kyX2av5WG4</p>
         </div>
       </div>
     </div>
@@ -2110,7 +2111,7 @@
       <p>The point of this demo is that there is nothing special to see. The StackChan is just a normal computer at the far end of an encrypted tunnel.</p>
       <p>First, wg show on the laptop: the handshake is done, and you can see the StackChan's address on the phone's network. Then I telnet to 10.10.0.2 &mdash; that is the address inside the tunnel. When I type ifconfig, you see both: wlan0 on the phone's network, and wg0 inside the tunnel. So I am really logged in through the tunnel.</p>
       <p>Now I can control it. Let's make it happy, and let it say hello. The voice comes from the laptop through the same tunnel.</p>
-      <p>Last, the packets. On the left, the phone's network: only encrypted UDP. On the right, inside the tunnel: the same telnet session, in plain text. And wg show again: the byte counts went up.</p>
+      <p>Last, the packets. On the left, the phone's network: only encrypted UDP. On the right, inside the tunnel: the same telnet session, in plain text. And wg show again: the byte counts went up. Mischief managed.</p>
     </aside>
   </section>
 
@@ -2147,7 +2148,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
-          <div><h3>Using a real board through the tunnel</h3><p>telnet and a web page over WireGuard.</p></div>
+          <div><h3>Using a real board through the tunnel</h3><p>Log in to a robot through the tunnel, and make it talk.</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item current">
@@ -2226,14 +2227,14 @@
         <li>Design ready for <code>dev@nuttx.apache.org</code> <span>passes checkpatch / nxstyle, split into PRs, licenses checked &mdash; community over code.</span></li>
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>Sending the crypto fix as its own PR lets NuttX take it even if the driver is not accepted.</p></div>
-      <div class="sources">Status: three signed branches are ready on my forks; the upstream discussion and PRs have not started yet.</div>
+      <div class="sources">Status: the work is split into small PRs that pass checkpatch and build one commit at a time; the dev@ discussion and the PRs come next.</div>
     </div>
     <div class="num">40 / 42</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>Let me end this part with the values of this community.</p>
-      <p>I will send the work in steps. First, a small crypto PR for the nonce fix, because it is useful on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. Three signed branches are ready on my forks, and they pass the patch checks. The design discussion and the upstream PRs are the next step; they have not started yet. Community over code means being honest about where the work really is, and then letting review change it.</p>
+      <p>I will send the work in steps. First, a small crypto PR for the nonce fix, because it is useful on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. The work is already split into small PRs, and every commit passes the patch checks and builds on its own. The design discussion and the upstream PRs are the next step; they have not started yet. Community over code means being honest about where the work really is, and then letting review change it.</p>
     </aside>
   </section>
 
