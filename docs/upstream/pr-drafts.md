@@ -1,198 +1,359 @@
 # Upstream PR description drafts (English)
 
-Ready-to-paste PR bodies for the upstream submissions. **Drafts** — the author opens the
-actual PRs. Order (per [in-kernel-plan.md](in-kernel-plan.md) §4.1): the `crypto:` nonce PR
-first (the driver depends on it), then the driver PR, then the apps PR.
+Ready-to-paste PR bodies, laid out exactly as the official PR template
+(apache/nuttx `CONTRIBUTING.md` §2.3 and `.github/PULL_REQUEST_TEMPLATE.md`,
+read at upstream `4bc1ab2fd7` on 2026-10-12): **Summary / Impact / Testing /
+PR verification Self-Check**. These are drafts: the author opens the PRs.
 
-- **crypto: nonce fix** — the body is [chachapoly-nonce-draft.md](chachapoly-nonce-draft.md).
-- **PR-K1 (driver)** — below.
-- **PR-A1 (apps)** — below.
+Last updated: 2026-10-12. Branches, SHAs, CI reproduction and the rules each
+section answers are in [submission-checklist.md](submission-checklist.md)
+§6 「公式ルールとの照合 (2026-10-12)」.
 
-Last updated: 2026-10-10. The series is now split per
-[merge-strategy.md](merge-strategy.md) §2 into the local branches listed in
-[submission-checklist.md](submission-checklist.md) (`pr/crypto-chachapoly`,
-`pr/wireguard-driver`, `pr/nxstyle-wg`, `pr/doc-system-wg`, apps
-`pr/system-wg`). The PR-N (nxstyle) and PR-D (wg documentation) bodies are
-short and are drafted in the checklist. These drafts do not authorize fork
-publication.
+How to use:
 
----
+- Every `<...>` is a placeholder the author fills in. `<HW LOG>` blocks are
+  required (CONTRIBUTING 1.3 / 1.7.2 / 1.9: build **and runtime logs on at
+  least one real hardware target**; sim/QEMU do not count). No hardware log
+  has been taken on the 2026-10-12 SHAs yet.
+- The PR title is the first commit's topic (CONTRIBUTING 2.2). Keep the
+  `area: Capitalised context.` form.
+- Dependencies are declared with **line-anchored `depends-on:` lines outside
+  any code block** (`.github/scripts/depends_on.py`). CI cherry-picks the named
+  PRs before building. `#1234` or "Depends on #1234" is **not** parsed.
+  Use `depends-on: apache/nuttx/pull/<N>` or the full URL.
+- The AI disclosure paragraph at the end of each Summary is **optional**.
+  The mandatory disclosure is the `Assisted-by:` trailer on every commit
+  (CONTRIBUTING 1.5). The paragraph is offered because the ASF guidance asks
+  contributors to indicate tool use. The author decides whether to include it
+  and keeps it identical to the trailers: `Assisted-by: Claude Code:claude-opus-5-5`
+  (the speaker reported "Claude Opus 5.5", not yet confirmed; records also mention
+  Codex, so add `Assisted-by: Codex:<MODEL_VERSION>` and name it here if it was used).
+- Do not paste `.config`, keys, PSKs, Wi-Fi credentials or public endpoint
+  addresses into any log (checklist §3 (b)).
 
-## PR-K1 — `net/wireguard: add an in-kernel WireGuard network device`
-
-Target: **apache/nuttx**. Depends on the `crypto:` chachapoly nonce fix (below/first).
-
-### Summary
-
-Adds WireGuard as a virtual network device `wg0`. IP packets routed to `wg0` are encrypted and
-sent to the peer over UDP; UDP datagrams arriving on the listen port are decrypted and injected
-into the stack as if received on `wg0`. The peer can be any WireGuard implementation (the Linux
-kernel module, wireguard-go, boringtun, or another NuttX). `wg0` is a `NET_LL_TUN` netdev
-registered with the `netdev_lowerhalf` framework — NuttX has its own TCP/IP stack, so this is
-not an lwIP netif.
-
-The cryptography uses NuttX's own `crypto/` (BLAKE2s, ChaCha20-Poly1305, Curve25519). The
-protocol core (Noise_IKpsk2 handshake, key derivation, anti-replay window, load-time cookie) is
-ported from wireguard-lwip (BSD-3-Clause) into NuttX style.
-
-### Design
-
-- **`netdev_lowerhalf` + a kernel-owned UDP socket + an RX kthread.** The driver holds one
-  `struct socket` (UDP); a dedicated RX kernel thread does `psock_poll` → recv → decrypt →
-  `ip_input`. TX encrypts from the lower-half transmit path and sends over UDP. Precedent:
-  `net/rpmsg/rpmsgdrv.c` (a driver that owns a socket + kthread).
-- **Backend-independent queued output.** Protocol state is under the device `d_lock`; outbound
-  datagrams are encrypted into a bounded immutable queue; only the RX thread calls `psock_sendto`,
-  outside `d_lock` and without live peer/keypair references. This keeps sends correct on
-  buffered UDP, unbuffered UDP, and usrsock (which ignores `MSG_DONTWAIT`).
-- **Flat, pointer-free ioctl ABI** (`include/nuttx/net/wireguard.h`). Under PROTECTED/KERNEL the
-  kernel copies the caller's struct directly, so no embedded pointers; variable-length data
-  (allowed-ips) uses fixed-cap arrays. Dispatched from `netdev_ioctl.c` directly (not registered
-  in `net_ioctl_arglen()`), so the usrsock daemon does not intercept it.
-- **Private key is write-only.** `SIOCSWGIF` accepts it; `SIOCGWGIF` never returns it (it returns
-  the derived public key). The key still lives in the user-side config file (the source of
-  truth), so this is "the get ioctl does not return the key," not "key material never leaves the
-  kernel."
-- Anti-replay window 2048 (Linux 8192, the reference 32) for Wi-Fi reordering tolerance.
-
-### ioctl ABI
-
-Five commands on an `AF_INET` socket (`0x0046..0x004A`): `SIOCSWGIF`/`SIOCGWGIF`
-(`struct wg_ifreq_s`: private key write-only / listen port / tunnel address / up-down; get
-returns the derived public key) and `SIOCSWGPEER`/`SIOCDWGPEER`/`SIOCGWGPEER`
-(`struct wg_peerreq_s`: add-or-update / delete / enumerate; get returns endpoint, allowed-ips,
-keepalive, and stats). Private key, listen port, and `setconf` are only accepted while `wg0` is
-down.
-
-### Dependencies
-
-Requires the `crypto:` ChaCha20-Poly1305 u64-nonce fix (submitted first). Without it the
-handshake completes but transport data past the first packet fails to decrypt.
-
-### Testing
-
-Against a real Linux kernel WireGuard peer unless noted (see the
-[verification matrix](verification-matrix.md) for the full table):
-
-- **CI compile path** — `boards/sim/sim/sim/configs/wireguard/defconfig`
-  (`./tools/configure.sh sim:wireguard`).
-- **sim runtime** — bidirectional handshake, tunnelled ping, `saveconf`/`setconf` round-trip,
-  on-device genkey, pubkey matching `wg(8)`; two simultaneous peers; ioctl negative cases; wrong
-  key / PSK mismatch rejected; replay does not move the endpoint; an initiation flood draws
-  cookie replies and the tunnel survives.
-- **Real kernel build** — `rv-virt:knetnsh64` (BUILD_KERNEL + virtio-net) tunnels bidirectionally
-  to Linux kernel WireGuard over a host TAP, with `wg` loaded as a separate ELF across the
-  syscall boundary. `qemu-armv7a:knsh` also builds under BUILD_KERNEL.
-- **Hardware on earlier source revisions** — both ESP32-S3 native Wi-Fi and
-  Spresense GS2200M/usrsock (FLAT) tunnel to the Windows client. Spresense's
-  clean-build boot issue was isolated to the cxd56 RTC_HIRES regression (#9),
-  not a Docker cache requirement. Later Spresense runs measured resource use,
-  lifecycle recovery under injected delay, and the clock-unset failure/recovery.
-  These hardware observations are not a rerun of the rebased submission series.
-- **PROTECTED and SMP** — the rebased candidate passed rv-virt protected
-  userspace ioctl/tunnel runtime and a four-CPU kernel concurrency scenario.
-  They do not establish silicon MPU behavior or exhaustive race freedom.
-  **Update 2026-10-10:** repeated PROTECTED runs fault intermittently in user
-  space while `wg` configures `wg0` (2/8 on the split series, 1/9 on the
-  unsplit candidate); see submission-checklist.md §2.3. Do not claim a clean
-  PROTECTED runtime until that is understood.
-- **Crypto KATs** — ChaCha20-Poly1305 (u64 counter), XChaCha20-Poly1305 (cookie path, incl.
-  HChaCha20), X25519 (RFC 7748), BLAKE2s-256, against NuttX's `crypto/` sources.
-
-A build-config fix was needed for boards that default `CONFIG_IOB_NCHAINS=0`: the driver's
-`netpkt_queue_t rxqueue` is `struct iob_queue_s`, which only exists for `IOB_NCHAINS > 0`.
-`mm/iob/Kconfig` now carries `default IOB_NBUFFERS if NET_WIREGUARD`.
-
-A BUILD_KERNEL-only bug was found and fixed during bring-up: `wg_set_if()` placed a
-~6 KB `struct wg_peer_s` snapshot on the 3 KB kernel stack (sim's larger stacks hid it) — moved
-to `kmm_malloc`/`kmm_free`.
-
-### Known limitations (honest)
-
-- **TAI64N across reboot** — uses realtime plus an in-RAM same-boot high-water
-  mark. Platforms must establish reliable time; an unset/reset clock can still
-  prevent NuttX-initiated reconnection to a responder retaining the old timestamp.
-  Durable range reservation is deliberately unimplemented; #14 remains open.
-- **Unverified conditions** — real backend blocking/AP loss, storage power cuts,
-  day-scale operation, hardware PROTECTED, and ESP32-S3 resource measurements.
-  Sim now samples nonzero current/previous/next and handshake secrets before
-  down and their zeroization after down, including one natural rekey cycle.
-  Entropy tests used board reset, not cold power cycling or entropy-quality analysis.
-
-### Commit structure
-
-Six commits, each of which builds on its own (on top of the `crypto:` PR):
-
-1. `net: fix nxstyle issues in netdev_upperhalf.c and netdev_register.c` (whitespace only)
-2. `drivers/net/netdev_upperhalf: accept IP-only lower halves for WireGuard`
-3. `net/netdev: add the WireGuard control ioctls` (ABI)
-4. `drivers/net/wireguard: add the WireGuard device` (+ `LICENSE` entry for the BSD-3-Clause files)
-5. `boards/sim: add the sim:wireguard configuration`
-6. `Documentation: add the WireGuard network device`
-
-The protocol core alone has no use and no way to be tested, so it is kept in one PR with the
-device (CONTRIBUTING 1.7.9). The `wg` command's documentation is a separate PR (PR-D), and
-the `tools/nxstyle.c` exclusion for the apps X25519 is a separate PR (PR-N).
+Order and dependencies (merge-strategy.md §2):
+PR-C → (dev@) → PR-K1 ; PR-N ; then PR-A (nuttx-apps) paired with PR-D.
 
 ---
 
-## PR-A1 — `system/wg: add a WireGuard configuration command`
+## PR-C — `crypto/chachapoly: Place the 64-bit nonce in the last eight bytes.`
 
-Target: **apache/nuttx-apps**. Depends on PR-K1 (the ioctl ABI).
+Target: apache/nuttx, branch `pr-latest/crypto-chachapoly` (2 commits).
 
-### Summary
+```markdown
+## Summary
 
-Adds the `wg` NSH command, the userspace client for the in-kernel WireGuard device (PR-K1). It
-configures `wg0` over the ioctl ABI and manages a `wg(8)`-compatible configuration file.
+  * Why: chacha20poly1305_encrypt()/_decrypt() expand their 64-bit counter
+    nonce into the 96-bit IETF ChaCha20 nonce by copying it into bytes 0..7.
+    RFC 8439 and WireGuard put it in bytes 4..11 with the first four bytes
+    zero (wireguard-go: PutUint64(nonce[4:], counter)). The two layouts agree
+    only for counter 0, so a standard peer accepts the first message of a
+    session and rejects every later one.
+  * What: crypto/chachapoly.c (the fix) and crypto/testmngr.c/.h (new
+    known-answer tests).
+  * How: copy the counter to le_nonce_array + 4. xchacha20poly1305_*() pass
+    their 64-bit nonce remainder to the same functions and are fixed by the
+    same change. A second commit adds ChaCha20-Poly1305 vectors for
+    counters 0, 1 and 2 (a misplaced nonce fails from counter 1), a
+    decryption round trip, a forged-tag rejection, and an
+    XChaCha20-Poly1305 vector that also covers HChaCha20. They run from
+    crypto_test() under CONFIG_CRYPTO_ALGTEST.
+  * Related: needed by the WireGuard network device (a later PR). No issue.
+  * <optional> Generative AI tooling (Claude Code, claude-opus-5-5) assisted
+    with this change; every commit carries an Assisted-by: trailer. I have
+    reviewed and tested all of it and take responsibility for it.
 
-Subcommands: `up`, `down`, `show`, `showconf`, `setconf`, `saveconf`, `set`, `genkey`, `pubkey`.
-Because the driver never returns the private key, the command treats the `wg(8)`-format config
-file as the source of truth: `set`/`setconf` push to the device, `saveconf` writes from the
-file side.
+## Impact
 
-Since that file is the only copy of the key, persistence failures are surfaced rather than
-swallowed: `wg set private-key` exits nonzero and warns if the device took the key but it could
-not be written. Because NuttX VFS can unlink the destination inside `rename`,
-publication first reserves an exclusive recovery copy of the old configuration.
-Failure preserves the backup and new staging file and blocks another publisher
-until explicit recovery. Staging uses exclusive mode-0600 temporary files.
-This handles tested ordinary failures, not an unverified power-loss durability
-contract; recovery and space overhead are documented.
+  * Is new feature added? Is existing feature changed? YES: the output of
+    chacha20poly1305_*() and xchacha20poly1305_*() changes for every nonce
+    other than 0, to the RFC 8439 layout. New KATs under CRYPTO_ALGTEST.
+  * Impact on user (will user need to adapt to change)? NO. There is no
+    in-tree caller of these functions.
+  * Impact on build (will build process change)? NO.
+  * Impact on hardware (will arch(s) / board(s) / driver(s) change)? NO.
+  * Impact on documentation (is update required / provided)? NO.
+  * Impact on security (any sort of implications)? YES: makes the AEAD
+    interoperate with standard implementations. No key handling changes.
+  * Impact on compatibility (backward/forward/interoperability)? YES: data
+    sealed by the old code with a nonzero counter no longer opens. No
+    in-tree user is known to have stored any.
+  * Anything else to consider or add? No.
 
-### Offline key generation
+## Testing
 
-`genkey`/`pubkey` run without the device. `genkey` only needs `/dev/urandom`, and `show` takes the
-interface's public key from the driver, which derives it in the kernel — so the only thing needing
-Curve25519 in userspace is the offline `pubkey` subcommand. That is a single vendored MIT file,
-`wg_x25519.c`.
+  I confirm that changes are verified on local setup and works as intended:
+  * Build Host(s): Linux x86_64 (Ubuntu 24.04 container on Windows 11), GCC 13.3.
+  * Target(s): sim:nsh + CONFIG_CRYPTO + CONFIG_CRYPTO_ALGTEST; <HW board:config>.
 
-Cryptodev can do it: `CRK_DH_COMPUTE_KEY` is implemented as `curve25519()` in `cryptosoft.c`. The
-reason not to use it is the dependency — those handlers are compiled only for
-`CRYPTO_CRYPTODEV_SOFTWARE_CRYPTO` (which `depends on CRYPTO_SW_AES`) or
-`..._SOFTWARE_KEYMGMT` (which needs an MTD config device), so one scalar multiplication would pull
-the whole software cipher suite into the image and make `wg` unbuildable where cryptodev is off.
-Upstream `wireguard-tools` vendors its own curve25519 for the same reason. The two implementations
-are cross-checked in testing: `wg pubkey <priv>` must equal the `public key:` line of `wg show`,
-which comes from the kernel.
+  Testing logs before change (testmngr vectors on the old chachapoly.c, sim):
 
-The algorithm body keeps its upstream MIT formatting so it stays diffable against the STROBE
-source; the path is listed in `tools/nxstyle.c`'s `g_white_files[]` the way the PHY62XX, Infineon
-and GD32VW55x vendor sources are. **That exclusion is its own NuttX PR (PR-N), so this PR's style
-check depends on PR-N going in first.** The adaptation block also defines
-`X25519_SUPPORT_VERIFY 0` and silences GCC's `-Wstringop-overread` false positive on the one-limb
-`a24` constant, so the file builds under CI's `-Werror`; the algorithm body is unchanged.
+  ```
+  test_chacha20poly1305: ERROR: Failed chacha20poly1305 encrypt #1
+  crypto test failed
+  ```
 
-### Testing
+  Testing logs after change:
 
-Exercised together with PR-K1 on sim and on the `rv-virt:knetnsh64` real kernel build (loaded as
-a separate ELF across the syscall boundary). `genkey` output's public key matches `wg(8)`.
+  ```
+  sim: up_cryptoinitialize: crypto test OK
+  <HW LOG: board, NuttX SHA, boot log with "crypto test OK">
+  ```
 
-### Commit structure
+## PR verification Self-Check
 
-Two commits: `system/wg: add a WireGuard configuration command`, and
-`LICENSE: add the STROBE X25519 used by system/wg`. Documentation is the paired NuttX PR (PR-D).
+  * [x] This PR introduces only one functional change.
+  * [x] I have updated all required description fields above.
+  * [x] My PR adheres to Contributing [Guidelines](https://github.com/apache/nuttx/blob/master/CONTRIBUTING.md) and [Documentation](https://nuttx.apache.org/docs/latest/contributing/index.html) (git commit title and message, coding standard, etc).
+  * [ ] My PR is still work in progress (not ready for review).
+  * [x] My PR is ready for review and can be safely merged into a codebase.
+```
 
 ---
 
-> Rebased local submission branches are prepared. The author still reviews the
-> series, adds any required author certification, pushes forks and opens PRs.
+## PR-N — `tools/nxstyle: Skip the vendored X25519 in system/wg.`
+
+Target: apache/nuttx, branch `pr-latest/nxstyle-wg` (1 commit).
+
+```markdown
+## Summary
+
+  * Why: the nuttx-apps system/wg command (apache/nuttx-apps PR to follow)
+    carries an X25519 implementation taken from the STROBE project under the
+    MIT license. Its algorithm body keeps the upstream formatting so that it
+    can still be diffed against the STROBE source. nuttx-apps CI runs the
+    nxstyle of nuttx master, which rejects that formatting.
+  * What: tools/nxstyle.c, g_white_files[].
+  * How: add wg_x25519.c and wg_x25519.h to g_white_files[], the way other
+    vendored sources are listed.
+  * Related: apache/nuttx-apps#<PR-A> (needs this to pass its check job).
+  * <optional> AI disclosure paragraph (see top of file).
+
+## Impact
+
+  * Is new feature added? Is existing feature changed? NO.
+  * Impact on user? NO.
+  * Impact on build? NO (style checker only).
+  * Impact on hardware? NO.
+  * Impact on documentation? NO.
+  * Impact on security? NO.
+  * Impact on compatibility? NO.
+  * Anything else to consider or add? Only these two file names are skipped.
+
+## Testing
+
+  I confirm that changes are verified on local setup and works as intended:
+  * Build Host(s): Linux x86_64 (Ubuntu 24.04 container), GCC 13.3.
+  * Target(s): none (host tool).
+
+  Testing logs before change (nuttx master checkpatch on the apps PR):
+
+  ```
+  /opt/apps/system/wg/wg_x25519.c:105:2: error: Left bracket not on separate line
+  ...
+  ```
+
+  Testing logs after change:
+
+  ```
+  checkpatch.sh -c -u -m -g on the apps PR: no file errors
+  ```
+
+## PR verification Self-Check
+
+  (same five boxes as PR-C)
+```
+
+---
+
+## PR-K1 — `drivers/net/wireguard: Add the WireGuard device.`
+
+Target: apache/nuttx, branch `pr-latest/wireguard-driver` (6 commits on top of
+PR-C). Open it after PR-C is merged and the branch is rebased; until then, add
+`depends-on: apache/nuttx/pull/<PR-C>` so CI builds with the fix. Use the
+title of the device commit, not of the first (whitespace-only) commit.
+
+```markdown
+## Summary
+
+  * Why: NuttX has no VPN. This adds WireGuard as a virtual network device,
+    wg0, so a NuttX device can join a WireGuard network with any standard
+    peer (Linux kernel module, wireguard-go, boringtun, another NuttX).
+  * What: drivers/net/wireguard/ (new), drivers/net/netdev_upperhalf.c,
+    net/netdev/netdev_ioctl.c and netdev_register.c, include/nuttx/net/
+    ioctl.h and wireguard.h (new ABI), net/Kconfig, mm/iob/Kconfig,
+    drivers/drivers_initialize.c, LICENSE, boards/sim (sim:wireguard),
+    Documentation/os/drivers/special/net/wireguard.rst.
+  * How: wg0 is a NET_LL_TUN netdev_lowerhalf driver. It owns a kernel UDP
+    socket and an RX kernel thread; outbound datagrams are queued as
+    immutable buffers and sent only outside the device lock, so it works on
+    buffered UDP, unbuffered UDP and usrsock. Keys and peers are set at run
+    time through five flat, pointer-free ioctls (0x0046..0x004a); the
+    private key is write-only. Cryptography is NuttX's crypto/ (BLAKE2s,
+    ChaCha20-Poly1305, Curve25519). The protocol core (wg_noise.c:
+    Noise_IKpsk2, key schedule, anti-replay, cookies) is derived from
+    wireguard-lwip under BSD-3-Clause, hence ALLOW_BSD_COMPONENTS and the
+    LICENSE entry.
+  * Commits: (1) whitespace-only nxstyle fixes in the two netdev files the
+    later commits touch; (2) netdev_upperhalf passes NET_LL_TUN packets to
+    ip_input() and skips the VLAN walk for non-Ethernet devices; (3) the
+    ioctl ABI; (4) the device; (5) sim:wireguard, the configuration that
+    compiles the driver in CI; (6) documentation. Each commit builds.
+  * Bundling (CONTRIBUTING 1.7.9): the protocol core has no use and no way
+    to be tested without the device, so they are one PR. This is not a
+    breaking change: everything is under CONFIG_NET_WIREGUARD (default n).
+  * Related: the userspace command is apache/nuttx-apps#<PR-A>, documented
+    by #<PR-D>. Design thread: <dev@ archive URL>.
+  * <optional> AI disclosure paragraph (see top of file).
+
+depends-on: apache/nuttx/pull/<PR-C>
+
+## Impact
+
+  * Is new feature added? Is existing feature changed? YES: new
+    CONFIG_NET_WIREGUARD device. Existing netdev_upperhalf behaviour changes
+    only when CONFIG_NET_WIREGUARD is set.
+  * Impact on user? NO for existing configurations.
+  * Impact on build? YES: new Kconfig options; IOB_NCHAINS defaults to
+    IOB_NBUFFERS when NET_WIREGUARD is enabled.
+  * Impact on hardware? NO arch or board code changes (new sim config only).
+  * Impact on documentation? YES: wireguard.rst added in this PR.
+  * Impact on security? YES: adds an encrypted tunnel. The private key is
+    write-only through the ioctl ABI; session keys are zeroed on down.
+    Known limitation: TAI64N after a reboot on boards without reliable
+    time (documented in wireguard.rst).
+  * Impact on compatibility? NO. New ioctl numbers 0x0046..0x004a do not
+    overlap existing ones (checked against <upstream SHA>).
+  * Anything else to consider or add? BUILD_PROTECTED: builds; repeated
+    rv-virt QEMU runs fault intermittently in user space while wg configures
+    wg0 (also on the unsplit candidate; cause not yet identified).
+
+## Testing
+
+  I confirm that changes are verified on local setup and works as intended:
+  * Build Host(s): Linux x86_64 (Ubuntu 24.04 container on Windows 11), GCC 13.3, RISC-V GCC <ver>.
+  * Target(s): sim:wireguard; rv-virt:knetnsh64 / knetnsh64_smp (BUILD_KERNEL);
+    <ESP32-S3 board:config>; <Spresense board:config>.
+  * Peer: Linux kernel WireGuard.
+
+  Testing logs before change: not applicable (new device).
+
+  Testing logs after change:
+
+  ```
+  <HW LOG ESP32-S3: SHA, uname -a, ifconfig wg0, wg show, ping both ways>
+  <HW LOG Spresense: same; note the cxd56 RTC_HIRES patch used to boot>
+  sim suite (verify-sim-wg-suite.sh): <result line>
+  ```
+
+## PR verification Self-Check
+
+  (same five boxes as PR-C)
+```
+
+---
+
+## PR-D — `Documentation: Add the system/wg command.`
+
+Target: apache/nuttx, branch `pr-latest/doc-system-wg` (1 commit on top of
+PR-K1). CONTRIBUTING 1.8: documentation for nuttx-apps code goes in a separate
+nuttx PR. Open it together with PR-A and link the two. A Documentation-only PR
+runs only the docs job (`doc.yml`; `build.yml` and `check.yml` ignore
+`Documentation/**`), which builds the branch as it is and does not read
+`depends-on:`. So PR-D must already contain PR-K1's `wireguard.rst`: open it
+after PR-K1 is merged and the branch is rebased.
+
+```markdown
+## Summary
+
+  * Why: documentation for the wg command added by apache/nuttx-apps#<PR-A>
+    (CONTRIBUTING 1.8).
+  * What: Documentation/applications/system/wg/index.rst (new) and a link
+    from Documentation/os/drivers/special/net/wireguard.rst.
+  * How: describes the configuration options, the subcommands, how the
+    private key is kept in the configuration file, and an example session.
+  * Related: apache/nuttx-apps#<PR-A>, #<PR-K1>.
+
+## Impact
+
+  * Is new feature added? Is existing feature changed? NO (documentation only).
+  * Impact on user / build / hardware / security / compatibility? NO.
+  * Impact on documentation? YES: new page.
+  * Anything else to consider or add? No.
+
+## Testing
+
+  * Build Host(s): Linux x86_64, python 3.10, pipenv sync (Documentation/Pipfile.lock).
+  * `make html` (SPHINXOPTS includes -W): <result line>
+
+## PR verification Self-Check
+
+  (same five boxes as PR-C)
+```
+
+---
+
+## PR-A — `system/wg: Add a WireGuard configuration command.`
+
+Target: apache/nuttx-apps, branch `pr-latest/system-wg` (2 commits). Its check
+job uses the nxstyle of nuttx master, so PR-N must be merged first. Its build
+job applies the `depends-on:` PRs.
+
+```markdown
+## Summary
+
+  * Why: the WireGuard device (apache/nuttx#<PR-K1>) is configured through
+    ioctls; this is its userspace client.
+  * What: system/wg/ (new) and LICENSE.
+  * How: the wg NSH command configures wg0 over the ioctl ABI and reads and
+    writes wg(8)-format configuration files. Subcommands: up, down, show,
+    showconf, setconf, saveconf, set, genkey, pubkey. The driver never
+    returns the private key, so the configuration file is its only copy:
+    persistence failures are reported instead of ignored, and saving first
+    reserves an exclusive recovery copy of the old file, because a NuttX VFS
+    rename may unlink the destination before the new file is in place.
+    genkey/pubkey work without the device; pubkey uses wg_x25519.c, taken
+    from the STROBE project under the MIT license (recorded in LICENSE by
+    the second commit), instead of cryptodev, which would pull the whole
+    software cipher suite in for one scalar multiplication.
+  * Related: apache/nuttx#<PR-K1> (ABI), apache/nuttx#<PR-N> (nxstyle
+    exclusion), documentation apache/nuttx#<PR-D>.
+  * <optional> AI disclosure paragraph (see top of file).
+
+depends-on: apache/nuttx/pull/<PR-K1>
+depends-on: apache/nuttx/pull/<PR-N>
+
+## Impact
+
+  * Is new feature added? Is existing feature changed? YES: new
+    CONFIG_SYSTEM_WG command.
+  * Impact on user? NO for existing configurations.
+  * Impact on build? NO (new Kconfig option, default n).
+  * Impact on hardware? NO.
+  * Impact on documentation? YES: apache/nuttx#<PR-D>.
+  * Impact on security? YES: handles the private key; the configuration
+    file is written with mode 0600 through exclusive temporary files.
+  * Impact on compatibility? NO. Configuration files are wg(8) format.
+  * Anything else to consider or add? wg_x25519.c keeps the STROBE body
+    unchanged; the adaptation block defines X25519_SUPPORT_VERIFY 0 and
+    silences a GCC -Wstringop-overread false positive so it builds with
+    -Werror.
+
+## Testing
+
+  I confirm that changes are verified on local setup and works as intended:
+  * Build Host(s): Linux x86_64 (Ubuntu 24.04 container), GCC 13.3.
+  * Target(s): sim:wireguard; rv-virt:knetnsh64 (wg as a separate ELF);
+    <ESP32-S3 board:config>; <Spresense board:config>.
+
+  Testing logs after change:
+
+  ```
+  <HW LOG: wg genkey | wg pubkey matches wg show "public key:" (no private key in the log)>
+  <HW LOG: wg setconf / wg show / ping both ways>
+  ```
+
+## PR verification Self-Check
+
+  (same five boxes as PR-C)
+```

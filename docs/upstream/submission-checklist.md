@@ -1,4 +1,9 @@
-# 提出チェックリスト(2026-10-10)
+# 提出チェックリスト(2026-10-10、2026-10-12 追記)
+
+> **2026-10-12:** 公式ルール(CONTRIBUTING.md、Documentation/contributing/、CI の workflow)を
+> 最新の upstream で読み直し、照合した結果を **§6 「公式ルールとの照合 (2026-10-12)」** にまとめた。
+> §3 (a) の署名コマンドと §3 (e) の PR 本文は §6 が新しい(依存の書き方、件名の形、
+> `Assisted-by:` の文面、sim:wireguard の CI 失敗)。§1〜§5 は 10/10 時点の記録として残す。
 
 [merge-strategy.md](merge-strategy.md) §2 の分割と §3 の H2〜H5・H7 を実施した結果と、
 **本人の手作業として残っているものだけ**をまとめた。手順はそのまま貼って実行できる形にしてある。
@@ -28,6 +33,10 @@
 | PR-A | nuttx-apps | `pr/system-wg` | `5a443e4d3` system/wg: add a WireGuard configuration command<br>`efa4c0bf0` LICENSE: add the STROBE X25519 used by system/wg | PR-K1・PR-N |
 
 ### 1.2 `pr-latest/*` — 2026-10-10 の upstream 先端(nuttx `0916f1a561` / apps `da92a492b`)
+
+> **2026-10-12 更新:** `pr-latest/*` は 10/11 の upstream 先端(nuttx `4bc1ab2fd7` / apps
+> `74df79a53`)に載せ替え、件名を公式の形に直し、sim:wireguard の defconfig を正規形にした。
+> **下の表の SHA は旧版**(`bak/pr-latest-20261010/*` として残してある)。現行の SHA は §6.1。
 
 10/07 以降 upstream は nuttx 201・apps 13 コミット進んでいた。§1.1 を載せ替えたもの(試行)。
 
@@ -362,3 +371,248 @@ nuttx の木はそれぞれ自分の `checkpatch.sh` で検査する(nxstyle は
 3. `wg_x25519.c` の警告対策(§1.4)を PR-A に入れてよいか。入れないと sim:wireguard が CI の
    `-Werror` で落ちる(PR-A の CI と、両方マージ後の nuttx の CI の両方)
 4. BUILD_PROTECTED の間欠 fault(§2.3)を PR 前に追うか、既知の問題として PR に書いて出すか
+
+## 6. 公式ルールとの照合 (2026-10-12)
+
+2026-10-12 に両 clone で `git fetch upstream` し、**upstream 先端**で一次資料を読み直した。
+nuttx `4bc1ab2fd7`(2026-10-11)、nuttx-apps `74df79a53`(2026-10-11)。行番号はこの版のもの。
+10/07 に読んだ版から `CONTRIBUTING.md` は変わっていない(`git diff 20f3b65937 upstream/master -- CONTRIBUTING.md`
+が空。`Assisted-by:` の規定は 7/11 の `9748c760be` で入ったもの)。公式サイトの
+<https://nuttx.apache.org/docs/latest/contributing/guide.html> は同じ `CONTRIBUTING.md` を取り込んだもので
+(`Documentation/contributing/guide.rst` が `.. include:: ../../CONTRIBUTING.md`)、文面も同じだった。
+
+### 6.0 読むべきもの一覧(両リポジトリ)
+
+**nuttx-apps には `CONTRIBUTING.md` が無い。** apps の PR テンプレートの 1 行目が nuttx の
+`CONTRIBUTING.md` を指していて、apps も同じ規則に従う。どちらのリポジトリにも `AGENTS.md` や AI/LLM 方針の
+専用ファイルは**無い**(`git ls-tree -r` で `agents|claude|copilot|llm|cursor` を検索して 0 件)。AI の規定は
+`CONTRIBUTING.md` 1.5 / 1.6 だけで、そこから ASF の方針と Linux カーネルの文書を参照している。
+
+| パス(nuttx `4bc1ab2fd7` / apps `74df79a53`) | 何を求めているか |
+|---|---|
+| nuttx `CONTRIBUTING.md` | 規則の本体(1.1〜1.17)とテンプレート(2.1 ソース / 2.2 コミット / 2.3 PR)。§6.1 |
+| nuttx `INVIOLABLES.md`(`Documentation/introduction/inviolables.rst`) | CONTRIBUTING の冒頭(L5-7)が最初に読めと指示。POSIX 準拠、モジュール構造、コーディング規約の厳守(L43-51)、ライセンス(L56-61:BSD-3 互換・MIT など。コピーレフト不可)、全ユーザー・全ツールチェーン(L63-79) |
+| nuttx `Documentation/contributing/workflow.rst` | 書式は nxstyle / checkpatch で確認(L15-22)。整形は機能と別コミット(L26-28)。重い変更は先にメーリングリストで(L30-31)。オリジナルは Apache-2.0 の見出しで(L34-36)。**会社員なら著作権は会社にあることが多く、会社の許可と契約が要る(L38-40)**。**活発に開発中の外部プロジェクトのコードは取り込まない(L44-48)。休眠プロジェクトなら検討される(L50-53)。BSD などライセンスが許しても Apache-2.0 以外は望ましくない(L55-57)** |
+| nuttx `Documentation/contributing/making-changes.rst` | fork/branch/rebase の手順。PR 前に「通常は 1 コミットに squash」(L189-191)。件名は `subsystem/area: ...`(L241-278)。新規ファイルは `.github/CODEOWNERS` に自分を足してよい(L288-298)。`.gitmessage` をコミットの雛形に使える(L229-238) |
+| nuttx `Documentation/contributing/coding_style.rst` | NuttX C 規約(CONTRIBUTING 2.1 が必須と明記)。ファイル見出しは相対パス + Apache-2.0 文面(L45-53)。**第三者のファイルは見出しにそのライセンスを書き、トップの `LICENSE` / `NOTICE` に NOTE を足す(L56-66)** |
+| nuttx `Documentation/contributing/documentation.rst` | 文書のビルド手順(`pipenv` + `make html`、plantuml)と RST の書式(字下げ 2、見出しの記号) |
+| nuttx `Documentation/contributing/releases.rst` | リリース手順(本件の提出には関係しない) |
+| nuttx `.gitmessage` | コミットの雛形:`maintopic/subtopic: Short, explanatory context about this commit.`、`git commit -s` を忘れない |
+| nuttx `.github/PULL_REQUEST_TEMPLATE.md`(apps も同文) | Summary / Impact / Testing の 3 節。「**テスト情報の無い PR は受け付けない。ログを求める**」(L32-33) |
+| nuttx `.github/workflows/check.yml`(apps も同等) | PR ごとに `checkpatch.sh -c -u -m -g <base>..HEAD`(L52-53)。`Documentation/**` だけの PR では走らない(L17-18)。`breaking change` ラベルで `-b`。apps は **nuttx master の** checkpatch/nxstyle で検査 |
+| nuttx `tools/checkpatch.sh` | `-m`:件名に `:`、**件名 80 文字以内**(L292)、2 行目は空行、`Signed-off-by` 必須(L362-365)、最低 5 行、`Change-Id`/`WIP:` 禁止。`-c` codespell、`-u` UTF-8。`Assisted-by` の書式は**機械検査していない** |
+| nuttx `.github/workflows/build.yml` + `arch.yml` + `.github/scripts/depends_on.py`(apps も同等) | Linux の build matrix(`cibuild.sh -c -A -N -R -S testlist/<group>.dat`、L395)。ラベルが「Arch/Board + Size だけ」のときだけ絞り込み、それ以外は**全グループ**(arch.yml L147/L170)。本件の PR は Area ラベルが付くので全グループになる。macOS / msys2 / msvc / OOT のジョブもある(L417-616)。**PR 本文の `depends-on:` 行**を読み、その PR を cherry-pick してからビルドする(L122、depends_on.py L45-52) |
+| nuttx `tools/ci/cibuild.sh` / `tools/testbuild.sh` / `tools/ci/testlist/*.dat` | `-e "-Wno-cpp -Werror"`(cibuild L150)。testbuild は**ビルド後に `tools/refresh.sh --silent` で defconfig が正規形か、木が汚れていないかを検査**(L429-450)。sim:wireguard は `sim-03.dat`(`/sim/*/*/*/[o-z]*`)に入る |
+| nuttx `.github/workflows/doc.yml` | `Documentation/**` を触る PR で python 3.10、`pipenv sync`、`pipenv run make html`(L43-51)。`Documentation/Makefile` の `SPHINXOPTS` に `-W`(L27) |
+| nuttx `.github/workflows/lint.yml` | super-linter(Python black/flake8/isort、YAML)。本件は .py/.yml を足さないので対象外 |
+| nuttx `.github/labeler.yml` / `pr_labeler.yml` | パスで Area/Arch/Board ラベル、差分量で Size ラベル(CI の選択に使う) |
+| nuttx `.pre-commit-config.yaml` / `.editorconfig` | 任意。末尾空白・改行、cmake-format、`checkpatch.sh -c -f` |
+| ASF <https://www.apache.org/legal/generative-tooling.html> | §6.1 (a) |
+
+### 6.1 規則ごとの照合
+
+**(a) 生成 AI(CONTRIBUTING.md 1.5 L97-149、1.6 L152-163)**
+
+- 生成ツール/AI を開発・コミットメッセージ作成などに使った**全コミット**に `Assisted-by:` が必須(L114-117)。
+  使っていなければ省略可。ASF の `Generated-by:` 推奨を `Assisted-by` に読み替えたもの(L117-121)
+- 位置は**署名(`Signed-off-by`)の上**(L111-112:「5. Signature」「6. `Assisted-by: ` above the signature」)
+- 書式 `Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1] [TOOL2]`(L126-134)。AGENT_NAME はツール名、
+  MODEL_VERSION は具体的なモデル版、TOOL は任意の専門解析ツール。例 `Assisted-by: Claude:claude-3-opus coccinelle sparse`(L135)
+- **AI は `Signed-off-by` を付けてはならない。人だけが法的に証明できる**(L123-124)
+- 1.6:必須項目は topic / description / signature / `Assisted-by:`(該当時)。無いものは自動で差し戻し
+- PR 本文での開示は**規則上は求められていない**(テンプレートにも欄が無い)
+- ASF(2026-08 更新):ツールの利用規約が OSD と矛盾しないこと、出力に第三者の素材が無いか許諾があること、などの条件。
+  開示はコミットメッセージの `Generated-by: <Name of Tool> <Version>`(NuttX はこれを `Assisted-by:` に置き換えた)。
+  人が選択・編集した部分は著作物になりうる
+- Linux カーネル <https://docs.kernel.org/process/coding-assistants.html>(1.5 が参照):git・gcc・make・
+  エディタなどの基本ツールは書かない。人間の提出者が全コードの確認、ライセンス適合、DCO の署名、全責任を負う
+- upstream の実例(2026-06 以降):`Claude Code:claude-opus-5-5` が 131 件、`Claude:claude-opus-5-5` 19 件、
+  `Codex:GPT-6` 30 件など。いずれも `Assisted-by:` の次の行が `Signed-off-by:`
+
+**本シリーズで使う文面**(本人の申告:ツールは Claude Code、モデルは「Claude Opus 5.5」。
+本人は「かな」と書いており**未確定**。Claude Opus 5.5 の正式なモデル ID は `claude-opus-5-5`):
+
+```
+Assisted-by: Claude Code:claude-opus-5-5
+Signed-off-by: satoru akita <wwlap24@gmail.com>
+```
+
+- **これまでの記録には Codex を使った作業も出てくる**(merge-strategy §3 H1)。Codex も使ったなら、
+  そのモデル名を確かめて `Assisted-by: Codex:<MODEL_VERSION>` を**もう 1 行**、Claude Code の行の下・署名の上に足す
+  (CONTRIBUTING は複数ツールの書き方を定めていない。1 ツール 1 行は選択)。最終的な一覧は本人が確定する
+- 2026-10-12 の件名の書き換え(§6.2)は Claude Code(`claude-opus-5-5`)で行った。コミットメッセージの作成も
+  1.5 の対象(「writing commit messages」)なので、少なくとも全コミットに上の 1 行が当てはまる
+- PR 本文の任意の開示文(pr-drafts.md の各 Summary 末尾に置き場所がある):
+
+  > Generative AI tooling (Claude Code, claude-opus-5-5) assisted with this change; every commit
+  > carries an Assisted-by: trailer. I have reviewed and tested all of it and take responsibility for it.
+
+**(b) コミットメッセージ(CONTRIBUTING.md 1.5 L103-112、2.2 L412-446、`.gitmessage`、checkpatch.sh)**
+
+| 規則 | 出典 | 本シリーズ(`pr-latest/*`、10/12) |
+|---|---|---|
+| 件名は「領域の接頭辞、`:`、短い自己説明の文脈、`.`」 | 1.5 L105-106、`.gitmessage` L2 | **10/10 版は末尾の `.` が無く、`:` の後が小文字だった → 直した**(例 `crypto/chachapoly: Place the 64-bit nonce in the last eight bytes.`)。upstream の実際は両方混在だが、規則と雛形に合わせた |
+| 件名 80 文字以内、次の行は空行 | checkpatch.sh L292, L345-348 | 最長 73 文字(`drivers/net/netdev_upperhalf: Accept IP-only lower halves for WireGuard.`) |
+| 本文:何を・どう・なぜ(1.3 の項目) | 1.5 L108-109、1.3 L64-74 | 全コミットにある。試験ログは「PR にあれば省略可」(L100-101) |
+| 署名は `git commit -s` で作るもの。必須 | 1.5 L111、1.6 L159 | **未署名(全 12 コミット)**。本人の作業 |
+| `Assisted-by:` は署名の上 | 1.5 L112 | **未記入**。本人の作業 |
+| 業務用メールアドレス(該当する場合) | 1.16 L365-366 | 作者は `wwlap24@gmail.com`。§6.5 の 4 |
+| 実験的な機能は件名と PR 題に `[EXPERIMENTAL]` | 1.11 L253-258 | 付けていない(merge-strategy §6 の 4) |
+| breaking change は `!` と `BREAKING CHANGE:` | 1.13 L320-326 | 該当しない(全部 `CONFIG_NET_WIREGUARD` 既定 n の下) |
+
+**(c) PR(CONTRIBUTING.md 1.3 L62-87、1.7 L166-195、1.8 L198-219、1.9 L226-238、2.3 L449-502)**
+
+| 規則 | 出典 | 本シリーズ |
+|---|---|---|
+| テンプレート(Summary / Impact / Testing / Self-Check)の**全項目**が必須 | 1.7.1 L168-170、2.3 L454-502 | **10/10 の下書きは Self-Check 節が無く、Impact が項目別でなかった → pr-drafts.md を直した** |
+| **実機 1 台以上**のビルド・実行ログが必須。QEMU は数えない(1.14 で明記) | 1.3 L76-78、1.7.2 L171-172、1.9 L230-231、1.14 L339-340 | **10/12 の SHA で実機ログは未取得**(§3 (b)) |
+| 1 PR 1 機能。別機能は別 PR | 1.7.3-4 L173-176 | 5 PR に分割済み |
+| 各コミットが単独でビルド・実行・互換を壊さない | 1.7.5 L177-179 | §6.6 |
+| 束ねるしかない場合は「他に方法が無く、breaking change ではない」と明記 | 1.7.9 L184-187 | PR-K1 本文に記載 |
+| 新機能は**同じ PR に**文書。apps のコードの文書は nuttx に別 PR | 1.7.7 L182、1.8 L202-212 | PR-K1 に wireguard.rst、apps の文書は PR-D |
+| 文書のビルドログは歓迎 | 1.8 L217 | §6.6 |
+| WIP は `[WIP]` とドラフト | 1.7.8 L183 | 該当しない |
+| 依存は本文で示す | 1.3 L73-74 | **CI が読むのは行頭の `depends-on: <owner>/<repo>/pull/<N>`(または URL)だけ。`#1234` や `Depends on #1234` は読まない**(depends_on.py L14-21, L45-52)。10/10 の下書き(`Depends on #NNNN`)を直した |
+| push のたびに CI 一式が走る。完成したものだけを出す | 1.7 L192-195 | merge-strategy §5 のとおり |
+
+### 6.2 `pr-latest/*` に行った変更(2026-10-12、ローカルのみ)
+
+署名・`Assisted-by:` は**付けていない**。push もしていない。10/10 版は `bak/pr-latest-20261010/*`
+(nuttx 4 本、apps 1 本)として残した。
+
+1. **upstream 先端に載せ替え**(nuttx `0916f1a561` → `4bc1ab2fd7`、17 コミット先。apps `da92a492b` → `74df79a53`)。
+   競合なし。間の upstream で本シリーズのファイルに重なるのは `tools/nxstyle.c`(+14 行、別の配列)だけ
+2. **件名を 1.5 の形に**:`:` の後を大文字、末尾に `.`。本文・作者・作者日時は変えていない
+   (`git range-diff` で差は件名だけ)
+3. **sim:wireguard の defconfig を正規形に**(`boards/sim: Add the sim:wireguard configuration.` の木だけ変更):
+   `CONFIG_NETUTILS_PING=y` と `CONFIG_NSH_LINELEN=256` を削除。CI の `testbuild.sh` は `refresh.sh` で defconfig を
+   正規化し、差が出ると「木が汚れた」として FAIL にする。この 2 行は他の選択から決まる値で、`savedefconfig` が落とす
+   (§6.6 の 1 回目で FAIL を確認)
+
+| PR | ブランチ | コミット(古い順) |
+|---|---|---|
+| PR-C | `pr-latest/crypto-chachapoly` | `a62e8dbf54` crypto/chachapoly: Place the 64-bit nonce in the last eight bytes.<br>`5d66c8901e` crypto/testmngr: Add ChaCha20-Poly1305 and XChaCha20-Poly1305 KATs. |
+| PR-N | `pr-latest/nxstyle-wg` | `66218ee3e7` tools/nxstyle: Skip the vendored X25519 in system/wg. |
+| PR-K1 | `pr-latest/wireguard-driver` | `73474ea80c` net: Fix nxstyle issues in netdev_upperhalf.c and netdev_register.c.<br>`52be44b168` drivers/net/netdev_upperhalf: Accept IP-only lower halves for WireGuard.<br>`31231d4965` net/netdev: Add the WireGuard control ioctls.<br>`486489718c` drivers/net/wireguard: Add the WireGuard device.<br>`2901802758` boards/sim: Add the sim:wireguard configuration.<br>`0b4ed6ec77` Documentation: Add the WireGuard network device. |
+| PR-D | `pr-latest/doc-system-wg` | `237b6e538e` Documentation: Add the system/wg command. |
+| PR-A | apps `pr-latest/system-wg` | `3736813544` system/wg: Add a WireGuard configuration command.<br>`fc640afc4c` LICENSE: Add the STROBE X25519 used by system/wg. |
+
+`pr/*`(10/07 base)は触っていない。`pr/*` の sim:wireguard defconfig も同じ 2 行を持つので、`pr/*` から出すなら同じ修正が要る。
+
+### 6.3 見つかった差(ギャップ)
+
+| # | 差 | 根拠 | 状態 |
+|---|---|---|---|
+| R1 | `Assisted-by:` が無い | 1.5 L114-117 | 本人(文面は §6.1 (a)) |
+| R2 | `Signed-off-by:` が無い | 1.5 L111、1.6 L159、checkpatch L362-365 | 本人(§6.4 のコマンド) |
+| R3 | 件名の形(末尾 `.`、大文字) | 1.5 L105-106、`.gitmessage` | **直した**(§6.2) |
+| R4 | sim:wireguard の defconfig が正規形でない → CI の Linux ビルドが FAIL | testbuild.sh L429-450 | **直した**(§6.2) |
+| R5 | **PR-K1 を apps master で CI にかけると sim:wireguard が FAIL**:defconfig の `CONFIG_SYSTEM_WG=y` / `CONFIG_SYSTEM_WG_CONFIG_PATH` は apps の PR-A が入るまで存在しない Kconfig 記号で、`refresh.sh` が消す。PR-K1 のマージ後・PR-A のマージ前は、sim-03 を回す他人の PR の CI も同じ理由で落ちる | build.yml(apps master を checkout)、testbuild.sh L432 | **判断待ち**(§6.5 の 2) |
+| R6 | 依存の書き方。CI は `depends-on:` 行だけを読む | depends_on.py L14-21, L52 | pr-drafts.md を直した |
+| R7 | PR テンプレートの Self-Check 節・Impact の各項目が下書きに無い | 2.3 L454-502 | pr-drafts.md を直した |
+| R8 | 実機ログ(10/12 の SHA で未取得) | 1.7.2、1.9 | 本人(§3 (b)) |
+| R9 | `wg_noise.c` は**開発が続いている** wireguard-lwip(BSD-3)由来。workflow.rst は活発なプロジェクトのコードは取り込まない、Apache-2.0 以外は望ましくない、としている | workflow.rst L44-57 | **判断待ち**(§6.5 の 3)。wireguard-lwip の最新コミットは 2026-08-14(GitHub API で確認) |
+| R10 | 会社員の場合の著作権・契約、業務用メール | workflow.rst L38-40、1.16 L365-366 | **判断待ち**(§6.5 の 4) |
+| R11 | making-changes.rst は「PR 前は通常 1 コミットに squash」と書く。本シリーズは PR 内を分けている | making-changes.rst L189-191。CONTRIBUTING 1.7.5 L177-179 は複数コミットを認める | 規則(CONTRIBUTING)上は可。レビューで squash を求められたら従う |
+| R12 | `wg_x25519.c` に STROBE 由来の誤記 `x1 = (const uint8_t *)x1;`(本来 `x1i`)。`X25519_MEMCPY_PARAMS 1` の構成では、整列済みの写しを作ったのに整列していない入力を読み続ける。wireguard-lwip が 2026-08-14 に同じ箇所を直した(PR #17、ARMv6-M で unaligned access の例外) | apps `system/wg/wg_x25519.c` L281 | **判断待ち**(§6.5 の 5)。CI の規則違反ではない |
+| R13 | macOS / msys2 / msvc の CI ジョブ、他アーキテクチャのグループは再現していない | build.yml L471-616 | 未実施(§6.6) |
+
+### 6.4 署名の手順(直したもの)
+
+10/10 版(§3 (a))からの変更点:base を 10/12 の載せ替え先に、`Assisted-by:` を §6.1 (a) の文面に、
+Codex 用の 2 行目を任意で。`git commit --amend --no-edit --trailer A --trailer S` は**与えた順に**末尾へ足すので、
+`Assisted-by:` が署名の上に来る(同じ引数の `git interpret-trailers` をメッセージ本文に当てて確認。§6.6)。
+`git commit -s` は署名を先に置くので使わない。
+
+```bash
+# 本人が確定してから実行する(Codex も使ったなら AB2 の 2 行を有効にする)
+AB='Assisted-by: Claude Code:claude-opus-5-5'
+# AB2='Assisted-by: Codex:<MODEL_VERSION>'
+SOB='Signed-off-by: satoru akita <wwlap24@gmail.com>'   # 名義を変えるならここ(§6.5 の 4)
+SIGN="git commit --amend --no-edit --trailer \"$AB\" --trailer \"$SOB\""
+# SIGN="git commit --amend --no-edit --trailer \"$AB\" --trailer \"$AB2\" --trailer \"$SOB\""
+
+cd /c/Users/0000400096/workspaces/nuttx
+git status --short                     # 空であること
+git fetch upstream                     # 先端が動いていたら先に載せ替える(merge-strategy §5)
+git switch pr-latest/doc-system-wg
+git rebase --update-refs --exec "$SIGN" 4bc1ab2fd7   # PR-C / K1 / D の 3 本が書き換わる
+git switch pr-latest/nxstyle-wg
+git rebase --exec "$SIGN" 4bc1ab2fd7
+git switch master
+
+cd /c/Users/0000400096/workspaces/nuttx-apps
+git switch pr-latest/system-wg
+git rebase --exec "$SIGN" 74df79a53
+git switch master
+```
+
+確認:
+
+```bash
+cd /c/Users/0000400096/workspaces/nuttx
+git range-diff 4bc1ab2fd7..237b6e538e 4bc1ab2fd7..pr-latest/doc-system-wg   # 差はメッセージ末尾の trailer だけ
+git log --format='%h %(trailers:key=Assisted-by,key=Signed-off-by,separator=%x20|%x20)' 4bc1ab2fd7..pr-latest/doc-system-wg
+./tools/checkpatch.sh -c -u -m -g 4bc1ab2fd7..pr-latest/doc-system-wg       # CI と同じ。Missing Signed-off-by が消えること
+```
+
+### 6.5 本人が決めること(merge-strategy §6 と本書 §5 に追加)
+
+1. **`Assisted-by:` の最終的な一覧**:Claude Code の行のモデル(`claude-opus-5-5` でよいか)、Codex を使ったか・そのモデル
+2. **R5 の順序問題**。考えられる形(どれも未実施):
+   - (i) PR-K1 の sim:wireguard から `CONFIG_SYSTEM_WG*` を外し(driver だけをコンパイルする構成)、PR-A のマージ後に
+     PR-D で足す。PR-D は Documentation だけでなくなるので build/check ジョブも走る
+   - (ii) PR-K1 の本文に `depends-on: apache/nuttx-apps/pull/<PR-A>` を書き、PR の CI には PR-A を当てさせる。
+     ただし PR-A は PR-K1 の ABI に依存するので相互依存になり、片方が先にマージされた時点で master 側の CI が落ちる
+     (1.12 の「nuttx と nuttx-apps を同時に変える」に当たりうる)
+   - (iii) (i) と同じで、wg 付きの構成は PR-A 後の独立した小さな PR にする
+3. **R9**:wireguard-lwip 由来の `wg_noise.c` を BSD-3 のまま入れることの説明(workflow.rst L44-57)。
+   dev@ の論点に入れるか、PR-K1 本文にどう書くか
+4. **R10**:作者・署名のメール(`wwlap24@gmail.com` のままか)、所属組織との著作権・契約の確認(workflow.rst L38-40)
+5. **R12**:`wg_x25519.c` L281 の誤記を PR-A で直すか(直すと「STROBE の本体は 1 文字も変えていない」と書けなくなる)
+6. 出す系統を `pr-latest/*`(10/12)にするか。`pr/*` は R3・R4 が未修正
+
+### 6.6 CI の再現(2026-10-12、Docker)
+
+環境:`nuttx-wg-ci:latest`(Ubuntu 24.04、gcc 13.3、riscv64-unknown-elf-gcc、codespell/cvt2utf/black/isort/
+flake8/cmake-format)に curl/unzip を足したもの。ローカル clone を `/src` に読み取り専用で mount し、中で
+`git clone --shared`。公式 CI イメージ(`ghcr.io/apache/nuttx/apache-nuttx-ci-linux`)ではない。スクリプトは
+scratchpad の `ci1012/`(setup.sh / check.sh / build.sh / percommit.sh / run3.sh)。**どれもコミットを変更しない。**
+
+**check.yml の再現**(PR ごとに CI と同じ `checkpatch.sh -c -u -m -g <base>..HEAD`):
+
+| PR | 範囲 | 結果 |
+|---|---|---|
+| PR-C | `4bc1ab2fd7..pr-latest/crypto-chachapoly`(2) | `Missing Signed-off-by` ×2 だけ。codespell・UTF-8・nxstyle の指摘なし |
+| PR-N | `..pr-latest/nxstyle-wg`(1) | 同上 ×1 |
+| PR-K1 | PR-C に積んだまま(8)/PR-C マージ後(6) | 同上 ×8 / ×6 |
+| PR-D | `pr-latest/wireguard-driver..`(1) | 同上 ×1(実際の CI では Documentation だけの PR なので check は走らない) |
+| PR-A | nuttx master の checkpatch | **`wg_x25519.c` で nxstyle エラー多数**(PR-N が前提であることの確認) |
+| PR-A | PR-N を入れた nuttx の checkpatch | `Missing Signed-off-by` ×2 だけ |
+
+**署名後のメッセージ**:全 12 コミットの本文に、§6.4 と同じ引数の `git interpret-trailers`
+(`Assisted-by: AGENT_NAME:MODEL_VERSION`、`Signed-off-by: AuthorName <Valid@EmailAddress>` の仮の値)を当て、
+`checkpatch.sh -m -g --stdin` に通した:**12 件とも `All checks pass`**、末尾は `Assisted-by:` → `Signed-off-by:` の順。
+コミットは作っていない。
+
+**build.yml の再現**(`cd tools/ci && ./cibuild.sh -A -N -R -S <list>`。cibuild が `-e "-Wno-cpp -Werror"` を付け、
+testbuild が defconfig の正規形と木の汚れを検査):
+
+| 回 | nuttx / apps | 構成 | 結果 |
+|---|---|---|---|
+| 1 | PR-C 先端 `5d66c8901e` / apps master | sim:crypto, sim:nsh | **PASS**(rc=0、208 秒) |
+| 1 | PR-K1 先端(defconfig 修正前 `bcbcab3376`)/ apps master | sim:wireguard | **FAIL**:refresh で `CONFIG_NETUTILS_PING=y`、`CONFIG_NSH_LINELEN=256`、`CONFIG_SYSTEM_WG=y`、`CONFIG_SYSTEM_WG_CONFIG_PATH` が消え、木が汚れる(4 回再試行して同じ)。R4 と R5 |
+| 1 | PR-D 先端(修正前 `e84831c5f1`)/ PR-A `fc640afc4` | sim:wireguard ほか | **FAIL**:apps に system/wg があっても `NETUTILS_PING` と `NSH_LINELEN` の 2 行が消える(R4)。木が汚れたまま次の構成に進むので、同じ実行の後続構成の結果は使えない |
+| 3 | PR-D 先端 `237b6e538e`(修正後)/ PR-A `fc640afc4` | sim:wireguard, sim:crypto, sim:nsh, sim:nettest, sim:usrsocktest, sim:tcpblaster, sim:vpnkit, CMake の sim:nsh / nettest / usrsocktest, rv-virt:netnsh64, rv-virt:knetnsh64 | **sim の 7 構成と CMake の 3 構成はすべて 1 回目で PASS**(defconfig の正規形・木の汚れの検査を含む)。rv-virt:netnsh64 は `math.h: No such file or directory` で FAIL(このイメージの riscv64-unknown-elf に libc/libm のヘッダが無い。本シリーズの変更とは関係しない環境の差。公式 CI イメージでは未確認)。そのため rv-virt:knetnsh64 の結果は無い |
+| 3 | PR-K1 先端 `0b4ed6ec77` / apps master | sim:wireguard | **FAIL(確認済み)**:refresh で消えるのは `CONFIG_SYSTEM_WG=y` と `CONFIG_SYSTEM_WG_CONFIG_PATH` の 2 行だけ(R5)。R4 の 2 行は消えない |
+| 3 | コミットごとの `-Werror` ビルド(コードを含む 10 コミット:PR-C 2、PR-K1 6、PR-A 2。PR-N と PR-D は対象外) | §2.2 と同じ | **全 10 件 PASS、警告 0**。PR-C の 2 件目は起動時の KAT も PASS。PR-K1 のデバイス追加以降の 3 件は、apps の system/wg なしで `wg0` が登録されることも確認 |
+| 3 | sim 一式・CMake・BUILD_KERNEL(`tip.sh`、nuttx `237b6e538e` / apps `fc640afc4`) | §2.3 と同じ | **すべて PASS**:sim:wireguard ビルド(警告 0)、sim 試験一式 8 本(369 秒)、CMake/Ninja(T8)、rv-virt:knetnsh64 の BUILD_KERNEL ビルドと実行(Linux の WireGuard と双方向、負荷中の再設定と down/up から復帰) |
+
+**doc.yml の再現**(`python:3.10`、`pipenv sync`、`pipenv run make html`。`SPHINXOPTS` に `-W`):
+PR-D 先端(修正前 `e84831c5f1`)**PASS**(303 秒、`applications/system/wg/index.html` と
+`os/drivers/special/net/wireguard.html` を生成)、PR-K1 先端(修正前 `bcbcab3376`)**PASS**(332 秒)。
+defconfig の修正は `Documentation/` を変えないので、修正後の SHA でも文書の木は同じ。
+
+**再現していないもの**:公式 CI イメージでのビルド、他アーキテクチャのグループ(arm / xtensa / arm64 など。
+ESP32-S3 の xtensa ツールチェーンはこのイメージに無い)、macOS / msys2 / msvc / OOT のジョブ、codechecker、
+lint.yml(対象ファイルなし)、実機。
