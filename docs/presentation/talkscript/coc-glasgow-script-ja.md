@@ -77,11 +77,12 @@ Summary & next steps(~4分)。
 
 **間:** ハイライトされた行を指して一拍。
 
-## 4 — 自己紹介 (1:27 → 2:13)
+## 4 — 自己紹介 (1:27 → 2:17)
 
 **画面:** 見出し「From Japan: I work at Sony, and I build things as a hobby.」。本人写真と
-SNS の狐アイコン、日本地図(名古屋 → 仙台 → 川崎)、Hobby engineer のタグ(Space /
-Semiconductors / Robots)、Robotics → Computer Vision → Edge AI → Embedded Systems →
+SNS の狐アイコン、Hobby engineer の写真5枚(Space: モデルロケット / Semiconductors:
+ウェハ上の試作チップ / DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド / Linux:
+LinuC のペンギン)、Robotics → Computer Vision → Edge AI → Embedded Systems →
 NuttX / WireGuard の横型タイムライン(各ノードに実績写真)。
 
 **話す:**
@@ -89,7 +90,7 @@ NuttX / WireGuard の横型タイムライン(各ノードに実績写真)。
 - Sony Semiconductor Solutions で edge AI エンジニアをしていて、application 側から
   Apache NuttX に関わっています。日本から来ました: 名古屋生まれ、大学は仙台、
   今は川崎に住んでいます。仕事の外ではホビーエンジニアで、宇宙・半導体・
-  ロボットまわりのものを作っています。SNS では、この写真の狐が私です。
+  ロボットまわりのものを作っています。大学では DNA でナノ構造を作り、Linux も大好きです。SNS では、この写真の狐が私です。
   ここに至る道のりは、分子ロボット工学の世界大会、
   コンピュータビジョンと AI システムの仕事、edge AI カメラ、そして SPRESENSE 上の
   embedded systems を通っています — NuttX と WireGuard は、その最新の到達点であって、
@@ -99,7 +100,7 @@ NuttX / WireGuard の横型タイムライン(各ノードに実績写真)。
   deployment 側から NuttX に繰り返し出会い続けていて、ある時、その立場からは
   解決できない課題に行き当たりました。それが今日の話です。
 
-## 5 — プロジェクト概要 (2:13 → 2:53)
+## 5 — プロジェクト概要 (2:17 → 2:57)
 
 **画面:** `wg0` netdev の図 — アプリケーション/NSH、NuttX ネットワークスタック、
 `eth0`/`wlan0` の隣に `wg0`、その下に UDP ソケット、インターネット、ピア。
@@ -112,7 +113,7 @@ NuttX / WireGuard の横型タイムライン(各ノードに実績写真)。
   その下では暗号化された伝送路が UDP ソケットです。反対側のピアは本物の
   WireGuard エンドポイント — Linux、Windows、あるいは別のゲートウェイです。
 
-## 6 — 経緯: 2月の思いつきから10月の本番まで (2:53 → 3:45)
+## 6 — 経緯: 2月の思いつきから10月の本番まで (2:57 → 3:49)
 
 **画面:** 2月〜10月の月の横軸。上に出来事 — 2月中旬 GSoC のテーマ一覧を見て調べ始める /
 3月上旬 計画を Issue にまとめて提案 / 3月20日 Alan さんからこのカンファレンスを聞き、講演を申し込む /
@@ -129,7 +130,7 @@ NuttX / WireGuard の横型タイムライン(各ノードに実績写真)。
 - 6月からは少しずつ進め、まとまった開発は8月の休みにやりました。9月には FLAT の
   アプリからカーネルドライバに作り直しました — それがこの話の後半です。
 
-## 7 — Background: NuttX とは何か (3:45 → 4:33)
+## 7 — Background: NuttX とは何か (3:49 → 4:37)
 
 **画面:** ソフトウェアスタック図(Applications / POSIX・ANSI・BSD socket API /
 Networking・VFS・filesystems・device drivers・NSH shell / NuttX kernel / MCU・MPU)。
@@ -149,7 +150,7 @@ Native networking, Device drivers, Apache Software Foundation TLP。
   プログラミングモデルを持っている。この組み合わせは珍しく、この後出てくる
   socket、netdev、POSIX の形をした porting が可能なのは、すべてこれのおかげです。
 
-## 8 — Positioning: NuttX の立ち位置と実際の採用例 (4:33 → 5:39)
+## 8 — Positioning: NuttX の立ち位置と実際の採用例 (4:37 → 5:43)
 
 **画面:** 左に RTOS 比較表(FreeRTOS / Zephyr / NuttX、design center と typical use)、
 GitHub スター数(FreeRTOS/FreeRTOS 7.8k・zephyr 16.5k・apache/nuttx 4.1k、
@@ -173,7 +174,7 @@ GitHub スター数(FreeRTOS/FreeRTOS 7.8k・zephyr 16.5k・apache/nuttx 4.1k、
   月面ミッションでも飛んでいます。大きなエコシステムの隣では小さいですが、
   おもちゃではありません。
 
-## 9 — History: Sony と NuttX の歴史 (5:39 → 6:41)
+## 9 — History: Sony と NuttX の歴史 (5:43 → 6:45)
 
 **画面:** 縦タイムライン — 2015 Sony audio products / 2018–19 SPRESENSE・CXD56xx
 (OSS+ELC Europe 2019 で発表) / 2020 upstream collaboration(NuttX Online Workshop、
@@ -196,7 +197,7 @@ GitHub スター数(FreeRTOS/FreeRTOS 7.8k・zephyr 16.5k・apache/nuttx 4.1k、
   GNSS、センシングの仕事へと時間をかけて広がっていった。これが、私自身の経験が
   立っている土台です。
 
-## 10 — Experience: SPRESENSE と AITRIOS での私の経験 (6:41 → 7:38)
+## 10 — Experience: SPRESENSE と AITRIOS での私の経験 (6:45 → 7:42)
 
 **画面:** SPRESENSE と AITRIOS / edge AI カメラの実写真。下に
 "application development → system integration → deployment & operation" の
@@ -215,7 +216,7 @@ GitHub スター数(FreeRTOS/FreeRTOS 7.8k・zephyr 16.5k・apache/nuttx 4.1k、
   そして私をそこへ連れてきた課題は、「NuttX をどう動かすか」ではありませんでした。
   「デプロイされた後の NuttX デバイスに、どうやって届くか」でした。
 
-## 11 — 目次 ②The problem and the idea (7:38 → 7:48)
+## 11 — 目次 ②The problem and the idea (7:42 → 7:52)
 
 **画面:** 目次と同じリスト。②The problem and the idea だけハイライト、他は薄い。
 
@@ -223,7 +224,7 @@ GitHub スター数(FreeRTOS/FreeRTOS 7.8k・zephyr 16.5k・apache/nuttx 4.1k、
 
 **間:** ハイライトされた行を指して一拍。
 
-## 12 — Problem: 遠隔アクセスの隙間 (7:48 → 8:40)
+## 12 — Problem: 遠隔アクセスの隙間 (7:52 → 8:44)
 
 **画面:** Engineer → Internet → Router/network → Wi-Fi → NuttX device の図。
 WPA2/WPA3 が守る範囲(Wi-Fi の一区間のみ)と、必要な認証済み end-to-end パスの
@@ -241,7 +242,7 @@ WPA2/WPA3 が守る範囲(Wi-Fi の一区間のみ)と、必要な認証済み e
   接続をベンダーのクラウドに委ねる。同じ隙間は、edge AI や産業用 IoT、遠隔
   インフラ全般にも現れます — このプロジェクト固有の話ではありません。
 
-## 13 — 他の手段との比較 (8:40 → 9:57)
+## 13 — 他の手段との比較 (8:44 → 10:01)
 
 **画面:** 7つの手段(インターネットにポートを開ける / クラウド API への HTTPS /
 MQTT ブローカー / リバーストンネル・リレー / ルーターに VPN / キャリアの閉域網 /
@@ -266,7 +267,7 @@ MQTT ブローカー / リバーストンネル・リレー / ルーターに VP
 **Tailscale や ZeroTier について聞かれたら:** これらも機器上の VPN だが、今のところ
 マイコンより大きな OS が要ることが多い(スライドの脚注)。
 
-## 14 — Solution: なぜ WireGuard なのか (9:57 → 10:50)
+## 14 — Solution: なぜ WireGuard なのか (10:01 → 10:54)
 
 **画面:** Engineer/Linux/Windows ⟷ WireGuard トンネル ⟷ NuttX device の図。
 下に3点: modern IP-layer VPN / UDP transport, public-key peers / already
@@ -287,7 +288,7 @@ everywhere。
   ベンダーのクラウドに頼る代わりに、標準プロトコルを採用する」という選択です。
   これが、この特定の課題に WireGuard が合う理由です。
 
-## 15 — Architecture: NuttX ネットワークスタック上の WireGuard (10:50 → 11:38)
+## 15 — Architecture: NuttX ネットワークスタック上の WireGuard (10:54 → 11:42)
 
 **画面:** Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard
 encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、の層状図。
@@ -304,7 +305,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 - ここから先はすべて、この真ん中の部分 — `wg0` と暗号化のステップ — を、
   上下の層に触れずに作る話です。
 
-## 16 — 目次 ③The plan (11:38 → 11:48)
+## 16 — 目次 ③The plan (11:42 → 11:52)
 
 **画面:** 目次と同じリスト。③The plan だけハイライト、他は薄い。
 
@@ -312,7 +313,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 
 **間:** ハイライトされた行を指して一拍。
 
-## 17 — Porting Strategy: wireguard-lwip を lwIP なしで再利用する (11:48 → 12:42)
+## 17 — Porting Strategy: wireguard-lwip を lwIP なしで再利用する (11:52 → 12:46)
 
 **画面:** 3段カード — Protocol & crypto(KEEP、緑)/ Platform hooks(ADAPT、金、
 `wireguard-platform.h` の4関数)/ lwIP network glue(REPLACE、赤)。
@@ -331,7 +332,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   もたらすものです。その境界があったからこそ、最初の移植作業は書き直し
   ではなく差し替えで済み、作業量そのものが桁違いに小さくなりました。
 
-## 18 — Design: lwIP を NuttX netdev へ写像する (12:42 → 13:04)
+## 18 — Design: lwIP を NuttX netdev へ写像する (12:46 → 13:08)
 
 **画面:** lwIP → NuttX の対応表(`netif`→`net_driver_s`、`pbuf`→`iob`、
 `netif_add()`→`netdev_register()`、コールバック→`devif_poll()`)。
@@ -343,7 +344,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   `netdev_register` に、送信コールバックは NuttX の `devif_poll` になります。
   `wg0` は TUN 型の netdev として登録され、その下の「配線」は UDP ソケットです。
 
-## 19 — 目次 ④Version 1: the app (13:04 → 13:14)
+## 19 — 目次 ④Version 1: the app (13:08 → 13:18)
 
 **画面:** 目次と同じリスト。④Version 1: the app だけハイライト、他は薄い。
 
@@ -351,7 +352,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 
 **間:** ハイライトされた行を指して一拍。
 
-## 20 — Result: 動くトンネルは始まりにすぎない (13:14 → 13:48)
+## 20 — Result: 動くトンネルは始まりにすぎない (13:18 → 13:52)
 
 **画面:** 表(Protocol & crypto: 3,079行無変更 / OS hooks: 4関数 / Network glue:
 実際の作業)。`wg genkey / set / setconf` が実行時に可能、という claim。
@@ -367,7 +368,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   — 「動いた」ように見えるところまでが実は一番安く手に入る到達点で、
   この後の話はほとんど、その「動いた」が何を隠していたか、です。
 
-## 21 — The Testing Pattern: 浅い試験は通り、深い試験は落ちる (13:48 → 14:16)
+## 21 — The Testing Pattern: 浅い試験は通り、深い試験は落ちる (13:52 → 14:20)
 
 **画面:** フロー図 — SIMPLE TEST(handshake/ping、✓PASS)→ ASSUMPTION
 (「そこは正しいはず」)→ DEEPER TEST(TCP/real HW/kernel/security、✗FAIL)。
@@ -380,7 +381,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   はそのパターンの実例です — apps版で5つ、そしてカーネルに押し込んでからさらに
   2つ。
 
-## 22 — 落とし穴 1/7: `SO_RCVTIMEO` (14:16 → 14:40)
+## 22 — 落とし穴 1/7: `SO_RCVTIMEO` (14:20 → 14:44)
 
 **話す:**
 - 最初の一撃: 成功を返すのに何も効かない。
@@ -390,7 +391,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   発火しない → 開始要求が送られない → ピアが応答しない → `recvfrom` が
   戻らずタイマーを発火させられない。
 
-## 23 — 落とし穴 2/7: detach された pthread (14:40 → 15:24)
+## 23 — 落とし穴 2/7: detach された pthread (14:44 → 15:28)
 
 **話す:**
 - 2つ目: 成り立たなかったライフサイクルの前提。
@@ -403,7 +404,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   なりました。カーネル版でスレッドをドライバ側が所有しているのは、まさに
   これが理由です。
 
-## 24 — 落とし穴 3/7: ping は通るのに TCP が死ぬ (15:24 → 16:16) *(お気に入り)*
+## 24 — 落とし穴 3/7: ping は通るのに TCP が死ぬ (15:28 → 16:20) *(お気に入り)*
 
 **話す:**
 - このプロジェクトで一番好きなバグです。
@@ -420,7 +421,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   使えます。カーネル版がソケットを `struct socket` として保持しているのは、
   まさにこの理由です。
 
-## 25 — 落とし穴 4/7: 「実害なし」が実は10倍 (16:16 → 16:56)
+## 25 — 落とし穴 4/7: 「実害なし」が実は10倍 (16:20 → 17:00)
 
 **話す:**
 - 4つ目: 測定しなかった前提。
@@ -432,7 +433,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   実は10倍でした。本当の修正は正しいブロッキング待ち — `psock_poll` への
   コールバックとセマフォです。
 
-## 26 — 落とし穴 5/7: sim は通るのに実機は違う (16:56 → 17:50)
+## 26 — 落とし穴 5/7: sim は通るのに実機は違う (17:00 → 17:54)
 
 **話す:**
 - 5つ目、そして後で戻ってきます: 誰も測っていなかったスタック。
@@ -447,7 +448,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   と `ps` で実機で測ると94%使っていて、残りは176バイトだけでした。
   この話は後で戻ってきます。
 
-## 27 — 第1版のデモ: 最初の動画 (17:50 → 18:20)
+## 27 — 第1版のデモ: 最初の動画 (17:54 → 18:24)
 
 **画面:** 左に手順 — telnet 10.10.0.2(wg0 越しにログイン)/ uname -a、ifconfig /
 webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevKit、apps 版
@@ -466,7 +467,7 @@ webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevK
 ために、ラップトップに動画の手元コピーを置いておく。**これは apps 版(v0.1.1)。**
 この後のカーネル版の結果と混ぜて話さない。
 
-## 28 — 目次 ⑤Version 2: the kernel driver (18:20 → 18:30)
+## 28 — 目次 ⑤Version 2: the kernel driver (18:24 → 18:34)
 
 **画面:** 目次と同じリスト。⑤Version 2: the kernel driver だけハイライト、他は薄い。
 
@@ -474,7 +475,7 @@ webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevK
 
 **間:** ハイライトされた行を指して一拍。
 
-## 29 — 第5部: カーネルへ (18:30 → 19:05)
+## 29 — 第5部: カーネルへ (18:34 → 19:09)
 
 **話す:**
 - ここからが最初のバージョン以降の追加作業で、マージ可能にする部分です。
@@ -484,7 +485,7 @@ webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevK
   そこでデバイスを `drivers/net/wireguard` としてカーネルに移し、小さな
   ユーザー空間の `wg` コマンドから ioctl 経由で操作する形にしました。
 
-## 30 — カーネル側の設計 (19:05 → 19:50)
+## 30 — カーネル側の設計 (19:09 → 19:54)
 
 **話す:**
 - 実際のドライバの形です。
@@ -498,7 +499,7 @@ webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevK
   ユーザー空間コマンド内のオフライン鍵生成用の小さな MIT ライセンスの
   X25519 だけです。
 
-## 31 — もう2つのバグ・同じ形 (19:50 → 20:55) *(30と一体)*
+## 31 — もう2つのバグ・同じ形 (19:54 → 20:59) *(30と一体)*
 
 **話す:**
 - そしてカーネルの深さでも同じパターンが2回起きました。
@@ -516,7 +517,7 @@ webserver & / ブラウザで http://10.10.0.2/。右に条件 — ESP32-S3 DevK
   まさに前の章のスタックの教訓が、もう一段深いところで再現したものです。
   ヒープに移しました。
 
-## 32 — 検証: 成り立つべき7つの場所 (20:55 → 25:09) *(核心・削らない)*
+## 32 — 検証: 成り立つべき7つの場所 (20:59 → 25:13) *(核心・削らない)*
 
 **画面:** sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64
 (BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPU) / SPRESENSE 実測 /
@@ -575,7 +576,7 @@ ESP32-S3 + SPRESENSE 実 Wi-Fi / 両ボードでの apps v0.1.1、の表。
   telnet、HTTP、7メガバイトの転送、再鍵化、電源断からの復旧 — はその下に
   そのまま立っています。
 
-## 33 — 検証: 動くトンネルは証拠にならない (25:09 → 27:54) *(核心・削らない)*
+## 33 — 検証: 動くトンネルは証拠にならない (25:13 → 27:58) *(核心・削らない)*
 
 **画面:** 3行の表 — 毎回同じ秘密鍵 / トンネルより長生きするセッション鍵 /
 数時間経たないと現れないリーク — それぞれ「pingが通れば気づくか」に「気づかない」。
@@ -612,7 +613,7 @@ ESP32-S3 + SPRESENSE 実 Wi-Fi / 両ボードでの apps v0.1.1、の表。
   実在するものです。主張していないのは、1週間の連続稼働や、シミュレータの
   アロケータと64ビットフレームがボードと同じように振る舞う、ということです。
 
-## 34 — 設計判断: タイムスタンプ問題には無料の答えがない (27:54 → 31:42) *(核心・削らない)*
+## 34 — 設計判断: タイムスタンプ問題には無料の答えがない (27:58 → 31:46) *(核心・削らない)*
 
 **画面:** リプレイ防御が課す義務、4つの選択肢の表(リアルタイム+起動内
 高水位 / 毎回永続化 / 耐久性のある範囲予約 / 追いつくのを待つ)、実測の
@@ -667,7 +668,7 @@ ESP32-S3 + SPRESENSE 実 Wi-Fi / 両ボードでの apps v0.1.1、の表。
   存在する環境では設計は正しく動きます。#14 がオープンのままなのは、
   証拠が尽きたからではなく、私がそう判断したからです。
 
-## 35 — 目次 ⑥Live demo (31:42 → 31:52)
+## 35 — 目次 ⑥Live demo (31:46 → 31:56)
 
 **画面:** 目次と同じリスト。⑥Live demo だけハイライト、他は薄い。
 
@@ -675,7 +676,7 @@ ESP32-S3 + SPRESENSE 実 Wi-Fi / 両ボードでの apps v0.1.1、の表。
 
 **間:** ハイライトされた行を指して一拍。
 
-## 36 — デモ構成: スマホのネットワーク上の1本のトンネル (31:52 → 32:50)
+## 36 — デモ構成: スマホのネットワーク上の1本のトンネル (31:56 → 32:54)
 
 **画面:** 構成図。会場 Wi-Fi(機器どうしの通信を遮断)→ スマホのテザリング
 (独自の小さなローカルネットワーク)→ ラップトップ(Docker 内の WireGuard
@@ -697,7 +698,7 @@ ESP32-S3 + SPRESENSE 実 Wi-Fi / 両ボードでの apps v0.1.1、の表。
 - 見てほしいのは2つです。ログインした後のアドレスと、パケットです。
   トンネルの外では、暗号化された UDP しか見えません。
 
-## 37 — デモ (32:50 → 34:20)
+## 37 — デモ (32:54 → 34:24)
 
 **画面:** 7つの手順 — wg show / telnet 10.10.0.2 / ifconfig /
 stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
@@ -735,7 +736,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 
 **フォールバック:** 録画。ライブが止まったらすぐ切り替える。
 
-## 38 — 目次 ⑦Summary & next steps (34:20 → 34:30)
+## 38 — 目次 ⑦Summary & next steps (34:24 → 34:34)
 
 **画面:** 目次と同じリスト。⑦Summary & next steps だけハイライト、他は薄い。
 
@@ -743,7 +744,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 
 **間:** ハイライトされた行を指して一拍。
 
-## 39 — 運用性 (34:30 → 35:04) *(削る候補3)*
+## 39 — 運用性 (34:34 → 35:08) *(削る候補3)*
 
 **話す:**
 - 「デモで動く」から「運用できる」への移行です。
@@ -754,7 +755,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
   ケーションのデータが流れているか — なので静かになったとき、
   推測ではなくどの層が壊れたかを言えます。
 
-## 40 — 移植性 (35:04 → 35:31) *(削る候補2)*
+## 40 — 移植性 (35:08 → 35:35) *(削る候補2)*
 
 **話す:**
 - 最初からの設計判断を、検証した結果です。
@@ -764,7 +765,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
   間を、コード変更なしで移動できます。カーネルドライバはそこに
   sim と rv-virt のカーネルビルドを積み増します。賭けは報われました。
 
-## 41 — 還元する (35:31 → 36:14) *(おまけ・最優先で削る)*
+## 41 — 還元する (35:35 → 36:18) *(おまけ・最優先で削る)*
 
 **話す:**
 - この場の価値観に話を閉じます。
@@ -782,7 +783,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 (検証・パターン)は背負っていない。飛ばしても質疑で聞かれたら答えられる
 ように、上の2点だけ頭に入れておく。
 
-## 42 — Summary: 作ったものと、覚えておいてほしい3つ (36:14 → 37:36)
+## 42 — Summary: 作ったものと、覚えておいてほしい3つ (36:18 → 37:40)
 
 **話す:**
 - まとめます。
@@ -804,7 +805,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
   3つ目は自分自身のドライバの中にあり、実カーネルビルドだけがそれを
   表に出しました。通常の sim 構成では見つかりませんでした。
 
-## 43 — 謝辞: この発表を支えてくれた人たち (37:36 → 38:11)
+## 43 — 謝辞: この発表を支えてくれた人たち (37:40 → 38:15)
 
 **画面:** 4つの枠 — Alan / Apache NuttX コミュニティ / Apache Software Foundation と
 CoC の運営・ボランティアの皆さん / Sony の NuttX 開発者(これまでの、そして今の)。
@@ -819,7 +820,7 @@ CoC の運営・ボランティアの皆さん / Sony の NuttX 開発者(これ
   皆さん。NuttX を製品に入れ、プロジェクトに多くを還元してきました。
   この仕事は、その上に立っています。
 
-## 44 — ありがとうございました (38:11 → 38:20)
+## 44 — ありがとうございました (38:15 → 38:24)
 
 **話す:**
 - ありがとうございました。ご質問をお受けします — カーネルドライバ、
