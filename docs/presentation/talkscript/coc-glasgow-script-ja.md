@@ -82,11 +82,11 @@ Summary & status(~4分)。
 
 ## 4 — 自己紹介 (1:32 → 2:22)
 
-**画面:** 見出し「From Japan: I work at Sony, and I build things as a hobby.」。3段構成 —
-上: 本人写真・名前の1行・SNS の狐アイコン / 中: Hobby engineer の写真5枚(Space: モデルロケット /
-Semiconductors: ウェハ上の試作チップ / DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド /
-Linux: LinuC のペンギン)と、右に活動のチップ3つ / 下: Robotics → Computer Vision → Edge AI →
-Embedded Systems → NuttX / WireGuard を1行に並べた経歴(各ステップに写真)。
+**画面:** 見出し「From Japan: I work at Sony, and I build things as a hobby.」。上: 本人写真・
+名前の1行・SNS の狐アイコン。下の左: 日本地図(① 名古屋 生まれ → ② 仙台 大学 → ③ 川崎 現在)。
+下の右: Hobby engineer の写真5枚(Space: モデルロケット / Semiconductors: ウェハ上の試作チップ /
+DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド / Linux: LinuC のペンギン)と、
+活動のチップ3つ。経歴の流れ(分子ロボティクス → … → NuttX)は画面にはなく、口頭だけ。
 
 **話す:**
 - 簡単に自己紹介します — どこから来たか、という話です。
