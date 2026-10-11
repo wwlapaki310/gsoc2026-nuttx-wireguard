@@ -76,7 +76,7 @@ fd がタスクグループにスコープされる話、実測値。スライ�
 デッキと同じ名前で置く。
 
 発表の技術背景を用語から学ぶ場合は
-[大学1年生向け初心者ガイド](presentation/coc-glasgow-beginner-guide-ja.md)を入口にする。
+[大学1年生向け初心者ガイド](presentation/coc-glasgow-beginner-guide-ja.md)([Web ページ版](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-beginner-guide-ja.html)。図も表示される。Markdown を直したら `python presentation/build_guide_html.py` で作り直す)を入口にする。
 スライドの順番どおりに、読み方つきの用語・図・数字で追うなら
 [スライド解説書](presentation/coc-glasgow-slide-guide-ja.html)。
 

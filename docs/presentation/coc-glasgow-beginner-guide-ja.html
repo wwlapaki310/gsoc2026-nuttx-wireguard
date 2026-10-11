@@ -1,0 +1,3028 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>はじめて理解する WireGuard for Apache NuttX</title>
+<style>
+:root { --bg:#ffffff; --fg:#1f2328; --muted:#59636e; --line:#d1d9e0;
+  --code:#f6f8fa; --accent:#7c297d; --link:#0969da; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --line:#3d444d;
+  --code:#151b23; --accent:#d2a8ff; --link:#4493f8; } }
+:root[data-theme="dark"] { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1;
+  --line:#3d444d; --code:#151b23; --accent:#d2a8ff; --link:#4493f8; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.8 "Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif; }
+main { max-width: 880px; margin: 0 auto; padding: 32px 16px 96px; }
+h1 { font-size: 30px; line-height: 1.35; color: var(--accent); }
+h2 { font-size: 24px; margin-top: 2.4em; padding-bottom: .3em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 19px; margin-top: 1.8em; }
+a { color: var(--link); }
+code { background: var(--code); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 6px; overflow-x: auto; line-height: 1.5; }
+pre code { padding: 0; background: none; }
+pre.mermaid { background: none; text-align: center; }
+table { border-collapse: collapse; display: block; overflow-x: auto; margin: 1em 0; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+th { background: var(--code); }
+blockquote { margin: 1em 0; padding: 0 1em; color: var(--muted); border-left: 4px solid var(--line); }
+.top { display:flex; justify-content:space-between; gap:12px; font-size:14px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<div class="top"><span>Community Over Code Glasgow 2026 &middot; 理解用ガイド</span>
+<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/coc-glasgow-beginner-guide-ja.md">Markdown 版(GitHub)</a></div>
+<h1 id="はじめて理解する-wireguard-for-apache-nuttx">はじめて理解する WireGuard for Apache NuttX</h1>
+<p>Community Over Code Glasgow の発表を、自分の言葉で説明するための日本語学習ガイド。
+対象は「大学1年生程度のプログラミング経験はあるが、OS・ネットワーク・暗号・組込みの
+専門知識はまだない」人です。</p>
+<p>この文書の目的は、発表原稿を暗記することではありません。次の3つを理解することです。</p>
+<ol>
+<li>何を作ったのか</li>
+<li>なぜ難しかったのか</li>
+<li>何を確認できて、何がまだ未解決なのか</li>
+</ol>
+<p>実装と試験結果の正本は、<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/in-kernel-design.md">現行設計</a>と
+<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/verification-matrix.md">検証マトリクス</a>です。この文書は、それらを読む前の
+「やさしい地図」です。</p>
+<p>発表は<a href="coc-glasgow-slides.html">スライド</a>43枚で、7つの部に分かれています。まず
+<a href="#この発表の地図">この発表の地図</a>で全体の流れをつかみ、<a href="#部ごとの学習ルート">部ごとの学習ルート</a>で
+「その部を理解するには、この文書のどの章を読めばよいか」を確かめてください。1枚ずつの細かい解説は
+<a href="coc-glasgow-slide-guide-ja.html">スライド別解説</a>、読み上げる言葉は<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">日本語台本</a>
+にあります。この文書は「トピック順の読み物」、スライド別解説は「スライド順の辞書」という分担です。</p>
+<hr />
+<h2 id="0-最初にこれだけ">0. 最初にこれだけ</h2>
+<h3 id="30秒で説明すると">30秒で説明すると</h3>
+<p>小さな組込み機器向けOSである <strong>Apache NuttX</strong> に、<strong>WireGuardというVPN</strong>を追加しました。
+NuttX上に<code>wg0</code>という仮想ネットワーク機器を作り、そこへ届いたIPパケットを暗号化して、
+普通のWi-FiからUDPパケットとして送ります。</p>
+<pre><code class="language-text">通常の通信
+  アプリ → IPパケット → Wi-Fi → インターネット
+
+今回の通信
+  アプリ → IPパケット → wg0で暗号化 → UDP → Wi-Fi → インターネット
+                                      ↓
+                                相手が復号する
+</code></pre>
+<p>作ったものは2段階あります。<strong>第1版</strong>はアプリとして作った版(apps版、v0.1.1)、<strong>第2版</strong>は
+NuttXのカーネルの中に入れた正式なドライバ(カーネル版)です。どちらもESP32-S3とSPRESENSEの
+実機で、本物のWireGuard実装とつながることを確認しました(実機はどちらも普通のFLATビルド。カーネル版の
+KERNEL/PROTECTEDビルドはQEMUの上でだけ動かしました)。さらに、単にpingが通るだけでは見つからない、並行処理、鍵、時刻、メモリ、再起動の問題まで
+調べました。</p>
+<h3 id="どこで確かめたかの印">「どこで確かめたか」の印</h3>
+<p>この発表では「何を、どの版で、どこで確かめたか」を混ぜないことがとても大切です。この文書では次の印を
+使います。</p>
+<table>
+<thead>
+<tr>
+<th>印</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>[apps・実機]</strong></td>
+<td>第1版(apps版 v0.1.1)を本物のボードで確かめた</td>
+</tr>
+<tr>
+<td><strong>[カーネル・sim]</strong></td>
+<td>第2版(カーネル版)を、PCの上で動くNuttXのシミュレータ(sim)で確かめた</td>
+</tr>
+<tr>
+<td><strong>[カーネル・QEMU]</strong></td>
+<td>第2版を、QEMUという仮想マシンの上の本物のカーネルビルドで確かめた</td>
+</tr>
+<tr>
+<td><strong>[カーネル・実機]</strong></td>
+<td>第2版を本物のボードで確かめた</td>
+</tr>
+<tr>
+<td><strong>[未解決]</strong></td>
+<td>問題が残っている、またはまだ試していない</td>
+</tr>
+</tbody>
+</table>
+<p>たとえば「カーネル版がLinuxのWireGuardとつながる」は <strong>[カーネル・sim]</strong> と <strong>[カーネル・QEMU]</strong> で、
+「カーネル版が実機でつながる」は <strong>[カーネル・実機]</strong>(相手はWindowsの公式クライアント)です。
+apps版は両ボードでLinuxとWindowsの両方とつながりました <strong>[apps・実機]</strong>。発表の最後のライブデモ
+(スタックちゃん)は <strong>apps版</strong> です(<a href="#186-なぜライブデモはapps版なのか">18.6</a>)。</p>
+<h3 id="この発表の中心メッセージ">この発表の中心メッセージ</h3>
+<blockquote>
+<p><strong>浅い試験は通る。深い試験で壊れる。</strong></p>
+</blockquote>
+<p>ハンドシェイクやpingが成功しても、安全で、長く動き、停止でき、再起動後も復帰できるとは
+限りません。このプロジェクトでは「動いた」の先を調べたことで、本当の問題が見つかりました。</p>
+<hr />
+<h2 id="この発表の地図">この発表の地図</h2>
+<p>発表は全部で43枚、7つの部に分かれています。スライド1はタイトル、スライド2は目次です。部が変わる
+たびに目次のスライドに戻ってきて、今どこにいるかを示します(スライド3・11・16・19・27・34・37)。</p>
+<table>
+<thead>
+<tr>
+<th>部</th>
+<th>英語の題</th>
+<th>この部が答える問い</th>
+<th>スライド</th>
+<th style="text-align: right;">時間の目安</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第1部</td>
+<td>Overview &amp; background</td>
+<td>誰が、何を作ったのか。NuttXとはどんなOSで、なぜこの人がそこにいたのか</td>
+<td>3〜10</td>
+<td style="text-align: right;">約6分</td>
+</tr>
+<tr>
+<td>第2部</td>
+<td>The problem and the idea</td>
+<td>遠くに置いた機器へ、安全に届くにはどうすればよいか。なぜWireGuardなのか</td>
+<td>11〜15</td>
+<td style="text-align: right;">約4分</td>
+</tr>
+<tr>
+<td>第3部</td>
+<td>The plan</td>
+<td>既存のWireGuardの実装をどう再利用し、NuttXにどうはめこむか</td>
+<td>16〜18</td>
+<td style="text-align: right;">約2分</td>
+</tr>
+<tr>
+<td>第4部</td>
+<td>Version 1: the app</td>
+<td>第1版(アプリ)は動いた。では「動いた」の裏に何が隠れていたか</td>
+<td>19〜26</td>
+<td style="text-align: right;">約5分</td>
+</tr>
+<tr>
+<td>第5部</td>
+<td>Version 2: the kernel driver</td>
+<td>なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか</td>
+<td>27〜33</td>
+<td style="text-align: right;">約8分</td>
+</tr>
+<tr>
+<td>第6部</td>
+<td>Live demo</td>
+<td>実物では、どう見えるのか</td>
+<td>34〜36</td>
+<td style="text-align: right;">約3分</td>
+</tr>
+<tr>
+<td>第7部</td>
+<td>Summary &amp; status</td>
+<td>実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか</td>
+<td>37〜43</td>
+<td style="text-align: right;">約4分</td>
+</tr>
+</tbody>
+</table>
+<p>時間はスライド2の目安です。台本どおりに読むと合計約33分(33分15秒、デモ90秒を含む)なので、本番では
+30分枠に収まるよう削る順番(40 → 39 → 38)が<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">台本</a>に決めてあります。
+いちばん時間を使うのは第5部の検証(スライド31〜33)で、ここは削りません。</p>
+<h3 id="話の筋ストーリーライン">話の筋(ストーリーライン)</h3>
+<p>まず、<strong>なぜ必要か</strong>。小さな組込みOSのNuttXで作った機器は、現場に置いた後に遠くから安全に
+つなぐ方法がありませんでした(第1部・第2部)。そこで、標準のVPNであるWireGuardを、NuttXの普通の
+ネットワーク機器<code>wg0</code>として加えることにしました。次に、<strong>どう作る計画か</strong>。暗号は既存の実装を
+そのまま使い(プロトコルの中心は小さな修正2つだけ)、OSに依存する部分を置き換えます(第3部)。<strong>第1版</strong>はアプリとして作り、
+すぐに動きました。ところが「動いた」の裏には、pingでは見えない<strong>隠れたバグ</strong>が4つありました(第4部)。
+そこで<strong>第2版</strong>では、正式なドライバとして<strong>カーネルの中へ</strong>移し、さらに2つのバグを見つけ、
+シミュレータ・仮想マシン・実機で<strong>どこまで確かめたか</strong>を一つずつ測りました(第5部)。その上で、
+スタックちゃんという<strong>実物</strong>で、トンネル越しに操作する様子を見せます(第6部)。最後に、運用・移植性・
+本家への還元の現状をまとめ、3つの教訓と謝辞で<strong>まとめ</strong>ます(第7部)。</p>
+<pre><code class="language-text">なぜ必要か → どう作る計画か → 第1版で動いたが隠れたバグ → 第2版でカーネルへ・確かめ方 → 実物 → まとめ
+ (第1・2部)     (第3部)          (第4部)                     (第5部)                  (第6部) (第7部)
+</code></pre>
+<hr />
+<h2 id="部ごとの学習ルート">部ごとの学習ルート</h2>
+<p>各部について、「スライドごとの要点」「先に読んでおく基礎」「どこで確かめたか」をまとめます。
+基礎の章へのリンクは、知らない言葉が出てきたときに戻る場所です。全部を一度に読む必要はありません。</p>
+<h3 id="第1部-概要と背景">第1部 概要と背景</h3>
+<p><strong>スライド3〜10、約6分。</strong> 問い:誰が、何を作ったのか。NuttXとはどんなOSか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">4</td>
+<td>About Me</td>
+<td>ソニーのエッジAIエンジニアで、NuttXには<strong>アプリの側</strong>から関わってきた。ドライバを書くのは今回が初めて</td>
+<td><a href="#66-発表者とこのプロジェクトの始まり">6.6</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>Overview</td>
+<td>NuttXに<code>wg0</code>という仮想ネットワーク機器を足す。下の「線」はケーブルではなくUDPソケット</td>
+<td><a href="#81-目的">8.1</a>、<a href="#71-netdev">7.1</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>How it started</td>
+<td>2月に調べ始め、9月にアプリからカーネルドライバへ作り直し、10月にこの発表</td>
+<td><a href="#66-発表者とこのプロジェクトの始まり">6.6</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>What is Apache NuttX?</td>
+<td>小さなRTOSなのに、Unixと同じ書き方(POSIX、BSD socket、ファイル)ができる</td>
+<td><a href="#61-rtosとは">6.1</a>、<a href="#62-freertoszephyrnuttxの見方">6.2</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>NuttX and other RTOSes</td>
+<td>FreeRTOS・Zephyrとは重心が違う。星の数は少ないが、実際の製品で使われている</td>
+<td><a href="#62-freertoszephyrnuttxの見方">6.2</a>、<a href="#64-nuttxはどこで使われているか">6.4</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>History</td>
+<td>ソニーは2015年ごろからNuttXを製品に使い、upstreamにも貢献してきた</td>
+<td><a href="#65-ソニーとnuttxの歴史">6.5</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>Experience</td>
+<td>発表者の課題は「NuttXを動かすこと」ではなく「設置した後のNuttX機器にどう届くか」</td>
+<td><a href="#66-発表者とこのプロジェクトの始まり">6.6</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#21-ipアドレスは機器の住所">2.1 IPアドレス</a>、<a href="#5-oskerneldriverの基礎">5. OS・kernel・driverの基礎</a>、
+  <a href="#6-rtosとapache-nuttx">6. RTOSとApache NuttX</a>、<a href="#71-netdev">7.1 netdev</a></li>
+<li><strong>どこで確かめたか:</strong> この部は経歴と歴史なので、技術的な試験の対象ではありません。GitHubの星の数は
+  変わるので、スライドの日付(2026年10月)と一緒に言います。</li>
+</ul>
+<h3 id="第2部-課題とアイデア">第2部 課題とアイデア</h3>
+<p><strong>スライド11〜15、約4分。</strong> 問い:遠くの機器へ安全に届くには? なぜWireGuardなのか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">12</td>
+<td>Problem</td>
+<td>Wi-Fiの暗号(WPA2/WPA3)が守るのは、機器とアクセスポイントの間の一区間だけ</td>
+<td><a href="#34-wi-fiの暗号はどこまで守るか">3.4</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td>Options</td>
+<td>ポート開放、HTTPS、MQTT、リバーストンネル、ルーターのVPN、キャリア閉域網、機器のVPNを比べる</td>
+<td><a href="#35-ほかの手段との比較">3.5</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td>Why WireGuard</td>
+<td>小さく、UDPで動き、公開鍵で相手を識別し、LinuxやWindowsに標準である</td>
+<td><a href="#33-wireguardが登場する理由">3.3</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td>Architecture</td>
+<td>アプリ → TCP/UDP/IP → <code>wg0</code> → 暗号化 → UDPソケット → <code>wlan0</code>/<code>usrsock</code></td>
+<td><a href="#9-パケットはどう流れるか">9</a>、<a href="#74-usrsock">7.4</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#2-ネットワークの基礎">2. ネットワークの基礎</a>(IP、ポート、TCP/UDP、socket、NAT)、
+  <a href="#3-vpnとwireguard">3. VPNとWireGuard</a>、<a href="#41-peer">4.1 peer</a>、<a href="#42-秘密鍵と公開鍵">4.2 秘密鍵と公開鍵</a></li>
+<li><strong>どこで確かめたか:</strong> 比較表は設計の判断で、試験ではありません。表の「NuttXに今あるもの」の列は
+  nuttx-apps 13.0.1 に入っているクライアントです。</li>
+</ul>
+<h3 id="第3部-計画">第3部 計画</h3>
+<p><strong>スライド16〜18、約2分。</strong> 問い:既存のWireGuardをどう再利用し、NuttXにどうはめこむか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">17</td>
+<td>Porting</td>
+<td>wireguard-lwipの暗号はそのまま、プロトコルの中心は小さな修正2つ(PATCHES.md)。OS依存は4つの関数だけ。lwIP依存のつなぎ込みを置き換える</td>
+<td><a href="#84-ゼロから書かなかった">8.4</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">18</td>
+<td>Design</td>
+<td>lwIPの部品をNuttXの部品へ写す(<code>netif</code>→<code>net_driver_s</code>、<code>pbuf</code>→<code>iob</code> など)</td>
+<td><a href="#84-ゼロから書かなかった">8.4</a>、<a href="#72-upper-halfとlower-half">7.2</a>、<a href="#73-iob">7.3</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#25-socketとは">2.5 socket</a>、<a href="#53-driver">5.3 driver</a>、<a href="#7-nuttxネットワーク用語">7.1〜7.3 netdev・upper/lower half・IOB</a></li>
+<li><strong>どこで確かめたか:</strong> 計画なので試験はありません。計画どおりだったかの答え合わせは第7部のスライド39です。</li>
+</ul>
+<h3 id="第4部-第1版-アプリ">第4部 第1版: アプリ</h3>
+<p><strong>スライド19〜26、約5分。</strong> 問い:第1版は動いた。では「動いた」の裏に何が隠れていたか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">20</td>
+<td>Result</td>
+<td>3,000行以上のプロトコルと暗号を持ってきた。暗号は元と1 byteも違わず、プロトコルの中心は小さな修正2つ(1つはwireguard-lwip自身のバグ)。鍵や相手の設定を、作り直しなしに動作中に変えられる</td>
+<td><a href="#84-ゼロから書かなかった">8.4</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">21</td>
+<td>The Testing Pattern</td>
+<td>浅い試験は通り、深い試験で落ちる。浅い試験が通ると、その部分を疑わなくなる</td>
+<td><a href="#この発表の中心メッセージ">0</a>、<a href="#14-なぜpingだけでは足りないのか">14</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">22〜25</td>
+<td>Bug 1〜4</td>
+<td>消えるスレッド(最初の症状は戻らない受信待ちで、タイムアウトの設定を疑った)、別タスクのfd、50 msのポーリング、測っていなかったスタック</td>
+<td><a href="#13-発表に出てくる6つの落とし穴">13</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">26</td>
+<td>Version 1 demo</td>
+<td>第1版でtelnetとWebページがトンネル越しに使える動画の1コマ(静止画。再生しない)</td>
+<td><a href="#182-第1版の動画スライド26">18.2</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#25-socketとは">2.5 socket</a>、<a href="#54-threadとtask">5.4 threadとtask</a>、
+  <a href="#82-2段階の開発">8.2 2段階の開発</a>。fd(file descriptor)とstackは<a href="#21-用語集">用語集</a>にもあります。</li>
+<li><strong>どこで確かめたか:</strong> 第1版の結果と動画は <strong>[apps・実機]</strong>(ESP32-S3、相手はWindowsの公式クライアント)。
+  バグ4のスタック94%はESP32-S3の実機で測った値です。</li>
+</ul>
+<h3 id="第5部-第2版-カーネルドライバ">第5部 第2版: カーネルドライバ</h3>
+<p><strong>スライド27〜33、約8分。</strong> 問い:なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか。
+発表の重心はここ、特にスライド31〜33です。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">28</td>
+<td>Into the kernel</td>
+<td>第1版はFLATビルドでしか動かない。正式なドライバにするにはカーネルへ</td>
+<td><a href="#75-flatprotectedkernel-build">7.5</a>、<a href="#82-2段階の開発">8.2</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">29</td>
+<td>The Kernel Design</td>
+<td>ドライバがソケットとスレッドを持つ。ポインタなしのioctl ABI。秘密鍵はwrite-only。プロトコルの中心<code>wg_noise.c</code>はwireguard-lwip由来のBSD-3のコード</td>
+<td><a href="#85-現行driverの主なfile">8.5</a>、<a href="#10-ioctlとabi">10</a>、<a href="#11-並行処理をどう安全にしたか">11</a>、<a href="#12-起動と停止のライフサイクル">12</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">30</td>
+<td>Bugs 5 &amp; 6</td>
+<td>NuttX自身の暗号のnonceのバグ、カーネルビルドだけで起きたスタックあふれ</td>
+<td><a href="#46-nonceとcounter">4.6</a>、<a href="#13-発表に出てくる6つの落とし穴">13</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">31</td>
+<td>Testing: seven places</td>
+<td>sim、QEMUの3構成、SPRESENSEの実測、両ボードの実Wi-Fi(FLATビルド、最終rebase前)、apps版</td>
+<td><a href="#15-検証結果の読み方">15</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td>What ping misses</td>
+<td>毎回同じ鍵、downの後に残る鍵、時間がたってから出るリーク</td>
+<td><a href="#14-なぜpingだけでは足りないのか">14</a>、<a href="#16-鍵乱数ゼロ化">16</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">33</td>
+<td>Design choice: trust the clock?</td>
+<td>再起動の後も新しいtimestampが要る。RTCのない機器には無料の答えがない</td>
+<td><a href="#17-最大の未解決事項-tai64nと再起動">17</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#52-kernelとuser-space">5.2 kernelとuser space</a>、<a href="#75-flatprotectedkernel-build">7.5 FLAT/PROTECTED/KERNEL</a>、
+  <a href="#10-ioctlとabi">10 ioctlとABI</a>、<a href="#11-並行処理をどう安全にしたか">11 並行処理</a>、<a href="#46-nonceとcounter">4.6 nonce</a>、
+  <a href="#47-replay-attack">4.7 replay attack</a></li>
+<li><strong>どこで確かめたか:</strong> 行ごとに違います。<a href="#151-主な検証環境">15.1</a>の表で確かめてください。特に、
+  <strong>PROTECTEDビルドの実行は、繰り返すと8回中2回失敗していて未解決</strong> <strong>[未解決]</strong>、
+  <strong>#14(再起動後のtimestamp)は判断としてopen</strong> <strong>[未解決]</strong> です。</li>
+</ul>
+<h3 id="第6部-ライブデモ">第6部 ライブデモ</h3>
+<p><strong>スライド34〜36、約3分。</strong> 問い:実物では、どう見えるのか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">35</td>
+<td>Demo setup</td>
+<td>会場のWi-Fiは機器どうしの通信を止めるので、スマホのテザリングで小さなネットワークを作る</td>
+<td><a href="#183-デモの構成スライド35">18.3</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">36</td>
+<td>Demo</td>
+<td>telnetでログインし、顔を変え、声を出させ、tcpdumpでトンネルの外と中を比べる</td>
+<td><a href="#184-デモの7つの手順スライド36">18.4</a>、<a href="#185-tcpdumpでトンネルの外と中を見比べる">18.5</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#21-ipアドレスは機器の住所">2.1 IPアドレス</a>(物理とVPNの2種類のアドレス)、
+  <a href="#32-tunnelとencapsulation">3.2 tunnelとencapsulation</a>、<a href="#48-endpointとallowedips">4.8 endpoint</a>、
+  <a href="#49-persistentkeepalive">4.9 PersistentKeepalive</a></li>
+<li><strong>どこで確かめたか:</strong> スタックちゃんのデモは <strong>[apps・実機]</strong>(apps版 v0.1.1、FLATビルド。画面にもそう書いてある)。カーネル版のデモではありません
+  (<a href="#186-なぜライブデモはapps版なのか">18.6</a>)。</li>
+</ul>
+<h3 id="第7部-まとめと現状">第7部 まとめと現状</h3>
+<p><strong>スライド37〜43、約4分。</strong> 問い:実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">スライド</th>
+<th>題</th>
+<th>要点</th>
+<th>この文書の章</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">38</td>
+<td>Running it for real</td>
+<td>鍵は動作中に作って設定する。4つの層を毎分確かめ、どこが落ちたかを言えるようにする</td>
+<td><a href="#191-運用できる形にするスライド38">19.1</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">39</td>
+<td>Other CPUs</td>
+<td>4つの関数に閉じこめた賭けは当たった。apps版は4種類のCPUで変更なしに動いた。カーネル版はこの4つを使わない</td>
+<td><a href="#192-ほかのcpuスライド39">19.2</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td>Giving back: where it stands</td>
+<td>crypto修正・ドライバ・コマンドの小さな単位に手元で分けてある。sign-offも実機での再試験もまだで、何も送っていない</td>
+<td><a href="#193-本家への還元スライド40">19.3</a>、<a href="#83-なぜリポジトリが3つあるのか">8.3</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">41</td>
+<td>Summary</td>
+<td>作ったもの(<code>wg0</code>)の1行と、3つの教訓</td>
+<td><a href="#194-summaryスライド41">19.4</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">42</td>
+<td>Thanks</td>
+<td>Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝</td>
+<td><a href="#195-謝辞スライド42">19.5</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">43</td>
+<td>Thank you</td>
+<td>質疑応答へ</td>
+<td><a href="#196-thank-youスライド43">19.6</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>先に読む基礎:</strong> <a href="#83-なぜリポジトリが3つあるのか">8.3 リポジトリ</a>、<a href="#152-主な数字と正しい言い方">15.2 正しい言い方</a></li>
+<li><strong>どこで確かめたか:</strong> スライド38・39は主に <strong>[apps・実機]</strong>。スライド41の「作ったもの」の1行は、
+  版と相手ごとに分けて読みます(<a href="#194-summaryスライド41">19.4</a>)。</li>
+</ul>
+<hr />
+<h2 id="1-どこまで知っていればよいか">1. どこまで知っていればよいか</h2>
+<h3 id="発表前に必ず理解したいこと">発表前に必ず理解したいこと</h3>
+<table>
+<thead>
+<tr>
+<th>分野</th>
+<th>理解する内容</th>
+<th style="text-align: right;">数式は必要か</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ネットワーク</td>
+<td>IPアドレス、ポート、TCP、UDP、ルーター、NAT</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>VPN</td>
+<td>元のIPパケットを暗号化し、別のパケットで運ぶ</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>WireGuard</td>
+<td>peer、公開鍵、秘密鍵、handshake、session key、counter</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>OS</td>
+<td>application、kernel、driver、threadの違い</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>NuttX</td>
+<td>RTOS、netdev、IOB、usrsock、FLAT/KERNEL/PROTECTED</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>並行処理</td>
+<td>lock、queue、semaphore、所有権</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>検証</td>
+<td>PASSが何を証明し、何を証明しないか</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>時刻問題</td>
+<td>再起動で時計が戻ると古いhandshakeとして拒否される</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>デモ環境</td>
+<td>テザリング、クライアント分離、tcpdumpで見える外と中の違い</td>
+<td style="text-align: right;">不要</td>
+</tr>
+<tr>
+<td>発表の背景</td>
+<td>発表者の立ち位置、ソニーとNuttXの歴史、プロジェクトの経緯</td>
+<td style="text-align: right;">不要</td>
+</tr>
+</tbody>
+</table>
+<h3 id="知らなくても発表できること">知らなくても発表できること</h3>
+<ul>
+<li>ChaCha20やCurve25519の数式</li>
+<li>Noise Protocol Frameworkの証明</li>
+<li>NuttX schedulerの実装詳細</li>
+<li>TCP/IPの全ヘッダー形式</li>
+<li>Linuxカーネルの内部構造</li>
+<li>WireGuardプロトコルの全状態遷移</li>
+</ul>
+<p>これらを質問された場合は、「使用した方式」「今回確認した性質」「確認していない範囲」を
+答えれば十分です。暗号アルゴリズムを自作したわけではありません。</p>
+<hr />
+<h2 id="2-ネットワークの基礎">2. ネットワークの基礎</h2>
+<h3 id="21-ipアドレスは機器の住所">2.1 IPアドレスは機器の住所</h3>
+<p>IPアドレスは、ネットワーク上の機器やインターフェースを識別する番号です。</p>
+<pre><code class="language-text">PC                 Wi-Fiルーター              組込みボード
+192.168.0.10  ───  192.168.0.1  ───────────  192.168.0.115
+</code></pre>
+<p>今回のデモでは、物理Wi-Fi用のアドレスとは別に、VPN内のアドレスを持ちます。</p>
+<pre><code class="language-text">物理ネットワーク:  wlan0 = 192.168.0.115
+VPN内のネットワーク: wg0 = 10.11.0.2
+</code></pre>
+<p><code>wlan0</code>は現実のWi-Fi装置、<code>wg0</code>はソフトウェアで作った仮想装置です。</p>
+<p>上の数字は説明用の例です(VPN側の<code>10.11.0.2</code>は、スライド35に点線で出てくるSPRESENSEの<code>wg0</code>と
+同じ値)。発表のライブデモ(スタックちゃん)では、<code>wlan0</code>は
+スマホのテザリングが配るアドレス、<code>wg0</code>は<code>10.10.0.2</code>(相手のPC側は<code>10.10.0.1</code>)です。どちらの例でも
+「物理の住所」と「VPNの中の住所」の2つを持つ、という形は同じです(<a href="#183-デモの構成スライド35">18.3</a>)。</p>
+<h3 id="22-ポート番号は建物の受付番号">2.2 ポート番号は建物の受付番号</h3>
+<p>1台の機器では、Webサーバー、SSH、DNSなど複数の通信が動きます。IPアドレスが建物の住所なら、
+ポート番号は「どの窓口に届けるか」を示す番号です。</p>
+<pre><code class="language-text">192.168.0.115:80     → Webサーバー
+192.168.0.115:51820  → WireGuard
+</code></pre>
+<h3 id="23-パケットは小分けにした通信データ">2.3 パケットは小分けにした通信データ</h3>
+<p>ネットワークでは、大きなデータを小さな単位に分けて送ります。この単位を<strong>パケット</strong>と呼びます。
+パケットには、宛先、送信元、種類、本文などが入ります。</p>
+<h3 id="24-tcpとudp">2.4 TCPとUDP</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>TCP</th>
+<th>UDP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>考え方</td>
+<td>接続を作り、順序と再送を管理</td>
+<td>小さなメッセージをそのまま送る</td>
+</tr>
+<tr>
+<td>信頼性</td>
+<td>欠落時に再送する</td>
+<td>基本的に再送しない</td>
+</tr>
+<tr>
+<td>順序</td>
+<td>保証する</td>
+<td>保証しない</td>
+</tr>
+<tr>
+<td>例</td>
+<td>Web、SSH、ファイル転送</td>
+<td>DNS、映像、ゲーム、VPNの外側</td>
+</tr>
+<tr>
+<td>WireGuardとの関係</td>
+<td>VPNの中をTCPが通ることがある</td>
+<td>WireGuard自身はUDPで運ばれる</td>
+</tr>
+</tbody>
+</table>
+<p>重要なのは、<strong>WireGuardはTCPの代わりではない</strong>ことです。TCPやUDPを含む元のIPパケット全体を、
+WireGuardが暗号化してUDPで運びます。</p>
+<h3 id="25-socketとは">2.5 socketとは</h3>
+<p>アプリケーションがネットワークを使うための入口です。</p>
+<pre><code class="language-c">socket();       // 通信用の入口を作る
+bind();         // 自分のアドレス・ポートに結び付ける
+sendto();       // 送る
+recvfrom();     // 受け取る
+</code></pre>
+<p><strong>BSD socket API</strong>は、多くのUnix系OSで使われる共通の形です。NuttXもこの形を持つため、
+既存のネットワークソフトを移植しやすいことが、今回の重要な背景です。</p>
+<h3 id="26-natとは">2.6 NATとは</h3>
+<p>家庭や会社のWi-Fiでは、複数の端末が1つのグローバルIPアドレスを共有することが一般的です。
+この変換をNATと呼びます。</p>
+<pre><code class="language-text">インターネット
+     │ グローバルIPは1つ
+ [ Wi-Fiルーター / NAT ]
+     ├── PC       192.168.0.10
+     ├── phone    192.168.0.20
+     └── NuttX    192.168.0.115
+</code></pre>
+<p>外から突然<code>192.168.0.115</code>へ接続することは通常できません。そこで、内側の機器からVPNサーバーへ
+接続し、安全な経路を作る方法が役立ちます。</p>
+<h3 id="27-subnetcidrrouting">2.7 subnet、CIDR、routing</h3>
+<p>IPアドレスを1台ずつではなく範囲で表す書き方がCIDRです。</p>
+<pre><code class="language-text">10.11.0.0/24
+</code></pre>
+<p><code>/24</code>は先頭24 bitがnetworkを表すという意味です。初心者向けには、IPv4の<code>/24</code>なら、おおむね
+<code>10.11.0.1</code>から<code>10.11.0.254</code>までが同じ小さなnetworkだと考えれば十分です。</p>
+<p><strong>routing</strong>は、宛先IPアドレスを見て「どのnetwork interfaceや次のrouterへ渡すか」を決める処理です。</p>
+<pre><code class="language-text">宛先 10.11.0.1      → wg0へ
+宛先 192.168.0.1    → wlan0へ
+それ以外            → default routerへ
+</code></pre>
+<p>WireGuardでは通常のroutingに加えてAllowedIPsからpeerも選びます。</p>
+<hr />
+<h2 id="3-vpnとwireguard">3. VPNとWireGuard</h2>
+<h3 id="31-vpnは暗号化された仮想ケーブル">3.1 VPNは「暗号化された仮想ケーブル」</h3>
+<p>VPNを使うと、離れた機器同士が同じ安全なネットワークにいるように通信できます。</p>
+<pre class="mermaid">flowchart LR
+    A[Windows PC&lt;br/&gt;10.11.0.1] --&gt;|暗号化されたUDP| R[Wi-Fi / Internet]
+    R --&gt;|暗号化されたUDP| B[NuttX board&lt;br/&gt;wg0: 10.11.0.2]
+</pre>
+<p>たとえば、NuttXボードが遠隔地にあっても、VPN経由でログを取得したり、Web画面を開いたり、
+更新作業をしたりできます。各アプリが独自の暗号通信を実装する必要はありません。</p>
+<h3 id="32-tunnelとencapsulation">3.2 tunnelとencapsulation</h3>
+<p>VPNの中を通したい元のパケットを<strong>inner packet</strong>、外側で実際に運ぶパケットを
+<strong>outer packet</strong>と呼ぶことがあります。</p>
+<pre><code class="language-text">外側のUDPパケット
+┌──────────────────────────────────────┐
+│ outer IP / UDP header                │
+│  ┌────────────────────────────────┐  │
+│  │ WireGuardで暗号化された本文    │  │
+│  │  ┌──────────────────────────┐  │  │
+│  │  │ 元のinner IP packet      │  │  │
+│  │  └──────────────────────────┘  │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘
+</code></pre>
+<p>このように、あるパケットを別のパケットに包むことを<strong>encapsulation</strong>と呼びます。</p>
+<h3 id="33-wireguardが登場する理由">3.3 WireGuardが登場する理由</h3>
+<p>スライド14の内容です。今回WireGuardを選んだ主な理由は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>理由</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>プロトコルが比較的小さい</td>
+<td>組込み機器へ移植しやすく、レビュー範囲も限定しやすい</td>
+</tr>
+<tr>
+<td>UDPベース</td>
+<td>NAT内の機器から接続を開始しやすい</td>
+</tr>
+<tr>
+<td>鍵によるpeer識別</td>
+<td>証明書基盤を別に持たずに構成できる</td>
+</tr>
+<tr>
+<td>一般的な実装と相互接続</td>
+<td>LinuxやWindowsの既存WireGuardと通信できる</td>
+</tr>
+<tr>
+<td>仮想インターフェース</td>
+<td>既存アプリをVPN専用に書き換えなくてよい</td>
+</tr>
+</tbody>
+</table>
+<p>「小さい」は「簡単」や「暗号を適当に扱ってよい」という意味ではありません。実際には、時刻、nonce、
+乱数、リプレイ防止、鍵消去など、厳密に扱う必要がある部分があります。</p>
+<p>スライド14の台本には「正しい鍵を持たないpacketには一切返事をしない。外から見ればただのレンガの壁」
+という一言があります。WireGuardは、知らない相手からのpacketに何も答えないので、外からは機器が
+そこにいることすら分かりにくい、という意味です。</p>
+<p>選んだのは「製品」ではなく、「独自のprotocolを発明する、またはvendorのcloudに頼る代わりに、
+標準のprotocolを採用する」という方針です。</p>
+<h3 id="34-wi-fiの暗号はどこまで守るか">3.4 Wi-Fiの暗号はどこまで守るか</h3>
+<p>スライド12の内容です。Wi-Fiにも暗号(WPA2やWPA3)があります。ではなぜVPNが要るのでしょうか。</p>
+<pre><code class="language-text">技術者 ── インターネット ── ルーター/ネットワーク ── Wi-Fi ── NuttX機器
+                                                    └─────────┘
+                                         WPA2/WPA3が守るのはこの一区間だけ
+</code></pre>
+<p>Wi-Fiの暗号が守るのは、<strong>機器とアクセスポイント(Wi-Fiの親機)の間の電波の区間だけ</strong>です。
+その手前のインターネットやルーターの中は、Wi-Fiの暗号の範囲の外です。必要なのは、技術者の
+PCから機器まで<strong>全部の道のり</strong>を、認証と暗号で守ることでした。</p>
+<p>それがないと、選択肢はどれも難点があります。</p>
+<table>
+<thead>
+<tr>
+<th>選択肢</th>
+<th>問題</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>機器をインターネットに直接公開する</td>
+<td>世界中から届いてしまう。「祈る」しかない</td>
+</tr>
+<tr>
+<td>自分で安全なprotocolを作る</td>
+<td>作るのも、ずっと保守し続けるのも大変</td>
+</tr>
+<tr>
+<td>vendor(製品の会社)のcloudに任せる</td>
+<td>自分の機器に届くのに、他人のcloudに頼ることになる</td>
+</tr>
+</tbody>
+</table>
+<p>同じ問題は、エッジAI、産業用IoT、遠隔のインフラ全般にあります。このプロジェクトだけの話では
+ありません。</p>
+<h3 id="35-ほかの手段との比較">3.5 ほかの手段との比較</h3>
+<p>スライド13の内容です。WireGuardを選ぶ前に、機器に届くための一般的な方法を比べました。
+まず言葉を2つ説明します。</p>
+<ul>
+<li><strong>MQTT:</strong> IoTでよく使う、小さなメッセージをやり取りするprotocol。機器もPCも<strong>broker</strong>という
+  中継サーバーにつなぎ、brokerがメッセージを配る。</li>
+<li><strong>リバーストンネル/relay:</strong> 機器のほうから外のサーバー(relay)へ接続を張っておき、外からはその
+  サーバー経由で機器の1つのポートに届く仕組み。SSHやWebSocketで作る。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>誰からつなぐか</th>
+<th>任意のサービス(telnet、Web…)に届くか</th>
+<th>間にサーバーが要るか</th>
+<th>暗号が終わる場所</th>
+<th>NuttXに今あるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>インターネットにポートを開ける</td>
+<td>技術者 → 機器</td>
+<td>はい</td>
+<td>いいえ</td>
+<td>アプリ(何もないことも多い)</td>
+<td>簡単だが、誰からでも届く</td>
+</tr>
+<tr>
+<td>クラウドAPIへのHTTPS</td>
+<td>機器 → クラウド(定期的に問い合わせ)</td>
+<td>いいえ、自分のAPIだけ</td>
+<td>はい、Webサーバー</td>
+<td>クラウドのサーバー</td>
+<td>webclient、libcurl4nx + mbedTLS</td>
+</tr>
+<tr>
+<td>MQTT broker(TLS)</td>
+<td>機器 → broker</td>
+<td>いいえ、メッセージだけ</td>
+<td>はい、broker</td>
+<td>broker</td>
+<td>mqttc、paho_mqtt + mbedTLS</td>
+</tr>
+<tr>
+<td>リバーストンネル/relay(SSH、WebSocket)</td>
+<td>機器 → relay</td>
+<td>トンネル1本につきポート1つ</td>
+<td>はい、relayのホスト</td>
+<td>relayのホスト</td>
+<td>dropbear、libwebsockets</td>
+</tr>
+<tr>
+<td>ルーターのVPN</td>
+<td>ルーター ↔ 事務所</td>
+<td>はい、LAN全体</td>
+<td>いいえ</td>
+<td>ルーター(LANの区間は守られない)</td>
+<td>機器は変更不要だが、そのルーターが要る</td>
+</tr>
+<tr>
+<td>キャリアの閉域網(専用APN、SIMのVPN)</td>
+<td>キャリア経由</td>
+<td>はい</td>
+<td>はい、キャリア</td>
+<td>キャリアのgateway</td>
+<td>LTEモデム。セルラー回線だけ</td>
+</tr>
+<tr>
+<td><strong>機器の上のVPN(この発表)</strong></td>
+<td>どちらからでも</td>
+<td>はい、任意のIPサービス</td>
+<td>いいえ、普通のWireGuard peer</td>
+<td><strong>機器そのもの</strong></td>
+<td><code>wg0</code></td>
+</tr>
+</tbody>
+</table>
+<p>読み方のポイントは3つです。</p>
+<ol>
+<li><strong>HTTPSとMQTTは、多くのIoT製品が使う正しい道具です。</strong> 機器のほうから外へつなぐのでNATも問題に
+   なりません(<a href="#26-natとは">2.6</a>)。ただし届くのは自分で設計したメッセージだけで、機器にログインしたり
+   Webページを開いたりはできません。暗号もbrokerやcloudで終わります。</li>
+<li><strong>ルーターのVPNは、ルーターが自分のものなら良い方法です。</strong> ただし最後のLANの区間は守られず、
+   お客さんの現場のルーターはふつう自分のものではありません。</li>
+<li><strong>3つの条件(任意のIPサービス、間にサーバーなし、機器までの暗号)を全部満たすのは、機器の上の
+   VPNだけ</strong>です。</li>
+</ol>
+<p>これは「MQTTやHTTPSをやめよう」という話ではありません。データのやり取りには今でもそれらが正しく、
+機器の上のVPNは<strong>保守のためのアクセス</strong>の道具です。TailscaleやZeroTierのようなmesh VPNも
+「機器の上のVPN」ですが、今のところマイコンより大きなOSが必要なことが多い(スライドの脚注)です。</p>
+<hr />
+<h2 id="4-wireguardの最低限の用語">4. WireGuardの最低限の用語</h2>
+<h3 id="41-peer">4.1 peer</h3>
+<p>通信相手です。WireGuardでは、相手を主に<strong>公開鍵</strong>で識別します。</p>
+<h3 id="42-秘密鍵と公開鍵">4.2 秘密鍵と公開鍵</h3>
+<table>
+<thead>
+<tr>
+<th>鍵</th>
+<th>扱い</th>
+<th>たとえ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>秘密鍵</td>
+<td>自分だけが持つ。漏らしてはいけない</td>
+<td>本人だけが持つ印鑑</td>
+</tr>
+<tr>
+<td>公開鍵</td>
+<td>相手に渡してよい</td>
+<td>相手が本人確認に使う印影情報</td>
+</tr>
+</tbody>
+</table>
+<p>秘密鍵から公開鍵を計算できますが、公開鍵から秘密鍵を現実的な時間で逆算できない仕組みを使います。
+今回の鍵共有ではCurve25519/X25519系の演算を利用します。</p>
+<h3 id="43-handshake">4.3 handshake</h3>
+<p>通信開始時に、お互いが正しい鍵を持つ相手かを確認し、短時間だけ使う<strong>session key</strong>を作る手続きです。</p>
+<pre class="mermaid">sequenceDiagram
+    participant D as NuttX device
+    participant P as WireGuard peer
+    D-&gt;&gt;P: handshake initiation
+    P-&gt;&gt;D: handshake response
+    D-&gt;&gt;P: encrypted transport packet
+    Note over D,P: 以後はsession keyでデータを暗号化
+</pre>
+<h3 id="44-session-keyとrekey">4.4 session keyとrekey</h3>
+<p>長期間ずっと同じ暗号鍵を使うのではなく、handshakeで一時的なsession keyを作ります。一定時間や条件で
+新しい鍵へ切り替えることを<strong>rekey</strong>と呼びます。</p>
+<h3 id="45-encryptionとauthentication">4.5 encryptionとauthentication</h3>
+<ul>
+<li><strong>暗号化:</strong> 内容を第三者に読めなくする</li>
+<li><strong>認証:</strong> 改ざんされていないこと、正しい鍵を持つ相手が作ったことを確認する</li>
+</ul>
+<p>WireGuardのデータ保護ではChaCha20-Poly1305を使います。ChaCha20が主に暗号化、Poly1305が主に
+改ざん検出を担当します。発表では内部の数式を説明する必要はありません。</p>
+<h3 id="46-nonceとcounter">4.6 nonceとcounter</h3>
+<p>同じ鍵で暗号化する場合でも、各パケットに異なる番号を使う必要があります。その材料がnonceです。
+WireGuardのtransport packetでは、増加するcounterがnonceに使われます。</p>
+<pre><code class="language-text">packet 1 → counter 0
+packet 2 → counter 1
+packet 3 → counter 2
+</code></pre>
+<p>今回見つけたNuttXのChaCha20-Poly1305バグ(スライド30)では、counterをnonceの誤った位置に入れていました。
+counter 0だけは正しい配置と誤った配置が偶然同じになるため、<strong>最初のデータパケットだけ通り、
+2つ目以降が失敗</strong>しました。これは「浅い試験が通る」の代表例です。</p>
+<h3 id="47-replay-attack">4.7 replay attack</h3>
+<p>攻撃者が以前の正しいパケットを録画のように保存し、あとで再送する攻撃です。暗号を解けなくても、
+「同じ命令をもう一度実行させる」ことができれば問題になります。</p>
+<p>WireGuardはcounterやhandshake timestampを使い、古いものや重複したものを拒否します。</p>
+<h3 id="48-endpointとallowedips">4.8 endpointとAllowedIPs</h3>
+<table>
+<thead>
+<tr>
+<th>用語</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>endpoint</td>
+<td>暗号化したUDPを実際に送る相手のIPアドレスとポート</td>
+</tr>
+<tr>
+<td>AllowedIPs</td>
+<td>どのVPN内アドレスをどのpeerへ送るか、またどの送信元をそのpeerから許すか</td>
+</tr>
+</tbody>
+</table>
+<p>AllowedIPsは単なるアクセス許可リストではなく、送信先peerを選ぶ経路表の役割も持ちます。これを
+<strong>cryptokey routing</strong>と呼ぶことがあります。</p>
+<h3 id="49-persistentkeepalive">4.9 PersistentKeepalive</h3>
+<p>NATは、しばらく通信がない対応関係を忘れることがあります。NAT内のdeviceから一定間隔で小さな
+packetを送ると、その通り道を維持できます。WireGuardの<code>PersistentKeepalive</code>はこのための設定です。
+たとえば25秒なら、dataがなくても25秒ごとにkeepaliveを送ります。</p>
+<h3 id="410-cookieとdos対策">4.10 cookieとDoS対策</h3>
+<p>攻撃者が大量の偽handshakeを送ると、公開鍵暗号の重い計算でCPUを使い切らせる可能性があります。
+WireGuardは負荷が高いとき、送信元が本当にそのnetwork addressで応答を受け取れるかをcookieで確認し、
+無制限に重い処理をしないようにします。</p>
+<p>今回のnegative testでは、handshake flood時のcookie replyや、その後も正規tunnelが生きていることを
+確認しています <strong>[カーネル・sim]</strong>。</p>
+<hr />
+<h2 id="5-oskerneldriverの基礎">5. OS・kernel・driverの基礎</h2>
+<h3 id="51-osは資源の管理者">5.1 OSは資源の管理者</h3>
+<p>OSはCPU時間、メモリ、ファイル、ネットワーク、機器を管理し、アプリに共通の使い方を提供します。</p>
+<pre><code class="language-text">┌──────────────────────────┐
+│ applications             │  wg command, Web server, telnet
+├──────────────────────────┤
+│ OS / network stack       │  socket, IP, routing, filesystem
+├──────────────────────────┤
+│ device drivers           │  Wi-Fi, serial, virtual wg0
+├──────────────────────────┤
+│ hardware                 │  CPU, RAM, flash, radio
+└──────────────────────────┘
+</code></pre>
+<h3 id="52-kernelとuser-space">5.2 kernelとuser space</h3>
+<ul>
+<li><strong>kernel:</strong> ハードウェアや重要資源を管理する、権限の強い部分</li>
+<li><strong>user space:</strong> 通常のアプリが動く、制限された部分</li>
+</ul>
+<p>分離すると安全性は上がりますが、アプリからkernel内のデータを直接触れません。そこで、決められた
+入口を通して依頼します。この境界を越える代表例が<strong>system call</strong>や<strong>ioctl</strong>です。</p>
+<h3 id="53-driver">5.3 driver</h3>
+<p>OSが特定の機器や仮想機器を扱うための部品です。今回の<code>wg0</code>は物理チップではありませんが、OSから
+ネットワーク機器として見えるため、network driverとして実装します。</p>
+<h3 id="54-threadとtask">5.4 threadとtask</h3>
+<p>どちらも「実行の流れ」です。複数の処理が見かけ上または実際に同時に進みます。</p>
+<pre><code class="language-text">thread A: ユーザーから来たpacketを暗号化する
+thread B: Wi-Fiから来たUDPを受信して復号する
+thread C: wg showで状態を読む
+</code></pre>
+<p>同じデータを同時に変更すると壊れる可能性があります。これが並行処理の問題です。</p>
+<hr />
+<h2 id="6-rtosとapache-nuttx">6. RTOSとApache NuttX</h2>
+<h3 id="61-rtosとは">6.1 RTOSとは</h3>
+<p><strong>Real-Time Operating System</strong>の略です。「速いOS」ではなく、重要な処理が必要な時間内に動くことを
+予測しやすいOSです。センサー、ロボット、車載機器、ドローンなどで使われます。</p>
+<h3 id="62-freertoszephyrnuttxの見方">6.2 FreeRTOS、Zephyr、NuttXの見方</h3>
+<p>スライド7・8の内容です。これは優劣ではなく、設計の重心の違いです。</p>
+<table>
+<thead>
+<tr>
+<th>OS</th>
+<th>おおまかな重心</th>
+<th>今回との関係</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FreeRTOS</td>
+<td>小さなreal-time kernelと周辺library</td>
+<td>必要な機能を組み合わせてfirmwareを作る</td>
+</tr>
+<tr>
+<td>Zephyr</td>
+<td>connected device向け統合platform</td>
+<td>networkingやdevice ecosystemを広く統合する</td>
+</tr>
+<tr>
+<td>Apache NuttX</td>
+<td>小さな機器にUnixに近いAPIを提供</td>
+<td>socket、filesystem、netdevとしてVPNを置きやすい</td>
+</tr>
+</tbody>
+</table>
+<p>NuttXはPOSIX/ANSIに近いAPI、BSD socket、VFS/filesystem、shellであるNSH、独自のTCP/IP stackを
+持ちます。このため、組込みOSでありながらUnix系OSで使われる設計を持ち込みやすい特徴があります。</p>
+<h3 id="63-apache-software-foundationとの関係">6.3 Apache Software Foundationとの関係</h3>
+<p>NuttXはApache Software Foundationのtop-level projectです。今回重要なのは組織説明ではなく、
+開発が公開の場で行われ、コードだけでなく、設計理由、ライセンス、試験、保守可能性までレビュー
+対象になることです。</p>
+<p>「自分のボードで動いた」は完成条件ではありません。他のboard、build方式、利用者、maintainerが
+扱える形にする必要があります。</p>
+<h3 id="64-nuttxはどこで使われているか">6.4 NuttXはどこで使われているか</h3>
+<p>スライド8の右半分です。「小さなRTOS」と聞くと、おもちゃのように思うかもしれません。スライドは
+数字で答えます(2026年10月時点のスライドの値)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>スライドの値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPUアーキテクチャ</td>
+<td>15種類以上</td>
+</tr>
+<tr>
+<td>対応board</td>
+<td>300以上</td>
+</tr>
+<tr>
+<td>設定のひな形(configuration template)</td>
+<td>1,500以上</td>
+</tr>
+<tr>
+<td>実際の製品</td>
+<td>ソニー、PX4のドローン(flight controller)、Xiaomi OpenVela(1,000以上の製品)、日本の2024年の月面ミッション</td>
+</tr>
+</tbody>
+</table>
+<p>一方、GitHubの星の数は FreeRTOS 7.8k、Zephyr 16.5k、apache/nuttx 4.1k で、NuttXが3つの中で
+いちばん少ないとスライド自身がはっきり言います。<strong>星は「開発者からどれだけ目に留まるか」であって、
+「何台の機器で動いているか」ではありません。</strong> 星の数は変わるので、話すときはスライドの日付と一緒に
+言います。</p>
+<h3 id="65-ソニーとnuttxの歴史">6.5 ソニーとNuttXの歴史</h3>
+<p>スライド9の内容です。これは発表者個人の話ではなく、会社としての歴史で、エッジAIより古い話です。</p>
+<table>
+<thead>
+<tr>
+<th>時期</th>
+<th>できごと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2015年ごろ</td>
+<td>ソニーの音声製品(audio products)にNuttXが入る</td>
+</tr>
+<tr>
+<td>2018〜19年</td>
+<td>SPRESENSEとそのチップCXD56xxで、音声・GNSS(衛星測位)・カメラ・マルチコアの対応がNuttXに加わる。2019年、ソニーのMasayuki Ishikawa氏がOpen Source Summit + Embedded Linux Conference Europeで発表</td>
+</tr>
+<tr>
+<td>2020年</td>
+<td>ソニーの技術者がupstreamの大きな貢献者になる。Alin Jerpelea 氏(後にNuttXのproject management committeeの議長)が「A Journey from Fork to Mainline」(forkからmainlineへの旅)という題でNuttX Online Workshop 2020に登壇</td>
+</tr>
+<tr>
+<td>2020年代</td>
+<td>カメラ、GNSS、センシングの製品へ広がる</td>
+</tr>
+</tbody>
+</table>
+<p><strong>fork</strong>と<strong>mainline</strong>は<a href="#83-なぜリポジトリが3つあるのか">8.3</a>で説明するforkと同じ意味です。会社の
+中で分岐して使っていたNuttXを、本家(mainline)に戻していく流れのことです。</p>
+<p>台本はここで大事な線を引きます。「一人の技術者がいたからソニーがNuttXを選んだ」という因果は
+<strong>言いません</strong>。それを裏付ける一次資料がないからです。公開された講演や文書から言えるのは
+「ソニーのNuttX利用はエッジAIより何年も前からあり、時間をかけてカメラ・GNSS・センシングへ広がった」
+ということだけです。</p>
+<h3 id="66-発表者とこのプロジェクトの始まり">6.6 発表者とこのプロジェクトの始まり</h3>
+<p>スライド4・6・10の内容です。</p>
+<p><strong>発表者(スライド4)。</strong> ソニーセミコンダクタソリューションズのエッジAIエンジニアで、Apache NuttXには
+<strong>アプリケーションの側から</strong>関わっています。名古屋生まれ、大学は仙台、今は川崎に住んでいます。仕事の
+外ではホビーエンジニアで、宇宙・半導体・ロボットまわりのものを作り(スライドには、モデルロケット、ウェハ上の試作チップ、大学で作った DNA のナノ構造、ヒューマノイドロボット、Linux のペンギンの写真が並びます)、ハッカソンへの参加、ソフトウェア系
+カンファレンスの運営、オープンソースの本の執筆もしています。SNSでは、スライドの狐のアイコンが本人です。
+ここまでの道のりは、分子ロボティクス(BIOMODで世界一、2015年)→ 画像処理とAI → AITRIOSのエッジAI
+カメラ → SPRESENSEの組込み開発(組込みアプリコンテストで世界3位)→ NuttXとWireGuard、です。
+<strong>エッジAI</strong>は、AIの計算をcloudではなく現場の機器(カメラなど)の上で行うことです。</p>
+<p>このスライドで一番伝えたいのは、「NuttXのkernel開発者として始めてVPNを足そうと思ったのではない。
+アプリと運用の側からNuttXに何度も出会い、その立場では解けない課題に行き当たった」という立ち位置です。
+ドライバを書くのは今回が初めてだったので、後半のカーネルドライバの話に重みが出ます。</p>
+<p><strong>経験(スライド10)。</strong> SPRESENSEでは、NuttXのSDKを使ってセンシング・カメラ・GNSS・LTEの
+試作と組込み開発をしています。AITRIOSのエッジAIカメラ(ESP32とNuttXで作られている)では、カメラを
+机の上ではなく実際の現場に設置して動かし続けるのが仕事です。どちらも「アプリ開発 → システムの統合
+(system integration)→ 設置と運用(deployment &amp; operation)」という方向からNuttXに近づいています。
+そして課題は「NuttXをどう動かすか」ではなく、<strong>「設置した後のNuttX機器に、どうやって届くか」</strong>でした。
+これが第2部の課題(スライド12)につながります。</p>
+<p><strong>経緯(スライド6)。</strong> 月ごとの流れです。</p>
+<table>
+<thead>
+<tr>
+<th>時期</th>
+<th>できごと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2月中旬</td>
+<td>GSoCのテーマ一覧を読み、調べ始める</td>
+</tr>
+<tr>
+<td>3月上旬</td>
+<td>計画をIssueにまとめて提案する</td>
+</tr>
+<tr>
+<td>3月20日</td>
+<td>Alanさんからこのカンファレンスのことを聞き、講演を申し込む</td>
+</tr>
+<tr>
+<td>4月上旬</td>
+<td>GSoCに応募する</td>
+</tr>
+<tr>
+<td>5月上旬</td>
+<td>講演は採択、GSoCは不採択。それでも作り続けることにする</td>
+</tr>
+<tr>
+<td>6〜7月</td>
+<td>少しずつ進める</td>
+</tr>
+<tr>
+<td>8月の休み</td>
+<td>開発の大部分</td>
+</tr>
+<tr>
+<td>9月〜</td>
+<td>FLATのアプリ(第1版)からカーネルドライバ(第2版)へ作り直す</td>
+</tr>
+<tr>
+<td>10月11〜14日</td>
+<td>グラスゴーでこの発表</td>
+</tr>
+</tbody>
+</table>
+<p>GSoC(Google Summer of Code)は、オープンソースのプロジェクトで夏の間に開発する人をGoogleが
+支援するプログラムです。提案は採択されませんでしたが、作業は続きました。難しい後半のカーネルドライバは最後に作ったものです。
+GSoCの名前が出てくるのは、この経緯のスライドと、最後の謝辞のスライドだけです。</p>
+<hr />
+<h2 id="7-nuttxネットワーク用語">7. NuttXネットワーク用語</h2>
+<h3 id="71-netdev">7.1 netdev</h3>
+<p>network deviceの略です。Ethernetなら<code>eth0</code>、Wi-Fiなら<code>wlan0</code>、今回のWireGuardなら<code>wg0</code>です。</p>
+<pre><code class="language-text">NuttX network stack
+    ├── eth0   physical Ethernet
+    ├── wlan0  physical Wi-Fi
+    └── wg0    virtual WireGuard tunnel
+</code></pre>
+<h3 id="72-upper-halfとlower-half">7.2 upper halfとlower half</h3>
+<p>NuttXのdriverを理解するための分け方です。</p>
+<ul>
+<li><strong>upper half:</strong> OS共通のnetwork stack側</li>
+<li><strong>lower half:</strong> 個別driver側。今回ならWireGuardの暗号化・UDP送受信</li>
+</ul>
+<p>共通部分と機器固有部分を分けることで、新しいdriverを追加しやすくします。</p>
+<h3 id="73-iob">7.3 IOB</h3>
+<p><strong>I/O Buffer</strong>です。NuttXがnetwork packetを保持するための、個数に上限があるbuffer poolです。
+組込み機器ではRAMが少ないため、必要なだけ無制限に確保する設計にはできません。</p>
+<pre><code class="language-text">IOB pool: [free][free][used][used][free] ...
+</code></pre>
+<p>枯渇時の動作を確認するため、simでpoolを小さくして実際にfreeを0まで減らし、落ちずに回復することを
+確認しました。ただし、実機でIOBを枯渇させた試験とは別です。</p>
+<h3 id="74-usrsock">7.4 usrsock</h3>
+<p>socket処理の一部を別のuser-space daemonや外部moduleへ渡す仕組みです。SPRESENSEでは、外付け
+GS2200M Wi-Fi moduleとの通信にこの経路を使います。</p>
+<pre class="mermaid">flowchart LR
+    W[WireGuard driver] --&gt; S[NuttX socket]
+    S --&gt; U[usrsock]
+    U --&gt; G[GS2200M Wi-Fi module]
+    G --&gt; A[Access Point]
+</pre>
+<p>ESP32-S3のnative Wi-Fiとは異なる経路なので、2つのboardで試すことには意味があります。</p>
+<h3 id="75-flatprotectedkernel-build">7.5 FLAT、PROTECTED、KERNEL build</h3>
+<table>
+<thead>
+<tr>
+<th>build</th>
+<th>applicationとkernelの関係</th>
+<th>今回の意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FLAT</td>
+<td>同じaddress space</td>
+<td>最初のapps版を作りやすい</td>
+</tr>
+<tr>
+<td>PROTECTED</td>
+<td>権限・memoryを分離</td>
+<td>ABIが境界を越えて正しく動く必要がある</td>
+</tr>
+<tr>
+<td>KERNEL</td>
+<td>user processとkernelをより明確に分離</td>
+<td>内部pointerやkernel APIをuser側から直接使えない</td>
+</tr>
+</tbody>
+</table>
+<p>最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。現行版(提出候補として小さく分けてある方)はdriverを
+kernel側へ移し、user側の<code>wg</code> commandとはioctlで通信します(スライド28)。</p>
+<p>現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました <strong>[カーネル・QEMU]</strong>。PROTECTED buildも
+QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていて、原因は
+まだ分かっていません <strong>[未解決]</strong>。だから「PROTECTEDで動く」とだけ言わず、「tunnelは通るが、
+間欠的な失敗が未解決」と言います(<a href="#151-主な検証環境">15.1</a>)。</p>
+<hr />
+<h2 id="8-このプロジェクトで作ったもの">8. このプロジェクトで作ったもの</h2>
+<h3 id="81-目的">8.1 目的</h3>
+<p>スライド5の内容です。NuttX機器へ、既存アプリから普通のnetwork interfaceとして使えるWireGuard VPNを
+追加することです。アプリから見れば<code>wg0</code>は普通のinterfaceで、違うのはその下の「線」がケーブルではなく
+UDPソケット(port 51820)だという点だけです。</p>
+<pre><code class="language-text">既存アプリをWireGuard専用に変更する: しない
+独自VPNプロトコルを作る:             しない
+Linux/WindowsのWireGuardと通信する:   する
+NuttXの通常のnetdevとして見せる:      する
+</code></pre>
+<h3 id="82-2段階の開発">8.2 2段階の開発</h3>
+<pre class="mermaid">flowchart LR
+    A[apps版 v0.1.1&lt;br/&gt;FLATでprotocol portを確認] --&gt; B[問題を学ぶ&lt;br/&gt;socket/thread/fd/stack]
+    B --&gt; C[kernel driver版&lt;br/&gt;drivers/net/wireguard]
+    C --&gt; D[PROTECTED/KERNEL/SMP/実機で検証]
+    D --&gt; E[手元の提出候補&lt;br/&gt;未送付]
+</pre>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>apps版</th>
+<th>現行kernel driver版</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>置き場所</td>
+<td><code>apps/</code></td>
+<td><code>drivers/net/wireguard/</code></td>
+</tr>
+<tr>
+<td>主目的</td>
+<td>protocol portを早く成立させる</td>
+<td>upstreamの形に合う正式driverにする</td>
+</tr>
+<tr>
+<td>socket所有</td>
+<td>command/task側に制約</td>
+<td>driverが所有</td>
+</tr>
+<tr>
+<td>設定</td>
+<td>application内部</td>
+<td>user commandからioctl</td>
+</tr>
+<tr>
+<td>build</td>
+<td>主にFLAT</td>
+<td>実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDは間欠的な失敗が未解決)</td>
+</tr>
+<tr>
+<td>提出候補</td>
+<td>学習・実績の土台</td>
+<td>手元で小さな単位に分けてあるのはこちら</td>
+</tr>
+<tr>
+<td>発表での位置</td>
+<td>第4部(スライド19〜26)と、第6部のライブデモ</td>
+<td>第5部(スライド27〜33)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-なぜリポジトリが3つあるのか">8.3 なぜリポジトリが3つあるのか</h3>
+<p>この作業では、役割の異なる3つのGit repositoryを使います。</p>
+<table>
+<thead>
+<tr>
+<th>repository</th>
+<th>中身</th>
+<th>対応する本家</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gsoc2026-nuttx-wireguard</code></td>
+<td>設計、試験script、証拠、発表資料、作業記録</td>
+<td>なし(projectの調査・再現用)</td>
+</tr>
+<tr>
+<td><code>nuttx</code> fork</td>
+<td>kernel、network driver、crypto修正、NuttX documentation</td>
+<td><code>apache/nuttx</code>(PRは出していない)</td>
+</tr>
+<tr>
+<td><code>nuttx-apps</code> fork</td>
+<td>user-spaceの<code>wg</code> command</td>
+<td><code>apache/nuttx-apps</code>(PRは出していない)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>fork</strong>は、GitHub上で本家repositoryを自分のaccountへ分岐したものです。この文脈のforkは、processを
+複製するUnixの<code>fork()</code>とは別の言葉です。</p>
+<pre class="mermaid">flowchart TD
+    G[このrepository&lt;br/&gt;docs, scripts, evidence] --&gt; N[自分の nuttx fork&lt;br/&gt;kernel driver]
+    G --&gt; A[自分の nuttx-apps fork&lt;br/&gt;wg command]
+    N -.-&gt; UN[本家 apache/nuttx&lt;br/&gt;PRは未送付]
+    A -.-&gt; UA[本家 apache/nuttx-apps&lt;br/&gt;PRは未送付]
+</pre>
+<p>driverとcommandを別の単位にできるのは、本家NuttXでもkernel本体とapps collectionが別repositoryだからです。
+さらに、既存NuttX cryptoのnonce修正はWireGuard driverから独立して役立つため、別の<code>crypto:</code>の変更として
+分けてあります。</p>
+<h3 id="84-ゼロから書かなかった">8.4 ゼロから書かなかった</h3>
+<p>既存の<code>wireguard-lwip</code>実装を出発点にしました。</p>
+<pre><code class="language-text">再利用できた部分
+  ├── WireGuard protocol
+  ├── handshake state machine
+  ├── replay protection
+  └── portable crypto code / interface
+
+NuttX向けに置き換えた部分
+  ├── lwIP netif  → NuttX netdev
+  ├── lwIP pbuf   → NuttX IOB
+  ├── network callbacks
+  ├── socket/thread lifecycle
+  └── configuration ABI and command
+</code></pre>
+<p>暗号protocolを一から書くのではなく、OS依存の境界を置き換える戦略です。</p>
+<p>ただし「何も変えなかった」わけではありません。移植の後のreviewで、プロトコルの中心(<code>wireguard.c</code>)に
+小さな修正を2つ入れ、<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/nuttx_port/apps/netutils/wireguard/PATCHES.md">PATCHES.md</a>に記録しました。</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>直したこと</th>
+<th>なぜ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>handshake開始要求の回数制限(rate limit)の引き算の向き</td>
+<td><code>last - now</code>と逆に引いていたので、符号なしの数が大きな値に回り込み、回数制限が一度も効いていなかった。wireguard-lwip自身のバグ</td>
+</tr>
+<tr>
+<td>2</td>
+<td>replay防止の窓を32 packetから2048 packetへ</td>
+<td>32では、Wi-Fiの再送などで順番が少し入れ替わるだけで本物のpacketまで捨ててしまう</td>
+</tr>
+</tbody>
+</table>
+<p>暗号の部分(<code>crypto.c</code>、<code>crypto/refc/*</code>)は今も元と1 byteも違いません。</p>
+<p>スライド17・18・20では、この戦略を3つの層で説明します。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>扱い</th>
+<th>中身</th>
+<th>第1版での結果(スライド20)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protocol &amp; crypto</td>
+<td><strong>ほぼそのまま使う</strong>(KEEP)</td>
+<td>handshake、transport、BLAKE2s、ChaCha20-Poly1305、Curve25519。OSに依存しない移植可能なC</td>
+<td>暗号は元と1 byteも違わない。プロトコルの中心はレビュー後の小さな修正2つ(PATCHES.md)</td>
+</tr>
+<tr>
+<td>Platform hooks</td>
+<td><strong>合わせる</strong>(ADAPT)</td>
+<td><code>wireguard-platform.h</code>の裏の4つの関数:時計、乱数、TAI64N時刻、負荷の確認</td>
+<td>小さい。時計、<code>/dev/urandom</code>、TAI64N、負荷</td>
+</tr>
+<tr>
+<td>lwIP network glue</td>
+<td><strong>置き換える</strong>(REPLACE)</td>
+<td>lwIPのnetifの登録とbuffer。NuttXにはlwIPがない</td>
+<td>本当の作業。netdev + UDPソケット + 受信task</td>
+</tr>
+</tbody>
+</table>
+<p>置き換えるときは、lwIPをNuttXに持ち込むのではなく、lwIPの考え方をNuttX自身の部品へ1つずつ写しました
+(スライド18)。</p>
+<table>
+<thead>
+<tr>
+<th>考え方</th>
+<th>lwIP</th>
+<th>NuttX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ネットワーク機器</td>
+<td><code>struct netif</code></td>
+<td><code>struct net_driver_s</code></td>
+</tr>
+<tr>
+<td>buffer</td>
+<td><code>pbuf</code></td>
+<td><code>iob</code></td>
+</tr>
+<tr>
+<td>登録</td>
+<td><code>netif_add()</code></td>
+<td><code>netdev_register()</code></td>
+</tr>
+<tr>
+<td>送信を始める</td>
+<td>callback</td>
+<td><code>devif_poll()</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>wg0</code>は<code>NET_LL_TUN</code>型(IP packetを直接扱うTUN型)のnetdevとして登録され、その下の「線」がUDPソケットです。
+そして第1版は動きました。鍵の生成、peerの設定、設定fileの読み込み(<code>wg genkey</code> / <code>set</code> / <code>setconf</code>)を、
+作り直しなしに動作中に行えます <strong>[apps・実機]</strong>。ただしスライド20の台本が言うとおり、ここまでが
+「一番安く手に入る到達点」で、この後の話はほとんど、その「動いた」が何を隠していたかです。</p>
+<h3 id="85-現行driverの主なfile">8.5 現行driverの主なfile</h3>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>drivers/net/wireguard/wireguard.c</code></td>
+<td>netdev、socket、worker、TX/RX、ioctl、停止処理</td>
+</tr>
+<tr>
+<td><code>drivers/net/wireguard/wg_noise.c</code></td>
+<td>handshake、session、replay、cookieなどのprotocol core</td>
+</tr>
+<tr>
+<td><code>drivers/net/wireguard/wg_crypto.c</code></td>
+<td>NuttXのcrypto機能をWireGuardから呼ぶ薄い層</td>
+</tr>
+<tr>
+<td><code>drivers/net/wireguard/wg_tai64n.c</code></td>
+<td>realtime timestampと起動内high-water mark</td>
+</tr>
+<tr>
+<td><code>include/nuttx/net/wireguard.h</code></td>
+<td>user側とkernel側が共有するioctl ABI</td>
+</tr>
+<tr>
+<td><code>apps/system/wg/</code></td>
+<td><code>wg up</code>, <code>wg set</code>, <code>wg show</code>などのuser command</td>
+</tr>
+</tbody>
+</table>
+<p>スライド29(The Kernel Design)は、この形を4つの点でまとめます。</p>
+<ol>
+<li><strong>kernelのnetdev:</strong> driverがUDPソケット、受信thread、timer、cookieを自分で持つ。だから第1版の
+   「起動したcommandが終わるとthreadも死ぬ」「fdが別taskから使えない」という問題は、設計上起きない</li>
+<li><strong>ポインタのないioctl ABI:</strong> 大きさの決まった平らな構造体1つで、PROTECTED/KERNEL buildではkernelが呼び出しの間にそれを読む。
+   中にポインタがないので、user側のmemoryの中のポインタをたどる必要がない(<a href="#10-ioctlとabi">10</a>)</li>
+<li><strong>秘密鍵はwrite-only:</strong> getのioctlは秘密鍵を返さない(<a href="#103-秘密鍵がwrite-onlyとは">10.3</a>)</li>
+<li><strong>kernelの暗号はNuttX自身のもの:</strong> BLAKE2s、ChaCha20-Poly1305、Curve25519はNuttXの<code>crypto/</code>を使う。
+   ただしプロトコルの中心<code>wg_noise.c</code>は、wireguard-lwip(BSD-3-Clause)から派生したcodeで、そのことを
+   SPDXとNuttXの<code>LICENSE</code>に書いてある。だからdriverは<code>ALLOW_BSD_COMPONENTS</code>に依存する。user側の<code>wg</code> commandには
+   MITライセンスの小さなX25519(offlineで鍵を作る<code>genkey</code>用)がある</li>
+</ol>
+<hr />
+<h2 id="9-パケットはどう流れるか">9. パケットはどう流れるか</h2>
+<p>スライド15(Architecture)の図を、もう一段くわしくした章です。</p>
+<h3 id="91-送信方向">9.1 送信方向</h3>
+<p>例: NuttXからVPN内のPC <code>10.11.0.1</code>へpingを送る。</p>
+<pre class="mermaid">flowchart TD
+    A[application creates inner IP packet] --&gt; B[NuttX routing selects wg0]
+    B --&gt; C[wg_transmit]
+    C --&gt; D[AllowedIPs selects peer]
+    D --&gt; E[encrypt with session key and counter]
+    E --&gt; F[copy immutable datagram into TX queue]
+    F --&gt; G[RX worker removes queue entry]
+    G --&gt; H[UDP send outside device lock]
+    H --&gt; I[wlan0 / usrsock / Internet]
+</pre>
+<p>大事な点は、暗号化したbufferをそのまま長時間socketへ渡さないことです。送信待ちの間に別threadが
+同じbufferを書き換えると、暗号文が壊れるためです。そこで、完成したdatagramと宛先を独立した
+queue entryへコピーします。</p>
+<h3 id="92-受信方向">9.2 受信方向</h3>
+<pre class="mermaid">flowchart TD
+    A[encrypted UDP arrives] --&gt; B[RX worker receives it]
+    B --&gt; C[validate type, peer, replay counter]
+    C --&gt; D[decrypt]
+    D --&gt; E[recover inner IP packet]
+    E --&gt; F[notify NuttX upper half]
+    F --&gt; G[deliver to application as traffic from wg0]
+</pre>
+<h3 id="93-control-planeとdata-plane">9.3 control planeとdata plane</h3>
+<table>
+<thead>
+<tr>
+<th>plane</th>
+<th>何を扱うか</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>data plane</td>
+<td>実際のpacket</td>
+<td>暗号化、復号、送信、受信</td>
+</tr>
+<tr>
+<td>control plane</td>
+<td>設定と状態</td>
+<td>鍵、peer、endpoint、up/down、<code>wg show</code></td>
+</tr>
+</tbody>
+</table>
+<p>user-spaceの<code>wg</code> commandはioctlを通じてcontrol planeを操作します。packetごとにuser commandを
+呼ぶわけではありません。</p>
+<hr />
+<h2 id="10-ioctlとabi">10. ioctlとABI</h2>
+<h3 id="101-ioctlとは">10.1 ioctlとは</h3>
+<p>通常のread/writeだけでは表現しにくいdevice操作を、applicationからdriverへ依頼する仕組みです。</p>
+<pre><code class="language-text">user space                         kernel
+wg set peer ...  ── ioctl ──────&gt; WireGuard driver
+wg show          &lt;─ ioctl ─────── peer/status information
+</code></pre>
+<h3 id="102-abiとは">10.2 ABIとは</h3>
+<p><strong>Application Binary Interface</strong>です。ここでは、user側とkernel側がどの番号、どの構造体layoutで
+情報を交換するかという契約です。</p>
+<p>現行設計では構造体を固定長・pointerなしにしています。kernelはioctlの呼び出しの間に、渡された構造体1つを読むだけです。
+user側のpointerをkernelが追いかける設計は、address spaceの違いや不正なpointerの扱いを難しくするからです。</p>
+<h3 id="103-秘密鍵がwrite-onlyとは">10.3 秘密鍵がwrite-onlyとは</h3>
+<p><code>wg</code> commandから秘密鍵を設定できますが、driverのget ioctlは秘密鍵を返しません。ただし、
+<strong>秘密鍵がkernelから一度も外へ出ないという意味ではありません</strong>。再起動後に設定を復元するため、
+user側の設定fileが正本として秘密鍵を保持します。</p>
+<hr />
+<h2 id="11-並行処理をどう安全にしたか">11. 並行処理をどう安全にしたか</h2>
+<p>スライド29の「driverがsocketとthreadを持つ」設計を、内側から見た章です。発表では時間の都合で
+詳しく話しませんが、質疑で聞かれやすいところです。</p>
+<h3 id="111-何が危険か">11.1 何が危険か</h3>
+<p>次の処理は同時に起こり得ます。</p>
+<pre><code class="language-text">A: application packetを暗号化する
+B: handshake responseを作る
+C: wg setでpeer設定を変える
+D: wg downで停止する
+E: socket sendがWi-Fi backend内で待つ
+</code></pre>
+<p>同じpeer状態、鍵、暗号buffer、queueを同時に触ると、破損やuse-after-freeにつながります。</p>
+<h3 id="112-lock">11.2 lock</h3>
+<p>lockは「この共有データを今触っているのは1つだけ」にする仕組みです。現行driverでは、protocolと
+peerの状態を各netdevの<code>d_lock</code>で守ります。</p>
+<pre><code class="language-text">lockを取る → shared stateを読む/変更する → lockを離す
+</code></pre>
+<p>ただし、時間のかかるsocket送信中ずっとlockを持つと、設定表示や停止まで待たされます。</p>
+<h3 id="113-queueで所有権を切り離す">11.3 queueで所有権を切り離す</h3>
+<p>そこで送信を2段階に分けました。</p>
+<pre><code class="language-text">lockの内側
+  1. protocol stateを使って暗号化
+  2. 完成したdatagramを独立したqueue entryへコピー
+  3. queueへ渡す
+
+lockの外側
+  4. RX workerだけがsocketへ送る
+  5. 送信後にentryを解放
+</code></pre>
+<p>queueへ渡した後のdatagramは<strong>immutable</strong>、つまり変更しません。送信側は生のpeer pointerやkeypairを
+持ち出しません。これにより、usrsockが長く待っても、protocol stateや共有暗号bufferを壊しません。</p>
+<h3 id="114-backpressure">11.4 backpressure</h3>
+<p>送信要求が送信速度を上回ると、queueが無限に増えてRAMを使い切ります。そこでqueue上限を4 entryに
+しています。満杯なら待ち続けずdropします。組込みでは、有限資源をどこまで使うかを明示することが
+重要です。</p>
+<h3 id="115-starvation対策">11.5 starvation対策</h3>
+<p>受信packetが無限に来ると、timerや送信処理が永久に後回しになる可能性があります。受信は1回の
+loopで最大16 datagramまでというbudgetを持ちます。</p>
+<hr />
+<h2 id="12-起動と停止のライフサイクル">12. 起動と停止のライフサイクル</h2>
+<h3 id="121-状態の流れ">12.1 状態の流れ</h3>
+<pre class="mermaid">stateDiagram-v2
+    [*] --&gt; Registered
+    Registered --&gt; Up: socket open / RX worker start
+    Up --&gt; Stopping: wg down
+    Stopping --&gt; Down: worker exit / socket close / sessions wipe
+    Stopping --&gt; Stopping: timeout; resources retained
+    Stopping --&gt; Down: repeated down reaps worker
+    Down --&gt; Up: wg up
+</pre>
+<h3 id="122-なぜ停止が難しいか">12.2 なぜ停止が難しいか</h3>
+<p>RX workerがsocket内で待っている最中に、別threadがsocketやsemaphoreを破棄すると、workerは消えた
+資源へアクセスするかもしれません。これはuse-after-free級の問題です。</p>
+<p>現行設計は次の順序を守ります。</p>
+<ol>
+<li>新しい仕事を止める</li>
+<li>workerを起こす</li>
+<li>worker終了を待つ</li>
+<li>終了を確認してからsocketやsemaphoreを破棄する</li>
+<li>session keyとqueueを消去する</li>
+</ol>
+<p>時間内にworkerが終了しなければ、無理にsocketを閉じません。timeoutを返して資源を保持し、再度
+<code>down</code>したときに回収します。失敗を隠して危険なcleanupを続けない設計です。</p>
+<hr />
+<h2 id="13-発表に出てくる6つの落とし穴">13. 発表に出てくる6つの落とし穴</h2>
+<p>1〜4は第1版(apps版)で、5・6は第2版(カーネル版)で見つかったものです。どれも
+「浅い試験は通る。深い試験で壊れる」(スライド21)という同じ形をしています。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th style="text-align: right;">スライド</th>
+<th>表面上は</th>
+<th>実際の問題</th>
+<th>学び</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">22</td>
+<td>detached threadを作った。最初の症状は<code>recvfrom</code>が戻らないこと</td>
+<td>launcher終了とともにthreadも終了していた</td>
+<td>detachは寿命を保証しない。最初の症状から犯人を決めつけない</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">23</td>
+<td>pingとTCP handshakeが通る</td>
+<td>別taskからのsendが<code>EBADF</code></td>
+<td>fdの所有範囲を理解する</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">24</td>
+<td>50 ms pollingは小さな損</td>
+<td>全packetが最大50 ms待ち、約10倍低速</td>
+<td>性能影響を測る</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">25</td>
+<td>simで動く</td>
+<td>実機の小さいstackでoverflow寸前。shellのredirectで設定を保存すると実機だけ固まる</td>
+<td>target上で資源を測る</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">30</td>
+<td>handshakeと最初のdataが通る</td>
+<td>nonceのcounter配置が誤り、2 packet目以降失敗</td>
+<td>境界値0だけで試さない</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">30</td>
+<td>FLAT/simで設定できる</td>
+<td>kernel stack上の約6 KB配列でoverflow</td>
+<td>本物のbuild分離とstackサイズで試す</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1つ目をもう少し">1つ目をもう少し</h3>
+<p>最初に見えたのは「受信の<code>recvfrom</code>が戻らない → timerが動かない → handshakeの開始要求が送られない」という症状でした。
+受信のtimeout(<code>SO_RCVTIMEO</code>)が効いていないと考え、<code>poll</code>の時間制限付きの待ちに切り替えましたが、それでも何も
+送られません。本当の原因は、受信threadそのものが消えていたことでした。<code>pthread_detach()</code>は「終わったときの後片付けを
+自動にする」だけで、threadの寿命は延ばしません。threadを作った<code>wg</code> commandが終わると、そのtask groupごと
+threadも終わっていたのです。apps版は<code>task_create()</code>で独立したtaskにして直し、カーネル版ではdriver自身がthreadを
+持ちます。台本の締めのとおり、NuttXのUDPのcodeは<code>SO_RCVTIMEO</code>をちゃんと使います。最初の症状から犯人を
+決めつけたので、古い経路を試し直さなかっただけです。</p>
+<h3 id="ebadfの話をもう少し"><code>EBADF</code>の話をもう少し</h3>
+<p>apps版ではsocketを整数のfile descriptorとして扱いました。NuttXではfdがtask groupに属するため、
+別のtaskから同じ整数を使っても同じsocketを指すとは限りません。受信task自身が返すpingや
+SYN-ACKは成功し、別taskからのdataだけ失敗したため、pingでは見抜けませんでした。</p>
+<p>第1版の修正では、fdを経由せず、NuttXの内部socket API(<code>psock_*()</code>)で<code>struct socket</code>を直接使う形に
+しました。<code>struct socket</code>はただのmemoryなので、どのtaskからでも使えます。第2版では、この
+<code>struct socket</code>をkernelのdriverが所有する形にしました(スライド23・29)。</p>
+<p>この修正には副作用がありました。<code>poll</code>はfdを使う仕組みなので、fdをやめると<code>poll</code>も使えなくなります。
+そこで応急処置として50 msごとに確認(polling)したのが、3つ目の「約10倍遅い」の原因です(スライド24)。
+本当の修正は、<code>psock_poll()</code>へのcallbackとsemaphoreによる正しい待ち方でした。</p>
+<h3 id="4つ目をもう少し">4つ目をもう少し</h3>
+<p>スライド25には2つの話があります。1つは、shellのredirect(<code>wg showconf &gt; /data/wg0.conf</code>のように
+出力をfileへ書く操作)で設定を保存すると、実機のflash file system(SPIFFS)でだけboardが固まったこと。
+simでは一度も再現せず、file自身を書く<code>wg saveconf</code>を足して解決しました。もう1つは受信taskの
+<strong>stack</strong>(関数呼び出しやlocal変数に使う、threadごとのmemory)です。受信taskは自分のstackの上で
+IP stackを呼ぶので、TCPの呼び出しの深さ全体と、すぐ返事をするpacketの暗号化までがそこに乗ります。
+既定の3072 byteは誰も測ったことのない数字で、実機で測ると94%使っていて、残りは176 byteだけでした
+<strong>[apps・実機]</strong>。この話は第2版で2回戻ってきます。スライド30(バグ6、kernelのstackあふれ)と、スライド31(第2版の
+受信threadをSPRESENSEで実測すると6096 byte中1472 byte <strong>[カーネル・実機]</strong>)です。</p>
+<hr />
+<h2 id="14-なぜpingだけでは足りないのか">14. なぜpingだけでは足りないのか</h2>
+<p>pingは便利ですが、確認できる範囲は狭いです。</p>
+<table>
+<thead>
+<tr>
+<th>pingが通っても分からないこと</th>
+<th>深い確認方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2 packet目以降も正しく暗号化できるか</td>
+<td>継続traffic、TCP転送</td>
+</tr>
+<tr>
+<td>TCPの別taskから送信できるか</td>
+<td>telnet、HTTP、file transfer</td>
+</tr>
+<tr>
+<td>鍵が毎回異なるか</td>
+<td>複数回resetして鍵を比較</td>
+</tr>
+<tr>
+<td><code>down</code>後にsession keyが残らないか</td>
+<td>live process memoryを検査</td>
+</tr>
+<tr>
+<td>長時間でmemory leakしないか</td>
+<td>soak testと資源sampling</td>
+</tr>
+<tr>
+<td>kernel/user境界を越えられるか</td>
+<td>PROTECTED/KERNEL buildで実行</td>
+</tr>
+<tr>
+<td>Wi-Fi backendが止まっても安全か</td>
+<td>stallを注入し、controlとstopを試す</td>
+</tr>
+<tr>
+<td>再起動後もinitiatorになれるか</td>
+<td>peer状態を残し、board側だけから再接続</td>
+</tr>
+</tbody>
+</table>
+<p><strong>試験は、期待する成功を確認するだけでなく、間違った実装なら失敗する形にする</strong>必要があります。</p>
+<p>スライド32は、このうち3つを例に出します。毎回同じ秘密鍵になる問題、<code>down</code>の後にsession keyが残る問題、
+何時間もたってから出るleakです。どれも「pingが通れば気づくか?」の答えは「気づかない」で、
+<strong>普通の試験を全部通りながら壊れている</strong>ことがあり得ます。確かめ方は<a href="#16-鍵乱数ゼロ化">16</a>と
+<a href="#152-主な数字と正しい言い方">15.2</a>にあります。</p>
+<hr />
+<h2 id="15-検証結果の読み方">15. 検証結果の読み方</h2>
+<h3 id="151-主な検証環境">15.1 主な検証環境</h3>
+<p>スライド31(Testing: seven places)は、どの版をどこで確かめたかを7行の表にしています。</p>
+<table>
+<thead>
+<tr>
+<th>場所</th>
+<th>版</th>
+<th>確かめたこと</th>
+<th>印</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sim:wireguard</code></td>
+<td>カーネル版</td>
+<td>errorなしでbuildできる(この構成はdriverのシリーズに入っている)</td>
+<td>[カーネル・sim]</td>
+</tr>
+<tr>
+<td>rv-virt <code>knetnsh64</code></td>
+<td>カーネル版、BUILD_KERNEL</td>
+<td>virtio-net越しにLinuxのWireGuardとtunnel。<code>wg</code>は別のprogramとして読み込まれ、system callでdriverに届く</td>
+<td>[カーネル・QEMU]</td>
+</tr>
+<tr>
+<td>rv-virt <code>pnsh64</code></td>
+<td>カーネル版、BUILD_PROTECTED</td>
+<td>MPUの分離ありでtunnelが通る。<code>wg</code>はuser側にあり、すべてのioctlが境界を越える。<strong>ただし繰り返すと8回中2回、user spaceで例外(open)</strong></td>
+<td>[カーネル・QEMU] [未解決]</td>
+</tr>
+<tr>
+<td>rv-virt <code>knetnsh64_smp</code></td>
+<td>カーネル版、SMP 4 CPU</td>
+<td>設定変更とdown/upをしながら大量のtraffic。例外なし、tunnelは復帰</td>
+<td>[カーネル・QEMU]</td>
+</tr>
+<tr>
+<td>SPRESENSE(実測)</td>
+<td>カーネル版、FLAT、Cortex-M4F(最終rebase前)</td>
+<td>負荷と40回のdown/upの前後で、heap・buffer・stackが完全に同じ。受信threadは6096 byte中1472 byte</td>
+<td>[カーネル・実機]</td>
+</tr>
+<tr>
+<td>ESP32-S3 + SPRESENSE</td>
+<td>カーネル版、FLAT、実Wi-Fi(最終rebase前)</td>
+<td>Windowsの公式clientとのtunnel。ESP32-S3は内蔵Wi-Fiでping 4/4、SPRESENSEはusrsock経由で6/6</td>
+<td>[カーネル・実機]</td>
+</tr>
+<tr>
+<td>同じ2つのboard</td>
+<td>apps版 v0.1.1</td>
+<td>LinuxとWindowsのpeer。telnet、HTTP、7 MBの転送、rekey、電源断からの復帰</td>
+<td>[apps・実機]</td>
+</tr>
+</tbody>
+</table>
+<p>表の版の列に書いてあるとおり、実機の試験は普通の<strong>FLATビルド</strong>で、最後の載せ替え(upstreamへのrebase)の<strong>前の版</strong>で行いました。
+KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNELとSMPのtunnelを改めて走らせています。SPRESENSEの実機では(今の台本では読み上げず、Q&amp;Aに回した話ですが)、この設計の目的である
+「usrsockの裏で送信が詰まっている最中に設定の操作が来る」状況も強制し、問い合わせへの応答、peer更新の
+受理、停止のtimeout報告(hangしない)、再度の<code>down</code>による回収を確かめました <strong>[カーネル・実機]</strong>。
+実機でのIOB枯渇、送信中のWi-Fi喪失、長時間の高負荷はまだ試していません <strong>[未解決]</strong>(simでのIOB枯渇は
+別にPASS <strong>[カーネル・sim]</strong>)。</p>
+<p>環境ごとに「何が分かり、何までは分からないか」をまとめると、次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>環境</th>
+<th>何が分かる</th>
+<th>何までは分からない</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sim</td>
+<td>protocol、negative test、自動回帰</td>
+<td>実機のstack、Wi-Fi、flash</td>
+</tr>
+<tr>
+<td>QEMU KERNEL</td>
+<td>syscall境界、別ELF、kernel driver</td>
+<td>実silicon固有の挙動</td>
+</tr>
+<tr>
+<td>QEMU PROTECTED</td>
+<td>memory/privilege分離(ただし繰り返しで間欠的な例外が未解決)</td>
+<td>実MPU hardwareの全挙動</td>
+</tr>
+<tr>
+<td>SMP 4 CPU</td>
+<td>複数CPUでの並行性</td>
+<td>長期的な全raceの不存在</td>
+</tr>
+<tr>
+<td>ESP32-S3</td>
+<td>native Wi-Fi実機</td>
+<td>usrsock経路</td>
+</tr>
+<tr>
+<td>SPRESENSE</td>
+<td>GS2200M/usrsock実機、資源実測</td>
+<td>ESP32-S3固有の資源値</td>
+</tr>
+<tr>
+<td>Linux/Windows peer</td>
+<td>一般実装との相互接続</td>
+<td>世の中の全実装との互換性</td>
+</tr>
+</tbody>
+</table>
+<h3 id="152-主な数字と正しい言い方">15.2 主な数字と、正しい言い方</h3>
+<table>
+<thead>
+<tr>
+<th>結果</th>
+<th>言ってよいこと</th>
+<th>言いすぎになる表現</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPRESENSE stack high-water 1472/6096 B</td>
+<td>観測した負荷では十分な余裕があった</td>
+<td>最悪条件でも絶対安全</td>
+</tr>
+<tr>
+<td>simで151 rekeys</td>
+<td>制御した試験で151回成功した</td>
+<td>長期間絶対に失敗しない</td>
+</tr>
+<tr>
+<td>IOB freeが0でも回復</td>
+<td>simの制御条件で枯渇と回復を確認</td>
+<td>全実機・全backendで同じ</td>
+</tr>
+<tr>
+<td><code>down</code>後に指定した鍵fieldがzero</td>
+<td>観測したfieldとscheduleでzero化した</td>
+<td>全memoryに鍵の断片がない</td>
+</tr>
+<tr>
+<td>2 boardで実tunnel</td>
+<td>native Wi-Fiとusrsockの両経路で成立</td>
+<td>あらゆるboardにportable</td>
+</tr>
+<tr>
+<td>PROTECTEDでtunnelが通る</td>
+<td>QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗し、原因は未解決</td>
+<td>PROTECTEDで問題なく動く</td>
+</tr>
+<tr>
+<td>SMP 4 CPUで例外なし</td>
+<td>1つの決まった筋書きの試験で、例外なく復帰した</td>
+<td>raceが存在しない</td>
+</tr>
+<tr>
+<td>3回のreset(電源断ではない)で3つの異なる鍵</td>
+<td>同じ鍵を配る最悪の失敗は起きていない</td>
+<td>乱数の品質が良いと証明した</td>
+</tr>
+<tr>
+<td>カーネル版が実機でつながる</td>
+<td>両boardのFLATビルドでWindowsの公式clientとつながった</td>
+<td>実機でLinuxのpeerともつないだ(Linuxとはsim/QEMU)、実機でKERNEL/PROTECTEDを動かした</td>
+</tr>
+<tr>
+<td>暗号は元のまま</td>
+<td>暗号は1 byteも違わない。プロトコルの中心は小さな修正2つ</td>
+<td>「3,079行が完全に同じ」「何も変えていない」</td>
+</tr>
+<tr>
+<td>sim の受信threadのstack最大2.5 KB</td>
+<td>64 bitのsimの値。ボードでは1.5 KB(1472 B)</td>
+<td>ボードでも2.5 KB使う</td>
+</tr>
+</tbody>
+</table>
+<p>「PASS」と「完全証明」は違います。試験条件と観測範囲を一緒に言うことが、技術的な誠実さです。</p>
+<hr />
+<h2 id="16-鍵乱数ゼロ化">16. 鍵・乱数・ゼロ化</h2>
+<h3 id="161-乱数が弱いと何が起きるか">16.1 乱数が弱いと何が起きるか</h3>
+<p>秘密鍵や一時鍵が予測できると、暗号方式そのものが強くても安全ではありません。NuttXには構成によって
+同じseedから同じ列を作るsoftware PRNG経路があり得るため、driverは適切なrandom sourceを要求します。</p>
+<p>具体的には、NuttXは<code>/dev/urandom</code>の裏に<strong>xorshift128</strong>という方式を選べて、そのseed(乱数の種)は
+build時の設定値から来ることがあります。その経路のままのboardは、起動するたびに同じ秘密鍵を配り得ます。
+handshakeもpingもデモも通るのに、tunnelは無価値です(スライド32)。</p>
+<p>試験ではSPRESENSEを3回reset(電源を切ったのではなくresetだけ)し、そのたびに鍵を1つ作って比べ、3つとも異なること、設定がxorshift128ではなく
+entropy poolの経路であることを確認しました <strong>[カーネル・実機]</strong>。ただし、これは
+<strong>暗号学的なentropy品質の認証</strong>ではありません。</p>
+<h3 id="162-zeroization">16.2 zeroization</h3>
+<p>不要になった秘密情報をmemory上でzeroにすることです。普通の<code>free()</code>だけでは、別用途に再利用される
+まで古いbyteが残る可能性があります。</p>
+<p>今回の試験では、handshake、pending next keypair、current/previous session keyが実際に非ゼロに
+なった瞬間を作り、<code>down</code>後に対象fieldがzeroになることを確認しました <strong>[カーネル・sim]</strong>。
+static private keyは再度<code>up</code>するため、設計どおり1 copy残します。書き込み可能なmemory全体の中で、
+そのcopyが前後を通じてちょうど1つであることも確かめ、この非対称な扱いはdriverの文書に書いてあります。</p>
+<p>調べ方は「codeを読む」ではなく「memoryを読む」です。動いているsystemのmemoryから、設定した鍵を手がかりに
+deviceを見つけ、driverのheaderから計算した位置で、秘密のfieldを名前ごとに確かめました。これはsimの試験で、
+決まった1つの手順での観測です。memoryに鍵の断片がまったく残らないことの証明ではありません。</p>
+<hr />
+<h2 id="17-最大の未解決事項-tai64nと再起動">17. 最大の未解決事項: TAI64Nと再起動</h2>
+<h3 id="171-なぜhandshakeに時刻が必要か">17.1 なぜhandshakeに時刻が必要か</h3>
+<p>スライド33(Design choice: trust the clock?)の内容です。この発表で唯一、「試験」ではなく「判断」が
+必要だった場所です。</p>
+<p>WireGuardのresponderは、peerごとに「今まで受理した最大のhandshake timestamp」を覚えます。同じ値や
+古い値が来たら、録画された古いhandshakeかもしれないので捨てます。</p>
+<pre><code class="language-text">以前受理したtimestamp: 1000
+
+次が 1001 → 新しいので受理可能
+次が 1000 → 重複なので拒否
+次が  500 → 古いので拒否
+</code></pre>
+<p>WireGuardではこのtimestamp表現にTAI64Nを使います。</p>
+<h3 id="172-uptimeを使うと壊れる">17.2 uptimeを使うと壊れる</h3>
+<p>uptimeは起動からの経過時間です。再起動すると0付近へ戻ります。</p>
+<pre class="mermaid">sequenceDiagram
+    participant D as Device
+    participant P as Peer
+    D-&gt;&gt;P: timestamp 100000 (accepted)
+    Note over D: reboot; uptime returns near zero
+    D-&gt;&gt;P: timestamp 3
+    P--&gt;&gt;D: drop as older than 100000
+</pre>
+<p>以前のsessionが30日続いていたなら、uptimeが追いつくまで最大30日再接続できない可能性があります。</p>
+<h3 id="173-現在採用した設計">17.3 現在採用した設計</h3>
+<ol>
+<li>uptimeではなく<code>CLOCK_REALTIME</code>を使う</li>
+<li>同じ起動中はhigh-water markを持ち、時計が少し戻っても値を後退させない</li>
+<li>時計が未設定らしい場合は一度警告する</li>
+<li>uptimeへ黙ってfallbackしない</li>
+</ol>
+<p>これはRTCやSNTPで正しい時刻を用意できるboardでは機能します。</p>
+<h3 id="174-それでも14がopenな理由">17.4 それでも#14がopenな理由</h3>
+<p>RTCがなく、再起動後に時計が1970年相当へ戻るboardでは、前回より新しいtimestampを保証できません。
+最後の値をflashへ毎回保存すればよさそうですが、rekeyのたびに書くとwearが増えます。また、電源断の
+瞬間にも確実に保存されたと言える書き込みの保証が必要ですが、それを手元のfile systemで確かめられませんでした。
+simのhostfsは(POSIX版では)hostの<code>fsync()</code>を呼んでその結果を捨てるので、simで「成功」した書き込みは
+電源断について何も証明しません。ボードのflash用file systemにも、信頼できる保証は見つけられませんでした
+(<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md">想定Q&amp;A</a>)。</p>
+<table>
+<thead>
+<tr>
+<th>案</th>
+<th>長所</th>
+<th>問題</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>realtime + 起動内high-water</td>
+<td>単純、書込みなし</td>
+<td>RTCなしを救えない</td>
+<td>採用</td>
+</tr>
+<tr>
+<td>毎回timestampを保存</td>
+<td>分かりやすい</td>
+<td>頻繁なflash書込み</td>
+<td>不採用</td>
+</tr>
+<tr>
+<td>範囲を耐久的に予約</td>
+<td>書込みを減らせる</td>
+<td>確かめられなかった書き込みの保証が必要</td>
+<td>設計済み・延期</td>
+</tr>
+<tr>
+<td>起動counterを保存</td>
+<td>1 boot 1回の書込み</td>
+<td>初期値とdurabilityが必要</td>
+<td>v1では不採用</td>
+</tr>
+<tr>
+<td>追いつくまで待つ</td>
+<td>実装不要</td>
+<td>前回uptime分待つ</td>
+<td>却下</td>
+</tr>
+</tbody>
+</table>
+<h3 id="175-実機でどう確認したか">17.5 実機でどう確認したか</h3>
+<p>peer側からpacketを送るとpeerがinitiatorになり、boardはresponderとして答えられるため、問題を隠して
+しまいます。そこでboardには何も送らず、board自身が開始できるかを観測しました。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>時計未設定</td>
+<td>75秒待ってもhandshake不成立</td>
+</tr>
+<tr>
+<td>hostから時計設定</td>
+<td>4.1秒でhandshake成立</td>
+</tr>
+</tbody>
+</table>
+<p>同じboard(SPRESENSE)、同じpeer、同じimageで、変えたのは時計だけです <strong>[カーネル・実機]</strong>。反対に、
+素朴な試験(boardをresetしてPCからping)だとtunnelが戻り(記録では16秒)、<strong>問題を隠したまま合格してしまいます</strong>。
+pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のtimestampを必要としないからです。</p>
+<p>なお、「75秒」という数字はもう1つあります(今の台本では言いません)。uptimeを使っていた古い実装をsimで試したとき、
+復旧に75秒かかりました(<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/tai64n-reboot.md">tai64n-reboot.md</a>)。この数字は前回のsessionが短かったからにすぎず、1か月動いていた機器なら1か月
+再接続できない、という話です(<a href="#172-uptimeを使うと壊れる">17.2</a>)。上の表の「75秒待っても不成立」とは
+別の実験です。</p>
+<p>このため、#14は「原因不明」ではありません。<strong>問題を観測した上で、clockless boardをどこまでdriverが
+救うべきかという設計判断がopen</strong>です。</p>
+<hr />
+<h2 id="18-デモで何を見せているのか">18. デモで何を見せているのか</h2>
+<h3 id="181-この発表の2つのデモ">18.1 この発表の2つのデモ</h3>
+<p>発表には、動いている様子を見せる場面が2つあります。どちらも <strong>apps版(第1版)</strong> です。カーネル版の
+実績は、スライド31の表で示します(<a href="#151-主な検証環境">15.1</a>)。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>第1版の動画(スライド26)</th>
+<th>ライブデモ(スライド35・36)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>部</td>
+<td>第4部の最後</td>
+<td>第6部</td>
+</tr>
+<tr>
+<td>機器</td>
+<td>ESP32-S3 DevKit</td>
+<td>スタックちゃん(M5Stack CoreS3、中身はESP32-S3)</td>
+</tr>
+<tr>
+<td>WireGuardの版</td>
+<td>古いapps版のbuild(NuttX 12.7.0、2026年8月16日)</td>
+<td>apps版 v0.1.1(FLAT)。画面にもそう書いてある</td>
+</tr>
+<tr>
+<td>相手のWireGuard</td>
+<td>Windowsの公式client</td>
+<td>ラップトップ(Windows)のDocker containerの中のLinux kernel WireGuard</td>
+</tr>
+<tr>
+<td>下のネットワーク</td>
+<td>家のWi-Fi</td>
+<td>スマホのテザリング</td>
+</tr>
+<tr>
+<td>VPNの中の住所</td>
+<td><code>10.10.0.2</code></td>
+<td><code>10.10.0.2</code>(相手は<code>10.10.0.1</code>)</td>
+</tr>
+<tr>
+<td>見せること</td>
+<td>telnetでログイン、command、Web server、browser</td>
+<td><code>wg show</code>、telnet、<code>ifconfig</code>、表情、声、tcpdump</td>
+</tr>
+<tr>
+<td>形</td>
+<td>動画の1コマ(静止画)。本番では再生しない</td>
+<td>その場で操作(止まったら予備の動画へ切り替える)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="182-第1版の動画スライド26">18.2 第1版の動画(スライド26)</h3>
+<p>スライド26(Version 1 demo: the first video)では、第1版で何ができるかを、動画の1コマ(静止画)で見せます。
+本番では再生しません。動画(youtu.be/1kyX2av5WG4)はライブデモが止まったときの予備です。動画の中の手順は次のとおりです。</p>
+<ol>
+<li><code>telnet 10.10.0.2</code> — <code>wg0</code>越しにboardへログインする</li>
+<li><code>uname -a</code>、<code>ifconfig</code> — commandをいくつか打つ</li>
+<li><code>webserver &amp;</code> — board上で小さなWeb serverを起動する</li>
+<li>browserで<code>http://10.10.0.2/</code>を開く</li>
+</ol>
+<p>条件も大事です。機器はESP32-S3 DevKitで、apps版(FLAT)です。動画を撮ったのは古いapps版のbuild
+(<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/development/phase4-log.md">phase4-log.md</a>の<code>uname -a</code>:NuttX 12.7.0、2026年8月16日)です。<strong>USBケーブルは抜いてあり</strong>、boardは
+電源adapterだけで動いています。つまりPCとUSBでつながっていなくても、Wi-Fiとtunnelだけで操作できる、
+ということです。相手はWindowsの公式WireGuard clientです <strong>[apps・実機]</strong>。</p>
+<p>スライドの結論は「第1版でもデモには十分だった。次に、これを本物のNuttXのdriverにした」です。ここで
+第4部が終わり、第5部(カーネル版)へ進みます。<strong>この動画はapps版なので、後のカーネル版の結果と混ぜて
+話しません。</strong> スライド36の予備の動画とスライド43の動画も、この同じ動画です(スタックちゃんの録画では
+ありません)。</p>
+<h3 id="183-デモの構成スライド35">18.3 デモの構成(スライド35)</h3>
+<p>スライド35(Demo setup: the network)は、ライブデモの配線図です。</p>
+<pre><code class="language-text">会場のWi-Fi(機器どうしの通信を遮断)  ← スマホ自身のインターネットはこれかモバイル回線(デモには不要)
+          │
+   スマホのテザリング(2台だけの小さなローカルネットワーク)
+     │ Wi-Fi                               │ Wi-Fi
+ ラップトップ(Windows)                 スタックちゃん(ESP32-S3 + NuttX)
+   Docker内のLinux WireGuard              wlan0 = テザリングのアドレス
+   wg0 = 10.10.0.1                        wg0   = 10.10.0.2
+   telnet・browser・tcpdump               telnetd・Web server
+   音声fileを10.10.0.1:8000で配る         顔・首のservo・speaker
+     └──────── WireGuard tunnel(UDP 51820)────────┘
+              中を通るもの: telnet・HTTP・音声
+</code></pre>
+<h4 id="クライアント分離client-isolationとは">クライアント分離(client isolation)とは</h4>
+<p>会場やホテルのWi-Fiは、安全のために「同じWi-Fiにつながった機器どうしは直接話せない」設定にしている
+ことが多いです。これを<strong>client isolation</strong>(AP isolation)と呼びます。インターネットには出られますが、
+隣のPCやboardには届きません。グラスゴーの会場のWi-Fiもそうで、PCからスタックちゃんへは<strong>ARP</strong>
+(同じネットワークの中で、相手の機器の物理的な住所を探す問い合わせ)すら通りませんでした。</p>
+<h4 id="テザリングとはなぜスマホなのか">テザリングとは、なぜスマホなのか</h4>
+<p><strong>テザリング</strong>(hotspot)は、スマホを小さなWi-Fiルーターにする機能です。PCとスタックちゃんの両方を
+スマホにつなげば、2台だけの小さなネットワークができ、そこでは機器どうしが話せます。会場の遮断を
+避けるための工夫で、スマホ自身がインターネットにつながっている必要はありません(デモには不要)。
+家で確かめたときと同じ形(PC側のcontainerからtunnelを張る)で動きます。</p>
+<p>テザリングを入れ直すと、配られるアドレスの範囲が変わることがあります。そのためスライドには<code>wlan0</code>側の
+具体的なアドレスを書いていません。変わったときは、Wi-Fiの接続とWireGuardの設定をやり直します。</p>
+<h4 id="2種類のアドレス">2種類のアドレス</h4>
+<p><a href="#21-ipアドレスは機器の住所">2.1</a>で見た「物理の住所」と「VPNの中の住所」がここでも出てきます。</p>
+<pre><code class="language-text">物理のネットワーク(テザリング)   wlan0 = スマホが配るアドレス
+VPNの中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(スタックちゃん)
+</code></pre>
+<p>telnetやbrowserは<strong>10.10.0.2</strong>(tunnelの中の住所)に向けます。すると通信は<code>wg0</code>を通り、暗号化された
+UDPとしてテザリングを渡ります。</p>
+<h4 id="相手はdockerの中のlinux">相手はDockerの中のLinux</h4>
+<p><strong>Docker</strong>は、1台のPCの中に独立した小さなLinux環境(<strong>container</strong>)を作る道具です。ラップトップは
+Windowsですが、相手にはcontainerの中の<strong>Linux kernelのWireGuard</strong>を使います。このPCはWindowsの
+firewallが外からの受信を拒否し、ruleも追加できないためです(Windowsの公式clientとの接続は、
+別にスライド31で確かめています)。</p>
+<p>そのため、tunnelは<strong>PC側から張ります</strong>。container側にスタックちゃんのendpoint(<a href="#48-endpointとallowedips">4.8</a>)と
+25秒のPersistentKeepalive(<a href="#49-persistentkeepalive">4.9</a>)を設定し、スタックちゃん側のpeerには
+endpointを設定しません。スタックちゃんは、最初に届いた正しいhandshakeから相手の住所を覚えます。</p>
+<h4 id="声もtunnelを通る">声もtunnelを通る</h4>
+<p>スタックちゃんが話す声は、事前にラップトップのWindowsの音声合成(TTS、Text-To-Speech)で作ったWAV fileです。
+それをcontainer(<code>10.10.0.1:8000</code>)からHTTPで配り、スタックちゃんがtunnel越しに取ってきて再生します。
+外部のAPIやcloudはどこにも使っていません。</p>
+<h4 id="点線のspresense">点線のSPRESENSE</h4>
+<p>図の点線のSPRESENSE + Wi-Fi add-on(<code>wg0</code> 10.11.0.2)は、「2台目のpeerもある」という図示で、デモの手順には
+出てきません。</p>
+<p>スライドの結論は「スマホも会場も、見るのは暗号化されたUDPだけ。間にserverもcloudもない」です。</p>
+<h3 id="184-デモの7つの手順スライド36">18.4 デモの7つの手順(スライド36)</h3>
+<p>スライド36(Demo: live on the StackChan)の要点は、<strong>特別なことは何も起きない</strong>ことです。スタックちゃんは、
+暗号化tunnelの向こう側にある普通のコンピュータです。</p>
+<table>
+<thead>
+<tr>
+<th>手順</th>
+<th>何をするか</th>
+<th>何を示すか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. <code>wg show</code></td>
+<td>PC側のWireGuardの状態を見る</td>
+<td>latest handshakeが新しい → 認証とsession確立が動いた。endpointにスタックちゃんのテザリング側の住所が見える</td>
+</tr>
+<tr>
+<td>2. <code>telnet 10.10.0.2</code></td>
+<td>tunnelの中の住所へ遠隔ログイン</td>
+<td>pingだけでなくTCPと、taskをまたぐ送信が動く(スライド23のバグが直っている)</td>
+</tr>
+<tr>
+<td>3. <code>ifconfig</code></td>
+<td>スタックちゃんのネットワークの口を一覧する</td>
+<td><code>wlan0</code>(物理)と<code>wg0</code>(VPN)の両方がある → 本当にtunnel越しにログインしている</td>
+</tr>
+<tr>
+<td>4. <code>stackchan face happy</code></td>
+<td>表情を笑顔にする</td>
+<td>普通のcommandで機器を操作できる</td>
+</tr>
+<tr>
+<td>5. <code>stackchan say hello.wav</code></td>
+<td>PCから音声をHTTPで取ってきて再生する</td>
+<td>機器からPCへの通信(HTTP)も同じtunnelを通る</td>
+</tr>
+<tr>
+<td>6. tcpdump: 外と中</td>
+<td>packetを覗く</td>
+<td>外は読めないUDPだけ、中はtelnetの文字が見える(<a href="#185-tcpdumpでトンネルの外と中を見比べる">18.5</a>)</td>
+</tr>
+<tr>
+<td>7. <code>wg show</code>(2回目)</td>
+<td>もう一度状態を見る</td>
+<td>転送byte数が増えた → 暗号化されたdataが実際に流れた</td>
+</tr>
+</tbody>
+</table>
+<p><strong>スタックちゃん</strong>は、M5Stack CoreS3(ESP32-S3)に、顔を描く画面、首を振る2つのservo(角度を指定して
+動かせるmotor)、speakerを付けた小さなロボットです。NuttXの上で、顔・まばたき・首振り・音声再生
+(<code>stackchan</code> app)、telnetのserver(<code>telnetd</code>)、Web serverが動きます。boardの設定はesp32s3-devkitを
+流用しています(CoreS3専用の構成はNuttXにまだありません)。</p>
+<h3 id="185-tcpdumpでトンネルの外と中を見比べる">18.5 tcpdumpでトンネルの外と中を見比べる</h3>
+<p><strong>tcpdump</strong>は、ネットワークの口を流れるpacketをそのまま表示する道具です。デモでは、同じ通信を2か所から
+同時に見ます。</p>
+<pre><code class="language-text">             トンネルの外(スマホのネットワーク)        トンネルの中(PC側の wg0)
+見えるもの   outer IP / UDP 51820                       inner IP / TCP / telnet
+中身         暗号化された読めないbyte列                 今打ったtelnetの文字(平文)
+</code></pre>
+<p>これは<a href="#32-tunnelとencapsulation">3.2</a>のencapsulationの図そのものです。外側のpacketは「誰から誰へ、
+UDPの51820番」までしか読めず、中身はWireGuardが暗号化しています。PC側の<code>wg0</code>で見ると、WireGuardが
+復号した後のinner packetなので、telnetの文字がそのまま見えます。</p>
+<p>「telnetは暗号化しないので危ないのでは?」という疑問への答えもここにあります。telnet自体は平文ですが、
+tunnelの外ではWireGuardが暗号化しています。平文が見えるのは、tunnelの両端の中だけです。</p>
+<h3 id="186-なぜライブデモはapps版なのか">18.6 なぜライブデモはapps版なのか</h3>
+<p>資料に書いてある事実は次のとおりです。</p>
+<ul>
+<li>スタックちゃんのfirmwareは、Dockerfileの<code>esp32s3-stackchan</code>という段で作っています。これは<code>esp32s3</code>の段
+  (apps版の<code>apps/netutils/wireguard</code>を組み込んだbuild)の上に、<code>stackchan</code> appを重ねたものです</li>
+<li>確認の記録(<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/development/stackchan-hardware-check-2026-10-08.md">スタックちゃん実機確認</a>)も、apps版の
+  WireGuardと<code>stackchan</code> appの組み合わせで行っています</li>
+<li>カーネル版をスタックちゃんで動かした記録はありません。カーネル版の実機の結果は、ESP32-S3とSPRESENSEで
+  スライド31に示したものです</li>
+</ul>
+<p>つまり、スタックちゃんのデモは「apps版の上に作ったデモ」です。デモの目的は、利用者から見て何ができるか
+(普通のtelnet、Web、操作が暗号化tunnel越しにできる)を直感的に見せることで、それはapps版でも示せます。
+<strong>「カーネルドライバのデモです」とは言いません。</strong> 今の画面には「Runs the apps version (v0.1.1), FLAT build.」と
+書いてあり、台本も「このボードはapps版で動いている。動画と同じアプリ。カーネルドライバもこのchipで動いたが
+(スライド31)、ロボットのデモはアプリの上に作ってある」と言います。</p>
+<h3 id="187-デモで起きうることと画面に出さないもの">18.7 デモで起きうることと、画面に出さないもの</h3>
+<p>記録に残っている未解決の点です <strong>[未解決]</strong>。</p>
+<ul>
+<li><code>say</code>の途中でboardが止まることがまれにある(20回強に1回ほど)。ネットワーク側で止まったように見え、
+  原因は分かっていません。止まったら電源を入れ直して同じ手順に戻ります</li>
+<li>Web serverを連続で叩くと、30回中12回しか成功しないことがある(NuttXのTCP側で接続を使い切る件。
+  根本原因は未調査)。1秒間隔なら30/30なので、デモではbrowserを連打しません</li>
+<li>テザリングを入れ直すとアドレスの範囲が変わることがある(<a href="#183-デモの構成スライド35">18.3</a>)</li>
+<li>ライブが止まったら、すぐ録画(<a href="#182-第1版の動画スライド26">18.2</a>の動画)へ切り替えます。そのときは
+  「同じことを以前、別のboardでやった録画です」と一言添えます</li>
+</ul>
+<p>画面に出さないもの:<code>wg showconf</code>の出力(秘密鍵を表示する)、PCの鍵fileの置き場所、テザリングの
+passphrase、buildの設定(<code>.config</code>)。Wi-Fiのpassphraseはboardに保存しない運用にしています。</p>
+<h3 id="188-それぞれの画面が示すこと">18.8 それぞれの画面が示すこと</h3>
+<p>2つのデモに共通して、画面が示す意味は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>画面</th>
+<th>示すこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wg0</code>がある</td>
+<td>NuttXのnetdevとして登録されている</td>
+</tr>
+<tr>
+<td>latest handshakeが新しい</td>
+<td>WireGuard peer認証とsession確立が動いた</td>
+</tr>
+<tr>
+<td>transfer bytesが増える</td>
+<td>暗号化されたdataが実際に流れた</td>
+</tr>
+<tr>
+<td>telnetできる</td>
+<td>pingだけでなくTCPとtaskをまたぐ通信が動く</td>
+</tr>
+<tr>
+<td>Web pageが開く・声が出る</td>
+<td>既存applicationをVPN専用に変更せず使える</td>
+</tr>
+<tr>
+<td>tcpdumpの外が読めない</td>
+<td>tunnelの外では暗号化されている</td>
+</tr>
+</tbody>
+</table>
+<p>デモは「安全性を完全に証明するもの」ではなく、利用者にとって何が可能になるかを直感的に見せるもの
+です。安全性・停止・資源・再起動は別の試験で示します(第5部、<a href="#15-検証結果の読み方">15</a>〜<a href="#17-最大の未解決事項-tai64nと再起動">17</a>)。</p>
+<hr />
+<h2 id="19-第7部-運用移植性還元まとめ謝辞">19. 第7部: 運用・移植性・還元・まとめ・謝辞</h2>
+<h3 id="191-運用できる形にするスライド38">19.1 運用できる形にする(スライド38)</h3>
+<p>スライド38(Running it for real)は、「デモで動く」から「置いておける」への違いを2点で示します。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>前</th>
+<th>後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>鍵</td>
+<td>build設定(Kconfig)に埋め込み。変えるには作り直し</td>
+<td><code>wg genkey</code> / <code>set</code> / <code>setconf</code>を動作中に。firmwareのimageには入らない</td>
+</tr>
+<tr>
+<td>止まったとき</td>
+<td>推測するしかない</td>
+<td>ROUTER / LAN / TUN / TCPの4つを毎分確かめ、どこが落ちたかを言える</td>
+</tr>
+</tbody>
+</table>
+<p><strong>firmware</strong>は機器に書き込むprogramの塊です。build設定に鍵を書くと、鍵がそのfileに入り、fileを配ったり
+build logが残ったりすると鍵も一緒に漏れます。同じfileを何台にも書けば全部同じ鍵になります。動作中に
+機器の上で鍵を作れば、鍵は機器の中(と保存した設定file)にしかありません。</p>
+<p>4つの確認は「ルーター側が生きているか」「boardがネットワーク上にいるか」「WireGuardがtrafficを運んで
+いるか」「applicationのdataが流れているか」です。たとえばROUTERとLANが生きていてTUNだけ止まれば
+WireGuardの問題、LANから止まればWi-Fiやboardの問題、と切り分けられます。これは主に
+<strong>[apps・実機]</strong> での運用の話です。</p>
+<h3 id="192-ほかのcpuスライド39">19.2 ほかのCPU(スライド39)</h3>
+<p>スライド39(Other CPUs)は、第3部の「OS依存を4つの関数に閉じこめる」という賭けの答え合わせです。
+apps版(FLAT)は、4種類のCPUでcodeの変更なしに動きました <strong>[apps・実機]</strong>(simとQEMUを含む)。</p>
+<table>
+<thead>
+<tr>
+<th>CPU</th>
+<th>どこで</th>
+<th>変更</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x86_64</td>
+<td>sim(普通のPC)</td>
+<td>なし</td>
+<td>tunnel</td>
+</tr>
+<tr>
+<td>ARM Cortex-A7</td>
+<td>QEMU</td>
+<td>なし</td>
+<td>tunnel</td>
+</tr>
+<tr>
+<td>Xtensa LX7</td>
+<td>ESP32-S3</td>
+<td>なし</td>
+<td>実Wi-Fiでtunnel</td>
+</tr>
+<tr>
+<td>ARM Cortex-M4F</td>
+<td>SPRESENSE</td>
+<td>なし</td>
+<td>実Wi-Fi(GS2200M)でtunnel</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CPUアーキテクチャ</strong>が違うと、機械語、register、関数の呼び方の約束まで違います。Cで書いたprogramは
+compilerがそれぞれの機械語に変えてくれますが、OSに依存する部分が散らばっていると、移すたびにあちこち
+直すことになります。<strong>カーネル版はこの4つの差し込み口を使わない</strong>(時計や乱数はkernelの中で直接使う)ので、
+この確認はapps版だけのものです。カーネル版がどこで動いたかはスライド31にあります。</p>
+<h3 id="193-本家への還元スライド40">19.3 本家への還元(スライド40)</h3>
+<p>スライド40(Giving back: where it stands)は、本家(upstream)への還元が今どこにあるかの報告です。
+計画や日程は話しません。言葉は<a href="#83-なぜリポジトリが3つあるのか">8.3</a>のfork、PR(Pull Request、
+「この変更を取り込んでください」という依頼)を使います。画面には4つの項目があります。</p>
+<ol>
+<li>小さな<code>crypto:</code>の修正 — ChaCha20-Poly1305のnonceの修正だけ。WireGuardがなくても役に立つので、driverとは分けてある</li>
+<li>driver — <code>drivers/net/wireguard</code>(kernelのdevice、ABI、文書と、networkの中心部分への小さな変更2つ)</li>
+<li>command — <code>apps/system/wg</code>(driverと話すcommand)</li>
+<li>ここまで確かめたこと — checkpatch / nxstyleを通過、各commitが単独でbuildできる、licenseを列挙</li>
+</ol>
+<p>なぜ小さく分けるのか。大きなPRは読むのが大変で、1か所に問題があると全部が止まります。crypto修正は
+driverがなくても役に立つので、別の単位にしてあります。</p>
+<p><strong>現状:</strong> 作業は手元で小さな単位に分けてあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
+ただし<strong>まだsign-offしておらず、実機での再試験もしていません。何も送っていません。</strong> commitには本人の
+<code>Signed-off-by</code>と、AI toolの手を借りたことを示す<code>Assisted-by</code>の行がまだなく、最終的な一式は実機で動かして
+いません。<strong>dev@での議論もupstreamへのPRもしていません。</strong> 「もうPRを出した」「merge可能」とは
+言いません。いつ出すか、誰が保守するかのような、約束できないことも言いません。台本の言葉では、Community over codeとは「仕事が本当はどこまで来ているかを正直に言い、
+reviewに変えてもらうこと」です。</p>
+<h3 id="194-summaryスライド41">19.4 Summary(スライド41)</h3>
+<p>スライド41の題は「Summary — What I built, and three things to remember」(作ったものと、覚えておいて
+ほしい3つ)です。</p>
+<h4 id="作ったものの1行">「作ったもの」の1行</h4>
+<blockquote>
+<p><strong>Built <code>wg0</code>:</strong> NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSEの上で動き、標準の
+WireGuardのpeerと話し、upstream向けに小さなPRに分けてある。</p>
+</blockquote>
+<p>この1行には、別々の確認がまとめて入っています。分けて読むと次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>1行の中の言葉</th>
+<th>確かめた版と場所</th>
+<th>言いすぎにしないために</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kernelの中の<code>wg0</code></td>
+<td>カーネル版(スライド28・29)</td>
+<td>本命はカーネル版。apps版は第1版</td>
+</tr>
+<tr>
+<td>ESP32-S3とSPRESENSEで動く</td>
+<td><strong>[カーネル・実機]</strong> 両boardのFLATビルドで実Wi-Fiのtunnel(スライド31)</td>
+<td>実機の試験はrebase前の版。KERNEL/PROTECTEDはQEMUだけ</td>
+</tr>
+<tr>
+<td>標準のWireGuardのpeer</td>
+<td>カーネル版の実機の相手は<strong>Windowsの公式client</strong>。<strong>Linux kernelのWireGuard</strong>とはsimとQEMU <strong>[カーネル・sim] [カーネル・QEMU]</strong>。apps版は両boardでLinuxとWindowsの両方 <strong>[apps・実機]</strong></td>
+<td>「カーネル版を実機でLinuxとつないだ」とは言わない</td>
+</tr>
+<tr>
+<td>小さなPRに分けてある</td>
+<td>分割と検査は済み(<a href="#193-本家への還元スライド40">19.3</a>)</td>
+<td>PRはまだ出していない。sign-offもまだ</td>
+</tr>
+</tbody>
+</table>
+<h4 id="3つの教訓">3つの教訓</h4>
+<ol>
+<li><strong>浅い試験は通り、深い試験は落ちる。</strong> だから試験は深さのために設計する:長いdataの流れ、本物の
+   hardware、本物のkernel build。「handshakeが通った」だけでは足りない(<a href="#13-発表に出てくる6つの落とし穴">13</a>、
+   <a href="#14-なぜpingだけでは足りないのか">14</a>)</li>
+<li><strong>きれいなOSの境界は、手間をかける価値がある。</strong> apps版で、4種類のCPU、3つのNuttXのversion(13.0.1・master・12.7.0)、
+   codeの変更なし。これは<strong>apps版</strong>の数字で、カーネル版はこの4関数を使いません(<a href="#192-ほかのcpuスライド39">19.2</a>)</li>
+<li><strong>あるprojectへの移植は、そのproject自体を良くする機会になる。</strong> 途中でNuttX自身のChaCha20-Poly1305に
+   隠れていたバグ(nonceのcounterの位置、<a href="#46-nonceとcounter">4.6</a>、スライド30)を見つけた。その修正はそれだけで成り立つ</li>
+</ol>
+<p>以前の版のスライドは、3つ目にSPRESENSEの起動のバグ(#9、高分解能のRTCを有効にすると手を加えていないrelease版が
+shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305のバグだけです。#9は質問されたら答える程度にします。</p>
+<h3 id="195-謝辞スライド42">19.5 謝辞(スライド42)</h3>
+<p>スライド42(Thanks)は、この仕事を支えた人たちへの感謝です。</p>
+<table>
+<thead>
+<tr>
+<th>誰に</th>
+<th>なぜ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alan</td>
+<td>このカンファレンスを教えてくれ、講演を出すよう背中を押してくれた(スライド6の3月20日)</td>
+</tr>
+<tr>
+<td>Apache NuttXのコミュニティ</td>
+<td>GSoCの提案を書いたとき話を聞いて励ましてくれた。採択されなかった後も続けられたのはそのおかげ</td>
+</tr>
+<tr>
+<td>Apache Software FoundationとCommunity Over Codeの運営者・volunteer</td>
+<td>このイベントを実現してくれた</td>
+</tr>
+<tr>
+<td>ソニーのNuttX開発者(これまでの、そして今の)</td>
+<td>NuttXを製品に入れ、projectに多くを還元してきた。この仕事はその上に立っている(スライド9)</td>
+</tr>
+</tbody>
+</table>
+<p>発表の名前でもある「Community Over Code」は、「codeよりcommunity」というApacheの標語です。謝辞は
+その実践でもあります。技術的な主張はないスライドです。</p>
+<h3 id="196-thank-youスライド43">19.6 Thank you(スライド43)</h3>
+<p>最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、<a href="#182-第1版の動画スライド26">18.2</a>と同じapps版の
+動画)、「Code &amp; records: github.com/wwlapaki310/gsoc2026-nuttx-wireguard」(コードと作業の記録があるこの
+repository)、名前と所属、「Questions welcome.」があります。本家には<strong>まだ何も送っていません</strong>(<a href="#193-本家への還元スライド40">19.3</a>)。質疑応答では
+<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md">想定Q&amp;A</a>を手元に置き、数字は<a href="#152-主な数字と正しい言い方">15.2</a>の
+「言ってよいこと」の範囲で答えます。</p>
+<hr />
+<h2 id="20-発表の各部で理解すべき一文">20. 発表の各部で理解すべき一文</h2>
+<table>
+<thead>
+<tr>
+<th>部</th>
+<th>スライド</th>
+<th>一文で理解する</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第1部 概要と背景</td>
+<td>3〜10</td>
+<td>NuttXは小さな機器でUnixに近いnetwork programmingを可能にするRTOSで、発表者はアプリと運用の側からそこに来た</td>
+</tr>
+<tr>
+<td>第2部 課題とアイデア</td>
+<td>11〜15</td>
+<td>遠隔の組込み機器へ既存toolで安全に届きたい。小さく標準的なVPNを機器の上のnetdevとして置けば、各appを書き換えずに済む</td>
+</tr>
+<tr>
+<td>第3部 計画</td>
+<td>16〜18</td>
+<td>暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存のnetwork glueだけNuttXの部品へ写す</td>
+</tr>
+<tr>
+<td>第4部 第1版</td>
+<td>19〜26</td>
+<td>第1版は動いたが、最初の症状、ping、simだけでは4つの重要な故障を見逃した</td>
+</tr>
+<tr>
+<td>第5部 第2版(driver)</td>
+<td>27〜30</td>
+<td>driverがsocket/thread/stateを所有し、user側はioctlで設定する。kernelの深さでも同じ形のバグが2つ出た</td>
+</tr>
+<tr>
+<td>第5部 第2版(検証)</td>
+<td>31〜32</td>
+<td>複数build・実機・故障注入で、各主張の範囲を測った。動くtunnelだけでは鍵や資源の問題は見えない</td>
+</tr>
+<tr>
+<td>第5部 第2版(TAI64N)</td>
+<td>33</td>
+<td>replay防止には再起動を越える時刻が必要で、RTCなしには無料の解決がない</td>
+</tr>
+<tr>
+<td>第6部 ライブデモ</td>
+<td>34〜36</td>
+<td>普通のtelnet・Web・操作が、普通のWireGuard peer越しに使え、外からは暗号化UDPしか見えない(apps版)</td>
+</tr>
+<tr>
+<td>第7部 まとめ</td>
+<td>37〜43</td>
+<td>動作だけでなく、運用、移植性、ABI、証拠、未解決範囲を公開レビューに出す。教訓は「深く試す」「境界をきれいに」「移植は本家を良くする」</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="21-用語集">21. 用語集</h2>
+<table>
+<thead>
+<tr>
+<th>用語</th>
+<th>やさしい説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ABI</td>
+<td>applicationとkernelがbinary levelで情報交換する約束</td>
+</tr>
+<tr>
+<td>AEAD</td>
+<td>暗号化と改ざん検出を一緒に行う方式</td>
+</tr>
+<tr>
+<td>AllowedIPs</td>
+<td>peerへ送る/peerから許すIP範囲。routingにも使う</td>
+</tr>
+<tr>
+<td>apps版</td>
+<td>第1版。<code>apps/</code>に置いたアプリとしてのWireGuard(v0.1.1)。FLAT build専用</td>
+</tr>
+<tr>
+<td>ARP</td>
+<td>同じnetworkの中で、相手の機器の物理的な住所を探す問い合わせ</td>
+</tr>
+<tr>
+<td>backend</td>
+<td>共通interfaceの裏で実際の処理をする実装</td>
+</tr>
+<tr>
+<td>broker</td>
+<td>MQTTでメッセージを中継・配布するserver</td>
+</tr>
+<tr>
+<td>buffer</td>
+<td>dataを一時的に置くmemory領域</td>
+</tr>
+<tr>
+<td>ChaCha20-Poly1305</td>
+<td>WireGuardがdata暗号化と認証に使うAEAD</td>
+</tr>
+<tr>
+<td>ciphertext</td>
+<td>暗号化後の読めないdata</td>
+</tr>
+<tr>
+<td>client isolation</td>
+<td>同じWi-Fiにつながった機器どうしの通信を遮断する設定(AP isolation)</td>
+</tr>
+<tr>
+<td>clock realtime</td>
+<td>日付と時刻を表す時計。設定・補正されることがある</td>
+</tr>
+<tr>
+<td>concurrency</td>
+<td>複数の処理が重なって進むこと</td>
+</tr>
+<tr>
+<td>counter</td>
+<td>packetごとに増える番号</td>
+</tr>
+<tr>
+<td>cryptokey routing</td>
+<td>IP範囲と公開鍵peerを対応させるWireGuardのrouting</td>
+</tr>
+<tr>
+<td>Curve25519 / X25519</td>
+<td>公開鍵から共有秘密を作るためのcurve演算</td>
+</tr>
+<tr>
+<td>daemon</td>
+<td>backgroundでserviceを提供するprocess/task</td>
+</tr>
+<tr>
+<td>data plane</td>
+<td>実packetを処理する経路</td>
+</tr>
+<tr>
+<td>Docker / container</td>
+<td>PCの中に独立した小さなLinux環境を作る道具 / その環境</td>
+</tr>
+<tr>
+<td>deadlock</td>
+<td>お互いを待ち、誰も進めなくなる状態</td>
+</tr>
+<tr>
+<td>device driver</td>
+<td>OSとdevice/virtual deviceをつなぐsoftware</td>
+</tr>
+<tr>
+<td>edge AI</td>
+<td>AIの計算をcloudではなく現場の機器の上で行うこと</td>
+</tr>
+<tr>
+<td><code>d_lock</code></td>
+<td>NuttX netdevごとのrecursive mutex。今回のprotocol state lock</td>
+</tr>
+<tr>
+<td>endpoint</td>
+<td>暗号化UDPを送る実際のIP addressとport</td>
+</tr>
+<tr>
+<td>entropy</td>
+<td>乱数の予測しにくさの材料</td>
+</tr>
+<tr>
+<td>errno</td>
+<td>system callなどが失敗した理由を示す番号</td>
+</tr>
+<tr>
+<td>fd</td>
+<td>file descriptor。fileやsocketを表す小さな整数。NuttXではtask groupごと</td>
+</tr>
+<tr>
+<td>firmware</td>
+<td>機器に書き込むprogramの塊</td>
+</tr>
+<tr>
+<td>FLAT build</td>
+<td>applicationとkernelが同じaddress spaceにあるNuttX構成</td>
+</tr>
+<tr>
+<td>handshake</td>
+<td>peerを確認しsession keyを作る手続き</td>
+</tr>
+<tr>
+<td>high-water mark</td>
+<td>これまで使った最大値。値を後退させないために使う</td>
+</tr>
+<tr>
+<td>IOB</td>
+<td>NuttXのnetwork packet用buffer</td>
+</tr>
+<tr>
+<td>ioctl</td>
+<td>applicationからdriverへ設定・取得を依頼する仕組み</td>
+</tr>
+<tr>
+<td>IP address</td>
+<td>network上のinterfaceの住所</td>
+</tr>
+<tr>
+<td>kernel</td>
+<td>OSの中核。hardwareと重要資源を管理する</td>
+</tr>
+<tr>
+<td>カーネル版</td>
+<td>第2版。<code>drivers/net/wireguard</code>に置いた正式なdriver。提出候補として小さく分けてある</td>
+</tr>
+<tr>
+<td>KERNEL build</td>
+<td>user processとkernelを分離するNuttX構成</td>
+</tr>
+<tr>
+<td>kthread</td>
+<td>kernelが所有するthread</td>
+</tr>
+<tr>
+<td>lifecycle</td>
+<td>作成、起動、停止、破棄までの一生</td>
+</tr>
+<tr>
+<td>lock / mutex</td>
+<td>shared dataを一度に1つの処理だけが触るための仕組み</td>
+</tr>
+<tr>
+<td>MQTT</td>
+<td>小さなメッセージをbroker経由でやり取りするIoT向けprotocol</td>
+</tr>
+<tr>
+<td>monotonic clock</td>
+<td>日付ではなく経過時間用で、通常は後退しない時計</td>
+</tr>
+<tr>
+<td>NAT</td>
+<td>private addressと外向きaddressを変換する仕組み</td>
+</tr>
+<tr>
+<td>netdev</td>
+<td>OSから見えるnetwork device</td>
+</tr>
+<tr>
+<td>nonce</td>
+<td>同じ鍵で暗号化するときに毎回変える値</td>
+</tr>
+<tr>
+<td>NSH</td>
+<td>NuttX Shell。commandを入力するconsole</td>
+</tr>
+<tr>
+<td>peer</td>
+<td>WireGuardの通信相手。公開鍵で識別する</td>
+</tr>
+<tr>
+<td>plaintext</td>
+<td>暗号化前、または復号後のdata</td>
+</tr>
+<tr>
+<td>polling</td>
+<td>状態が変わったか繰り返し確認すること</td>
+</tr>
+<tr>
+<td>PR(Pull Request)</td>
+<td>「この変更を本家に取り込んでください」という依頼</td>
+</tr>
+<tr>
+<td>POSIX</td>
+<td>Unix系OSのAPIや動作をそろえる標準群</td>
+</tr>
+<tr>
+<td>PROTECTED build</td>
+<td>kernelとapplicationをmemory/privilege面で分離するNuttX構成</td>
+</tr>
+<tr>
+<td>queue</td>
+<td>dataを順番に一時保管する列</td>
+</tr>
+<tr>
+<td>QEMU</td>
+<td>PCの上で別のCPUのcomputerを丸ごと真似する仮想machine</td>
+</tr>
+<tr>
+<td>race condition</td>
+<td>実行順によって結果が壊れる並行処理bug</td>
+</tr>
+<tr>
+<td>rebase</td>
+<td>自分の変更を、本家の新しい版の上に載せ替えること</td>
+</tr>
+<tr>
+<td>regression</td>
+<td>以前は動いていたものが、変更によって動かなくなること</td>
+</tr>
+<tr>
+<td>replay</td>
+<td>過去の正しいpacketを再送する攻撃</td>
+</tr>
+<tr>
+<td>rekey</td>
+<td>新しいsession keyへ切り替えること</td>
+</tr>
+<tr>
+<td>responder</td>
+<td>handshake開始要求へ応答する側</td>
+</tr>
+<tr>
+<td>RTC</td>
+<td>電源状態をまたいで日時を保つためのreal-time clock</td>
+</tr>
+<tr>
+<td>RTOS</td>
+<td>時間制約を予測しやすく扱う組込み向けOS</td>
+</tr>
+<tr>
+<td>servo</td>
+<td>角度を指定して動かせるmotor</td>
+</tr>
+<tr>
+<td>sim</td>
+<td>PCの上でNuttXを普通のprogramとして動かすsimulator</td>
+</tr>
+<tr>
+<td>semaphore</td>
+<td>待機・通知や資源数の管理に使う同期機構</td>
+</tr>
+<tr>
+<td>session key</td>
+<td>1つの通信sessionで一時的に使う暗号鍵</td>
+</tr>
+<tr>
+<td>SMP</td>
+<td>複数CPU coreでOSを動かす構成</td>
+</tr>
+<tr>
+<td>socket</td>
+<td>applicationがnetworkを送受信する入口</td>
+</tr>
+<tr>
+<td>stack</td>
+<td>関数呼出しやlocal変数に使う、threadごとのmemory</td>
+</tr>
+<tr>
+<td>StackChan(スタックちゃん)</td>
+<td>M5Stackに顔と首を付けた小さなロボット。ライブデモの機器</td>
+</tr>
+<tr>
+<td>starvation</td>
+<td>ある処理が他の処理に負け続け、実行されない状態</td>
+</tr>
+<tr>
+<td>TAI64N</td>
+<td>WireGuard handshakeで使うtimestamp表現</td>
+</tr>
+<tr>
+<td>tcpdump</td>
+<td>networkの口を流れるpacketを表示する道具</td>
+</tr>
+<tr>
+<td>tethering / hotspot</td>
+<td>スマホを小さなWi-Fiルーターにする機能</td>
+</tr>
+<tr>
+<td>thread / task</td>
+<td>独立して進む実行の流れ</td>
+</tr>
+<tr>
+<td>TTS</td>
+<td>Text-To-Speech。文字から音声を作ること</td>
+</tr>
+<tr>
+<td>tunnel</td>
+<td>元のpacketを包み、別のnetwork経路で運ぶ仕組み</td>
+</tr>
+<tr>
+<td>UDP</td>
+<td>接続や再送を基本的に持たないdatagram通信</td>
+</tr>
+<tr>
+<td>upper/lower half</td>
+<td>OS共通処理と個別driver処理の分割</td>
+</tr>
+<tr>
+<td>uptime</td>
+<td>deviceが起動してからの経過時間</td>
+</tr>
+<tr>
+<td>user space</td>
+<td>通常のapplicationが制限された権限で動く領域</td>
+</tr>
+<tr>
+<td>usrsock</td>
+<td>socket処理をuser-space daemon等へ渡すNuttXの仕組み</td>
+</tr>
+<tr>
+<td>VPN</td>
+<td>離れた機器を暗号化された仮想networkでつなぐ仕組み</td>
+</tr>
+<tr>
+<td>watchdog</td>
+<td>NuttXでは、決めた時間の後に関数を呼ぶtimer</td>
+</tr>
+<tr>
+<td>WPA2 / WPA3</td>
+<td>Wi-Fiの暗号。機器とアクセスポイントの間の電波の区間だけを守る</td>
+</tr>
+<tr>
+<td>zeroization</td>
+<td>不要な秘密情報をmemory上でzeroにすること</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="22-セルフチェック">22. セルフチェック</h2>
+<h3 id="まず答えたい14問">まず答えたい14問</h3>
+<ol>
+<li><code>wlan0</code>と<code>wg0</code>は何が違うか。</li>
+<li>WireGuardは、なぜ元のIP packetをUDPの中に入れるのか。</li>
+<li>handshakeとdata通信は何が違うか。</li>
+<li>なぜping成功だけではTCP成功を保証できないか。</li>
+<li>apps版をそのまま正式driverにしなかったのはなぜか。</li>
+<li>なぜsocket送信を<code>d_lock</code>の外へ出したのか。</li>
+<li>なぜ送信前にimmutableなqueue entryへcopyするのか。</li>
+<li><code>wg down</code>でworker終了前にsocketを閉じてはいけないのはなぜか。</li>
+<li>IOB枯渇試験のPASSは何を示し、何を示さないか。</li>
+<li>TAI64N問題で、普通の再起動後pingが問題を隠すのはなぜか。</li>
+<li>Wi-Fiに暗号(WPA2/WPA3)があるのに、なぜ機器の上のVPNが要るのか。</li>
+<li>ライブデモで、なぜ会場のWi-Fiではなくスマホのテザリングを使うのか。</li>
+<li>tcpdumpで見ると、トンネルの外と中では何が違って見えるか。</li>
+<li>スタックちゃんのデモはカーネル版か。カーネル版の「実機で動いた」を言うときの注意は何か。</li>
+</ol>
+<h3 id="回答">回答</h3>
+<ol>
+<li><code>wlan0</code>は物理Wi-Fi、<code>wg0</code>は暗号化tunnelを表すvirtual netdev。</li>
+<li>既存のIP通信を変更せず、一般のnetworkを越えて暗号化して運ぶため。</li>
+<li>handshakeはpeer確認とsession key作成、data通信はその鍵でinner packetを運ぶ処理。</li>
+<li>ping replyとTCP dataが別task/contextから送られることがあり、apps版ではfd scopeが違ったため。</li>
+<li>内部socket APIと同一address spaceに依存し、PROTECTED/KERNEL境界に合わなかったため。</li>
+<li>backend送信がblockしてもprotocol state、ioctl、停止処理をlockしたままにしないため。</li>
+<li>送信待ち中にshared crypto bufferやpeer/keypairが変更・解放される危険をなくすため。</li>
+<li>生きたworkerが閉じたsocketや破棄済みsemaphoreへ触る可能性があるため。</li>
+<li>simの制御条件でpoolが0になっても落ちず回復したこと。実機や全backendの完全保証ではない。</li>
+<li>PCからpingするとPC側がinitiatorになり、boardはtimestamp不要のresponderとして成功できるため。</li>
+<li>Wi-Fiの暗号が守るのは機器とアクセスポイントの間の一区間だけで、インターネットやルーターの中は守らないため。</li>
+<li>会場のWi-Fiは機器どうしの通信を遮断している(client isolation)ため。スマホで2台だけの小さなnetworkを作れば、機器どうしが話せる。</li>
+<li>外(スマホのnetwork)ではUDP 51820の暗号化された読めないbyte列だけ、中(PC側の<code>wg0</code>)では復号後のtelnetの文字が平文で見える。</li>
+<li>スタックちゃんはapps版(v0.1.1、FLAT)。カーネル版の実機は普通のFLATビルド(最終rebase前)で、相手はWindowsの公式client。KERNEL/PROTECTEDはQEMUだけで、Linux kernelのWireGuardとはsimとQEMUでつないだ。</li>
+</ol>
+<hr />
+<h2 id="23-おすすめ学習順">23. おすすめ学習順</h2>
+<h3 id="60分で全体をつかむ">60分で全体をつかむ</h3>
+<ol>
+<li><a href="#この発表の地図">この発表の地図</a>と<a href="#部ごとの学習ルート">部ごとの学習ルート</a>、0〜4章: 20分</li>
+<li>6〜9章: 20分</li>
+<li>13〜19章: 20分</li>
+</ol>
+<h3 id="発表前に2時間使える場合">発表前に2時間使える場合</h3>
+<ol>
+<li>上の60分コース</li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">日本語台本</a>を読み、各slideをこの文書の章へ対応させる</li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md">想定Q&amp;A</a>の日本語だけ読む</li>
+<li>セルフチェック14問を資料なしで答える</li>
+</ol>
+<h3 id="部ごとに覚えたい場合">部ごとに覚えたい場合</h3>
+<p><a href="#部ごとの学習ルート">部ごとの学習ルート</a>の表を1部ずつ使います。各部の「先に読む基礎」を読み、
+<a href="coc-glasgow-slide-guide-ja.html">スライド別解説</a>でその部のスライドを1枚ずつ確かめ、最後に
+<a href="#20-発表の各部で理解すべき一文">20章</a>の一文を自分の言葉で言えるか試します。時間が足りなければ、
+第5部(スライド31〜33、<a href="#15-検証結果の読み方">15</a>〜<a href="#17-最大の未解決事項-tai64nと再起動">17</a>章)を最優先にします。</p>
+<h3 id="技術質問へ備える場合">技術質問へ備える場合</h3>
+<ol>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/in-kernel-design.md">現行設計</a></li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/verification-matrix.md">検証マトリクス</a></li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/tai64n-decision.md">TAI64Nの判断</a></li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/wg-operation.md">運用方法</a></li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/development/stackchan-hardware-check-2026-10-08.md">スタックちゃん実機確認</a>(ライブデモの構成と既知の問題)</li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/submission-checklist.md">提出前チェックリスト</a>(PRの分割とPROTECTEDの間欠的な失敗)</li>
+</ol>
+<p>全部を覚える必要はありません。「正本のどこに根拠があるか」を知り、断言の範囲を守ることが重要です。</p>
+<hr />
+<h2 id="24-最後に覚える5文">24. 最後に覚える5文</h2>
+<ol>
+<li><strong>NuttXに<code>wg0</code>というvirtual network deviceを追加し、既存アプリのIP packetをWireGuardで運びます。</strong></li>
+<li><strong>暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存部分をNuttXのnetdevとIOBへ置き換えました。</strong></li>
+<li><strong>現行版はkernel driverがsocket、worker、protocol stateを所有し、user側の<code>wg</code>とはioctlで通信します。</strong></li>
+<li><strong>pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。PROTECTEDの間欠的な失敗のように、未解決のものは未解決と言います。</strong></li>
+<li><strong>最大の未解決はRTCのないboardの再起動後timestampで、問題は実測済みですが、durableな解決に必要な書き込みの保証を確かめられていません。</strong></li>
+</ol>
+<p>この5文を自分の言葉で説明できれば、発表全体の背骨は理解できています。</p>
+</main>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "default" });
+</script>
+</body>
+</html>

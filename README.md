@@ -28,6 +28,8 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
  
 > **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) (apps version, 9 slides) · [coc-glasgow-reveal](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html) (in-kernel, Community Over Code, on the official CoC template; `S` for speaker view) · [coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html) (same content, standalone source)
 
+> **Understand it from zero (Japanese):** [beginner guide](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-beginner-guide-ja.html) — the whole talk explained step by step for readers new to networking, VPNs and embedded OSes · [slide-by-slide guide](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slide-guide-ja.html)
+
 ---
 
 ## Project Overview
