@@ -1035,7 +1035,7 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
         </div>
         <div class="agenda-item">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1044,7 +1044,7 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
     <div class="notes-src">
 Here is the plan for this talk.
 ||
-There are seven parts. First, an overview and the background: who I am, what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, version one, an app: the first tunnel, four hidden bugs, and the first demo. Fifth, version two, the kernel driver, and how I tested it. Sixth, a live demo with the StackChan. And last, a summary and the next steps. About thirty minutes, then questions.
+There are seven parts. First, an overview and the background: who I am, what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, version one, an app: the first tunnel, four hidden bugs, and the first demo. Fifth, version two, the kernel driver, and how I tested it. Sixth, a live demo with the StackChan. And last, a summary and where the work stands. About thirty minutes, then questions.
     </div>
   </section>
 
@@ -1085,7 +1085,7 @@ There are seven parts. First, an overview and the background: who I am, what Nut
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1401,7 +1401,7 @@ In both cases, I come to NuttX from the same direction: first application develo
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1602,7 +1602,7 @@ From here on, the work is building this middle part &mdash; wg0 and the encrypti
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1704,7 +1704,7 @@ Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. ne
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1936,7 +1936,7 @@ Here is a frame from the version one video: I logged in with telnet through the 
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -1998,7 +1998,7 @@ wg0 is now a lower-half network device in the kernel. It owns its UDP socket and
       <div class="two">
         <div class="panel wg">
           <h3>A bug in NuttX's own crypto</h3>
-          <p><code>chacha20poly1305</code> put the counter in the wrong nonce bytes. Counter 0 matches, so <strong>the handshake succeeds and every data packet after the first fails.</strong> Nothing in NuttX had ever used it. Two-line fix, going upstream as a separate <code>crypto:</code> PR.</p>
+          <p><code>chacha20poly1305</code> put the counter in the wrong nonce bytes. Counter 0 matches, so <strong>the handshake succeeds and every data packet after the first fails.</strong> Nothing in NuttX had ever used it. Two-line fix, kept as a separate <code>crypto:</code> change.</p>
         </div>
         <div class="panel wg">
           <h3>A BUILD_KERNEL-only crash</h3>
@@ -2023,7 +2023,7 @@ Second, a crash that happened only in a kernel build. Setting the key copied the
     <div class="body" style="gap:16px">
       <table class="compact">
         <tr><th>Where</th><th>Version</th><th>What I checked</th></tr>
-        <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds with no errors (the driver PR adds this config, so CI will build it)</td></tr>
+        <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds with no errors (the driver series adds this config)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel driver &middot; BUILD_KERNEL (QEMU)</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> is a separate program that calls in through syscalls</td></tr>
         <tr><td>rv-virt pnsh64</td><td class="new">kernel driver &middot; BUILD_<b>PROTECTED</b> (QEMU)</td><td class="new">tunnel with the <b>MPU split</b> on: <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary; tunnel works, but <b>2 of 8 repeated runs hit a fault (open)</b></td></tr>
         <tr><td>rv-virt knetnsh64_smp</td><td class="new">kernel driver &middot; <b>SMP, 4 CPUs</b> (QEMU)</td><td class="new">heavy traffic <b>while</b> changing the config and doing <code>down</code>/<code>up</code>; no fault, tunnel came back</td></tr>
@@ -2037,7 +2037,7 @@ Second, a crash that happened only in a kernel build. Setting the key copied the
     <div class="notes-src">
 Let me be exact about which version was checked where.
 ||
-The kernel driver builds with no errors in the sim config &mdash; the driver PR adds that config, so CI will build the driver. It also runs a full tunnel in a kernel build in QEMU, rv-virt knetnsh64, to WireGuard in the Linux kernel. The wg command is a separate program, and it reaches the driver through system calls.
+The kernel driver builds with no errors in the sim config &mdash; the driver series adds that config. It also runs a full tunnel in a kernel build in QEMU, rv-virt knetnsh64, to WireGuard in the Linux kernel. The wg command is a separate program, and it reaches the driver through system calls.
 ||
 Next, PROTECTED, also in QEMU. The ioctl ABI has no pointers inside, so the kernel only touches the one struct the caller passed. With the memory split on, every ioctl crosses the boundary, and the tunnel reaches Linux. But in repeated runs, two out of eight hit a fault in user space. I have not found the cause yet, so it is an open problem, not a pass.
 ||
@@ -2141,7 +2141,7 @@ And I measured it on the board. The obvious test passes: reset the board, ping i
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
@@ -2283,14 +2283,14 @@ Last, the packets. On the left, the phone's network: only encrypted UDP. On the 
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; next steps</h3><p>Upstream plan &middot; three lessons &middot; thanks</p></div>
+          <div><h3>Summary &amp; status</h3><p>Upstream status &middot; three lessons &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
     <div class="num">37 / 43</div>
     <div class="notes-src">
-Last part: what comes next, and what to take home.
+Last part: where the work stands, and what to take home.
     </div>
   </section>
 
@@ -2340,23 +2340,23 @@ Keeping the OS behind a few functions was a bet. Here is the check, with the app
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Giving back: sending it to NuttX</p>
+    <p class="eyebrow">Giving back: where it stands</p>
     <h2>The Apache Way: small steps, in the open.</h2>
     <div class="body">
       <ul class="big">
-        <li>A small <code>crypto:</code> PR first <span>the ChaCha20-Poly1305 nonce fix, which helps NuttX on its own.</span></li>
-        <li>Then the driver PR <span><code>drivers/net/wireguard</code> &mdash; the kernel device, ABI, and docs, plus two small network-core changes.</span></li>
-        <li>Then the command PR <span><code>apps/system/wg</code> &mdash; the command that talks to the driver.</span></li>
-        <li>Design ready for <code>dev@nuttx.apache.org</code> <span>passes checkpatch / nxstyle, split into PRs, licenses checked. Community over code.</span></li>
+        <li>A small <code>crypto:</code> fix <span>the ChaCha20-Poly1305 nonce fix, kept apart from the driver because it is useful on its own.</span></li>
+        <li>The driver <span><code>drivers/net/wireguard</code> &mdash; the kernel device, ABI, and docs, plus two small network-core changes.</span></li>
+        <li>The command <span><code>apps/system/wg</code> &mdash; the command that talks to the driver.</span></li>
+        <li>Checked so far <span>checkpatch / nxstyle pass, each commit builds on its own, licenses listed.</span></li>
       </ul>
-      <div class="takeaway"><b>Takeaway</b><p>Sending the crypto fix as its own PR lets NuttX take it even if the driver is not accepted.</p></div>
-      <div class="sources">Status: split into small PRs; each commit passes checkpatch and builds. Not yet signed off or re-run on hardware; nothing sent yet.</div>
+      <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
+      <div class="sources">Status: prepared locally as small pieces. Not signed off, not re-run on real hardware, nothing sent.</div>
     </div>
     <div class="num">40 / 43</div>
     <div class="notes-src">
 Let me end this part with the values of this community.
 ||
-I will send the work in steps. First, a small crypto PR for the nonce fix, because it is useful on its own and helps everyone. Then the driver PR for the kernel device, and then the command PR for the user-space tool. The work is already split into small PRs, and every commit passes the patch checks and builds on its own. The design discussion and the upstream PRs are the next step; they have not started yet. Before I send them, every commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series still needs a run on real hardware. Community over code means being honest about where the work really is, and then letting review change it.
+The work is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the command for user space. Every commit passes the patch checks and builds on its own. Nothing is sent yet. Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series has not run on real hardware. Community over code means being honest about where the work really is, and then letting review change it.
     </div>
   </section>
 
@@ -2368,7 +2368,7 @@ I will send the work in steps. First, a small crypto PR for the nonce fix, becau
       <ul class="big">
         <li>Simple tests pass, deep tests fail <span>test deeply (long data runs, real hardware, a real kernel build), not just &ldquo;the handshake worked.&rdquo;</span></li>
         <li>A clean OS boundary pays off <span>the apps version: four CPU types, three NuttX versions, no code changes.</span></li>
-        <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way; the fix will go upstream as its own PR.</span></li>
+        <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
       </ul>
     </div>
     <div class="num">41 / 43</div>
@@ -2377,7 +2377,7 @@ To sum up.
 ||
 I built wg0, a WireGuard network device inside the NuttX kernel. It works on an ESP32-S3 and on SPRESENSE with the official Windows client, it talks to Linux kernel WireGuard in the simulator and in QEMU, and it is split into small PRs, ready for review. Nothing is sent upstream yet.
 ||
-And three things to remember. First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; in the apps version, four CPU types and three NuttX versions, with no code changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix will go upstream by itself.
+And three things to remember. First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; in the apps version, four CPU types and three NuttX versions, with no code changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.
     </div>
   </section>
 
@@ -2406,7 +2406,7 @@ First, Alan, who told me about this conference and encouraged me to submit a tal
       <div class="two">
         <div class="panel nx">
           <p><strong>Demo:</strong> youtu.be/1kyX2av5WG4</p>
-          <p><strong>Going upstream to:</strong> <code>apache/nuttx</code>, <code>apache/nuttx-apps</code></p>
+          <p><strong>Code &amp; records:</strong> <code>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</code></p>
         </div>
         <div class="panel">
           <p>Satoru Akita / Sony Semiconductor Solutions</p>

@@ -32,12 +32,12 @@ every existing app for free."
 `psock_*()` という内部APIに依存していて、これは同一アドレス空間の
 FLATビルドでしか使えません。カーネル版は `drivers/net/wireguard/` に
 住む正式な in-tree ドライバで、PROTECTED/KERNELビルドでも動きます。
-upstream に出すのはカーネル版です。apps版は「動くと分かっていたものを
+提出候補として小さな単位に分けてあるのはカーネル版です。apps版は「動くと分かっていたものを
 土台に、どこを直せばカーネルに収まるか」を洗い出すために先に作った、
 という位置づけです。
 *Say:* "The apps version proved the protocol port and found four bugs on a
-FLAT build. The kernel driver is the one going upstream — it works under
-every privilege model, not just FLAT."
+FLAT build. The kernel driver is the one split into review-sized pieces — it
+works under every privilege model, not just FLAT."
 
 **Q. 内部 API (`psock_*()`) を使うのは問題にならないのか?**
 apps版ではそれが制約でした(FLATビルド専用)。**カーネル版はもうこれに
@@ -57,24 +57,25 @@ wireguard-lwip(BSD-3-Clause、Daniel Hope)の `wireguard.c` / `wireguard.h` か�
 そのため `NET_WIREGUARD` は `ALLOW_BSD_COMPONENTS` に依存します。暗号(BLAKE2s、
 ChaCha20-Poly1305、Curve25519)は NuttX 自身の `crypto/` を使っていて、コピーした
 ものではありません。クリーンルームでの書き直しは可能ですが、出自を正直に書いて
-おく方を選びました。どちらがよいかは dev@ で決めてもらうつもりです。
+おく方を選びました。どちらがよいかは、まだ決まっていません。
 *Say:* "Yes. The protocol core, wg_noise.c, is derived from wireguard-lwip under
 BSD-3-Clause. It says so in the SPDX header and in the LICENSE file, and the
 driver depends on ALLOW_BSD_COMPONENTS. The crypto is NuttX's own. A clean-room
-rewrite is possible, but I would rather keep the attribution honest, and let the
-dev list decide."
+rewrite is possible, but I chose to keep the attribution honest. Which way is
+better is not decided."
 
 **Q. マージされた後、誰が保守するのか?**
-私が保守するつもりです(この答えは本番前に本人が確かめること)。ドライバは NuttX の
+決まっていません。約束できないことは言いません。今言える事実は、ドライバが NuttX の
 既存の部品(netdev lower half、`crypto/`、UDP ソケット)の上に作ってあり、外のコードに
-追従し続ける必要がある部分は小さくしてあります。
-*Say:* "I will maintain it. The driver is built on NuttX's own pieces — the netdev
-lower half, crypto/ and a UDP socket — so there is little outside code to follow."
+追従し続ける必要がある部分は小さい、ということです。
+*Say:* "That is not decided, and I don't want to promise what I can't. What I can
+say is that the driver is built on NuttX's own pieces — the netdev lower half,
+crypto/ and a UDP socket — so there is little outside code to follow."
 
 **Q. IPv6 は使えるのか?**
 今は IPv4 だけです。カーネル版の Kconfig は `depends on NET_UDP && NET_IPv4` で、
-トンネルの中も外も IPv4 です。IPv6 は今後の課題です。
-*Say:* "IPv4 only for now, inside and outside the tunnel. IPv6 is future work."
+トンネルの中も外も IPv4 です。IPv6 には対応していません。
+*Say:* "IPv4 only, inside and outside the tunnel. IPv6 is not supported."
 
 **Q. NuttX の UDP は `SO_RCVTIMEO` を実装しているのでは?(スライド22、バグ 1/6)**
 はい、実装しています(`net/udp/udp_recvfrom.c` が `s_rcvtimeo` で待つ)。発表では、これを
@@ -228,15 +229,15 @@ things NuttX does not have, so you still need deep tests."
 ## upstream・提出状況
 
 **Q. もうPRは出したのか? マージされているのか?**
-まだupstream PRは出していません。作業は CONTRIBUTING の規則に合わせて小さな PR
-(crypto 修正 → nxstyle の除外 → ドライバ → `wg` コマンドと文書)に分け、コミットごとに
-単独でビルドと検査が通る状態にしてあります。
-**PRの作成とdev@nuttx.apache.org への投稿はまだ**です。これは意図的な順序で、
-upstreamへの実際の投稿は自分の責任で行い、この場では「こう作った、
-こう検証した」という提出候補を示しています。
-*Say:* "Not upstream yet. The work is split into small PRs, and every commit
-builds and passes the checks on its own. The dev-list discussion and the
-actual upstream PRs are the next step."
+まだ何も送っていません。マージもされていません。作業は CONTRIBUTING の規則に合わせて
+手元で小さな単位(crypto 修正 → nxstyle の除外 → ドライバ → `wg` コマンドと文書)に分け、
+コミットごとに単独でビルドと検査が通る状態にしてあります。
+**PRの作成も dev@nuttx.apache.org への投稿もしていません。** コミットにはまだ署名
+(Signed-off-by)がなく、最終的なシリーズは実機で動かしていません。この場で示しているのは
+「こう作った、こう検証した」という今の状態です。
+*Say:* "Nothing is sent, and nothing is merged. The work is split locally into
+small pieces, and every commit builds and passes the checks on its own. The
+commits are not signed off, and the final series has not run on real hardware."
 
 **Q. checkpatch や nxstyle は通っているのか?**
 はい。ファイル単位の`nxstyle -f`に加え、CIがPRに対して行うパッチ形式の
@@ -248,21 +249,21 @@ commit of the split series, and each commit builds on its own with -Werror."
 **Q. これはGSoCプロジェクトだったのか?**
 出発点にはGSoC提案としての検討もありましたが、この発表で示すコードと検証は、
 採否とは切り離して継続したコミュニティ向けの開発成果です。だから発表の軸も
-制度ではなく、実装、失敗、検証、upstream reviewに置いています。
+制度ではなく、実装、失敗、検証、そして作業が今どこにあるかに置いています。
 *Say:* "It began with work around a GSoC proposal, but the engineering continued
-independently. This talk is about the implementation, the evidence, and the
-upstream contribution, not the program outcome."
+independently. This talk is about the implementation, the evidence, and where the
+work stands, not the program outcome."
 
 **Q. NuttX自身のバグ(ChaCha20-Poly1305のnonce)は誰が直すのか?
 このプロジェクトの成果に含まれるのか?**
 このプロジェクトの中で見つけたバグですが、直し方は独立したものです。
 カウンタ0では新旧のnonceレイアウトが一致するため、これまで誰も
 (in-treeの呼び出し元もなく)踏んだことがありませんでした。修正は
-2行で、ドライバのPRとは別に、単独の `crypto:` PR として先に出す
-予定です — それ単体で成り立ち、誰の役にも立つからです。
+2行で、ドライバとは別の単独の `crypto:` の変更として分けてあります — それ単体で
+成り立ち、ドライバがなくても役に立つからです。まだ送ってはいません。
 *Say:* "Found while porting, but it's a genuine pre-existing NuttX bug,
-not something the driver introduced. Two-line fix, shipping as its own
-`crypto:` PR ahead of the driver PR."
+not something the driver introduced. Two-line fix, kept as its own
+`crypto:` change, apart from the driver. It is not sent yet."
 
 ---
 

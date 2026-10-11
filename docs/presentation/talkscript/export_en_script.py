@@ -38,7 +38,7 @@ SLIDES = [
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~6 min) / the problem and the idea "
         "(~4) / the plan (~2) / version 1: the app, four hidden bugs (~5) / version 2: the "
-        "kernel driver (~8) / live demo (~3) / summary & next steps (~4).",
+        "kernel driver (~8) / live demo (~3) / summary & status (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("About Me", "",
@@ -185,10 +185,10 @@ SLIDES = [
           "passphrase.",
           "**Fallback:** the recording. Switch at once if the live demo "
           "stalls."]),
-    ('Agenda: ⑦ Summary and Next Steps', "divider", None, []),
+    ('Agenda: ⑦ Summary and Status', "divider", None, []),
     ("Running It for Real", "cut candidate 3", None, []),
     ("Other CPUs", "cut candidate 2", None, []),
-    ("Giving Back", "cut first", None,
+    ("Giving Back: Where It Stands", "cut first", None,
          ['**If asked "is it merged?":** not yet. These are submission '
           "candidates, not a claim that it is mergeable. See the Q&A file.",
           "**If time is short:** skip the whole slide. The talk's argument "

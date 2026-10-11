@@ -59,7 +59,7 @@ CLOSING = """\
     <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
     <div class="facts">
       <div><b>youtu.be/1kyX2av5WG4</b><span>DEMO</span></div>
-      <div><b>apache/nuttx &middot; apache/nuttx-apps</b><span>GOING UPSTREAM</span></div>
+      <div><b>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</b><span>CODE &amp; RECORDS</span></div>
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>

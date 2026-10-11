@@ -210,7 +210,7 @@
   <p>どの実装を、どこで確かめたかを混ぜないために、根拠の欄に次の印を付ける。</p>
   <p>
     <span class="tag apps">apps 版</span> 最初の実装(v0.1.1、FLAT ビルド専用、凍結)
-    <span class="tag kern">カーネル版</span> upstream へ出す実装(<code>drivers/net/wireguard/</code>)<br>
+    <span class="tag kern">カーネル版</span> 提出候補として小さく分けてある実装(<code>drivers/net/wireguard/</code>)<br>
     <span class="tag sim">sim</span> PC 上の模擬環境
     <span class="tag qemu">QEMU</span> CPU ごと模擬する仮想マシン
     <span class="tag hw">実機</span> 本物のボードと本物の Wi-Fi
@@ -229,7 +229,7 @@
         <a href="#ch4">④Version 1: the app(19〜26)</a> ·
         <a href="#ch5">⑤Version 2: the kernel driver(27〜33)</a> ·
         <a href="#ch6">⑥Live demo(34〜36)</a> ·
-        <a href="#ch7">⑦Summary &amp; next steps(37〜43)</a>
+        <a href="#ch7">⑦Summary &amp; status(37〜43)</a>
       </div>
     </li>
     <li><a href="#part3">用語辞典(読み方つき)</a></li>
@@ -280,7 +280,7 @@
   <tr class="agenda"><td><a href="#s37">37</a></td><td><a href="#s37">Agenda — ⑦</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s38">38</a></td><td><a href="#s38">Running it for real</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s39">39</a></td><td><a href="#s39">Other CPUs: beyond the first board</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s40">40</a></td><td><a href="#s40">Giving back: sending it to NuttX</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s40">40</a></td><td><a href="#s40">Giving back: where it stands</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s41">41</a></td><td><a href="#s41">Summary — What I built, and three things to remember</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s42">42</a></td><td><a href="#s42">Thanks: the people behind this talk</a></td><td>⑦ Summary</td></tr>
   <tr><td><a href="#s43">43</a></td><td><a href="#s43">Thank you</a></td><td>⑦ Summary</td></tr>
@@ -363,7 +363,7 @@
 <h3>1.4 2 つの実装(混ぜないこと)</h3>
 <p>このプロジェクトには実装が 2 つある。発表の前半(④ Version 1、スライド 19〜26)は 1 つ目、後半(⑤ Version 2、スライド 27〜33)は 2 つ目の話。<b>どの結果がどちらの実装のものかを、話すときに混ぜないことが一番大事。</b></p>
 <div class="tbl"><table>
-  <tr><th></th><th><span class="tag apps">apps 版</span> v0.1.1(凍結)</th><th><span class="tag kern">カーネル版</span>(upstream 提出の本命)</th></tr>
+  <tr><th></th><th><span class="tag apps">apps 版</span> v0.1.1(凍結)</th><th><span class="tag kern">カーネル版</span>(提出候補として分けてある方)</th></tr>
   <tr><td>置き場所</td><td><code>apps/netutils/wireguard/</code>(アプリ側)</td><td><code>drivers/net/wireguard/</code>(OS の中)+ <code>apps/system/wg</code>(操作コマンド)</td></tr>
   <tr><td>動くビルド</td><td>FLAT のみ</td><td>FLAT(実機と sim)・KERNEL / PROTECTED(QEMU のみ)</td></tr>
   <tr><td>設定方法</td><td><code>wg</code> コマンドが同じメモリ空間で直接</td><td><code>wg</code> コマンドが ioctl で OS に頼む</td></tr>
@@ -372,7 +372,7 @@
 </table></div>
 
 <h3>1.5 発表の構成と時間配分</h3>
-<p>スライド 2 の目次は「7 部・約 30 分」。各部の目安(6 / 4 / 2 / 5 / 8 / 3 / 4 分)を足すと 32 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 33 分 32 秒</b>になる。試験の 3 枚(31〜33)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> に移してある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分。</p>
+<p>スライド 2 の目次は「7 部・約 30 分」。各部の目安(6 / 4 / 2 / 5 / 8 / 3 / 4 分)を足すと 32 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 33 分 15 秒</b>になる。試験の 3 枚(31〜33)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> に移してある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分。</p>
 <figure>
   <svg viewBox="0 0 960 310" role="img" aria-label="7 部の時間配分。⑤ カーネルドライバと試験が約 8 分で最も長い">
     <g font-size="14">
@@ -387,29 +387,29 @@
       <line class="grid" x1="788" y1="20" x2="788" y2="270"/>
       <text x="788" y="290" text-anchor="middle" class="t3" font-size="12">12 分</text>
       <text x="210" y="40" text-anchor="end">① Overview &amp; background</text>
-      <path class="bar" d="M220 28 h300 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-300 z" data-tip="① Overview &amp; background: 約 6.4 分(スライド 3〜10、1:21→7:46)"/>
+      <path class="bar" d="M220 28 h300 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-300 z" data-tip="① Overview &amp; background: 約 6.4 分(スライド 3〜10、1:22→7:47)"/>
       <text x="536" y="43" class="t2" font-size="13">約 6 分</text>
       <text x="210" y="76" text-anchor="end">② The problem and the idea</text>
-      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:46→11:46)"/>
+      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:47→11:47)"/>
       <text x="421" y="79" class="t2" font-size="13">約 4 分</text>
       <text x="210" y="112" text-anchor="end">③ The plan</text>
-      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:46→13:19)"/>
+      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:47→13:20)"/>
       <text x="305" y="115" class="t2" font-size="13">約 1.6 分</text>
       <text x="210" y="148" text-anchor="end">④ Version 1: the app</text>
-      <path class="bar" d="M220 136 h249 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-249 z" data-tip="④ Version 1: the app: 約 5.3 分(スライド 19〜26、13:19→18:40)"/>
+      <path class="bar" d="M220 136 h249 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-249 z" data-tip="④ Version 1: the app: 約 5.3 分(スライド 19〜26、13:20→18:41)"/>
       <text x="485" y="151" class="t2" font-size="13">約 5 分</text>
       <text x="210" y="184" text-anchor="end">⑤ Version 2: kernel driver</text>
-      <path class="bar hi" d="M220 172 h395 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-395 z" data-tip="⑤ Version 2: kernel driver: 約 8.4 分(スライド 27〜33、18:40→27:05)。試験の 3 枚(31〜33)を含む"/>
+      <path class="bar hi" d="M220 172 h395 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-395 z" data-tip="⑤ Version 2: kernel driver: 約 8.4 分(スライド 27〜33、18:41→27:04)。試験の 3 枚(31〜33)を含む"/>
       <text x="631" y="187" class="t2" font-size="13">約 8 分 — 核心</text>
       <text x="210" y="220" text-anchor="end">⑥ Live demo</text>
-      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 34〜36、27:05→29:43)"/>
+      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 34〜36、27:04→29:42)"/>
       <text x="356" y="223" class="t2" font-size="13">約 2.6 分</text>
-      <text x="210" y="256" text-anchor="end">⑦ Summary &amp; next steps</text>
-      <path class="bar" d="M220 244 h177 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-177 z" data-tip="⑦ Summary &amp; next steps: 約 3.8 分(スライド 37〜43、29:43→33:32)"/>
-      <text x="413" y="259" class="t2" font-size="13">約 4 分</text>
+      <text x="210" y="256" text-anchor="end">⑦ Summary &amp; status</text>
+      <path class="bar" d="M220 244 h167 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-167 z" data-tip="⑦ Summary &amp; status: 約 3.6 分(スライド 37〜43、29:42→33:15)"/>
+      <text x="403" y="259" class="t2" font-size="13">約 4 分</text>
     </g>
   </svg>
-  <figcaption>図 1-3 部ごとの時間(英語・日本語の台本の累積時刻より。合計約 33 分 32 秒)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 40 → 39 → 38。31〜33 は削らない。</figcaption>
+  <figcaption>図 1-3 部ごとの時間(英語・日本語の台本の累積時刻より。合計約 33 分 15 秒)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 40 → 39 → 38。31〜33 は削らない。</figcaption>
 </figure>
 
 <div class="box key">
@@ -467,7 +467,7 @@
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>もうマージされているのですか?</dt>
-    <dd>まだ。PR も dev@ への投稿もこれから(スライド 40)。"Not upstream yet."</dd>
+    <dd>まだ。PR も dev@ への投稿もしていない。何も送っていない(スライド 40)。"Nothing is sent, and nothing is merged."</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -493,7 +493,7 @@
     <tr><td>4</td><td>Version 1: the app(最初のトンネル・隠れた 4 つのバグ・最初のデモ)</td><td>約 5 分</td><td>19〜26</td></tr>
     <tr><td>5</td><td>Version 2: the kernel driver(カーネルの設計・もう 2 つのバグ・試験)</td><td>約 8 分</td><td>27〜33</td></tr>
     <tr><td>6</td><td>Live demo(トンネル越しのスタックちゃん)</td><td>約 3 分</td><td>34〜36</td></tr>
-    <tr><td>7</td><td>Summary &amp; next steps(upstream の計画・3 つの教訓・謝辞)</td><td>約 4 分</td><td>37〜43</td></tr>
+    <tr><td>7</td><td>Summary &amp; status(upstream の状況・3 つの教訓・謝辞)</td><td>約 4 分</td><td>37〜43</td></tr>
   </table></div>
   <p><b>要点:</b>前半が「バージョン 1 = アプリ」、後半が「バージョン 2 = カーネルドライバ」という 2 段の物語。バグは全部で 6 つ(バージョン 1 で 4 つ、カーネルで 2 つ)。試験の 3 枚(31〜33)はバージョン 2 の部に入っている。目安を足すと 32 分、台本どおりに話すと約 33 分 32 秒(<a href="#part1">図 1-3</a>)。</p>
   <p><b>話し方:</b>"There are seven parts." と言って各部を 1 行ずつ読み、"About thirty minutes, then questions." で締める。</p>
@@ -629,7 +629,7 @@
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>これは GSoC プロジェクトだったのですか?</dt>
-    <dd>出発点は GSoC の提案だったが、開発は採否と切り離して続けた。発表は制度の結果ではなく、実装と証拠と upstream への貢献の話(Q&amp;A)。"It began with work around a GSoC proposal, but the engineering continued independently."</dd>
+    <dd>出発点は GSoC の提案だったが、開発は採否と切り離して続けた。発表は制度の結果ではなく、実装と証拠と、作業が今どこにあるかの話(Q&amp;A)。"It began with work around a GSoC proposal, but the engineering continued independently."</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -768,7 +768,7 @@
   <h4>① 画面にあるもの</h4>
   <p>4 つの時期:2015 年 ソニーのオーディオ製品に NuttX / 2018〜19 年 SPRESENSE と CXD56xx(オーディオ・GNSS・カメラ・マルチコアの対応が NuttX に入り、Open Source Summit + ELC Europe 2019 で発表)/ 2020 年 本家との協業(ソニーのエンジニアが主要な貢献者に。「A Journey from Fork to Mainline」、NuttX Online Workshop 2020)/ 2020 年代 カメラ・GNSS・センシングへ。下に出典(石川氏・Jerpelea 氏の講演、NuttX 文書)。</p>
   <h4>② 背景知識</h4>
-  <p><b>fork と mainline</b>:オープンソースを会社で使うとき、まず自社用に分岐(fork)して手を入れることが多い。しかし分岐したままだと、本家(mainline)の改良を取り込むたびに苦労する。そこで自社の変更を本家に戻していく(upstream する)。「fork から mainline へ」はこの道のりのこと。スライド 40 でこのプロジェクトも同じことをしようとしている。</p>
+  <p><b>fork と mainline</b>:オープンソースを会社で使うとき、まず自社用に分岐(fork)して手を入れることが多い。しかし分岐したままだと、本家(mainline)の改良を取り込むたびに苦労する。そこで自社の変更を本家に戻していく(upstream する)。「fork から mainline へ」はこの道のりのこと。このプロジェクトの今の状況はスライド 40。</p>
   <p><b>GNSS</b>:GPS などの衛星測位の総称。<b>マルチコア</b>:1 つのチップに CPU が複数あること。<b>PMC(Project Management Committee)</b>:Apache のプロジェクトを運営する委員会。台本では Alin Jerpelea 氏が後に NuttX の PMC 議長を務めたと述べている。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:ソニーはエッジ AI よりずっと前から NuttX を使っており、オーディオと SPRESENSE の経験がセンシングとカメラにつながった。根拠はスライド下の公開講演と文書。</p>
@@ -1212,7 +1212,7 @@
     <tr><td>1</td><td>handshake の開始要求の回数制限(rate limit)の引き算の向き</td><td><code>last - now</code> と逆に引いていたので、符号なしの数が大きな値に回り込み、回数制限が<b>一度も効いていなかった</b>。wireguard-lwip 自身のバグ</td></tr>
     <tr><td>2</td><td>リプレイ防止の窓を 32 パケットから 2048 パケットへ広げた</td><td>32 では、Wi-Fi の再送などで順番が少し入れ替わるだけで、本物のパケットまで捨ててしまう。仕組み(RFC 2401 のスライディングウィンドウ)は同じで、幅だけ広げた</td></tr>
   </table></div>
-  <p>どちらも移植の後のレビューで見つかり、wireguard-lwip の本家にも提案するつもりのもの。暗号の部分(<code>crypto.c</code>、<code>crypto/refc/*</code>)は今も 1 バイトも違わない。</p>
+  <p>どちらも移植の後のレビューで見つかったもの。wireguard-lwip の本家にはまだ送っていない。暗号の部分(<code>crypto.c</code>、<code>crypto/refc/*</code>)は今も 1 バイトも違わない。</p>
   <h5>受信タスク</h5>
   <p><b>タスク</b>や<b>スレッド</b>は「実行の流れ」。1 つのプログラムの中で、複数の処理が並行して進む。WireGuard は、いつ届くか分からない UDP を待ち続ける必要があるので、受信専用の流れ(受信タスク、<code>wg_rx</code>)を作る。これが次のバグの舞台になる。</p>
   <h5>wg コマンド</h5>
@@ -1239,7 +1239,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
     <dt>設定ファイルの形式は独自ですか?</dt>
     <dd><code>wg(8)</code> と同じ INI 形式(<code>[Interface]</code> / <code>[Peer]</code>、<code>PublicKey</code>、<code>AllowedIPs</code>、<code>Endpoint</code>、<code>PersistentKeepalive</code>)。デスクトップの <code>.conf</code> をそのまま使える(Q&amp;A)。</dd>
     <dt>wireguard-lwip のバグは本家に報告しましたか?</dt>
-    <dd>PATCHES.md には「本家にも提案するつもり」と書いてある段階。まだ送ったとは言わない。</dd>
+    <dd>まだ報告していない。PATCHES.md に修正の中身を書いてあるだけ。送るかどうか、いつ送るかは言わない。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -1694,14 +1694,14 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p>主張:アプリとしての移植はプロトコルが動くことを示す。しかし正式なデバイスとして、PROTECTED と KERNEL でも動くのはカーネルドライバだけ。根拠:<span class="tag apps">apps 版</span> が <code>psock_*()</code>(同じメモリ空間でしか使えない内部 API)に依存していること(スライド 23)と、<span class="tag kern">カーネル版</span> の構成(<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>「Components」)。PROTECTED・KERNEL で実際に動いたかはスライド 31。</p>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">This is the work I did after the first version, and it is the part that NuttX needs before this can go upstream.</blockquote>
-  <p class="gloss">これは最初の版の後にした仕事で、本家に出す前に NuttX が必要とする部分です。</p>
+  <p class="gloss">これは最初の版の後にした仕事で、本家に入れるには NuttX ではこの部分が必要です。</p>
   <blockquote class="en">So I moved the device into the kernel, under drivers/net/wireguard, and I control it from a small user-space wg command through ioctl.</blockquote>
   <p class="gloss">そこでデバイスをカーネルの drivers/net/wireguard へ移し、小さなユーザー空間の wg コマンドから ioctl で操作するようにしました。</p>
   <p>注意:「もうマージできる」とは言わない(Q&amp;A の方針:「全部検証済み」「マージ可能」とは絶対に言わない)。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>apps 版とカーネル版、どちらが本物ですか?</dt>
-    <dd>どちらも本物で目的が違う。apps 版はプロトコルの移植を証明し、FLAT で 4 つのバグを見つけた。upstream に出すのはカーネル版で、FLAT だけでなくどの権限モデルでも動く(Q&amp;A)。</dd>
+    <dd>どちらも本物で目的が違う。apps 版はプロトコルの移植を証明し、FLAT で 4 つのバグを見つけた。提出候補として小さく分けてあるのはカーネル版で、FLAT だけでなくどの権限モデルでも動く(Q&amp;A)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -1774,7 +1774,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>カーネルに BSD-3 のコードを入れるのですか?</dt>
-    <dd>はい。<code>wg_noise.c</code> は wireguard-lwip(BSD-3-Clause)から派生していて、SPDX と <code>LICENSE</code> に書き、<code>ALLOW_BSD_COMPONENTS</code> に依存させている。書き直しは可能だが、出自を正直に書く方を選んだ。dev@ で決めてもらう(Q&amp;A)。"Yes. The protocol core, wg_noise.c, is derived from wireguard-lwip under BSD-3-Clause."</dd>
+    <dd>はい。<code>wg_noise.c</code> は wireguard-lwip(BSD-3-Clause)から派生していて、SPDX と <code>LICENSE</code> に書き、<code>ALLOW_BSD_COMPONENTS</code> に依存させている。書き直しは可能だが、出自を正直に書く方を選んだ。どちらがよいかは決まっていない(Q&amp;A)。"Yes. The protocol core, wg_noise.c, is derived from wireguard-lwip under BSD-3-Clause."</dd>
     <dt>暗号はハードウェアアクセラレータを使っていますか?</dt>
     <dd>使っていない。NuttX 自身のソフトウェア実装(BLAKE2s、ChaCha20-Poly1305、Curve25519)をそのまま使う。cryptodev 経由の Curve25519 は技術的には可能だが、ソフトウェア暗号一式を引き込むので見送った(Q&amp;A)。</dd>
     <dt>複数の相手(peer)を持てますか?</dt>
@@ -1801,7 +1801,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <a class="shot" href="renders/glasgow/slide-30.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-30.png" alt="スライド 29 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-30.png</code> · <a href="coc-glasgow-slides.html#30" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>左「NuttX 自身の暗号のバグ」:<code>chacha20poly1305</code> が counter を nonce の間違ったバイトに置いていた。counter 0 なら一致するので handshake は成功し、最初以降のデータパケットはすべて失敗。NuttX の中で使っている人がいなかった。2 行の修正で、別の <code>crypto:</code> PR として本家へ。右「BUILD_KERNEL だけのクラッシュ」:<code>wg_set_if()</code> が peer をスタック上の 6 KB の配列にコピー。カーネルのスタックは 3 KB → あふれる → ヒープ破壊 → パニック。sim(FLAT、大きなスタック)では起きない。ヒープへ移した。</p>
+  <p>左「NuttX 自身の暗号のバグ」:<code>chacha20poly1305</code> が counter を nonce の間違ったバイトに置いていた。counter 0 なら一致するので handshake は成功し、最初以降のデータパケットはすべて失敗。NuttX の中で使っている人がいなかった。2 行の修正で、ドライバとは別の <code>crypto:</code> の変更として分けてある。右「BUILD_KERNEL だけのクラッシュ」:<code>wg_set_if()</code> が peer をスタック上の 6 KB の配列にコピー。カーネルのスタックは 3 KB → あふれる → ヒープ破壊 → パニック。sim(FLAT、大きなスタック)では起きない。ヒープへ移した。</p>
   <h4>② 背景知識</h4>
   <h5>nonce と counter</h5>
   <p>同じ鍵で何度も暗号化するとき、毎回違う値を混ぜないと暗号が破れる。この「1 回しか使わない値」を <b>nonce</b>(number used once)と呼ぶ。WireGuard では、パケットの通し番号(<b>counter</b>:0, 1, 2, …)を nonce に入れる。ChaCha20-Poly1305 の nonce は 12 バイトで、標準(RFC 8439)では「先頭 4 バイトは 0、後ろ 8 バイトに counter」。NuttX は counter を<b>前の 8 バイト</b>に置いていた。</p>
@@ -1844,7 +1844,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>nonce のバグは誰が直すのですか? このプロジェクトの成果ですか?</dt>
-    <dd>このプロジェクトの中で見つけたが、NuttX に以前からあったバグで、ドライバが持ち込んだものではない。2 行の修正を、ドライバとは別の <code>crypto:</code> PR として先に出す(Q&amp;A)。</dd>
+    <dd>このプロジェクトの中で見つけたが、NuttX に以前からあったバグで、ドライバが持ち込んだものではない。2 行の修正を、ドライバとは別の <code>crypto:</code> の変更として分けてある。まだ送っていない(Q&amp;A)。</dd>
     <dt>このバグはセキュリティ上危険でしたか?</dt>
     <dd>他の実装と相互接続できない(2 個目以降が復号できない)という形で現れた。NuttX の中に利用者がいなかったので、実害が出る前に見つかった。危険性の評価までは主張しない。</dd>
   </dl>
@@ -1885,7 +1885,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p>主張:sim でトンネルが動くだけでは足りない。本物のビルド構成、複数 CPU、本物のハードウェアで試した。根拠はすべて <a href="../upstream/verification-matrix.md">verification-matrix.md</a>。</p>
   <div class="tbl"><table>
     <tr><th>行</th><th>印</th><th>確かめたこと(噛み砕き)</th><th>matrix の ID と限界</th></tr>
-    <tr><td>sim:wireguard</td><td><span class="tag kern">カーネル版</span><span class="tag sim">sim</span></td><td>エラーなしでビルドできる。ドライバの PR がこの構成を足すので、本家の CI がドライバをビルドするようになる</td><td>T8(ビルド)。sim の実行試験一式(T1・TF・TV・TR・TN・T3・TZ・T7 など)も別にある</td></tr>
+    <tr><td>sim:wireguard</td><td><span class="tag kern">カーネル版</span><span class="tag sim">sim</span></td><td>エラーなしでビルドできる。この構成はドライバのシリーズに入っている</td><td>T8(ビルド)。sim の実行試験一式(T1・TF・TV・TR・TN・T3・TZ・T7 など)も別にある</td></tr>
     <tr><td>rv-virt knetnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_KERNEL。virtio-net で Linux カーネルの WireGuard と双方向のトンネル。<code>wg</code> は別のプログラム(ELF)として読み込まれ、システムコールでドライバに届く</td><td>T6 PASS。最初に計画した qemu-armv7a は virtio-net が使えずビルドのみ(T4 は実行していない)</td></tr>
     <tr><td>rv-virt pnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_PROTECTED。MPU の分割で起動し、<code>wg</code> は <code>nuttx_user</code> 側。設定の ioctl はすべて境界を越え、Linux とトンネル(ping 3/3)、<code>wg show</code> の読み出しも成功。ただし繰り返すと <b>8 回中 2 回</b>、ユーザー空間で例外(未解決)</td><td>TP(2026-09-28 の 1 回は PASS)。2026-10-10 の繰り返しで間欠的な失敗(submission-checklist §2.3)。原因は調査中なので PASS ではなく未解決として扱う。QEMU の MPU のモデルで、本物のチップではない</td></tr>
     <tr><td>rv-virt knetnsh64_smp</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>4 CPU。2000 パケットの flood ping と同時に、<code>wg show</code> 5 回・設定変更 5 回・down/up をしても、例外なし、トンネル回復</td><td>TS PASS。1 つの決まった筋書きで、レースの網羅的な探索ではない。実機の SMP はない</td></tr>
@@ -2239,14 +2239,14 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   </table></div>
 </section>
 
-<div class="divider" id="ch7"><b>⑦ Summary &amp; next steps</b>(スライド 37〜43、約 4 分)— 運用、他の CPU、本家への還元、3 つの教訓、謝辞</div>
+<div class="divider" id="ch7"><b>⑦ Summary &amp; status</b>(スライド 37〜43、約 4 分)— 運用、他の CPU、本家への還元の現状、3 つの教訓、謝辞</div>
 <section class="slide short" id="s37">
-  <div class="head"><span class="no">37</span><h3>37 — Agenda(⑦ を強調)</h3><span class="en">Last part: what comes next, and what to take home.</span></div>
+  <div class="head"><span class="no">37</span><h3>37 — Agenda(⑦ を強調)</h3><span class="en">Last part: where the work stands, and what to take home.</span></div>
   <a class="shot" href="renders/glasgow/slide-37.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-37.png" alt="スライド 36 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-37.png</code> · <a href="coc-glasgow-slides.html#37" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>目次の⑦「Summary &amp; next steps」が色付き。</p>
+  <p><b>画面:</b>目次の⑦「Summary &amp; status」が色付き(キーワード行は「Upstream status · three lessons · thanks」)。</p>
   <p><b>要点:</b>最後の部。時間が足りないときは 40 → 39 → 38 の順に削る(台本)。41 のまとめと 42 の謝辞は残す。</p>
-  <p><b>話し方:</b>"Last part: what comes next, and what to take home."</p>
+  <p><b>話し方:</b>"Last part: where the work stands, and what to take home."</p>
 </section>
 <section class="slide" id="s38">
   <div class="head"><span class="no">38</span><h3>38 — Running it for real</h3><span class="en">From a demo to something you can run.</span></div>
@@ -2329,45 +2329,45 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
 </section>
 
 <section class="slide" id="s40">
-  <div class="head"><span class="no">40</span><h3>40 — Giving back: sending it to NuttX</h3><span class="en">The Apache Way: small steps, in the open.</span></div>
+  <div class="head"><span class="no">40</span><h3>40 — Giving back: where it stands</h3><span class="en">The Apache Way: small steps, in the open.</span></div>
   <a class="shot" href="renders/glasgow/slide-40.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-40.png" alt="スライド 39 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-40.png</code> · <a href="coc-glasgow-slides.html#40" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>4 つの段:小さな <code>crypto:</code> PR を先に(ChaCha20-Poly1305 の nonce の修正 — それだけで NuttX の役に立つ)→ 次にドライバの PR(<code>net/wireguard</code> — カーネルのデバイス、ABI、文書)→ 次にコマンドの PR(<code>apps/system/wg</code>)→ <code>dev@nuttx.apache.org</code> に出す準備ができた設計(checkpatch / nxstyle を通過、PR に分割、ライセンス確認済み — community over code)。下に状況:「小さな PR に分割済み。どのコミットも checkpatch を通り、ビルドできる。まだ sign-off もしておらず、実機での再試験もしていない。何も送っていない」。ドライバの PR には「カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ」とある。</p>
+  <p>4 つの項目:小さな <code>crypto:</code> の修正(ChaCha20-Poly1305 の nonce の修正 — それだけで役に立つので、ドライバとは分けてある)/ ドライバ(<code>drivers/net/wireguard</code> — カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ)/ コマンド(<code>apps/system/wg</code> — ドライバと話すコマンド)/ ここまで確かめたこと(checkpatch / nxstyle を通過、各コミットが単独でビルドできる、ライセンスを列挙)。Takeaway は「小さく分けた方がレビューしやすく、crypto の修正はドライバがなくても役に立つ」。下に状況:「手元で小さな単位に分けて用意してある。sign-off はしておらず、実機での再試験もしていない。何も送っていない」。</p>
   <h4>② 背景知識</h4>
   <h5>PR(Pull Request)と upstream</h5>
   <p>GitHub で「この変更を本家に取り込んでください」と頼む手続きが <b>PR</b>。本家(ここでは apache/nuttx と apache/nuttx-apps)を <b>upstream</b>、自分のアカウントに分岐したものを <b>fork</b> と呼ぶ。PR はメンテナーが読んでレビューし、直す点があればやり取りし、合意できれば取り込まれる(マージ)。</p>
   <h5>なぜ小さく分けるか</h5>
-  <p>大きな PR は読むのが大変で、どこか 1 か所に問題があると全部が止まる。NuttX の CONTRIBUTING は「PR は小さく 1 機能」「PR の中のコミットは 1 つずつビルドと動作を壊さない」と定めている。だから「1 コミットずつビルドできる」ことを機械で確かめている。nonce の修正は WireGuard がなくても役に立つので、先に単独で出せば、ドライバが受け入れられるかどうかと関係なく本家が取り込める。</p>
+  <p>大きな PR は読むのが大変で、どこか 1 か所に問題があると全部が止まる。NuttX の CONTRIBUTING は「PR は小さく 1 機能」「PR の中のコミットは 1 つずつビルドと動作を壊さない」と定めている。だから「1 コミットずつビルドできる」ことを機械で確かめている。nonce の修正は WireGuard がなくても役に立つので、ドライバとは別の単位にしてある。</p>
   <h5>dev@ メーリングリスト</h5>
   <p>Apache のプロジェクトでは、大きな設計の相談はメーリングリスト(<code>dev@nuttx.apache.org</code>)で公開して行う。「コードを出す前に、設計を公開の場で話す」のが The Apache Way。</p>
   <h5>checkpatch / nxstyle と署名</h5>
   <p>NuttX のコードの書き方の規則を機械的に検査するツール。CI でも同じ検査が走る。<b>署名(Signed-off-by)</b>は「この変更は自分が出してよいものだ」と本人が証明する行で、本人が付ける。</p>
   <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:crypto の修正を単独の PR にすれば、ドライバが受け入れられなくても NuttX はそれを取り込める。根拠と現状(<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>):</p>
+  <p>主張:作業は小さな単位に分けてあり、crypto の修正はドライバがなくても役に立つ。まだ何も送っていない。根拠と現状(<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>):</p>
   <ul>
-    <li>最新の upstream に載せ替え、CONTRIBUTING に合わせて PR に分けた。中心は 5 本(PR-C:crypto、PR-N:nxstyle の除外、PR-K1:ドライバ、PR-D:<code>system/wg</code> の文書、PR-A:apps のコマンド)で、任意で PR-K0 / K0'(SPRESENSE の起動回帰 #9 と usrsock の修正 #10)。スライドの 3 段は、このうちの大きな流れ(crypto → ドライバ → コマンド)。</li>
+    <li>最新の upstream に載せ替え、CONTRIBUTING に合わせて手元で PR の単位に分けた。中心は 5 本(PR-C:crypto、PR-N:nxstyle の除外、PR-K1:ドライバ、PR-D:<code>system/wg</code> の文書、PR-A:apps のコマンド)で、任意で PR-K0 / K0'(SPRESENSE の起動回帰 #9 と usrsock の修正 #10)。スライドの 3 項目は、このうちの大きなまとまり(crypto・ドライバ・コマンド)。</li>
     <li>各コミットを 1 つずつ取り出して <code>-Werror</code> でビルド、<code>checkpatch.sh -g</code> も通過(submission-checklist §2)。</li>
-    <li>ブランチはまだローカルだけ。送る前に、すべてのコミットに本人の <code>Signed-off-by</code> と、AI ツールの手を借りたことを示す <code>Assisted-by</code> の行が要る。最終的な一式は、実機でもう一度動かす必要がある。fork への push、PR、dev@ への投稿はまだ何もしていない(同 §1、台本)。</li>
+    <li>ブランチはまだローカルだけ。コミットにはまだ本人の <code>Signed-off-by</code> と、AI ツールの手を借りたことを示す <code>Assisted-by</code> の行がない。最終的な一式は、実機で動かしていない。fork への push、PR、dev@ への投稿はまだ何もしていない(同 §1、台本)。</li>
     <li>ドライバの PR の「ネットワークの中心部分への小さな変更 2 つ」は、IP パケットだけを扱う lower half を upper half が受け付けるようにする変更と、WireGuard の制御用の ioctl を netdev に通す変更(submission-checklist §1 の PR-K1 のコミット)。</li>
   </ul>
-  <p><b>「もう PR を出した」「マージ可能」とは言わない。</b>細かい分け方を聞かれたら「本家の規則に合わせて、文書と style の例外を別の PR にしている」と答える。</p>
+  <p><b>「もう PR を出した」「マージ可能」とは言わない。いつ出すか、誰が保守するかなど、約束できないことも言わない。</b>細かい分け方を聞かれたら「本家の規則に合わせて、文書と style の例外を別の単位にしてある」と答える。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">First, a small crypto PR for the nonce fix, because it is useful on its own and helps everyone.</blockquote>
-  <p class="gloss">最初に nonce の修正の小さな crypto PR を出します。それだけで役に立ち、みんなを助けるからです。</p>
-  <blockquote class="en">The work is already split into small PRs, and every commit passes the patch checks and builds on its own.</blockquote>
-  <p class="gloss">作業はもう小さな PR に分けてあり、どのコミットも検査を通り、単独でビルドできます。</p>
-  <blockquote class="en">The design discussion and the upstream PRs are the next step; they have not started yet.</blockquote>
-  <p class="gloss">設計の議論と upstream の PR は次の段階で、まだ始めていません。</p>
-  <blockquote class="en">Before I send them, every commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series still needs a run on real hardware.</blockquote>
-  <p class="gloss">送る前に、どのコミットにも私の sign-off と Assisted-by の行が要ります。AI ツールに手伝ってもらったからです。そして最終的な一式は、実機でもう一度動かす必要があります。</p>
+  <blockquote class="en">The work is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the command for user space.</blockquote>
+  <p class="gloss">作業は小さな単位に分けてあります。それだけで役に立つ小さな crypto の修正、カーネルのデバイスのドライバ、ユーザー空間のコマンドです。</p>
+  <blockquote class="en">Every commit passes the patch checks and builds on its own. Nothing is sent yet.</blockquote>
+  <p class="gloss">どのコミットも検査を通り、単独でビルドできます。まだ何も送っていません。</p>
+  <blockquote class="en">Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series has not run on real hardware.</blockquote>
+  <p class="gloss">どのコミットにも、まだ私の sign-off と Assisted-by の行がありません。AI ツールに手伝ってもらったので、この行が要ります。そして最終的な一式は、まだ実機で動かしていません。</p>
   <span class="pause">間</span>
   <blockquote class="en">Community over code means being honest about where the work really is, and then letting review change it.</blockquote>
   <p class="gloss">Community over code とは、仕事が本当はどこまで来ているかを正直に言い、レビューに変えてもらうことです。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>もう PR は出しましたか? マージされていますか?</dt>
-    <dd>まだ。載せ替えと再検証を済ませ、小さな PR に分けた候補を用意した段階。PR の作成と dev@ への投稿は次の段階(Q&amp;A)。"Not upstream yet."</dd>
+    <dd>まだ。載せ替えと再検証を済ませ、手元で小さな単位に分けた候補がある。PR の作成も dev@ への投稿もしていない(Q&amp;A)。"Nothing is sent, and nothing is merged."</dd>
+    <dt>マージされたら、誰が保守しますか?</dt>
+    <dd>決まっていない、と正直に言う。約束できないことは言わない。言えるのは、ドライバが NuttX の既存の部品(netdev lower half、<code>crypto/</code>、UDP ソケット)の上にあり、外のコードに追従する部分が小さいという事実だけ(Q&amp;A)。"That is not decided, and I don't want to promise what I can't."</dd>
     <dt>checkpatch や nxstyle は通っていますか?</dt>
     <dd>通っている。ファイル単位の <code>nxstyle -f</code> と、CI と同じパッチ形式の <code>checkpatch.sh -g</code> の両方(Q&amp;A)。</dd>
   </dl>
@@ -2391,7 +2391,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <a class="shot" href="renders/glasgow/slide-41.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-41.png" alt="スライド 41 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-41.png</code> · <a href="coc-glasgow-slides.html#41" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE で動き、標準の WireGuard の相手と話し、upstream 向けに小さな PR に分けてある」。その下に 3 つの教訓。① 簡単な試験は通り、深い試験は落ちる — 深く試す(長いデータ、本物のハードウェア、本物のカーネルビルド)。「handshake した」だけでなく。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。修正は単独の PR として本家へ出す予定。</p>
+  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE で動き、標準の WireGuard の相手と話し、upstream 向けに小さな PR に分けてある」。その下に 3 つの教訓。① 簡単な試験は通り、深い試験は落ちる — 深く試す(長いデータ、本物のハードウェア、本物のカーネルビルド)。「handshake した」だけでなく。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。その修正はそれだけで成り立つ。</p>
   <h4>② 背景知識</h4>
   <h5>「作ったもの」の言い方</h5>
   <p>台本は「ESP32-S3 と SPRESENSE で Windows 公式クライアントと動き、シミュレータと QEMU で Linux カーネルの WireGuard と話し、小さな PR に分けてレビューの準備ができている。まだ何も本家に送っていない」と言う。どこで何を確かめたか(実機 = FLAT ビルド、KERNEL / PROTECTED = QEMU)の区別は、スライド 31 と同じ。</p>
@@ -2415,8 +2415,8 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <p class="gloss">1 つ目。簡単な試験は通り、深い試験は落ちる。だから深く行く試験を設計してください。長いデータ、本物のハードウェア、本物のカーネルビルド。handshake だけでなく。</p>
   <blockquote class="en">Second, a clean line between your code and the OS is worth the effort — in the apps version, four CPU types and three NuttX versions, with no code changes.</blockquote>
   <p class="gloss">2 つ目。自分のコードと OS の間のきれいな線は、手間をかける価値があります。apps 版では、4 種類の CPU と 3 つの NuttX の版で、コードの変更なし。</p>
-  <blockquote class="en">Third, porting to a project is a chance to make it better.</blockquote>
-  <p class="gloss">3 つ目。プロジェクトへの移植は、それを良くする機会です。</p>
+  <blockquote class="en">Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.</blockquote>
+  <p class="gloss">3 つ目。プロジェクトへの移植は、それを良くする機会です。1 つのバグは NuttX 自身の暗号にあり、その修正はそれだけで成り立ちます。</p>
   <span class="pause">間(締め)</span>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
@@ -2463,8 +2463,8 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <div class="head"><span class="no">43</span><h3>43 — Thank you</h3><span class="en">Questions welcome.</span></div>
   <a class="shot" href="renders/glasgow/slide-43.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-43.png" alt="スライド 42 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-43.png</code> · <a href="coc-glasgow-slides.html#43" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>「Thank you」、デモの動画(youtu.be/1kyX2av5WG4)、行き先(apache/nuttx、apache/nuttx-apps)、名前と所属、「Questions welcome.」</p>
-  <p><b>要点:</b>行き先は「Going upstream to」で、まだ入っていない(スライド 40)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
+  <p><b>画面:</b>「Thank you」、デモの動画(youtu.be/1kyX2av5WG4)、「Code &amp; records: github.com/wwlapaki310/gsoc2026-nuttx-wireguard」、名前と所属、「Questions welcome.」</p>
+  <p><b>要点:</b>載せているのはこのリポジトリ(コードと作業の記録)。本家にはまだ何も送っていない(スライド 40)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
   <p><b>話し方:</b>"Thank you. I am happy to take your questions — about the kernel driver, the bugs, the ioctl ABI, or the hardware." 想定質問と答えは <a href="talkscript/coc-glasgow-qa.md">coc-glasgow-qa.md</a>。数字を答えるときは<a href="#part4">第 4 部</a>の「言ってよい範囲」を守る。</p>
 </section>
 
@@ -2646,7 +2646,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <tr><td>10/10 / 30/30</td><td>デモ構成でのコンテナからの ping / 1 秒間隔の Web</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> スタックちゃん</td><td>35, 36</td><td>その構成で通った</td><td>連続アクセスでも安定(連打では 12/30)</td></tr>
   <tr><td>4 時間 28 分</td><td>最長の連続稼働(止まった原因は Wi-Fi ドライバ側)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>38(Q&amp;A)</td><td>apps 版でそこまで動いた</td><td>カーネル版の連続稼働</td></tr>
   <tr><td>約 904 B / peer、1〜16</td><td>peer 1 つあたりの RAM / 設定できる数</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>29(Q&amp;A)</td><td>2 peer を sim で確認</td><td>実機で複数 peer を確認</td></tr>
-  <tr><td>約 30 分 / 32 分 / 33 分 32 秒</td><td>目標(スライド 2)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>2</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
+  <tr><td>約 30 分 / 32 分 / 33 分 15 秒</td><td>目標(スライド 2)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>2</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
@@ -2654,7 +2654,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
 <p>スライド・台本・Q&amp;A・検証の記録の食い違いは、2026-10-11 のレビューでほぼ直された。残っているのは次の 2 つだけ。</p>
 <div class="tbl"><table>
   <tr><th>どこ</th><th>内容</th><th>話すときの扱い</th></tr>
-  <tr><td>スライド 2 の「about thirty minutes」</td><td>目標の長さとして残してある。目安の合計は 32 分、台本どおりだと約 33 分 32 秒</td><td>本編 27〜28 分を目標に、40 → 39 → 38 の順に削る</td></tr>
+  <tr><td>スライド 2 の「about thirty minutes」</td><td>目標の長さとして残してある。目安の合計は 32 分、台本どおりだと約 33 分 15 秒</td><td>本編 27〜28 分を目標に、40 → 39 → 38 の順に削る</td></tr>
   <tr><td>スライド 38 の 4 つの信号</td><td>ROUTER / LAN / TUN / TCP の監視は outline にある運用の方針で、verification-matrix の試験項目ではない(作業記録にあるのは 1 分ごとの ping + telnet による 4 時間 28 分の連続稼働)</td><td>運用の工夫として話し、試験の結果としては言わない</td></tr>
 </table></div>
 

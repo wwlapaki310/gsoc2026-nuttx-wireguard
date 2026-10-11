@@ -86,9 +86,9 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 | 第4部 | Version 1: the app | 第1版(アプリ)は動いた。では「動いた」の裏に何が隠れていたか | 19〜26 | 約5分 |
 | 第5部 | Version 2: the kernel driver | なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか | 27〜33 | 約8分 |
 | 第6部 | Live demo | 実物では、どう見えるのか | 34〜36 | 約3分 |
-| 第7部 | Summary & next steps | 実際に運用するには。この先どうするのか。何を持ち帰ればよいか | 37〜43 | 約4分 |
+| 第7部 | Summary & status | 実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか | 37〜43 | 約4分 |
 
-時間はスライド2の目安です。台本どおりに読むと合計約34分(33分32秒、デモ90秒を含む)なので、本番では
+時間はスライド2の目安です。台本どおりに読むと合計約33分(33分15秒、デモ90秒を含む)なので、本番では
 30分枠に収まるよう削る順番(40 → 39 → 38)が[台本](talkscript/coc-glasgow-script-ja.md)に決めてあります。
 いちばん時間を使うのは第5部の検証(スライド31〜33)で、ここは削りません。
 
@@ -102,7 +102,7 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 そこで**第2版**では、正式なドライバとして**カーネルの中へ**移し、さらに2つのバグを見つけ、
 シミュレータ・仮想マシン・実機で**どこまで確かめたか**を一つずつ測りました(第5部)。その上で、
 スタックちゃんという**実物**で、トンネル越しに操作する様子を見せます(第6部)。最後に、運用・移植性・
-本家への還元をまとめ、3つの教訓と謝辞で**まとめ**ます(第7部)。
+本家への還元の現状をまとめ、3つの教訓と謝辞で**まとめ**ます(第7部)。
 
 ```text
 なぜ必要か → どう作る計画か → 第1版で動いたが隠れたバグ → 第2版でカーネルへ・確かめ方 → 実物 → まとめ
@@ -215,15 +215,15 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 - **どこで確かめたか:** スタックちゃんのデモは **[apps・実機]**(apps版 v0.1.1、FLATビルド。画面にもそう書いてある)。カーネル版のデモではありません
   ([18.6](#186-なぜライブデモはapps版なのか))。
 
-### 第7部 まとめと次の一歩
+### 第7部 まとめと現状
 
-**スライド37〜43、約4分。** 問い:実際に運用するには。この先どうするのか。何を持ち帰ればよいか。
+**スライド37〜43、約4分。** 問い:実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
 | 38 | Running it for real | 鍵は動作中に作って設定する。4つの層を毎分確かめ、どこが落ちたかを言えるようにする | [19.1](#191-運用できる形にするスライド38) |
 | 39 | Other CPUs | 4つの関数に閉じこめた賭けは当たった。apps版は4種類のCPUで変更なしに動いた。カーネル版はこの4つを使わない | [19.2](#192-ほかのcpuスライド39) |
-| 40 | Giving back | crypto修正 → ドライバ → コマンドの順に小さなPRで出す。sign-offも実機での再試験もまだで、何も送っていない | [19.3](#193-本家への還元スライド40)、[8.3](#83-なぜリポジトリが3つあるのか) |
+| 40 | Giving back: where it stands | crypto修正・ドライバ・コマンドの小さな単位に手元で分けてある。sign-offも実機での再試験もまだで、何も送っていない | [19.3](#193-本家への還元スライド40)、[8.3](#83-なぜリポジトリが3つあるのか) |
 | 41 | Summary | 作ったもの(`wg0`)の1行と、3つの教訓 | [19.4](#194-summaryスライド41) |
 | 42 | Thanks | Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝 | [19.5](#195-謝辞スライド42) |
 | 43 | Thank you | 質疑応答へ | [19.6](#196-thank-youスライド43) |
@@ -792,7 +792,7 @@ ESP32-S3のnative Wi-Fiとは異なる経路なので、2つのboardで試すこ
 | PROTECTED | 権限・memoryを分離 | ABIが境界を越えて正しく動く必要がある |
 | KERNEL | user processとkernelをより明確に分離 | 内部pointerやkernel APIをuser側から直接使えない |
 
-最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。upstreamへ提出する現行版はdriverを
+最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。現行版(提出候補として小さく分けてある方)はdriverを
 kernel側へ移し、user側の`wg` commandとはioctlで通信します(スライド28)。
 
 現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました **[カーネル・QEMU]**。PROTECTED buildも
@@ -824,28 +824,28 @@ flowchart LR
     A[apps版 v0.1.1<br/>FLATでprotocol portを確認] --> B[問題を学ぶ<br/>socket/thread/fd/stack]
     B --> C[kernel driver版<br/>drivers/net/wireguard]
     C --> D[PROTECTED/KERNEL/SMP/実機で検証]
-    D --> E[upstream提出候補]
+    D --> E[手元の提出候補<br/>未送付]
 ```
 
 | | apps版 | 現行kernel driver版 |
 |---|---|---|
 | 置き場所 | `apps/` | `drivers/net/wireguard/` |
-| 主目的 | protocol portを早く成立させる | upstream可能な正式driverにする |
+| 主目的 | protocol portを早く成立させる | upstreamの形に合う正式driverにする |
 | socket所有 | command/task側に制約 | driverが所有 |
 | 設定 | application内部 | user commandからioctl |
 | build | 主にFLAT | 実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDは間欠的な失敗が未解決) |
-| upstream対象 | 学習・実績の土台 | こちらが本命 |
+| 提出候補 | 学習・実績の土台 | 手元で小さな単位に分けてあるのはこちら |
 | 発表での位置 | 第4部(スライド19〜26)と、第6部のライブデモ | 第5部(スライド27〜33) |
 
 ### 8.3 なぜリポジトリが3つあるのか
 
 この作業では、役割の異なる3つのGit repositoryを使います。
 
-| repository | 中身 | 最終的な行き先 |
+| repository | 中身 | 対応する本家 |
 |---|---|---|
-| `gsoc2026-nuttx-wireguard` | 設計、試験script、証拠、発表資料、作業記録 | projectの調査・再現用 |
-| `nuttx` fork | kernel、network driver、crypto修正、NuttX documentation | `apache/nuttx`へのPR |
-| `nuttx-apps` fork | user-spaceの`wg` command | `apache/nuttx-apps`へのPR |
+| `gsoc2026-nuttx-wireguard` | 設計、試験script、証拠、発表資料、作業記録 | なし(projectの調査・再現用) |
+| `nuttx` fork | kernel、network driver、crypto修正、NuttX documentation | `apache/nuttx`(PRは出していない) |
+| `nuttx-apps` fork | user-spaceの`wg` command | `apache/nuttx-apps`(PRは出していない) |
 
 **fork**は、GitHub上で本家repositoryを自分のaccountへ分岐したものです。この文脈のforkは、processを
 複製するUnixの`fork()`とは別の言葉です。
@@ -854,13 +854,13 @@ flowchart LR
 flowchart TD
     G[このrepository<br/>docs, scripts, evidence] --> N[自分の nuttx fork<br/>kernel driver]
     G --> A[自分の nuttx-apps fork<br/>wg command]
-    N --> UN[将来: apache/nuttx PR]
-    A --> UA[将来: apache/nuttx-apps PR]
+    N -.-> UN[本家 apache/nuttx<br/>PRは未送付]
+    A -.-> UA[本家 apache/nuttx-apps<br/>PRは未送付]
 ```
 
-driverとcommandを別PRにできるのは、本家NuttXでもkernel本体とapps collectionが別repositoryだからです。
-さらに、既存NuttX cryptoのnonce修正はWireGuard driverから独立して役立つため、別の`crypto:` PR候補に
-分けます。
+driverとcommandを別の単位にできるのは、本家NuttXでもkernel本体とapps collectionが別repositoryだからです。
+さらに、既存NuttX cryptoのnonce修正はWireGuard driverから独立して役立つため、別の`crypto:`の変更として
+分けてあります。
 
 ### 8.4 ゼロから書かなかった
 
@@ -1194,7 +1194,7 @@ pingは便利ですが、確認できる範囲は狭いです。
 
 | 場所 | 版 | 確かめたこと | 印 |
 |---|---|---|---|
-| `sim:wireguard` | カーネル版 | errorなしでbuildできる(driverのPRがこの構成を足すので、本家のCIがdriverをbuildするようになる) | [カーネル・sim] |
+| `sim:wireguard` | カーネル版 | errorなしでbuildできる(この構成はdriverのシリーズに入っている) | [カーネル・sim] |
 | rv-virt `knetnsh64` | カーネル版、BUILD_KERNEL | virtio-net越しにLinuxのWireGuardとtunnel。`wg`は別のprogramとして読み込まれ、system callでdriverに届く | [カーネル・QEMU] |
 | rv-virt `pnsh64` | カーネル版、BUILD_PROTECTED | MPUの分離ありでtunnelが通る。`wg`はuser側にあり、すべてのioctlが境界を越える。**ただし繰り返すと8回中2回、user spaceで例外(open)** | [カーネル・QEMU] [未解決] |
 | rv-virt `knetnsh64_smp` | カーネル版、SMP 4 CPU | 設定変更とdown/upをしながら大量のtraffic。例外なし、tunnelは復帰 | [カーネル・QEMU] |
@@ -1594,22 +1594,23 @@ compilerがそれぞれの機械語に変えてくれますが、OSに依存す�
 
 ### 19.3 本家への還元(スライド40)
 
-スライド40(Giving back)は、作ったものを本家(upstream)へ返す計画です。言葉は[8.3](#83-なぜリポジトリが3つあるのか)の
-fork、PR(Pull Request、「この変更を取り込んでください」という依頼)を使います。
+スライド40(Giving back: where it stands)は、本家(upstream)への還元が今どこにあるかの報告です。
+計画や日程は話しません。言葉は[8.3](#83-なぜリポジトリが3つあるのか)のfork、PR(Pull Request、
+「この変更を取り込んでください」という依頼)を使います。画面には4つの項目があります。
 
-1. まず小さな`crypto:` PR — ChaCha20-Poly1305のnonceの修正だけ。WireGuardがなくてもNuttXの役に立つので先に出す
-2. 次にdriverのPR — `drivers/net/wireguard`(kernelのdevice、ABI、文書と、networkの中心部分への小さな変更2つ)
-3. 次にcommandのPR — `apps/system/wg`(driverと話すcommand)
-4. 設計は`dev@nuttx.apache.org`(NuttXの開発者mailing list)で公開して相談する
+1. 小さな`crypto:`の修正 — ChaCha20-Poly1305のnonceの修正だけ。WireGuardがなくても役に立つので、driverとは分けてある
+2. driver — `drivers/net/wireguard`(kernelのdevice、ABI、文書と、networkの中心部分への小さな変更2つ)
+3. command — `apps/system/wg`(driverと話すcommand)
+4. ここまで確かめたこと — checkpatch / nxstyleを通過、各commitが単独でbuildできる、licenseを列挙
 
-なぜ小さく分けるのか。大きなPRは読むのが大変で、1か所に問題があると全部が止まります。crypto修正を単独の
-PRにすれば、driverが受け入れられるかどうかと関係なく、NuttXはその修正を取り込めます。
+なぜ小さく分けるのか。大きなPRは読むのが大変で、1か所に問題があると全部が止まります。crypto修正は
+driverがなくても役に立つので、別の単位にしてあります。
 
-**現状:** 作業は小さなPRに分けてあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
-ただし**まだsign-offしておらず、実機での再試験もしていません。何も送っていません。** 送る前に、すべてのcommitに
-本人の`Signed-off-by`と、AI toolの手を借りたことを示す`Assisted-by`の行が要り、最終的な一式は実機でもう一度
-動かす必要があります。**dev@での議論とupstreamへのPRはまだ始めていません。** 「もうPRを出した」「merge可能」とは
-言いません。台本の言葉では、Community over codeとは「仕事が本当はどこまで来ているかを正直に言い、
+**現状:** 作業は手元で小さな単位に分けてあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
+ただし**まだsign-offしておらず、実機での再試験もしていません。何も送っていません。** commitには本人の
+`Signed-off-by`と、AI toolの手を借りたことを示す`Assisted-by`の行がまだなく、最終的な一式は実機で動かして
+いません。**dev@での議論もupstreamへのPRもしていません。** 「もうPRを出した」「merge可能」とは
+言いません。いつ出すか、誰が保守するかのような、約束できないことも言いません。台本の言葉では、Community over codeとは「仕事が本当はどこまで来ているかを正直に言い、
 reviewに変えてもらうこと」です。
 
 ### 19.4 Summary(スライド41)
@@ -1620,7 +1621,7 @@ reviewに変えてもらうこと」です。
 #### 「作ったもの」の1行
 
 > **Built `wg0`:** NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSEの上で動き、標準の
-> WireGuardのpeerと話し、upstreamに出せるよう小さなPRに分けてある。
+> WireGuardのpeerと話し、upstream向けに小さなPRに分けてある。
 
 この1行には、別々の確認がまとめて入っています。分けて読むと次のとおりです。
 
@@ -1639,7 +1640,7 @@ reviewに変えてもらうこと」です。
 2. **きれいなOSの境界は、手間をかける価値がある。** apps版で、4種類のCPU、3つのNuttXのversion(13.0.1・master・12.7.0)、
    codeの変更なし。これは**apps版**の数字で、カーネル版はこの4関数を使いません([19.2](#192-ほかのcpuスライド39))
 3. **あるprojectへの移植は、そのproject自体を良くする機会になる。** 途中でNuttX自身のChaCha20-Poly1305に
-   隠れていたバグ(nonceのcounterの位置、[4.6](#46-nonceとcounter)、スライド30)を見つけた。修正は単独のPRで出す予定
+   隠れていたバグ(nonceのcounterの位置、[4.6](#46-nonceとcounter)、スライド30)を見つけた。その修正はそれだけで成り立つ
 
 以前の版のスライドは、3つ目にSPRESENSEの起動のバグ(#9、高分解能のRTCを有効にすると手を加えていないrelease版が
 shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305のバグだけです。#9は質問されたら答える程度にします。
@@ -1661,8 +1662,8 @@ shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305
 ### 19.6 Thank you(スライド43)
 
 最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、[18.2](#182-第1版の動画スライド26)と同じapps版の
-動画)、行き先(apache/nuttx、apache/nuttx-apps)、名前と所属、「Questions welcome.」があります。
-行き先は「Going upstream to」で、**まだ入っていません**([19.3](#193-本家への還元スライド40))。質疑応答では
+動画)、「Code & records: github.com/wwlapaki310/gsoc2026-nuttx-wireguard」(コードと作業の記録があるこの
+repository)、名前と所属、「Questions welcome.」があります。本家には**まだ何も送っていません**([19.3](#193-本家への還元スライド40))。質疑応答では
 [想定Q&A](talkscript/coc-glasgow-qa.md)を手元に置き、数字は[15.2](#152-主な数字と正しい言い方)の
 「言ってよいこと」の範囲で答えます。
 
@@ -1723,7 +1724,7 @@ shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305
 | ioctl | applicationからdriverへ設定・取得を依頼する仕組み |
 | IP address | network上のinterfaceの住所 |
 | kernel | OSの中核。hardwareと重要資源を管理する |
-| カーネル版 | 第2版。`drivers/net/wireguard`に置いた正式なdriver。upstreamへ出す本命 |
+| カーネル版 | 第2版。`drivers/net/wireguard`に置いた正式なdriver。提出候補として小さく分けてある |
 | KERNEL build | user processとkernelを分離するNuttX構成 |
 | kthread | kernelが所有するthread |
 | lifecycle | 作成、起動、停止、破棄までの一生 |
