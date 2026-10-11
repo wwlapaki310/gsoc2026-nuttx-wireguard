@@ -100,6 +100,8 @@
     letter-spacing: .12em;
   }
 
+  .num .part { margin-right: 16px; color: var(--wg); font-weight: 600; }
+
   .eyebrow {
     margin: 0 0 10px;
     color: var(--wg);
@@ -1090,7 +1092,7 @@ There are seven parts. First, an overview and the background: who I am, what Nut
         </div>
       </div>
     </div>
-    <div class="num">3 / 43</div>
+    <div class="num"><span class="part">PART 1</span>3 / 43</div>
     <div class="notes-src">
 Let's start with part one: an overview and the background.
     </div>
@@ -1134,7 +1136,7 @@ Let's start with part one: an overview and the background.
         <div class="about-step"><div class="tlh-dot"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX logo" style="padding:9px;object-fit:contain"></div><div><b>NuttX / WireGuard</b><span>This talk</span></div></div>
       </div>
     </div>
-    <div class="num">4 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 1/7</span>4 / 43</div>
     <div class="notes-src">
 First, a little about me.
 ||
@@ -1184,7 +1186,7 @@ My road to this project went through molecular robots, computer vision and AI sy
       <p class="lead" style="max-width:100%">Packets sent to <code>wg0</code> are encrypted and sent out as UDP. UDP that comes in is decrypted and handed over as if it came in on <code>wg0</code>. The other side can be any normal WireGuard peer.</p>
       <div class="takeaway"><b>Takeaway</b><p>Apps see wg0 as a normal network interface. Only the "wire" under it is different: a UDP socket, not a cable.</p></div>
     </div>
-    <div class="num">5 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 2/7</span>5 / 43</div>
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
@@ -1207,7 +1209,7 @@ Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on. The kernel driver, the harder half, came last.</p></div>
     </div>
-    <div class="num">6 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 3/7</span>6 / 43</div>
     <div class="notes-src">
 Here is how this project went, month by month.
 ||
@@ -1246,7 +1248,7 @@ From June, I worked on it a little at a time. I did most of the work during the 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>NuttX lets you program small embedded devices the Unix way: POSIX APIs, BSD sockets, files, and devices.</p></div>
     </div>
-    <div class="num">7 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 4/7</span>7 / 43</div>
     <div class="notes-src">
 First, what is NuttX?
 ||
@@ -1280,7 +1282,7 @@ The one point I want you to remember: NuttX is a small RTOS, but you program it 
       <div class="takeaway"><b>Takeaway</b><p>NuttX has fewer stars than FreeRTOS and Zephyr, but it already runs in real products, from drones to the Moon.</p></div>
     </div>
     <div class="sources">Sources: nuttx.apache.org &middot; nuttx.apache.org/market-share &middot; docs.px4.io &middot; GitHub star counts, October 2026</div>
-    <div class="num">8 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 5/7</span>8 / 43</div>
     <div class="notes-src">
 Thirty seconds on where NuttX fits, and whether it is a toy.
 ||
@@ -1319,7 +1321,7 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
       <div class="takeaway"><b>Takeaway</b><p>Sony used NuttX long before edge AI. Years of audio products and SPRESENSE led to sensing and camera systems.</p></div>
     </div>
     <div class="sources">Sources: M. Ishikawa (Sony), &ldquo;NuttX for Embedded Linux Developers,&rdquo; OSS+ELC Europe 2019 &middot; A. Jerpelea (Sony), &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020 &middot; nuttx.apache.org/docs (CXD56xx)</div>
-    <div class="num">9 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 6/7</span>9 / 43</div>
     <div class="notes-src">
 This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.
 ||
@@ -1354,7 +1356,7 @@ I am not saying that one engineer made Sony choose NuttX. I have no source for t
       </div>
       <div class="takeaway"><b>Takeaway</b><p>My problem was not making NuttX run. It was reaching NuttX devices after they were installed.</p></div>
     </div>
-    <div class="num">10 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 7/7</span>10 / 43</div>
     <div class="notes-src">
 That was Sony's history. This is mine. Same hardware family, but I see it from a different place.
 ||
@@ -1406,7 +1408,7 @@ In both cases, I come to NuttX from the same direction: first application develo
         </div>
       </div>
     </div>
-    <div class="num">11 / 43</div>
+    <div class="num"><span class="part">PART 2</span>11 / 43</div>
     <div class="notes-src">
 That is the background. Part two: the problem I wanted to solve, and the idea.
     </div>
@@ -1450,7 +1452,7 @@ That is the background. Part two: the problem I wanted to solve, and the idea.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>What was missing: a standard, secure path all the way to the NuttX device.</p></div>
     </div>
-    <div class="num">12 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 1/4</span>12 / 43</div>
     <div class="notes-src">
 Now, the problem itself.
 ||
@@ -1477,7 +1479,7 @@ Without that, every choice has a problem. You can give the device a public IP an
       <div class="takeaway"><b>Takeaway</b><p>MQTT and HTTPS are great for data. To log in and fix a device, end to end, with no server in the middle, the VPN has to be on the device.</p></div>
     </div>
     <div class="sources">Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS. NuttX clients: nuttx-apps 13.0.1 <code>netutils/</code> (mqttc, paho_mqtt, webclient, libcurl4nx, libwebsockets, dropbear) and <code>crypto/mbedtls</code>.</div>
-    <div class="num">13 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 2/4</span>13 / 43</div>
     <div class="notes-src">
 Before I chose WireGuard, I compared the usual ways to reach a device.
 ||
@@ -1510,7 +1512,7 @@ A VPN on the device is the only row that has all three: any IP service, no serve
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol, not a homemade security layer or a vendor cloud.</p></div>
     </div>
-    <div class="num">14 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 3/4</span>14 / 43</div>
     <div class="notes-src">
 So, why WireGuard?
 ||
@@ -1555,7 +1557,7 @@ So I chose a standard protocol, instead of making my own or depending on a vendo
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is a normal network device. Under it, WireGuard turns its packets into encrypted UDP.</p></div>
     </div>
-    <div class="num">15 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 4/4</span>15 / 43</div>
     <div class="notes-src">
 This is one step more technical than the overview. This is where the implementation starts.
 ||
@@ -1607,7 +1609,7 @@ From here on, the work is building this middle part &mdash; wg0 and the encrypti
         </div>
       </div>
     </div>
-    <div class="num">16 / 43</div>
+    <div class="num"><span class="part">PART 3</span>16 / 43</div>
     <div class="notes-src">
 Part three: the plan. How do you reuse an existing WireGuard?
     </div>
@@ -1633,7 +1635,7 @@ Part three: the plan. How do you reuse an existing WireGuard?
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A clean line between the protocol and the OS let the crypto move unchanged, and the protocol core with only two small fixes. Only the OS and network glue had to change.</p></div>
     </div>
-    <div class="num">17 / 43</div>
+    <div class="num"><span class="part">PART 3 &middot; 1/2</span>17 / 43</div>
     <div class="notes-src">
 Why I started from smartalock/wireguard-lwip, and did not write the crypto myself.
 ||
@@ -1659,7 +1661,7 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
-    <div class="num">18 / 43</div>
+    <div class="num"><span class="part">PART 3 &middot; 2/2</span>18 / 43</div>
     <div class="notes-src">
 This was the most important porting decision.
 ||
@@ -1709,7 +1711,7 @@ Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. ne
         </div>
       </div>
     </div>
-    <div class="num">19 / 43</div>
+    <div class="num"><span class="part">PART 4</span>19 / 43</div>
     <div class="notes-src">
 Part four: version one, an app. It worked, and then the bugs came.
     </div>
@@ -1731,7 +1733,7 @@ Part four: version one, an app. It worked, and then the bugs came.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Getting a tunnel up was the easy step. Almost everything interesting came after it already &ldquo;worked.&rdquo;</p></div>
     </div>
-    <div class="num">20 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 1/7</span>20 / 43</div>
     <div class="notes-src">
 Here is the result of the first version.
 ||
@@ -1772,7 +1774,7 @@ More than three thousand lines of protocol and crypto came over. The crypto came
         <small>Because the simple test passed, you trust that part and spend hours looking somewhere else. This happened again and again in this project, and not only in the apps version.</small>
       </div>
     </div>
-    <div class="num">21 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 2/7</span>21 / 43</div>
     <div class="notes-src">
 This is the main point of the talk.
 ||
@@ -1798,7 +1800,7 @@ Every hard bug in this project looked the same. A simple test passes, but a deep
       </div>
       <div class="takeaway"><b>Takeaway</b><p>pthread_detach() decides when memory is freed, not how long the thread lives. A detached thread still dies with the task group that started it.</p></div>
     </div>
-    <div class="num">22 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 3/7</span>22 / 43</div>
     <div class="notes-src">
 The first one: something I believed about a thread's life that was not true.
 ||
@@ -1823,7 +1825,7 @@ The first symptom was simple: recvfrom never returned, the timer never ran, and 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>In NuttX, a file descriptor belongs to one task group. Another task cannot use it, even though it points to the same socket.</p></div>
     </div>
-    <div class="num">23 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 4/7</span>23 / 43</div>
     <div class="notes-src">
 This is my favorite bug in the project.
 ||
@@ -1846,7 +1848,7 @@ The reason: in NuttX, a file descriptor belongs to one task group. It is not sha
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The 50&nbsp;ms polling kept things correct but made it about 10&times; slower. A quick fix you never measure can look free and cost 10&times;.</p></div>
     </div>
-    <div class="num">24 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 5/7</span>24 / 43</div>
     <div class="notes-src">
 The third: something I never measured.
 ||
@@ -1869,7 +1871,7 @@ The fix without file descriptors also broke poll, because poll works with file d
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A default stack size is only a guess until you measure it on real hardware. Sim's big stacks hide the problem.</p></div>
     </div>
-    <div class="num">25 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 6/7</span>25 / 43</div>
     <div class="notes-src">
 The fourth, and it will come back later: stack sizes nobody had measured.
 ||
@@ -1894,7 +1896,7 @@ Second, the receive task's stack. That task calls into the IP stack on its own s
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Version one was enough for a demo. Next, I made it a real NuttX driver.</p></div>
     </div>
-    <div class="num">26 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 7/7</span>26 / 43</div>
     <div class="notes-src">
 Here is a frame from the version one video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board. The board runs on a power adapter only, and the other end is the official Windows WireGuard client. So version one was enough for a demo; next, I made it a real NuttX driver.
     </div>
@@ -1941,7 +1943,7 @@ Here is a frame from the version one video: I logged in with telnet through the 
         </div>
       </div>
     </div>
-    <div class="num">27 / 43</div>
+    <div class="num"><span class="part">PART 5</span>27 / 43</div>
     <div class="notes-src">
 That was version one. Part five, the harder half: a real kernel driver, and how I checked it.
     </div>
@@ -1963,7 +1965,7 @@ That was version one. Part five, the harder half: a real kernel driver, and how 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>An app-level port proves the protocol works. Only a kernel driver is a proper device that also works in PROTECTED and KERNEL builds.</p></div>
     </div>
-    <div class="num">28 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 1/6</span>28 / 43</div>
     <div class="notes-src">
 This is the work I did after the first version, and it is the part that NuttX needs before this can go upstream.
 ||
@@ -1983,7 +1985,7 @@ Version one lives in apps and uses socket internals. That is fine for a FLAT bui
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>The socket, the thread and the no-pointer ABI follow one rule: don't depend on code that can exit, or on memory the kernel can't reach.</p></div>
     </div>
-    <div class="num">29 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 2/6</span>29 / 43</div>
     <div class="notes-src">
 This is the shape of the real driver.
 ||
@@ -2007,7 +2009,7 @@ wg0 is now a lower-half network device in the kernel. It owns its UDP socket and
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A working handshake does not prove the data path or the kernel code is right. Both bugs only showed up after the handshake, once the code was in the kernel.</p></div>
     </div>
-    <div class="num">30 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 3/6</span>30 / 43</div>
     <div class="notes-src">
 And the same pattern came back in the kernel &mdash; twice.
 ||
@@ -2033,7 +2035,7 @@ Second, a crash that happened only in a kernel build. Setting the key copied the
       </table>
       <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim is not enough. Test real builds, many CPUs, and real hardware.</p></div>
     </div>
-    <div class="num">31 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 4/6</span>31 / 43</div>
     <div class="notes-src">
 Let me be exact about which version was checked where.
 ||
@@ -2062,7 +2064,7 @@ The kernel driver also runs on both boards over real Wi-Fi, with the official Wi
       <div class="claim"><p>Each of these <span class="hl">passes every normal test</span> while being broken.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>A working tunnel does not prove unique keys, cleared secrets, or stable memory. Each needs its own check.</p></div>
     </div>
-    <div class="num">32 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 5/6</span>32 / 43</div>
     <div class="notes-src">
 The last slide was about where it runs. This one is about what a working tunnel cannot tell you.
 ||
@@ -2090,7 +2092,7 @@ Third, the long test, also in the simulator: a hundred and fifty-one forced reke
       <div class="claim"><p>Same rule as Linux and wireguard-go, <span class="hl">plus a warning</span>.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>No clock, no newer timestamp: a device may be unable to connect out and still pass a ping test.</p></div>
     </div>
-    <div class="num">33 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 6/6</span>33 / 43</div>
     <div class="notes-src">
 This is the one place where I had to decide, not test. And then I measured my decision.
 ||
@@ -2146,7 +2148,7 @@ And I measured it on the board. The obvious test passes: reset the board, ping i
         </div>
       </div>
     </div>
-    <div class="num">34 / 43</div>
+    <div class="num"><span class="part">PART 6</span>34 / 43</div>
     <div class="notes-src">
 That was all engineering. Part six: what it actually looks like.
     </div>
@@ -2200,7 +2202,7 @@ That was all engineering. Part six: what it actually looks like.
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The phone and the venue only ever see encrypted UDP, with no server in the middle and no cloud.</p></div>
     </div>
-    <div class="num">35 / 43</div>
+    <div class="num"><span class="part">PART 6 &middot; 1/2</span>35 / 43</div>
     <div class="notes-src">
 Here is the demo setup.
 ||
@@ -2234,7 +2236,7 @@ Please watch two things: the addresses after I log in, and the packets. Outside 
         </div>
       </div>
     </div>
-    <div class="num">36 / 43</div>
+    <div class="num"><span class="part">PART 6 &middot; 2/2</span>36 / 43</div>
     <div class="notes-src">
 The point of this demo is that there is nothing special to see. The StackChan is just a normal computer at the far end of an encrypted tunnel. This board runs the apps version &mdash; the same app as in the video. The kernel driver ran on this chip too, on slide 31, but the robot demo is built on the app.
 ||
@@ -2288,7 +2290,7 @@ Last, the packets. On the left, the phone's network: only encrypted UDP. On the 
         </div>
       </div>
     </div>
-    <div class="num">37 / 43</div>
+    <div class="num"><span class="part">PART 7</span>37 / 43</div>
     <div class="notes-src">
 Last part: where the work stands, and what to take home.
     </div>
@@ -2308,7 +2310,7 @@ Last part: where the work stands, and what to take home.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Run-time keys and per-layer checks turn "the tunnel is down" into "the router side is down." That is the difference between a demo and something you can leave running.</p></div>
     </div>
-    <div class="num">38 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 1/6</span>38 / 43</div>
     <div class="notes-src">
 Going from &ldquo;it works in a demo&rdquo; to &ldquo;you can really run it.&rdquo;
 ||
@@ -2331,7 +2333,7 @@ Keys are no longer built into the firmware. You make them and set them at run ti
       <div class="takeaway"><b>Takeaway</b><p>In the apps version, four small OS functions let one source run on four CPU types, unchanged. The bet paid off.</p></div>
       <div class="sources">Checked with the apps (FLAT) version. The kernel driver does not use these four hooks.</div>
     </div>
-    <div class="num">39 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 2/6</span>39 / 43</div>
     <div class="notes-src">
 Did the decision from the start work?
 ||
@@ -2352,7 +2354,7 @@ Keeping the OS behind a few functions was a bet. Here is the check, with the app
       <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
       <div class="sources">Status: prepared locally as small pieces. Not signed off, not re-run on real hardware, nothing sent.</div>
     </div>
-    <div class="num">40 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 3/6</span>40 / 43</div>
     <div class="notes-src">
 Let me end this part with the values of this community.
 ||
@@ -2371,7 +2373,7 @@ The work is split into small pieces: a small crypto fix that is useful on its ow
         <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
       </ul>
     </div>
-    <div class="num">41 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 4/6</span>41 / 43</div>
     <div class="notes-src">
 To sum up.
 ||
@@ -2392,7 +2394,7 @@ And three things to remember. First, simple tests pass and deep tests fail &mdas
         <div class="panel" style="min-height:0"><p><strong>Sony's NuttX developers, past and present</strong></p><p>who brought NuttX into our products and gave so much back to the project.</p></div>
       </div>
     </div>
-    <div class="num">42 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 5/6</span>42 / 43</div>
     <div class="notes-src">
 Before I finish, some thanks.
 ||
@@ -2414,7 +2416,7 @@ First, Alan, who told me about this conference and encouraged me to submit a tal
         </div>
       </div>
     </div>
-    <div class="num">43 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 6/6</span>43 / 43</div>
     <div class="notes-src">
 Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
     </div>

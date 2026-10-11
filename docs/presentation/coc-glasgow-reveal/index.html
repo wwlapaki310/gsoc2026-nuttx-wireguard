@@ -50,6 +50,7 @@
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: .12em;}
+  .reveal .frame .num .part { margin-right: 16px; color: var(--wg); font-weight: 600;}
   .reveal .frame .eyebrow {
     margin: 0 0 10px;
     color: var(--wg);
@@ -868,7 +869,7 @@
         </div>
       </div>
     </div>
-    <div class="num">3 / 43</div>
+    <div class="num"><span class="part">PART 1</span>3 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -915,7 +916,7 @@
         <div class="about-step"><div class="tlh-dot"><img src="../assets/apache-nuttx-logo.png" alt="Apache NuttX logo" style="padding:9px;object-fit:contain"></div><div><b>NuttX / WireGuard</b><span>This talk</span></div></div>
       </div>
     </div>
-    <div class="num">4 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 1/7</span>4 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -966,7 +967,7 @@
       <p class="lead" style="max-width:100%">Packets sent to <code>wg0</code> are encrypted and sent out as UDP. UDP that comes in is decrypted and handed over as if it came in on <code>wg0</code>. The other side can be any normal WireGuard peer.</p>
       <div class="takeaway"><b>Takeaway</b><p>Apps see wg0 as a normal network interface. Only the "wire" under it is different: a UDP socket, not a cable.</p></div>
     </div>
-    <div class="num">5 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 2/7</span>5 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -990,7 +991,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on. The kernel driver, the harder half, came last.</p></div>
     </div>
-    <div class="num">6 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 3/7</span>6 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1030,7 +1031,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>NuttX lets you program small embedded devices the Unix way: POSIX APIs, BSD sockets, files, and devices.</p></div>
     </div>
-    <div class="num">7 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 4/7</span>7 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1065,7 +1066,7 @@
       <div class="takeaway"><b>Takeaway</b><p>NuttX has fewer stars than FreeRTOS and Zephyr, but it already runs in real products, from drones to the Moon.</p></div>
     </div>
     <div class="sources">Sources: nuttx.apache.org &middot; nuttx.apache.org/market-share &middot; docs.px4.io &middot; GitHub star counts, October 2026</div>
-    <div class="num">8 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 5/7</span>8 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1105,7 +1106,7 @@
       <div class="takeaway"><b>Takeaway</b><p>Sony used NuttX long before edge AI. Years of audio products and SPRESENSE led to sensing and camera systems.</p></div>
     </div>
     <div class="sources">Sources: M. Ishikawa (Sony), &ldquo;NuttX for Embedded Linux Developers,&rdquo; OSS+ELC Europe 2019 &middot; A. Jerpelea (Sony), &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020 &middot; nuttx.apache.org/docs (CXD56xx)</div>
-    <div class="num">9 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 6/7</span>9 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1141,7 +1142,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>My problem was not making NuttX run. It was reaching NuttX devices after they were installed.</p></div>
     </div>
-    <div class="num">10 / 43</div>
+    <div class="num"><span class="part">PART 1 &middot; 7/7</span>10 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1194,7 +1195,7 @@
         </div>
       </div>
     </div>
-    <div class="num">11 / 43</div>
+    <div class="num"><span class="part">PART 2</span>11 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1241,7 +1242,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>What was missing: a standard, secure path all the way to the NuttX device.</p></div>
     </div>
-    <div class="num">12 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 1/4</span>12 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1269,7 +1270,7 @@
       <div class="takeaway"><b>Takeaway</b><p>MQTT and HTTPS are great for data. To log in and fix a device, end to end, with no server in the middle, the VPN has to be on the device.</p></div>
     </div>
     <div class="sources">Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS. NuttX clients: nuttx-apps 13.0.1 <code>netutils/</code> (mqttc, paho_mqtt, webclient, libcurl4nx, libwebsockets, dropbear) and <code>crypto/mbedtls</code>.</div>
-    <div class="num">13 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 2/4</span>13 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1303,7 +1304,7 @@
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol, not a homemade security layer or a vendor cloud.</p></div>
     </div>
-    <div class="num">14 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 3/4</span>14 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1349,7 +1350,7 @@
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is a normal network device. Under it, WireGuard turns its packets into encrypted UDP.</p></div>
     </div>
-    <div class="num">15 / 43</div>
+    <div class="num"><span class="part">PART 2 &middot; 4/4</span>15 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1402,7 +1403,7 @@
         </div>
       </div>
     </div>
-    <div class="num">16 / 43</div>
+    <div class="num"><span class="part">PART 3</span>16 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1431,7 +1432,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A clean line between the protocol and the OS let the crypto move unchanged, and the protocol core with only two small fixes. Only the OS and network glue had to change.</p></div>
     </div>
-    <div class="num">17 / 43</div>
+    <div class="num"><span class="part">PART 3 &middot; 1/2</span>17 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1458,7 +1459,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
-    <div class="num">18 / 43</div>
+    <div class="num"><span class="part">PART 3 &middot; 2/2</span>18 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1510,7 +1511,7 @@
         </div>
       </div>
     </div>
-    <div class="num">19 / 43</div>
+    <div class="num"><span class="part">PART 4</span>19 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1535,7 +1536,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Getting a tunnel up was the easy step. Almost everything interesting came after it already &ldquo;worked.&rdquo;</p></div>
     </div>
-    <div class="num">20 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 1/7</span>20 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1578,7 +1579,7 @@
         <small>Because the simple test passed, you trust that part and spend hours looking somewhere else. This happened again and again in this project, and not only in the apps version.</small>
       </div>
     </div>
-    <div class="num">21 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 2/7</span>21 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1605,7 +1606,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>pthread_detach() decides when memory is freed, not how long the thread lives. A detached thread still dies with the task group that started it.</p></div>
     </div>
-    <div class="num">22 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 3/7</span>22 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1632,7 +1633,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>In NuttX, a file descriptor belongs to one task group. Another task cannot use it, even though it points to the same socket.</p></div>
     </div>
-    <div class="num">23 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 4/7</span>23 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1656,7 +1657,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The 50&nbsp;ms polling kept things correct but made it about 10&times; slower. A quick fix you never measure can look free and cost 10&times;.</p></div>
     </div>
-    <div class="num">24 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 5/7</span>24 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1681,7 +1682,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A default stack size is only a guess until you measure it on real hardware. Sim's big stacks hide the problem.</p></div>
     </div>
-    <div class="num">25 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 6/7</span>25 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1707,7 +1708,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Version one was enough for a demo. Next, I made it a real NuttX driver.</p></div>
     </div>
-    <div class="num">26 / 43</div>
+    <div class="num"><span class="part">PART 4 &middot; 7/7</span>26 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1758,7 +1759,7 @@
         </div>
       </div>
     </div>
-    <div class="num">27 / 43</div>
+    <div class="num"><span class="part">PART 5</span>27 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1783,7 +1784,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>An app-level port proves the protocol works. Only a kernel driver is a proper device that also works in PROTECTED and KERNEL builds.</p></div>
     </div>
-    <div class="num">28 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 1/6</span>28 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1805,7 +1806,7 @@
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>The socket, the thread and the no-pointer ABI follow one rule: don't depend on code that can exit, or on memory the kernel can't reach.</p></div>
     </div>
-    <div class="num">29 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 2/6</span>29 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1831,7 +1832,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A working handshake does not prove the data path or the kernel code is right. Both bugs only showed up after the handshake, once the code was in the kernel.</p></div>
     </div>
-    <div class="num">30 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 3/6</span>30 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1858,7 +1859,7 @@
       </table>
       <div class="takeaway"><b>Takeaway</b><p>A tunnel in sim is not enough. Test real builds, many CPUs, and real hardware.</p></div>
     </div>
-    <div class="num">31 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 4/6</span>31 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1885,7 +1886,7 @@
       <div class="claim"><p>Each of these <span class="hl">passes every normal test</span> while being broken.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>A working tunnel does not prove unique keys, cleared secrets, or stable memory. Each needs its own check.</p></div>
     </div>
-    <div class="num">32 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 5/6</span>32 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1913,7 +1914,7 @@
       <div class="claim"><p>Same rule as Linux and wireguard-go, <span class="hl">plus a warning</span>.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>No clock, no newer timestamp: a device may be unable to connect out and still pass a ping test.</p></div>
     </div>
-    <div class="num">33 / 43</div>
+    <div class="num"><span class="part">PART 5 &middot; 6/6</span>33 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1968,7 +1969,7 @@
         </div>
       </div>
     </div>
-    <div class="num">34 / 43</div>
+    <div class="num"><span class="part">PART 6</span>34 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2025,7 +2026,7 @@
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The phone and the venue only ever see encrypted UDP, with no server in the middle and no cloud.</p></div>
     </div>
-    <div class="num">35 / 43</div>
+    <div class="num"><span class="part">PART 6 &middot; 1/2</span>35 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2060,7 +2061,7 @@
         </div>
       </div>
     </div>
-    <div class="num">36 / 43</div>
+    <div class="num"><span class="part">PART 6 &middot; 2/2</span>36 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2114,7 +2115,7 @@
         </div>
       </div>
     </div>
-    <div class="num">37 / 43</div>
+    <div class="num"><span class="part">PART 7</span>37 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2137,7 +2138,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Run-time keys and per-layer checks turn "the tunnel is down" into "the router side is down." That is the difference between a demo and something you can leave running.</p></div>
     </div>
-    <div class="num">38 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 1/6</span>38 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2162,7 +2163,7 @@
       <div class="takeaway"><b>Takeaway</b><p>In the apps version, four small OS functions let one source run on four CPU types, unchanged. The bet paid off.</p></div>
       <div class="sources">Checked with the apps (FLAT) version. The kernel driver does not use these four hooks.</div>
     </div>
-    <div class="num">39 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 2/6</span>39 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2185,7 +2186,7 @@
       <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
       <div class="sources">Status: prepared locally as small pieces. Not signed off, not re-run on real hardware, nothing sent.</div>
     </div>
-    <div class="num">40 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 3/6</span>40 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2206,7 +2207,7 @@
         <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
       </ul>
     </div>
-    <div class="num">41 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 4/6</span>41 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2228,7 +2229,7 @@
         <div class="panel" style="min-height:0"><p><strong>Sony's NuttX developers, past and present</strong></p><p>who brought NuttX into our products and gave so much back to the project.</p></div>
       </div>
     </div>
-    <div class="num">42 / 43</div>
+    <div class="num"><span class="part">PART 7 &middot; 5/6</span>42 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">

@@ -20,6 +20,8 @@ Plex Mono 以外のフォントは同梱品で表示される）。
 | `F` | 全画面 |
 | `Esc` / `O` | 一覧 |
 
+スライドを足す・消す・並べ替えたときは、先に `python renumber.py` を実行する。全体の通し番号(`5 / 43`)と、章の中での位置(`PART 2 · 2/4`)を A 版に振り直す。章の区切りは、目次スライドでハイライトしている項目(`agenda-item current`)から決まる。そのあと `build.py` で B 版を作る。
+
 PDF は `python pdf.py` で作る。各スライドを 2 倍解像度（2560x1440）で撮り、1 枚 1 ページ
 （1280x720）で並べて [../coc-glasgow-slides.pdf](../coc-glasgow-slides.pdf) に印刷する。
 reveal.js 標準の `index.html?print-pdf` は、ヘッドレス Chrome ではこの版でもテンプレート原本でも
