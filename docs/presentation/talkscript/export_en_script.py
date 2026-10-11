@@ -32,25 +32,27 @@ SLIDES = [
     ("Title", "",
         '"WireGuard for Apache NuttX." ESP32-S3 & SPRESENSE tunnel over real '
         "Wi-Fi · real WireGuard peers (Linux kernel, Windows client) · runs in "
-        "a real kernel build (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
+        "a kernel build on QEMU (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
         "master / 12.7.0.", []),
     ("Agenda", "",
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~6 min) / the problem and the idea "
-        "(~4) / the plan (~1) / version 1: the app (~5) / version 2: the "
-        "kernel driver (~13) / live demo (~3) / summary & next steps (~4).",
+        "(~4) / the plan (~2) / version 1: the app, four hidden bugs (~5) / version 2: the "
+        "kernel driver (~8) / live demo (~3) / summary & next steps (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("About Me", "",
-        "Photo, and a timeline Robotics → Computer Vision → Edge AI → "
-        "Embedded Systems → NuttX / WireGuard with a picture per step.", []),
+        "Three bands: photo, name line and the fox icon / five hobby photos "
+        "(space, semiconductors, DNA nanotech, robots, Linux) with three "
+        "activity chips / a one-row path Robotics → Computer Vision → Edge AI "
+        "→ Embedded Systems → NuttX / WireGuard, a picture per step.", []),
     ("Project Overview", "",
         "The wg0 netdev picture: application / NSH, the NuttX network stack, "
         "wg0 next to eth0 / wlan0, a UDP socket underneath, the Internet, "
         "the peer.", []),
     ("How It Started: February to October", "",
         "A month axis Feb → Oct. Above it: mid Feb, read the GSoC idea "
-        "list / early Mar, plan written up as an issue / Mar 20, heard "
+        "list / early Mar, proposed the plan / Mar 20, heard "
         "about this conference from Alan, sent a talk / early Apr, GSoC "
         "proposal / early May, talk accepted, GSoC not selected / Oct, "
         "Glasgow. Below it: Jun–Jul a little at a time, August holiday "
@@ -108,60 +110,64 @@ SLIDES = [
          "callbacks → devif_poll().", []),
     ('Agenda: ④ Version 1: The App', "divider", None, []),
     ("Result: A Working Tunnel Is Only the Beginning", "",
-         "Protocol & crypto: 3,079 lines unchanged / OS hooks: four functions "
+         "Protocol & crypto: crypto byte-identical, protocol core with two "
+         "small fixes (PATCHES.md) / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
     ("The Testing Pattern: Simple Tests Pass, Deep Tests Fail", "",
          "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
          "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
          "security, FAIL).", []),
-    ("Bug 1/7: SO_RCVTIMEO", "", None, []),
-    ("Bug 2/7: The Detached pthread", "", None, []),
-    ("Bug 3/7: ping Works, TCP Dies", "my favorite", None, []),
-    ("Bug 4/7: \"No Real Impact\" Was 10×", "", None, []),
-    ("Bug 5/7: sim Passes, Real Hardware Is Different", "", None, []),
+    ("Bug 1/6: The Detached pthread (First Symptom: recvfrom Never Returned)", "", None, []),
+    ("Bug 2/6: ping Works, TCP Dies", "my favorite", None, []),
+    ("Bug 3/6: \"No Real Impact\" Was 10×", "", None, []),
+    ("Bug 4/6: sim Passes, Real Hardware Is Different", "", None, []),
     ("Version 1 Demo: The First Video", "",
-         "Left: telnet 10.10.0.2 / uname -a, ifconfig / webserver & / "
-         "browser http://10.10.0.2/. Right: ESP32-S3 DevKit, apps version "
-         "v0.1.1, USB unplugged, official Windows client over home Wi-Fi, "
+         "Left: a still frame of the video (the Windows WireGuard client "
+         "beside a telnet session into NuttX on the ESP32-S3). Right: the "
+         "steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / "
+         "browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), "
+         "USB unplugged; the official Windows client; small text "
          "youtu.be/1kyX2av5WG4.",
-         ["**Play:** the video from youtu.be/1kyX2av5WG4, about 30 seconds "
-          "of it (login, a command, the web page). Keep a local copy on the "
-          "laptop in case the venue network is slow.",
-          "**It is the apps version (v0.1.1).** Do not mix it with the "
+         ["**No playback.** The still is enough; the video is the backup "
+          "for the live demo.",
+          "**It is the apps version.** Do not mix it with the "
           "kernel-version results later in the talk."]),
     ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
     ("Part 5: Into the Kernel", "", None, []),
     ("The Kernel Design", "", None, []),
-    ("Two More Bugs, Same Shape", "locked with the kernel design", None, []),
+    ("Bugs 5 & 6/6: Same Shape, One Level Deeper", "locked with the kernel design", None, []),
     ("Testing: Seven Places It Must Work", "core — do not cut",
-         "Table (where / version / what I checked): sim / rv-virt knetnsh64 (BUILD_KERNEL) / rv-virt pnsh64 "
-         "(BUILD_PROTECTED) / rv-virt knetnsh64_smp (4 CPUs) / SPRESENSE "
-         "measured / ESP32-S3 + SPRESENSE over real Wi-Fi / apps v0.1.1 on "
+         "Table (where / version / what I checked): sim / rv-virt knetnsh64 (BUILD_KERNEL, QEMU) / rv-virt pnsh64 "
+         "(BUILD_PROTECTED, QEMU) / rv-virt knetnsh64_smp (4 CPUs, QEMU) / SPRESENSE "
+         "measured (FLAT) / ESP32-S3 + SPRESENSE over real Wi-Fi (FLAT; both "
+         "board rows before the final rebase) / Version 1 (app), v0.1.1 on "
          "both boards.", []),
     ("Testing: A Working Tunnel Does Not Prove Enough", "core — do not cut",
          "Three rows (same private key every boot / session keys that "
          "outlive the tunnel / a leak that shows after hours), each with "
-         '"would ping notice?" → no.', []),
+         '"would ping notice?" → no, and where it was measured '
+         "(SPRESENSE / sim / sim).", []),
     ("A Design Choice: The Timestamp Problem Has No Easy Answer",
          "core — do not cut",
          "What replay protection obliges, the four options (real-time clock "
          "+ in-boot high-water mark / persist every time / durable range "
          "reservation / wait to catch up), and the measured pair: clock "
-         "unset → no handshake in 75 s, clock set → 4.1 s.", []),
+         "unset → no handshake in a 75 s watch, clock set → 4.1 s.", []),
     ('Agenda: ⑥ Live Demo', "divider", None, []),
     ("Demo Setup: One Tunnel on a Phone's Network", "",
          "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
          "→ phone hotspot (its own small local network) → laptop "
          "(WireGuard peer in Docker, wg0 10.10.0.1; voice clips on :8000) "
          "and StackChan (ESP32-S3 + NuttX, wg0 10.10.0.2 over "
-         "wlan0 on the hotspot), joined by one WireGuard tunnel; SPRESENSE as a "
+         "wlan0 on the hotspot; apps version v0.1.1, FLAT build), joined by one WireGuard tunnel; SPRESENSE as a "
          "dashed second peer (wg0 10.11.0.2).", []),
     ("The Demo", "demo",
          "Seven steps: wg show / telnet 10.10.0.2 / ifconfig / stackchan "
          "face happy / stackchan say hello.wav / tcpdump outside vs. inside "
          "/ wg show again. Right panel: outside = only encrypted UDP 51820, "
-         "inside = the telnet text.",
+         "inside = the telnet text; \"Runs the apps version (v0.1.1), FLAT "
+         "build.\"",
          ["**Live:** `scripts/stackchan/demo.sh`: `login` in the left "
           "terminal, `outside` and `inside` in two terminals on the right, "
           "`show` before and after. Put the terminals on the left and the "
@@ -218,8 +224,11 @@ main talk in 27–28 minutes, and keep the cut list below ready.
 
 **The most important part is slides {core_range}** (testing). Together they take
 {core} of the talk, and they hold the claims that a reviewer will really
-check. Do not make them shorter to save time somewhere else. Cut before
-them or after them, never inside. They are one story: the first is where
+check. Their narration was already trimmed (2026-10-11): process detail
+such as the memory map, the usrsock steps and the hostfs detail moved to
+the Q&A file. Do not cut their claims or their caveats (FLAT / QEMU / sim,
+pre-rebase, PROTECTED 2 of 8 open, one scripted 4-CPU run, the 75 s
+watch) any further. Cut before them or after them. They are one story: the first is where
 it runs, the second is what "it runs" does not prove, and the third is the
 one place where I had to decide instead of test. If you split them, the
 story breaks.

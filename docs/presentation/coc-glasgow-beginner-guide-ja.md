@@ -14,7 +14,7 @@ Community Over Code Glasgow の発表を、自分の言葉で説明するため�
 [検証マトリクス](../upstream/verification-matrix.md)です。この文書は、それらを読む前の
 「やさしい地図」です。
 
-発表は[スライド](coc-glasgow-slides.html)44枚で、7つの部に分かれています。まず
+発表は[スライド](coc-glasgow-slides.html)43枚で、7つの部に分かれています。まず
 [この発表の地図](#この発表の地図)で全体の流れをつかみ、[部ごとの学習ルート](#部ごとの学習ルート)で
 「その部を理解するには、この文書のどの章を読めばよいか」を確かめてください。1枚ずつの細かい解説は
 [スライド別解説](coc-glasgow-slide-guide-ja.html)、読み上げる言葉は[日本語台本](talkscript/coc-glasgow-script-ja.md)
@@ -42,8 +42,8 @@ NuttX上に`wg0`という仮想ネットワーク機器を作り、そこへ届�
 
 作ったものは2段階あります。**第1版**はアプリとして作った版(apps版、v0.1.1)、**第2版**は
 NuttXのカーネルの中に入れた正式なドライバ(カーネル版)です。どちらもESP32-S3とSPRESENSEの
-実機で、本物のWireGuard実装(LinuxカーネルのWireGuard、Windowsの公式クライアント)とつながることを
-確認しました。さらに、単にpingが通るだけでは見つからない、並行処理、鍵、時刻、メモリ、再起動の問題まで
+実機で、本物のWireGuard実装とつながることを確認しました(実機はどちらも普通のFLATビルド。カーネル版の
+KERNEL/PROTECTEDビルドはQEMUの上でだけ動かしました)。さらに、単にpingが通るだけでは見つからない、並行処理、鍵、時刻、メモリ、再起動の問題まで
 調べました。
 
 ### 「どこで確かめたか」の印
@@ -75,30 +75,30 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 
 ## この発表の地図
 
-発表は全部で44枚、7つの部に分かれています。スライド1はタイトル、スライド2は目次です。部が変わる
-たびに目次のスライドに戻ってきて、今どこにいるかを示します(スライド3・11・16・19・28・35・38)。
+発表は全部で43枚、7つの部に分かれています。スライド1はタイトル、スライド2は目次です。部が変わる
+たびに目次のスライドに戻ってきて、今どこにいるかを示します(スライド3・11・16・19・27・34・37)。
 
 | 部 | 英語の題 | この部が答える問い | スライド | 時間の目安 |
 |---|---|---|---|---:|
 | 第1部 | Overview & background | 誰が、何を作ったのか。NuttXとはどんなOSで、なぜこの人がそこにいたのか | 3〜10 | 約6分 |
 | 第2部 | The problem and the idea | 遠くに置いた機器へ、安全に届くにはどうすればよいか。なぜWireGuardなのか | 11〜15 | 約4分 |
-| 第3部 | The plan | 既存のWireGuardの実装をどう再利用し、NuttXにどうはめこむか | 16〜18 | 約1分 |
-| 第4部 | Version 1: the app | 第1版(アプリ)は動いた。では「動いた」の裏に何が隠れていたか | 19〜27 | 約5分 |
-| 第5部 | Version 2: the kernel driver | なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか | 28〜34 | 約13分 |
-| 第6部 | Live demo | 実物では、どう見えるのか | 35〜37 | 約3分 |
-| 第7部 | Summary & next steps | 実際に運用するには。この先どうするのか。何を持ち帰ればよいか | 38〜44 | 約4分 |
+| 第3部 | The plan | 既存のWireGuardの実装をどう再利用し、NuttXにどうはめこむか | 16〜18 | 約2分 |
+| 第4部 | Version 1: the app | 第1版(アプリ)は動いた。では「動いた」の裏に何が隠れていたか | 19〜26 | 約5分 |
+| 第5部 | Version 2: the kernel driver | なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか | 27〜33 | 約8分 |
+| 第6部 | Live demo | 実物では、どう見えるのか | 34〜36 | 約3分 |
+| 第7部 | Summary & next steps | 実際に運用するには。この先どうするのか。何を持ち帰ればよいか | 37〜43 | 約4分 |
 
-時間はスライド2の目安です。台本どおりに読むと合計約38分(デモ90秒を含む)なので、本番では
-30分枠に収まるよう削る順番(41 → 40 → 39)が[台本](talkscript/coc-glasgow-script-ja.md)に決めてあります。
-いちばん時間を使うのは第5部の検証(スライド32〜34)で、ここは削りません。
+時間はスライド2の目安です。台本どおりに読むと合計約34分(33分32秒、デモ90秒を含む)なので、本番では
+30分枠に収まるよう削る順番(40 → 39 → 38)が[台本](talkscript/coc-glasgow-script-ja.md)に決めてあります。
+いちばん時間を使うのは第5部の検証(スライド31〜33)で、ここは削りません。
 
 ### 話の筋(ストーリーライン)
 
 まず、**なぜ必要か**。小さな組込みOSのNuttXで作った機器は、現場に置いた後に遠くから安全に
 つなぐ方法がありませんでした(第1部・第2部)。そこで、標準のVPNであるWireGuardを、NuttXの普通の
-ネットワーク機器`wg0`として加えることにしました。次に、**どう作る計画か**。暗号とプロトコルは既存の
-実装をそのまま使い、OSに依存する部分だけを置き換えます(第3部)。**第1版**はアプリとして作り、
-すぐに動きました。ところが「動いた」の裏には、pingでは見えない**隠れたバグ**が5つありました(第4部)。
+ネットワーク機器`wg0`として加えることにしました。次に、**どう作る計画か**。暗号は既存の実装を
+そのまま使い(プロトコルの中心は小さな修正2つだけ)、OSに依存する部分を置き換えます(第3部)。**第1版**はアプリとして作り、
+すぐに動きました。ところが「動いた」の裏には、pingでは見えない**隠れたバグ**が4つありました(第4部)。
 そこで**第2版**では、正式なドライバとして**カーネルの中へ**移し、さらに2つのバグを見つけ、
 シミュレータ・仮想マシン・実機で**どこまで確かめたか**を一つずつ測りました(第5部)。その上で、
 スタックちゃんという**実物**で、トンネル越しに操作する様子を見せます(第6部)。最後に、運用・移植性・
@@ -153,45 +153,45 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 
 ### 第3部 計画
 
-**スライド16〜18、約1分。** 問い:既存のWireGuardをどう再利用し、NuttXにどうはめこむか。
+**スライド16〜18、約2分。** 問い:既存のWireGuardをどう再利用し、NuttXにどうはめこむか。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
-| 17 | Porting | wireguard-lwipの暗号とプロトコルはそのまま。OS依存は4つの関数だけ。lwIP依存のつなぎ込みを置き換える | [8.4](#84-ゼロから書かなかった) |
+| 17 | Porting | wireguard-lwipの暗号はそのまま、プロトコルの中心は小さな修正2つ(PATCHES.md)。OS依存は4つの関数だけ。lwIP依存のつなぎ込みを置き換える | [8.4](#84-ゼロから書かなかった) |
 | 18 | Design | lwIPの部品をNuttXの部品へ写す(`netif`→`net_driver_s`、`pbuf`→`iob` など) | [8.4](#84-ゼロから書かなかった)、[7.2](#72-upper-halfとlower-half)、[7.3](#73-iob) |
 
 - **先に読む基礎:** [2.5 socket](#25-socketとは)、[5.3 driver](#53-driver)、[7.1〜7.3 netdev・upper/lower half・IOB](#7-nuttxネットワーク用語)
-- **どこで確かめたか:** 計画なので試験はありません。計画どおりだったかの答え合わせは第7部のスライド40です。
+- **どこで確かめたか:** 計画なので試験はありません。計画どおりだったかの答え合わせは第7部のスライド39です。
 
 ### 第4部 第1版: アプリ
 
-**スライド19〜27、約5分。** 問い:第1版は動いた。では「動いた」の裏に何が隠れていたか。
+**スライド19〜26、約5分。** 問い:第1版は動いた。では「動いた」の裏に何が隠れていたか。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
-| 20 | Result | 暗号とプロトコルの3,079行は元と完全に同じ。鍵や相手の設定を、作り直しなしに動作中に変えられる | [8.4](#84-ゼロから書かなかった) |
+| 20 | Result | 3,000行以上のプロトコルと暗号を持ってきた。暗号は元と1 byteも違わず、プロトコルの中心は小さな修正2つ(1つはwireguard-lwip自身のバグ)。鍵や相手の設定を、作り直しなしに動作中に変えられる | [8.4](#84-ゼロから書かなかった) |
 | 21 | The Testing Pattern | 浅い試験は通り、深い試験で落ちる。浅い試験が通ると、その部分を疑わなくなる | [0](#この発表の中心メッセージ)、[14](#14-なぜpingだけでは足りないのか) |
-| 22〜26 | Bug 1〜5 | 効かないタイムアウト、消えるスレッド、別タスクのfd、50 msのポーリング、測っていなかったスタック | [13](#13-発表に出てくる7つの落とし穴) |
-| 27 | Version 1 demo | 第1版でtelnetとWebページがトンネル越しに使える動画 | [18.2](#182-第1版の動画スライド27) |
+| 22〜25 | Bug 1〜4 | 消えるスレッド(最初の症状は戻らない受信待ちで、タイムアウトの設定を疑った)、別タスクのfd、50 msのポーリング、測っていなかったスタック | [13](#13-発表に出てくる6つの落とし穴) |
+| 26 | Version 1 demo | 第1版でtelnetとWebページがトンネル越しに使える動画の1コマ(静止画。再生しない) | [18.2](#182-第1版の動画スライド26) |
 
 - **先に読む基礎:** [2.5 socket](#25-socketとは)、[5.4 threadとtask](#54-threadとtask)、
   [8.2 2段階の開発](#82-2段階の開発)。fd(file descriptor)とstackは[用語集](#21-用語集)にもあります。
 - **どこで確かめたか:** 第1版の結果と動画は **[apps・実機]**(ESP32-S3、相手はWindowsの公式クライアント)。
-  バグ5のスタック94%はESP32-S3の実機で測った値です。
+  バグ4のスタック94%はESP32-S3の実機で測った値です。
 
 ### 第5部 第2版: カーネルドライバ
 
-**スライド28〜34、約13分。** 問い:なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか。
-発表の重心はここ、特にスライド32〜34です。
+**スライド27〜33、約8分。** 問い:なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか。
+発表の重心はここ、特にスライド31〜33です。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
-| 29 | Into the kernel | 第1版はFLATビルドでしか動かない。正式なドライバにするにはカーネルへ | [7.5](#75-flatprotectedkernel-build)、[8.2](#82-2段階の開発) |
-| 30 | The Kernel Design | ドライバがソケットとスレッドを持つ。ポインタなしのioctl ABI。秘密鍵はwrite-only | [8.5](#85-現行driverの主なfile)、[10](#10-ioctlとabi)、[11](#11-並行処理をどう安全にしたか)、[12](#12-起動と停止のライフサイクル) |
-| 31 | Two more bugs | NuttX自身の暗号のnonceのバグ、カーネルビルドだけで起きたスタックあふれ | [4.6](#46-nonceとcounter)、[13](#13-発表に出てくる7つの落とし穴) |
-| 32 | Testing: seven places | sim、QEMUの3構成、SPRESENSEの実測、両ボードの実Wi-Fi、apps版 | [15](#15-検証結果の読み方) |
-| 33 | What ping misses | 毎回同じ鍵、downの後に残る鍵、時間がたってから出るリーク | [14](#14-なぜpingだけでは足りないのか)、[16](#16-鍵乱数ゼロ化) |
-| 34 | Design choice: trust the clock? | 再起動の後も新しいtimestampが要る。RTCのない機器には無料の答えがない | [17](#17-最大の未解決事項-tai64nと再起動) |
+| 28 | Into the kernel | 第1版はFLATビルドでしか動かない。正式なドライバにするにはカーネルへ | [7.5](#75-flatprotectedkernel-build)、[8.2](#82-2段階の開発) |
+| 29 | The Kernel Design | ドライバがソケットとスレッドを持つ。ポインタなしのioctl ABI。秘密鍵はwrite-only。プロトコルの中心`wg_noise.c`はwireguard-lwip由来のBSD-3のコード | [8.5](#85-現行driverの主なfile)、[10](#10-ioctlとabi)、[11](#11-並行処理をどう安全にしたか)、[12](#12-起動と停止のライフサイクル) |
+| 30 | Bugs 5 & 6 | NuttX自身の暗号のnonceのバグ、カーネルビルドだけで起きたスタックあふれ | [4.6](#46-nonceとcounter)、[13](#13-発表に出てくる6つの落とし穴) |
+| 31 | Testing: seven places | sim、QEMUの3構成、SPRESENSEの実測、両ボードの実Wi-Fi(FLATビルド、最終rebase前)、apps版 | [15](#15-検証結果の読み方) |
+| 32 | What ping misses | 毎回同じ鍵、downの後に残る鍵、時間がたってから出るリーク | [14](#14-なぜpingだけでは足りないのか)、[16](#16-鍵乱数ゼロ化) |
+| 33 | Design choice: trust the clock? | 再起動の後も新しいtimestampが要る。RTCのない機器には無料の答えがない | [17](#17-最大の未解決事項-tai64nと再起動) |
 
 - **先に読む基礎:** [5.2 kernelとuser space](#52-kernelとuser-space)、[7.5 FLAT/PROTECTED/KERNEL](#75-flatprotectedkernel-build)、
   [10 ioctlとABI](#10-ioctlとabi)、[11 並行処理](#11-並行処理をどう安全にしたか)、[4.6 nonce](#46-nonceとcounter)、
@@ -202,35 +202,35 @@ apps版は両ボードでLinuxとWindowsの両方とつながりました **[app
 
 ### 第6部 ライブデモ
 
-**スライド35〜37、約3分。** 問い:実物では、どう見えるのか。
+**スライド34〜36、約3分。** 問い:実物では、どう見えるのか。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
-| 36 | Demo setup | 会場のWi-Fiは機器どうしの通信を止めるので、スマホのテザリングで小さなネットワークを作る | [18.3](#183-デモの構成スライド36) |
-| 37 | Demo | telnetでログインし、顔を変え、声を出させ、tcpdumpでトンネルの外と中を比べる | [18.4](#184-デモの7つの手順スライド37)、[18.5](#185-tcpdumpでトンネルの外と中を見比べる) |
+| 35 | Demo setup | 会場のWi-Fiは機器どうしの通信を止めるので、スマホのテザリングで小さなネットワークを作る | [18.3](#183-デモの構成スライド35) |
+| 36 | Demo | telnetでログインし、顔を変え、声を出させ、tcpdumpでトンネルの外と中を比べる | [18.4](#184-デモの7つの手順スライド36)、[18.5](#185-tcpdumpでトンネルの外と中を見比べる) |
 
 - **先に読む基礎:** [2.1 IPアドレス](#21-ipアドレスは機器の住所)(物理とVPNの2種類のアドレス)、
   [3.2 tunnelとencapsulation](#32-tunnelとencapsulation)、[4.8 endpoint](#48-endpointとallowedips)、
   [4.9 PersistentKeepalive](#49-persistentkeepalive)
-- **どこで確かめたか:** スタックちゃんのデモは **[apps・実機]**。カーネル版のデモではありません
+- **どこで確かめたか:** スタックちゃんのデモは **[apps・実機]**(apps版 v0.1.1、FLATビルド。画面にもそう書いてある)。カーネル版のデモではありません
   ([18.6](#186-なぜライブデモはapps版なのか))。
 
 ### 第7部 まとめと次の一歩
 
-**スライド38〜44、約4分。** 問い:実際に運用するには。この先どうするのか。何を持ち帰ればよいか。
+**スライド37〜43、約4分。** 問い:実際に運用するには。この先どうするのか。何を持ち帰ればよいか。
 
 | スライド | 題 | 要点 | この文書の章 |
 |---:|---|---|---|
-| 39 | Running it for real | 鍵は動作中に作って設定する。4つの層を毎分確かめ、どこが落ちたかを言えるようにする | [19.1](#191-運用できる形にするスライド39) |
-| 40 | Other CPUs | 4つの関数に閉じこめた賭けは当たった。apps版は4種類のCPUで変更なしに動いた | [19.2](#192-ほかのcpuスライド40) |
-| 41 | Giving back | crypto修正 → ドライバ → コマンドの順に小さなPRで出す。PRはまだ出していない | [19.3](#193-本家への還元スライド41)、[8.3](#83-なぜリポジトリが3つあるのか) |
-| 42 | Summary | 作ったもの(`wg0`)の1行と、3つの教訓 | [19.4](#194-summaryスライド42) |
-| 43 | Thanks | Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝 | [19.5](#195-謝辞スライド43) |
-| 44 | Thank you | 質疑応答へ | [19.6](#196-thank-youスライド44) |
+| 38 | Running it for real | 鍵は動作中に作って設定する。4つの層を毎分確かめ、どこが落ちたかを言えるようにする | [19.1](#191-運用できる形にするスライド38) |
+| 39 | Other CPUs | 4つの関数に閉じこめた賭けは当たった。apps版は4種類のCPUで変更なしに動いた。カーネル版はこの4つを使わない | [19.2](#192-ほかのcpuスライド39) |
+| 40 | Giving back | crypto修正 → ドライバ → コマンドの順に小さなPRで出す。sign-offも実機での再試験もまだで、何も送っていない | [19.3](#193-本家への還元スライド40)、[8.3](#83-なぜリポジトリが3つあるのか) |
+| 41 | Summary | 作ったもの(`wg0`)の1行と、3つの教訓 | [19.4](#194-summaryスライド41) |
+| 42 | Thanks | Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝 | [19.5](#195-謝辞スライド42) |
+| 43 | Thank you | 質疑応答へ | [19.6](#196-thank-youスライド43) |
 
 - **先に読む基礎:** [8.3 リポジトリ](#83-なぜリポジトリが3つあるのか)、[15.2 正しい言い方](#152-主な数字と正しい言い方)
-- **どこで確かめたか:** スライド39・40は主に **[apps・実機]**。スライド42の「作ったもの」の1行は、
-  版と相手ごとに分けて読みます([19.4](#194-summaryスライド42))。
+- **どこで確かめたか:** スライド38・39は主に **[apps・実機]**。スライド41の「作ったもの」の1行は、
+  版と相手ごとに分けて読みます([19.4](#194-summaryスライド41))。
 
 ---
 
@@ -285,10 +285,10 @@ VPN内のネットワーク: wg0 = 10.11.0.2
 
 `wlan0`は現実のWi-Fi装置、`wg0`はソフトウェアで作った仮想装置です。
 
-上の数字は説明用の例です(VPN側の`10.11.0.2`は、スライド36に点線で出てくるSPRESENSEの`wg0`と
+上の数字は説明用の例です(VPN側の`10.11.0.2`は、スライド35に点線で出てくるSPRESENSEの`wg0`と
 同じ値)。発表のライブデモ(スタックちゃん)では、`wlan0`は
 スマホのテザリングが配るアドレス、`wg0`は`10.10.0.2`(相手のPC側は`10.10.0.1`)です。どちらの例でも
-「物理の住所」と「VPNの中の住所」の2つを持つ、という形は同じです([18.3](#183-デモの構成スライド36))。
+「物理の住所」と「VPNの中の住所」の2つを持つ、という形は同じです([18.3](#183-デモの構成スライド35))。
 
 ### 2.2 ポート番号は建物の受付番号
 
@@ -544,7 +544,7 @@ packet 2 → counter 1
 packet 3 → counter 2
 ```
 
-今回見つけたNuttXのChaCha20-Poly1305バグ(スライド31)では、counterをnonceの誤った位置に入れていました。
+今回見つけたNuttXのChaCha20-Poly1305バグ(スライド30)では、counterをnonceの誤った位置に入れていました。
 counter 0だけは正しい配置と誤った配置が偶然同じになるため、**最初のデータパケットだけ通り、
 2つ目以降が失敗**しました。これは「浅い試験が通る」の代表例です。
 
@@ -793,7 +793,7 @@ ESP32-S3のnative Wi-Fiとは異なる経路なので、2つのboardで試すこ
 | KERNEL | user processとkernelをより明確に分離 | 内部pointerやkernel APIをuser側から直接使えない |
 
 最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。upstreamへ提出する現行版はdriverを
-kernel側へ移し、user側の`wg` commandとはioctlで通信します(スライド29)。
+kernel側へ移し、user側の`wg` commandとはioctlで通信します(スライド28)。
 
 現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました **[カーネル・QEMU]**。PROTECTED buildも
 QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていて、原因は
@@ -833,9 +833,9 @@ flowchart LR
 | 主目的 | protocol portを早く成立させる | upstream可能な正式driverにする |
 | socket所有 | command/task側に制約 | driverが所有 |
 | 設定 | application内部 | user commandからioctl |
-| build | 主にFLAT | FLAT/PROTECTED/KERNEL(PROTECTEDの実行は間欠的な失敗が未解決) |
+| build | 主にFLAT | 実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDは間欠的な失敗が未解決) |
 | upstream対象 | 学習・実績の土台 | こちらが本命 |
-| 発表での位置 | 第4部(スライド19〜27)と、第6部のライブデモ | 第5部(スライド28〜34) |
+| 発表での位置 | 第4部(スライド19〜26)と、第6部のライブデモ | 第5部(スライド27〜33) |
 
 ### 8.3 なぜリポジトリが3つあるのか
 
@@ -883,11 +883,21 @@ NuttX向けに置き換えた部分
 
 暗号protocolを一から書くのではなく、OS依存の境界を置き換える戦略です。
 
+ただし「何も変えなかった」わけではありません。移植の後のreviewで、プロトコルの中心(`wireguard.c`)に
+小さな修正を2つ入れ、[PATCHES.md](../../nuttx_port/apps/netutils/wireguard/PATCHES.md)に記録しました。
+
+| # | 直したこと | なぜ |
+|---|---|---|
+| 1 | handshake開始要求の回数制限(rate limit)の引き算の向き | `last - now`と逆に引いていたので、符号なしの数が大きな値に回り込み、回数制限が一度も効いていなかった。wireguard-lwip自身のバグ |
+| 2 | replay防止の窓を32 packetから2048 packetへ | 32では、Wi-Fiの再送などで順番が少し入れ替わるだけで本物のpacketまで捨ててしまう |
+
+暗号の部分(`crypto.c`、`crypto/refc/*`)は今も元と1 byteも違いません。
+
 スライド17・18・20では、この戦略を3つの層で説明します。
 
 | 層 | 扱い | 中身 | 第1版での結果(スライド20) |
 |---|---|---|---|
-| Protocol & crypto | **そのまま使う**(KEEP) | handshake、transport、BLAKE2s、ChaCha20-Poly1305、Curve25519。OSに依存しない移植可能なC | 3,079行、元と完全に同じ |
+| Protocol & crypto | **ほぼそのまま使う**(KEEP) | handshake、transport、BLAKE2s、ChaCha20-Poly1305、Curve25519。OSに依存しない移植可能なC | 暗号は元と1 byteも違わない。プロトコルの中心はレビュー後の小さな修正2つ(PATCHES.md) |
 | Platform hooks | **合わせる**(ADAPT) | `wireguard-platform.h`の裏の4つの関数:時計、乱数、TAI64N時刻、負荷の確認 | 小さい。時計、`/dev/urandom`、TAI64N、負荷 |
 | lwIP network glue | **置き換える**(REPLACE) | lwIPのnetifの登録とbuffer。NuttXにはlwIPがない | 本当の作業。netdev + UDPソケット + 受信task |
 
@@ -917,16 +927,17 @@ NuttX向けに置き換えた部分
 | `include/nuttx/net/wireguard.h` | user側とkernel側が共有するioctl ABI |
 | `apps/system/wg/` | `wg up`, `wg set`, `wg show`などのuser command |
 
-スライド30(The Kernel Design)は、この形を4つの点でまとめます。
+スライド29(The Kernel Design)は、この形を4つの点でまとめます。
 
 1. **kernelのnetdev:** driverがUDPソケット、受信thread、timer、cookieを自分で持つ。だから第1版の
    「起動したcommandが終わるとthreadも死ぬ」「fdが別taskから使えない」という問題は、設計上起きない
-2. **ポインタのないioctl ABI:** PROTECTED/KERNEL buildではkernelが呼び出し元の構造体をそのままコピーするので、
-   中にポインタを入れない([10](#10-ioctlとabi))
+2. **ポインタのないioctl ABI:** 大きさの決まった平らな構造体1つで、PROTECTED/KERNEL buildではkernelが呼び出しの間にそれを読む。
+   中にポインタがないので、user側のmemoryの中のポインタをたどる必要がない([10](#10-ioctlとabi))
 3. **秘密鍵はwrite-only:** getのioctlは秘密鍵を返さない([10.3](#103-秘密鍵がwrite-onlyとは))
 4. **kernelの暗号はNuttX自身のもの:** BLAKE2s、ChaCha20-Poly1305、Curve25519はNuttXの`crypto/`を使う。
-   外から持ってきたcodeはkernelにはなく、唯一の例外はuser側の`wg` commandにあるMITライセンスの
-   小さなX25519(offlineで鍵を作る`genkey`用)だけ
+   ただしプロトコルの中心`wg_noise.c`は、wireguard-lwip(BSD-3-Clause)から派生したcodeで、そのことを
+   SPDXとNuttXの`LICENSE`に書いてある。だからdriverは`ALLOW_BSD_COMPONENTS`に依存する。user側の`wg` commandには
+   MITライセンスの小さなX25519(offlineで鍵を作る`genkey`用)がある
 
 ---
 
@@ -995,8 +1006,8 @@ wg show          <─ ioctl ─────── peer/status information
 **Application Binary Interface**です。ここでは、user側とkernel側がどの番号、どの構造体layoutで
 情報を交換するかという契約です。
 
-現行設計では構造体を固定長・pointerなしにしています。user側のpointerをkernelが追いかける設計は、
-address spaceの違いや不正なpointerの扱いを難しくするからです。
+現行設計では構造体を固定長・pointerなしにしています。kernelはioctlの呼び出しの間に、渡された構造体1つを読むだけです。
+user側のpointerをkernelが追いかける設計は、address spaceの違いや不正なpointerの扱いを難しくするからです。
 
 ### 10.3 秘密鍵がwrite-onlyとは
 
@@ -1008,7 +1019,7 @@ user側の設定fileが正本として秘密鍵を保持します。
 
 ## 11. 並行処理をどう安全にしたか
 
-スライド30の「driverがsocketとthreadを持つ」設計を、内側から見た章です。発表では時間の都合で
+スライド29の「driverがsocketとthreadを持つ」設計を、内側から見た章です。発表では時間の都合で
 詳しく話しませんが、質疑で聞かれやすいところです。
 
 ### 11.1 何が危険か
@@ -1100,27 +1111,29 @@ RX workerがsocket内で待っている最中に、別threadがsocketやsemaphor
 
 ---
 
-## 13. 発表に出てくる7つの落とし穴
+## 13. 発表に出てくる6つの落とし穴
 
-1〜5は第1版(apps版)で、6・7は第2版(カーネル版)で見つかったものです。どれも
+1〜4は第1版(apps版)で、5・6は第2版(カーネル版)で見つかったものです。どれも
 「浅い試験は通る。深い試験で壊れる」(スライド21)という同じ形をしています。
 
 | # | スライド | 表面上は | 実際の問題 | 学び |
 |---:|---:|---|---|---|
-| 1 | 22 | `setsockopt`が成功 | timeoutが効かず`recvfrom`が永久待ち | success returnだけを信じない |
-| 2 | 23 | detached threadを作った | launcher終了とともにthreadも終了 | detachは寿命を保証しない |
-| 3 | 24 | pingとTCP handshakeが通る | 別taskからのsendが`EBADF` | fdの所有範囲を理解する |
-| 4 | 25 | 50 ms pollingは小さな損 | 全packetが最大50 ms待ち、約10倍低速 | 性能影響を測る |
-| 5 | 26 | simで動く | 実機の小さいstackでoverflow寸前。shellのredirectで設定を保存すると実機だけ固まる | target上で資源を測る |
-| 6 | 31 | handshakeと最初のdataが通る | nonceのcounter配置が誤り、2 packet目以降失敗 | 境界値0だけで試さない |
-| 7 | 31 | FLAT/simで設定できる | kernel stack上の約6 KB配列でoverflow | 本物のbuild分離とstackサイズで試す |
+| 1 | 22 | detached threadを作った。最初の症状は`recvfrom`が戻らないこと | launcher終了とともにthreadも終了していた | detachは寿命を保証しない。最初の症状から犯人を決めつけない |
+| 2 | 23 | pingとTCP handshakeが通る | 別taskからのsendが`EBADF` | fdの所有範囲を理解する |
+| 3 | 24 | 50 ms pollingは小さな損 | 全packetが最大50 ms待ち、約10倍低速 | 性能影響を測る |
+| 4 | 25 | simで動く | 実機の小さいstackでoverflow寸前。shellのredirectで設定を保存すると実機だけ固まる | target上で資源を測る |
+| 5 | 30 | handshakeと最初のdataが通る | nonceのcounter配置が誤り、2 packet目以降失敗 | 境界値0だけで試さない |
+| 6 | 30 | FLAT/simで設定できる | kernel stack上の約6 KB配列でoverflow | 本物のbuild分離とstackサイズで試す |
 
-### 1つ目のdeadlockをもう少し
+### 1つ目をもう少し
 
-**deadlock**は、お互いを待って誰も進めなくなる状態です。受信のtimeoutが効かなかったので、次の輪が
-できました。timerが動かない → handshakeの開始要求が送られない → peerが何も返さない →
-`recvfrom`が戻らないのでtimerが動かない。設定関数が0(成功)を返しても、そのoptionが実際に効くとは
-限らない、という例です。
+最初に見えたのは「受信の`recvfrom`が戻らない → timerが動かない → handshakeの開始要求が送られない」という症状でした。
+受信のtimeout(`SO_RCVTIMEO`)が効いていないと考え、`poll`の時間制限付きの待ちに切り替えましたが、それでも何も
+送られません。本当の原因は、受信threadそのものが消えていたことでした。`pthread_detach()`は「終わったときの後片付けを
+自動にする」だけで、threadの寿命は延ばしません。threadを作った`wg` commandが終わると、そのtask groupごと
+threadも終わっていたのです。apps版は`task_create()`で独立したtaskにして直し、カーネル版ではdriver自身がthreadを
+持ちます。台本の締めのとおり、NuttXのUDPのcodeは`SO_RCVTIMEO`をちゃんと使います。最初の症状から犯人を
+決めつけたので、古い経路を試し直さなかっただけです。
 
 ### `EBADF`の話をもう少し
 
@@ -1130,21 +1143,21 @@ SYN-ACKは成功し、別taskからのdataだけ失敗したため、pingでは�
 
 第1版の修正では、fdを経由せず、NuttXの内部socket API(`psock_*()`)で`struct socket`を直接使う形に
 しました。`struct socket`はただのmemoryなので、どのtaskからでも使えます。第2版では、この
-`struct socket`をkernelのdriverが所有する形にしました(スライド24・30)。
+`struct socket`をkernelのdriverが所有する形にしました(スライド23・29)。
 
 この修正には副作用がありました。`poll`はfdを使う仕組みなので、fdをやめると`poll`も使えなくなります。
-そこで応急処置として50 msごとに確認(polling)したのが、4つ目の「約10倍遅い」の原因です(スライド25)。
+そこで応急処置として50 msごとに確認(polling)したのが、3つ目の「約10倍遅い」の原因です(スライド24)。
 本当の修正は、`psock_poll()`へのcallbackとsemaphoreによる正しい待ち方でした。
 
-### 5つ目をもう少し
+### 4つ目をもう少し
 
-スライド26には2つの話があります。1つは、shellのredirect(`wg showconf > /data/wg0.conf`のように
+スライド25には2つの話があります。1つは、shellのredirect(`wg showconf > /data/wg0.conf`のように
 出力をfileへ書く操作)で設定を保存すると、実機のflash file system(SPIFFS)でだけboardが固まったこと。
 simでは一度も再現せず、file自身を書く`wg saveconf`を足して解決しました。もう1つは受信taskの
 **stack**(関数呼び出しやlocal変数に使う、threadごとのmemory)です。受信taskは自分のstackの上で
 IP stackを呼ぶので、TCPの呼び出しの深さ全体と、すぐ返事をするpacketの暗号化までがそこに乗ります。
 既定の3072 byteは誰も測ったことのない数字で、実機で測ると94%使っていて、残りは176 byteだけでした
-**[apps・実機]**。この話は第2版で2回戻ってきます。スライド31(バグ7、kernelのstackあふれ)と、スライド32(第2版の
+**[apps・実機]**。この話は第2版で2回戻ってきます。スライド30(バグ6、kernelのstackあふれ)と、スライド31(第2版の
 受信threadをSPRESENSEで実測すると6096 byte中1472 byte **[カーネル・実機]**)です。
 
 ---
@@ -1166,7 +1179,7 @@ pingは便利ですが、確認できる範囲は狭いです。
 
 **試験は、期待する成功を確認するだけでなく、間違った実装なら失敗する形にする**必要があります。
 
-スライド33は、このうち3つを例に出します。毎回同じ秘密鍵になる問題、`down`の後にsession keyが残る問題、
+スライド32は、このうち3つを例に出します。毎回同じ秘密鍵になる問題、`down`の後にsession keyが残る問題、
 何時間もたってから出るleakです。どれも「pingが通れば気づくか?」の答えは「気づかない」で、
 **普通の試験を全部通りながら壊れている**ことがあり得ます。確かめ方は[16](#16-鍵乱数ゼロ化)と
 [15.2](#152-主な数字と正しい言い方)にあります。
@@ -1177,20 +1190,20 @@ pingは便利ですが、確認できる範囲は狭いです。
 
 ### 15.1 主な検証環境
 
-スライド32(Testing: seven places)は、どの版をどこで確かめたかを7行の表にしています。
+スライド31(Testing: seven places)は、どの版をどこで確かめたかを7行の表にしています。
 
 | 場所 | 版 | 確かめたこと | 印 |
 |---|---|---|---|
-| `sim:wireguard` | カーネル版 | errorなしでbuildできる(CIがbuildする構成) | [カーネル・sim] |
+| `sim:wireguard` | カーネル版 | errorなしでbuildできる(driverのPRがこの構成を足すので、本家のCIがdriverをbuildするようになる) | [カーネル・sim] |
 | rv-virt `knetnsh64` | カーネル版、BUILD_KERNEL | virtio-net越しにLinuxのWireGuardとtunnel。`wg`は別のprogramとして読み込まれ、system callでdriverに届く | [カーネル・QEMU] |
 | rv-virt `pnsh64` | カーネル版、BUILD_PROTECTED | MPUの分離ありでtunnelが通る。`wg`はuser側にあり、すべてのioctlが境界を越える。**ただし繰り返すと8回中2回、user spaceで例外(open)** | [カーネル・QEMU] [未解決] |
 | rv-virt `knetnsh64_smp` | カーネル版、SMP 4 CPU | 設定変更とdown/upをしながら大量のtraffic。例外なし、tunnelは復帰 | [カーネル・QEMU] |
-| SPRESENSE(実測) | カーネル版、Cortex-M4F | 負荷と40回のdown/upの前後で、heap・buffer・stackが完全に同じ。受信threadは6096 byte中1472 byte | [カーネル・実機] |
-| ESP32-S3 + SPRESENSE | カーネル版、実Wi-Fi | Windowsの公式clientとのtunnel。ESP32-S3は内蔵Wi-Fiでping 4/4、SPRESENSEはusrsock経由で6/6 | [カーネル・実機] |
+| SPRESENSE(実測) | カーネル版、FLAT、Cortex-M4F(最終rebase前) | 負荷と40回のdown/upの前後で、heap・buffer・stackが完全に同じ。受信threadは6096 byte中1472 byte | [カーネル・実機] |
+| ESP32-S3 + SPRESENSE | カーネル版、FLAT、実Wi-Fi(最終rebase前) | Windowsの公式clientとのtunnel。ESP32-S3は内蔵Wi-Fiでping 4/4、SPRESENSEはusrsock経由で6/6 | [カーネル・実機] |
 | 同じ2つのboard | apps版 v0.1.1 | LinuxとWindowsのpeer。telnet、HTTP、7 MBの転送、rekey、電源断からの復帰 | [apps・実機] |
 
-スライドの脚注のとおり、実機の試験は最後の載せ替え(upstreamへのrebase)の**前の版**で行いました。
-rebase後の版では、KERNELとSMPのtunnelを改めて走らせています。SPRESENSEの実機では、この設計の目的である
+表の版の列に書いてあるとおり、実機の試験は普通の**FLATビルド**で、最後の載せ替え(upstreamへのrebase)の**前の版**で行いました。
+KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNELとSMPのtunnelを改めて走らせています。SPRESENSEの実機では(今の台本では読み上げず、Q&Aに回した話ですが)、この設計の目的である
 「usrsockの裏で送信が詰まっている最中に設定の操作が来る」状況も強制し、問い合わせへの応答、peer更新の
 受理、停止のtimeout報告(hangしない)、再度の`down`による回収を確かめました **[カーネル・実機]**。
 実機でのIOB枯渇、送信中のWi-Fi喪失、長時間の高負荷はまだ試していません **[未解決]**(simでのIOB枯渇は
@@ -1219,8 +1232,10 @@ rebase後の版では、KERNELとSMPのtunnelを改めて走らせています�
 | 2 boardで実tunnel | native Wi-Fiとusrsockの両経路で成立 | あらゆるboardにportable |
 | PROTECTEDでtunnelが通る | QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗し、原因は未解決 | PROTECTEDで問題なく動く |
 | SMP 4 CPUで例外なし | 1つの決まった筋書きの試験で、例外なく復帰した | raceが存在しない |
-| 3回の再起動で3つの異なる鍵 | 同じ鍵を配る最悪の失敗は起きていない | 乱数の品質が良いと証明した |
-| カーネル版が実機でつながる | 両boardでWindowsの公式clientとつながった | 実機でLinuxのpeerともつないだ(Linuxとはsim/QEMU) |
+| 3回のreset(電源断ではない)で3つの異なる鍵 | 同じ鍵を配る最悪の失敗は起きていない | 乱数の品質が良いと証明した |
+| カーネル版が実機でつながる | 両boardのFLATビルドでWindowsの公式clientとつながった | 実機でLinuxのpeerともつないだ(Linuxとはsim/QEMU)、実機でKERNEL/PROTECTEDを動かした |
+| 暗号は元のまま | 暗号は1 byteも違わない。プロトコルの中心は小さな修正2つ | 「3,079行が完全に同じ」「何も変えていない」 |
+| sim の受信threadのstack最大2.5 KB | 64 bitのsimの値。ボードでは1.5 KB(1472 B) | ボードでも2.5 KB使う |
 
 「PASS」と「完全証明」は違います。試験条件と観測範囲を一緒に言うことが、技術的な誠実さです。
 
@@ -1235,9 +1250,9 @@ rebase後の版では、KERNELとSMPのtunnelを改めて走らせています�
 
 具体的には、NuttXは`/dev/urandom`の裏に**xorshift128**という方式を選べて、そのseed(乱数の種)は
 build時の設定値から来ることがあります。その経路のままのboardは、起動するたびに同じ秘密鍵を配り得ます。
-handshakeもpingもデモも通るのに、tunnelは無価値です(スライド33)。
+handshakeもpingもデモも通るのに、tunnelは無価値です(スライド32)。
 
-試験ではSPRESENSEを3回resetし、そのたびに鍵を1つ作って比べ、3つとも異なること、設定がxorshift128ではなく
+試験ではSPRESENSEを3回reset(電源を切ったのではなくresetだけ)し、そのたびに鍵を1つ作って比べ、3つとも異なること、設定がxorshift128ではなく
 entropy poolの経路であることを確認しました **[カーネル・実機]**。ただし、これは
 **暗号学的なentropy品質の認証**ではありません。
 
@@ -1261,7 +1276,7 @@ deviceを見つけ、driverのheaderから計算した位置で、秘密のfield
 
 ### 17.1 なぜhandshakeに時刻が必要か
 
-スライド34(Design choice: trust the clock?)の内容です。この発表で唯一、「試験」ではなく「判断」が
+スライド33(Design choice: trust the clock?)の内容です。この発表で唯一、「試験」ではなく「判断」が
 必要だった場所です。
 
 WireGuardのresponderは、peerごとに「今まで受理した最大のhandshake timestamp」を覚えます。同じ値や
@@ -1306,13 +1321,16 @@ sequenceDiagram
 
 RTCがなく、再起動後に時計が1970年相当へ戻るboardでは、前回より新しいtimestampを保証できません。
 最後の値をflashへ毎回保存すればよさそうですが、rekeyのたびに書くとwearが増えます。また、電源断の
-瞬間にも確実に保存されたと言えるstorage durability contractが必要です。
+瞬間にも確実に保存されたと言える書き込みの保証が必要ですが、それを手元のfile systemで確かめられませんでした。
+simのhostfsは(POSIX版では)hostの`fsync()`を呼んでその結果を捨てるので、simで「成功」した書き込みは
+電源断について何も証明しません。ボードのflash用file systemにも、信頼できる保証は見つけられませんでした
+([想定Q&A](talkscript/coc-glasgow-qa.md))。
 
 | 案 | 長所 | 問題 | 判断 |
 |---|---|---|---|
 | realtime + 起動内high-water | 単純、書込みなし | RTCなしを救えない | 採用 |
 | 毎回timestampを保存 | 分かりやすい | 頻繁なflash書込み | 不採用 |
-| 範囲を耐久的に予約 | 書込みを減らせる | durability保証が必要 | 設計済み・延期 |
+| 範囲を耐久的に予約 | 書込みを減らせる | 確かめられなかった書き込みの保証が必要 | 設計済み・延期 |
 | 起動counterを保存 | 1 boot 1回の書込み | 初期値とdurabilityが必要 | v1では不採用 |
 | 追いつくまで待つ | 実装不要 | 前回uptime分待つ | 却下 |
 
@@ -1327,11 +1345,11 @@ peer側からpacketを送るとpeerがinitiatorになり、boardはresponderと�
 | hostから時計設定 | 4.1秒でhandshake成立 |
 
 同じboard(SPRESENSE)、同じpeer、同じimageで、変えたのは時計だけです **[カーネル・実機]**。反対に、
-素朴な試験(boardをresetしてPCからping)だと16秒でtunnelが戻り、**問題を隠したまま合格してしまいます**。
+素朴な試験(boardをresetしてPCからping)だとtunnelが戻り(記録では16秒)、**問題を隠したまま合格してしまいます**。
 pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のtimestampを必要としないからです。
 
-なお、スライド34の台本に出てくる「75秒」はもう1つあります。uptimeを使っていた古い実装をsimで試したとき、
-復旧に75秒かかりました。この数字は前回のsessionが短かったからにすぎず、1か月動いていた機器なら1か月
+なお、「75秒」という数字はもう1つあります(今の台本では言いません)。uptimeを使っていた古い実装をsimで試したとき、
+復旧に75秒かかりました([tai64n-reboot.md](../upstream/tai64n-reboot.md))。この数字は前回のsessionが短かったからにすぎず、1か月動いていた機器なら1か月
 再接続できない、という話です([17.2](#172-uptimeを使うと壊れる))。上の表の「75秒待っても不成立」とは
 別の実験です。
 
@@ -1345,40 +1363,42 @@ pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のt
 ### 18.1 この発表の2つのデモ
 
 発表には、動いている様子を見せる場面が2つあります。どちらも **apps版(第1版)** です。カーネル版の
-実績は、スライド32の表で示します([15.1](#151-主な検証環境))。
+実績は、スライド31の表で示します([15.1](#151-主な検証環境))。
 
-| | 第1版の動画(スライド27) | ライブデモ(スライド36・37) |
+| | 第1版の動画(スライド26) | ライブデモ(スライド35・36) |
 |---|---|---|
 | 部 | 第4部の最後 | 第6部 |
 | 機器 | ESP32-S3 DevKit | スタックちゃん(M5Stack CoreS3、中身はESP32-S3) |
-| WireGuardの版 | apps版(v0.1.1) | apps版 |
+| WireGuardの版 | 古いapps版のbuild(NuttX 12.7.0、2026年8月16日) | apps版 v0.1.1(FLAT)。画面にもそう書いてある |
 | 相手のWireGuard | Windowsの公式client | ラップトップ(Windows)のDocker containerの中のLinux kernel WireGuard |
 | 下のネットワーク | 家のWi-Fi | スマホのテザリング |
 | VPNの中の住所 | `10.10.0.2` | `10.10.0.2`(相手は`10.10.0.1`) |
 | 見せること | telnetでログイン、command、Web server、browser | `wg show`、telnet、`ifconfig`、表情、声、tcpdump |
-| 形 | 録画(youtu.be/1kyX2av5WG4) | その場で操作(止まったらすぐ録画へ切り替える) |
+| 形 | 動画の1コマ(静止画)。本番では再生しない | その場で操作(止まったら予備の動画へ切り替える) |
 
-### 18.2 第1版の動画(スライド27)
+### 18.2 第1版の動画(スライド26)
 
-スライド27(Version 1 demo: the first video)では、第1版で何ができるかを約30秒の動画で見せます。
+スライド26(Version 1 demo: the first video)では、第1版で何ができるかを、動画の1コマ(静止画)で見せます。
+本番では再生しません。動画(youtu.be/1kyX2av5WG4)はライブデモが止まったときの予備です。動画の中の手順は次のとおりです。
 
 1. `telnet 10.10.0.2` — `wg0`越しにboardへログインする
 2. `uname -a`、`ifconfig` — commandをいくつか打つ
 3. `webserver &` — board上で小さなWeb serverを起動する
 4. browserで`http://10.10.0.2/`を開く
 
-条件も大事です。機器はESP32-S3 DevKitで、apps版(v0.1.1)です。**USBケーブルは抜いてあり**、boardは
+条件も大事です。機器はESP32-S3 DevKitで、apps版(FLAT)です。動画を撮ったのは古いapps版のbuild
+([phase4-log.md](../development/phase4-log.md)の`uname -a`:NuttX 12.7.0、2026年8月16日)です。**USBケーブルは抜いてあり**、boardは
 電源adapterだけで動いています。つまりPCとUSBでつながっていなくても、Wi-Fiとtunnelだけで操作できる、
-ということです。相手は家のWi-Fi越しの、Windowsの公式WireGuard clientです **[apps・実機]**。
+ということです。相手はWindowsの公式WireGuard clientです **[apps・実機]**。
 
 スライドの結論は「第1版でもデモには十分だった。次に、これを本物のNuttXのdriverにした」です。ここで
 第4部が終わり、第5部(カーネル版)へ進みます。**この動画はapps版なので、後のカーネル版の結果と混ぜて
-話しません。** スライド37の予備の動画とスライド44の動画も、この同じ動画です(スタックちゃんの録画では
+話しません。** スライド36の予備の動画とスライド43の動画も、この同じ動画です(スタックちゃんの録画では
 ありません)。
 
-### 18.3 デモの構成(スライド36)
+### 18.3 デモの構成(スライド35)
 
-スライド36(Demo setup: the network)は、ライブデモの配線図です。
+スライド35(Demo setup: the network)は、ライブデモの配線図です。
 
 ```text
 会場のWi-Fi(機器どうしの通信を遮断)  ← スマホ自身のインターネットはこれかモバイル回線(デモには不要)
@@ -1428,7 +1448,7 @@ UDPとしてテザリングを渡ります。
 **Docker**は、1台のPCの中に独立した小さなLinux環境(**container**)を作る道具です。ラップトップは
 Windowsですが、相手にはcontainerの中の**Linux kernelのWireGuard**を使います。このPCはWindowsの
 firewallが外からの受信を拒否し、ruleも追加できないためです(Windowsの公式clientとの接続は、
-別にスライド32で確かめています)。
+別にスライド31で確かめています)。
 
 そのため、tunnelは**PC側から張ります**。container側にスタックちゃんのendpoint([4.8](#48-endpointとallowedips))と
 25秒のPersistentKeepalive([4.9](#49-persistentkeepalive))を設定し、スタックちゃん側のpeerには
@@ -1447,15 +1467,15 @@ endpointを設定しません。スタックちゃんは、最初に届いた正
 
 スライドの結論は「スマホも会場も、見るのは暗号化されたUDPだけ。間にserverもcloudもない」です。
 
-### 18.4 デモの7つの手順(スライド37)
+### 18.4 デモの7つの手順(スライド36)
 
-スライド37(Demo: live on the StackChan)の要点は、**特別なことは何も起きない**ことです。スタックちゃんは、
+スライド36(Demo: live on the StackChan)の要点は、**特別なことは何も起きない**ことです。スタックちゃんは、
 暗号化tunnelの向こう側にある普通のコンピュータです。
 
 | 手順 | 何をするか | 何を示すか |
 |---|---|---|
 | 1. `wg show` | PC側のWireGuardの状態を見る | latest handshakeが新しい → 認証とsession確立が動いた。endpointにスタックちゃんのテザリング側の住所が見える |
-| 2. `telnet 10.10.0.2` | tunnelの中の住所へ遠隔ログイン | pingだけでなくTCPと、taskをまたぐ送信が動く(スライド24のバグが直っている) |
+| 2. `telnet 10.10.0.2` | tunnelの中の住所へ遠隔ログイン | pingだけでなくTCPと、taskをまたぐ送信が動く(スライド23のバグが直っている) |
 | 3. `ifconfig` | スタックちゃんのネットワークの口を一覧する | `wlan0`(物理)と`wg0`(VPN)の両方がある → 本当にtunnel越しにログインしている |
 | 4. `stackchan face happy` | 表情を笑顔にする | 普通のcommandで機器を操作できる |
 | 5. `stackchan say hello.wav` | PCから音声をHTTPで取ってきて再生する | 機器からPCへの通信(HTTP)も同じtunnelを通る |
@@ -1494,12 +1514,13 @@ tunnelの外ではWireGuardが暗号化しています。平文が見えるの�
 - 確認の記録([スタックちゃん実機確認](../development/stackchan-hardware-check-2026-10-08.md))も、apps版の
   WireGuardと`stackchan` appの組み合わせで行っています
 - カーネル版をスタックちゃんで動かした記録はありません。カーネル版の実機の結果は、ESP32-S3とSPRESENSEで
-  スライド32に示したものです
+  スライド31に示したものです
 
 つまり、スタックちゃんのデモは「apps版の上に作ったデモ」です。デモの目的は、利用者から見て何ができるか
 (普通のtelnet、Web、操作が暗号化tunnel越しにできる)を直感的に見せることで、それはapps版でも示せます。
-**「カーネルドライバのデモです」とは言いません。** 画面にも版は書いていないので、聞かれたら
-「スタックちゃんはapps版。カーネル版はQEMUと両ボードで確かめた(スライド32)」と答えます。
+**「カーネルドライバのデモです」とは言いません。** 今の画面には「Runs the apps version (v0.1.1), FLAT build.」と
+書いてあり、台本も「このボードはapps版で動いている。動画と同じアプリ。カーネルドライバもこのchipで動いたが
+(スライド31)、ロボットのデモはアプリの上に作ってある」と言います。
 
 ### 18.7 デモで起きうることと、画面に出さないもの
 
@@ -1509,8 +1530,8 @@ tunnelの外ではWireGuardが暗号化しています。平文が見えるの�
   原因は分かっていません。止まったら電源を入れ直して同じ手順に戻ります
 - Web serverを連続で叩くと、30回中12回しか成功しないことがある(NuttXのTCP側で接続を使い切る件。
   根本原因は未調査)。1秒間隔なら30/30なので、デモではbrowserを連打しません
-- テザリングを入れ直すとアドレスの範囲が変わることがある([18.3](#183-デモの構成スライド36))
-- ライブが止まったら、すぐ録画([18.2](#182-第1版の動画スライド27)の動画)へ切り替えます。そのときは
+- テザリングを入れ直すとアドレスの範囲が変わることがある([18.3](#183-デモの構成スライド35))
+- ライブが止まったら、すぐ録画([18.2](#182-第1版の動画スライド26)の動画)へ切り替えます。そのときは
   「同じことを以前、別のboardでやった録画です」と一言添えます
 
 画面に出さないもの:`wg showconf`の出力(秘密鍵を表示する)、PCの鍵fileの置き場所、テザリングの
@@ -1536,9 +1557,9 @@ passphrase、buildの設定(`.config`)。Wi-Fiのpassphraseはboardに保存し�
 
 ## 19. 第7部: 運用・移植性・還元・まとめ・謝辞
 
-### 19.1 運用できる形にする(スライド39)
+### 19.1 運用できる形にする(スライド38)
 
-スライド39(Running it for real)は、「デモで動く」から「置いておける」への違いを2点で示します。
+スライド38(Running it for real)は、「デモで動く」から「置いておける」への違いを2点で示します。
 
 | | 前 | 後 |
 |---|---|---|
@@ -1554,9 +1575,9 @@ build logが残ったりすると鍵も一緒に漏れます。同じfileを何�
 WireGuardの問題、LANから止まればWi-Fiやboardの問題、と切り分けられます。これは主に
 **[apps・実機]** での運用の話です。
 
-### 19.2 ほかのCPU(スライド40)
+### 19.2 ほかのCPU(スライド39)
 
-スライド40(Other CPUs)は、第3部の「OS依存を4つの関数に閉じこめる」という賭けの答え合わせです。
+スライド39(Other CPUs)は、第3部の「OS依存を4つの関数に閉じこめる」という賭けの答え合わせです。
 apps版(FLAT)は、4種類のCPUでcodeの変更なしに動きました **[apps・実機]**(simとQEMUを含む)。
 
 | CPU | どこで | 変更 | 結果 |
@@ -1568,73 +1589,64 @@ apps版(FLAT)は、4種類のCPUでcodeの変更なしに動きました **[apps
 
 **CPUアーキテクチャ**が違うと、機械語、register、関数の呼び方の約束まで違います。Cで書いたprogramは
 compilerがそれぞれの機械語に変えてくれますが、OSに依存する部分が散らばっていると、移すたびにあちこち
-直すことになります。カーネル版は、sim、rv-virt(RISC-V、QEMUのKERNEL build)、両boardの実Wi-Fiで
-確かめています。カーネル版のARM Cortex-A7(qemu-armv7a)はbuildだけで、実行はしていません。
+直すことになります。**カーネル版はこの4つの差し込み口を使わない**(時計や乱数はkernelの中で直接使う)ので、
+この確認はapps版だけのものです。カーネル版がどこで動いたかはスライド31にあります。
 
-### 19.3 本家への還元(スライド41)
+### 19.3 本家への還元(スライド40)
 
-スライド41(Giving back)は、作ったものを本家(upstream)へ返す計画です。言葉は[8.3](#83-なぜリポジトリが3つあるのか)の
+スライド40(Giving back)は、作ったものを本家(upstream)へ返す計画です。言葉は[8.3](#83-なぜリポジトリが3つあるのか)の
 fork、PR(Pull Request、「この変更を取り込んでください」という依頼)を使います。
 
 1. まず小さな`crypto:` PR — ChaCha20-Poly1305のnonceの修正だけ。WireGuardがなくてもNuttXの役に立つので先に出す
-2. 次にdriverのPR — `drivers/net/wireguard`(kernelのdevice、ABI、文書)
+2. 次にdriverのPR — `drivers/net/wireguard`(kernelのdevice、ABI、文書と、networkの中心部分への小さな変更2つ)
 3. 次にcommandのPR — `apps/system/wg`(driverと話すcommand)
 4. 設計は`dev@nuttx.apache.org`(NuttXの開発者mailing list)で公開して相談する
 
 なぜ小さく分けるのか。大きなPRは読むのが大変で、1か所に問題があると全部が止まります。crypto修正を単独の
 PRにすれば、driverが受け入れられるかどうかと関係なく、NuttXはその修正を取り込めます。
 
-**現状:** 作業は小さなPRに分けてあり、style検査(checkpatch / nxstyle)を通り、1 commitずつbuildできます。
-ただし**dev@での議論とupstreamへのPRはまだ始めていません。** 「もうPRを出した」「merge可能」とは
+**現状:** 作業は小さなPRに分けてあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
+ただし**まだsign-offしておらず、実機での再試験もしていません。何も送っていません。** 送る前に、すべてのcommitに
+本人の`Signed-off-by`と、AI toolの手を借りたことを示す`Assisted-by`の行が要り、最終的な一式は実機でもう一度
+動かす必要があります。**dev@での議論とupstreamへのPRはまだ始めていません。** 「もうPRを出した」「merge可能」とは
 言いません。台本の言葉では、Community over codeとは「仕事が本当はどこまで来ているかを正直に言い、
 reviewに変えてもらうこと」です。
 
-### 19.4 Summary(スライド42)
+### 19.4 Summary(スライド41)
 
-スライド42の題は「Summary — What I built, and three things to remember」(作ったものと、覚えておいて
+スライド41の題は「Summary — What I built, and three things to remember」(作ったものと、覚えておいて
 ほしい3つ)です。
 
 #### 「作ったもの」の1行
 
-> **Built `wg0`:** NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSEの上で、普通の
-> LinuxとWindowsのpeerとつながり、upstreamに出せるよう小さなPRに分けてある。
+> **Built `wg0`:** NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSEの上で動き、標準の
+> WireGuardのpeerと話し、upstreamに出せるよう小さなPRに分けてある。
 
 この1行には、別々の確認がまとめて入っています。分けて読むと次のとおりです。
 
 | 1行の中の言葉 | 確かめた版と場所 | 言いすぎにしないために |
 |---|---|---|
-| kernelの中の`wg0` | カーネル版(スライド29・30) | 本命はカーネル版。apps版は第1版 |
-| ESP32-S3とSPRESENSEで動く | **[カーネル・実機]** 両boardで実Wi-Fiのtunnel(スライド32) | 実機の試験はrebase前の版 |
-| 普通のLinuxとWindowsのpeer | カーネル版の実機の相手は**Windowsの公式client**。**Linux kernelのWireGuard**とはsimとQEMU **[カーネル・sim] [カーネル・QEMU]**。apps版は両boardでLinuxとWindowsの両方 **[apps・実機]** | 「カーネル版を実機でLinuxとつないだ」とは言わない |
-| 小さなPRに分けてある | 分割と検査は済み([19.3](#193-本家への還元スライド41)) | PRはまだ出していない |
+| kernelの中の`wg0` | カーネル版(スライド28・29) | 本命はカーネル版。apps版は第1版 |
+| ESP32-S3とSPRESENSEで動く | **[カーネル・実機]** 両boardのFLATビルドで実Wi-Fiのtunnel(スライド31) | 実機の試験はrebase前の版。KERNEL/PROTECTEDはQEMUだけ |
+| 標準のWireGuardのpeer | カーネル版の実機の相手は**Windowsの公式client**。**Linux kernelのWireGuard**とはsimとQEMU **[カーネル・sim] [カーネル・QEMU]**。apps版は両boardでLinuxとWindowsの両方 **[apps・実機]** | 「カーネル版を実機でLinuxとつないだ」とは言わない |
+| 小さなPRに分けてある | 分割と検査は済み([19.3](#193-本家への還元スライド40)) | PRはまだ出していない。sign-offもまだ |
 
 #### 3つの教訓
 
 1. **浅い試験は通り、深い試験は落ちる。** だから試験は深さのために設計する:長いdataの流れ、本物の
-   hardware、本物のkernel build。「handshakeが通った」だけでは足りない([13](#13-発表に出てくる7つの落とし穴)、
+   hardware、本物のkernel build。「handshakeが通った」だけでは足りない([13](#13-発表に出てくる6つの落とし穴)、
    [14](#14-なぜpingだけでは足りないのか))
-2. **きれいなOSの境界は、手間をかける価値がある。** 4種類のCPU、3つのNuttXのversion(13.0.1・master・12.7.0)、
-   変更なし。これは**apps版**の数字です([19.2](#192-ほかのcpuスライド40))
-3. **あるprojectへの移植は、そのproject自体を良くする機会になる。** 途中でNuttXに隠れていたバグを2つ
-   見つけた
+2. **きれいなOSの境界は、手間をかける価値がある。** apps版で、4種類のCPU、3つのNuttXのversion(13.0.1・master・12.7.0)、
+   codeの変更なし。これは**apps版**の数字で、カーネル版はこの4関数を使いません([19.2](#192-ほかのcpuスライド39))
+3. **あるprojectへの移植は、そのproject自体を良くする機会になる。** 途中でNuttX自身のChaCha20-Poly1305に
+   隠れていたバグ(nonceのcounterの位置、[4.6](#46-nonceとcounter)、スライド30)を見つけた。修正は単独のPRで出す予定
 
-3つ目の「2つのバグ」は次のとおりです。
+以前の版のスライドは、3つ目にSPRESENSEの起動のバグ(#9、高分解能のRTCを有効にすると手を加えていないrelease版が
+shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305のバグだけです。#9は質問されたら答える程度にします。
 
-- **NuttX自身の暗号のバグ:** ChaCha20-Poly1305のnonceのcounterの位置([4.6](#46-nonceとcounter)、スライド31)。
-  修正は単独のPRで出す予定
-- **起動のバグ(#9):** SPRESENSEで高分解能のRTC(`CONFIG_RTC_HIRES`)を有効にすると、手を加えていないNuttXのrelease版がshellまで起動しない。
-  NuttXの時間を進める仕組みの**watchdog**(決めた時間の後に関数を呼ぶtimer)が、時刻をRTCから読むように
-  なっていた。RTCが動き出す前は時計が0のまま進まないので、「RTCの起動を最後まで終わらせる」はずの
-  watchdogが永久に発火しない。鶏と卵で止まる形で、スライド22のdeadlockと同じ形です。「自分のboardの
-  imageを、手を加えていないsource(clean checkout)から作れるようにしたい」とこだわったから見つかりました
+### 19.5 謝辞(スライド42)
 
-台本は最後にもう1つ付け加えます。3つ目のバグは**自分のdriverの中**にあり、本物のkernel buildだけがそれを
-表に出しました(スライド31の6 KBの配列)。スライドの「two hidden NuttX bugs」はNuttX本体の2つで、
-3つ目はdriver側なので数え方が違います。
-
-### 19.5 謝辞(スライド43)
-
-スライド43(Thanks)は、この仕事を支えた人たちへの感謝です。
+スライド42(Thanks)は、この仕事を支えた人たちへの感謝です。
 
 | 誰に | なぜ |
 |---|---|
@@ -1646,11 +1658,11 @@ reviewに変えてもらうこと」です。
 発表の名前でもある「Community Over Code」は、「codeよりcommunity」というApacheの標語です。謝辞は
 その実践でもあります。技術的な主張はないスライドです。
 
-### 19.6 Thank you(スライド44)
+### 19.6 Thank you(スライド43)
 
-最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、[18.2](#182-第1版の動画スライド27)と同じapps版の
+最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、[18.2](#182-第1版の動画スライド26)と同じapps版の
 動画)、行き先(apache/nuttx、apache/nuttx-apps)、名前と所属、「Questions welcome.」があります。
-行き先は「Going upstream to」で、**まだ入っていません**([19.3](#193-本家への還元スライド41))。質疑応答では
+行き先は「Going upstream to」で、**まだ入っていません**([19.3](#193-本家への還元スライド40))。質疑応答では
 [想定Q&A](talkscript/coc-glasgow-qa.md)を手元に置き、数字は[15.2](#152-主な数字と正しい言い方)の
 「言ってよいこと」の範囲で答えます。
 
@@ -1662,13 +1674,13 @@ reviewに変えてもらうこと」です。
 |---|---|---|
 | 第1部 概要と背景 | 3〜10 | NuttXは小さな機器でUnixに近いnetwork programmingを可能にするRTOSで、発表者はアプリと運用の側からそこに来た |
 | 第2部 課題とアイデア | 11〜15 | 遠隔の組込み機器へ既存toolで安全に届きたい。小さく標準的なVPNを機器の上のnetdevとして置けば、各appを書き換えずに済む |
-| 第3部 計画 | 16〜18 | protocol coreを再利用し、lwIP依存のnetwork glueだけNuttXの部品へ写す |
-| 第4部 第1版 | 19〜27 | 第1版は動いたが、成功return、ping、simだけでは5つの重要な故障を見逃した |
-| 第5部 第2版(driver) | 28〜31 | driverがsocket/thread/stateを所有し、user側はioctlで設定する。kernelの深さでも同じ形のバグが2つ出た |
-| 第5部 第2版(検証) | 32〜33 | 複数build・実機・故障注入で、各主張の範囲を測った。動くtunnelだけでは鍵や資源の問題は見えない |
-| 第5部 第2版(TAI64N) | 34 | replay防止には再起動を越える時刻が必要で、RTCなしには無料の解決がない |
-| 第6部 ライブデモ | 35〜37 | 普通のtelnet・Web・操作が、普通のWireGuard peer越しに使え、外からは暗号化UDPしか見えない(apps版) |
-| 第7部 まとめ | 38〜44 | 動作だけでなく、運用、移植性、ABI、証拠、未解決範囲を公開レビューに出す。教訓は「深く試す」「境界をきれいに」「移植は本家を良くする」 |
+| 第3部 計画 | 16〜18 | 暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存のnetwork glueだけNuttXの部品へ写す |
+| 第4部 第1版 | 19〜26 | 第1版は動いたが、最初の症状、ping、simだけでは4つの重要な故障を見逃した |
+| 第5部 第2版(driver) | 27〜30 | driverがsocket/thread/stateを所有し、user側はioctlで設定する。kernelの深さでも同じ形のバグが2つ出た |
+| 第5部 第2版(検証) | 31〜32 | 複数build・実機・故障注入で、各主張の範囲を測った。動くtunnelだけでは鍵や資源の問題は見えない |
+| 第5部 第2版(TAI64N) | 33 | replay防止には再起動を越える時刻が必要で、RTCなしには無料の解決がない |
+| 第6部 ライブデモ | 34〜36 | 普通のtelnet・Web・操作が、普通のWireGuard peer越しに使え、外からは暗号化UDPしか見えない(apps版) |
+| 第7部 まとめ | 37〜43 | 動作だけでなく、運用、移植性、ABI、証拠、未解決範囲を公開レビューに出す。教訓は「深く試す」「境界をきれいに」「移植は本家を良くする」 |
 
 ---
 
@@ -1782,7 +1794,7 @@ reviewに変えてもらうこと」です。
 11. Wi-Fiに暗号(WPA2/WPA3)があるのに、なぜ機器の上のVPNが要るのか。
 12. ライブデモで、なぜ会場のWi-Fiではなくスマホのテザリングを使うのか。
 13. tcpdumpで見ると、トンネルの外と中では何が違って見えるか。
-14. スタックちゃんのデモはカーネル版か。Summaryの「LinuxとWindowsのpeer」を、カーネル版の実機について言うときの注意は何か。
+14. スタックちゃんのデモはカーネル版か。カーネル版の「実機で動いた」を言うときの注意は何か。
 
 ### 回答
 
@@ -1799,7 +1811,7 @@ reviewに変えてもらうこと」です。
 11. Wi-Fiの暗号が守るのは機器とアクセスポイントの間の一区間だけで、インターネットやルーターの中は守らないため。
 12. 会場のWi-Fiは機器どうしの通信を遮断している(client isolation)ため。スマホで2台だけの小さなnetworkを作れば、機器どうしが話せる。
 13. 外(スマホのnetwork)ではUDP 51820の暗号化された読めないbyte列だけ、中(PC側の`wg0`)では復号後のtelnetの文字が平文で見える。
-14. スタックちゃんはapps版。カーネル版が実機でつながった相手はWindowsの公式clientで、Linux kernelのWireGuardとはsimとQEMUでつないだ。
+14. スタックちゃんはapps版(v0.1.1、FLAT)。カーネル版の実機は普通のFLATビルド(最終rebase前)で、相手はWindowsの公式client。KERNEL/PROTECTEDはQEMUだけで、Linux kernelのWireGuardとはsimとQEMUでつないだ。
 
 ---
 
@@ -1823,7 +1835,7 @@ reviewに変えてもらうこと」です。
 [部ごとの学習ルート](#部ごとの学習ルート)の表を1部ずつ使います。各部の「先に読む基礎」を読み、
 [スライド別解説](coc-glasgow-slide-guide-ja.html)でその部のスライドを1枚ずつ確かめ、最後に
 [20章](#20-発表の各部で理解すべき一文)の一文を自分の言葉で言えるか試します。時間が足りなければ、
-第5部(スライド32〜34、[15](#15-検証結果の読み方)〜[17](#17-最大の未解決事項-tai64nと再起動)章)を最優先にします。
+第5部(スライド31〜33、[15](#15-検証結果の読み方)〜[17](#17-最大の未解決事項-tai64nと再起動)章)を最優先にします。
 
 ### 技術質問へ備える場合
 
@@ -1841,9 +1853,9 @@ reviewに変えてもらうこと」です。
 ## 24. 最後に覚える5文
 
 1. **NuttXに`wg0`というvirtual network deviceを追加し、既存アプリのIP packetをWireGuardで運びます。**
-2. **protocol coreは再利用し、lwIP依存部分をNuttXのnetdevとIOBへ置き換えました。**
+2. **暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存部分をNuttXのnetdevとIOBへ置き換えました。**
 3. **現行版はkernel driverがsocket、worker、protocol stateを所有し、user側の`wg`とはioctlで通信します。**
 4. **pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。PROTECTEDの間欠的な失敗のように、未解決のものは未解決と言います。**
-5. **最大の未解決はRTCのないboardの再起動後timestampで、問題は実測済みですがdurableな解決にはstorageの保証が必要です。**
+5. **最大の未解決はRTCのないboardの再起動後timestampで、問題は実測済みですが、durableな解決に必要な書き込みの保証を確かめられていません。**
 
 この5文を自分の言葉で説明できれば、発表全体の背骨は理解できています。

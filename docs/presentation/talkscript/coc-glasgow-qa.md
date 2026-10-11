@@ -35,7 +35,7 @@ FLATビルドでしか使えません。カーネル版は `drivers/net/wireguar
 upstream に出すのはカーネル版です。apps版は「動くと分かっていたものを
 土台に、どこを直せばカーネルに収まるか」を洗い出すために先に作った、
 という位置づけです。
-*Say:* "The apps version proved the protocol port and found five bugs on a
+*Say:* "The apps version proved the protocol port and found four bugs on a
 FLAT build. The kernel driver is the one going upstream — it works under
 every privilege model, not just FLAT."
 
@@ -50,9 +50,46 @@ space through a flat, pointer-free ioctl ABI, which is why it runs under
 KERNEL builds and with the MPU split of PROTECTED builds (where one
 intermittent fault is still open)."
 
+**Q. カーネルに BSD-3 のコードを入れるのか? なぜ Apache-2.0 で書き直さないのか?**
+はい、入ります。プロトコル本体の `drivers/net/wireguard/wg_noise.c` / `wg_noise.h` は
+wireguard-lwip(BSD-3-Clause、Daniel Hope)の `wireguard.c` / `wireguard.h` から派生した
+コードで、ファイル先頭の SPDX にそう書き、NuttX の `LICENSE` にも項目を足しています。
+そのため `NET_WIREGUARD` は `ALLOW_BSD_COMPONENTS` に依存します。暗号(BLAKE2s、
+ChaCha20-Poly1305、Curve25519)は NuttX 自身の `crypto/` を使っていて、コピーした
+ものではありません。クリーンルームでの書き直しは可能ですが、出自を正直に書いて
+おく方を選びました。どちらがよいかは dev@ で決めてもらうつもりです。
+*Say:* "Yes. The protocol core, wg_noise.c, is derived from wireguard-lwip under
+BSD-3-Clause. It says so in the SPDX header and in the LICENSE file, and the
+driver depends on ALLOW_BSD_COMPONENTS. The crypto is NuttX's own. A clean-room
+rewrite is possible, but I would rather keep the attribution honest, and let the
+dev list decide."
+
+**Q. マージされた後、誰が保守するのか?**
+私が保守するつもりです(この答えは本番前に本人が確かめること)。ドライバは NuttX の
+既存の部品(netdev lower half、`crypto/`、UDP ソケット)の上に作ってあり、外のコードに
+追従し続ける必要がある部分は小さくしてあります。
+*Say:* "I will maintain it. The driver is built on NuttX's own pieces — the netdev
+lower half, crypto/ and a UDP socket — so there is little outside code to follow."
+
+**Q. IPv6 は使えるのか?**
+今は IPv4 だけです。カーネル版の Kconfig は `depends on NET_UDP && NET_IPv4` で、
+トンネルの中も外も IPv4 です。IPv6 は今後の課題です。
+*Say:* "IPv4 only for now, inside and outside the tunnel. IPv6 is future work."
+
+**Q. NuttX の UDP は `SO_RCVTIMEO` を実装しているのでは?(スライド22、バグ 1/6)**
+はい、実装しています(`net/udp/udp_recvfrom.c` が `s_rcvtimeo` で待つ)。発表では、これを
+バグ 1/6(detach された pthread)の「最初の症状」として話しています: `recvfrom()` が戻らない
+のを見てこのオプションのせいだと判断し、`poll()` に替えましたが、それでも何も送られず、
+本当の原因はスレッドが `wg` コマンドと一緒に消えていたことでした。死んだスレッドも
+「`recvfrom()` が戻らない」ように見えます。`SO_RCVTIMEO` を使う古い経路は、その後
+試し直していません。
+*Say:* "Yes, it does. On the slide it is only the first symptom: I blamed the
+option, but the real cause was that the thread was gone. I have not re-tested
+the old path since."
+
 ---
 
-## 検証の範囲(スライド32・33の深掘り)
+## 検証の範囲(スライド31〜33の深掘り。読み上げから移した細部を含む)
 
 **Q. 「7つの場所で検証した」というが、実機で足りていないものは何か?**
 ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:knsh`
@@ -64,6 +101,37 @@ ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:kn
 silicon — both are scripted and ready, neither has run yet because the
 board wasn't attached this cycle. The tunnel itself on ESP32-S3 is verified;
 it's the stack/heap numbers on that specific chip that are still open."
+
+**Q. PROTECTED のメモリ配置は特別に調整したのか?(スライド31)**
+いいえ、rv-virt の protected 構成の既定のままです。カーネル側の `.text` は 209,832 B、
+ユーザー側は 21,576 B で、それぞれ 256 KB のうちカーネルが約8割、ユーザーコマンドが約8%
+を使っています。8回中2回の例外(ユーザー空間の `nxsem_wait`、タスク `wg`)は未解決で、
+分割前の候補でも9回中1回出ています。
+*Say:* "No, it is the stock protected config: the kernel uses about eighty percent of
+its part, the user command about eight percent of the other. The two-in-eight fault
+is still open."
+
+**Q. usrsock の上で、送信が詰まっている最中に制御コマンドが来たらどうなるのか?(スライド31)**
+SPRESENSE で実際に強制しました: 実際の usrsock 側でパケットが1つ止まっている間に制御
+コマンドを送ると、問い合わせには答えが返り、ピアの更新は受け付けられ、停止コマンドは
+ハングせずにタイムアウトを報告し、止まっているパケットには手を付けず、2回目の down で
+それが片付いてインターフェースが戻りました。まだ試していないのは、実機での IOB 枯渇、
+送信中の Wi-Fi 切断、長時間の高負荷です(sim での IOB 枯渇は別に PASS)。
+*Say:* "I forced it on SPRESENSE: a query answered, a peer update was accepted, stop
+reported a timeout instead of hanging, and a second down cleaned up the stuck packet.
+Not covered yet: running out of IOBs on hardware, Wi-Fi loss mid-send, long heavy
+traffic."
+
+**Q. 鍵のゼロ化は、どうやってメモリを読んだのか?(スライド32、sim)**
+シミュレータで、動いているプロセスの中から、設定した鍵に一致するものを探して
+デバイスを見つけ、ドライバ自身のヘッダーから取ったオフセットで、秘密のフィールドを
+名前で1つずつ確認しました。ハンドシェイクの材料は普通は鍵ができた直後に消えるので、
+UDP リレーで最後のハンドシェイクのメッセージを意図的に止め、それと次の鍵が埋まって
+いる瞬間をとらえて、down の後にゼロになることを確かめました(下の TZ の項も参照)。
+静的鍵は、書き込み可能なメモリ全体で前後とも1つだけです。
+*Say:* "In the simulator. I found the device by searching for the key I had set, then
+checked each secret field by name, at offsets from the driver's own headers. To catch
+the handshake state I held back the last handshake message with a UDP relay."
 
 **Q. IOB(パケットバッファ)が枯渇したらどうなるのか?**
 プールを12バッファまで絞って、トンネル越しのトラフィックと偽の
@@ -83,12 +151,15 @@ there's no wait branch to exercise. That's 'not reachable,' which is a
 better answer than 'untested.'"
 
 **Q. #14(タイムスタンプ/リプレイ)はなぜまだ open なのか、証拠が
-足りないのでは?**
+足りないのでは?(スライド33)**
 証拠が足りないからではなく、判断として open にしています。永続化した
 範囲予約という「本来の」解決策は設計済みですが、実装していません
-— NuttXには「この書き込みは電源断を越えて残る」と約束するストレージの
-契約がなく(`hostfs_sync()` はvoidの `host_sync()` を呼んでOKを返すだけ)、
-その上に作ると「解決したように見えて解決していない」ものになります。
+— 「この書き込みは電源断を越えて残る」という保証を、手元のファイルシステムで
+確かめられなかったからです。シミュレータの hostfs は(POSIX 版では)ホストの
+`fsync()` を呼んでその結果を捨てるので、そこで「成功」した書き込みは電源断について
+何も証明しません。ボードのフラッシュ用ファイルシステムにも、信頼できる保証は
+見つけられませんでした。その上に作ると「解決したように見えて解決していない」
+ものになります。
 実機で対照実験もしています: ボードには何も送らず自分自身のセッション
 だけを見ると、時計が未設定なら75秒経ってもハンドシェイクが成立せず、
 時計を設定すると4.1秒で成立する — 変数は時計だけなので、これが原因だと
@@ -98,6 +169,23 @@ needs a storage durability contract NuttX doesn't offer yet, so I won't
 ship something that only looks solved. I did measure the failure on real
 hardware with a controlled pair — clock unset, no handshake in 75 seconds;
 clock set, 4.1 seconds."
+
+**Q. 時計が未設定と分かっているのに、なぜタイムスタンプを送るのか?
+シミュレータの「75秒」とは何か?(スライド33)**
+この鍵に初めて会うピアはそのタイムスタンプを受け入れるので、送るのをやめると、
+まさに時計のないボードで最初のペアリングが壊れます。だから送り続け、警告を1回だけ
+出します。シミュレータで稼働時間ベースの古いタイムスタンプを使ったときは75秒で
+戻りましたが、この数字は誤解を招きます: デバイスは前回のセッションの最後の
+ハンドシェイクを追い越す必要があるので、切断される時間は前回動いていた時間と
+同じです。75秒なのはそのセッションが短かったからです。実機の「75秒見ていて
+ハンドシェイクなし」は観察した時間の長さで、偶然同じ数字です。また、リセット後に
+ping する素朴な試験は16秒で通ってしまいます — ping が相手側にハンドシェイクを
+始めさせ、応答する側は自分のタイムスタンプを必要としないからです。
+*Say:* "A peer that meets this key for the first time accepts it, so refusing would
+break first pairing on exactly those boards. The 75 seconds in the simulator was
+only the length of the last session; on the board, 75 seconds is how long I
+watched. And a ping after reset passes in 16 seconds, because the peer starts the
+handshake."
 
 **Q. その「TZ(鍵のゼロ化)」の検証で next_keypair やハンドシェイク状態が
 非ゼロになる瞬間は見られたのか?**
@@ -181,14 +269,16 @@ not something the driver introduced. Two-line fix, shipping as its own
 ## 性能・運用
 
 **Q. 性能は?**
-ESP32-S3 実機・実 Wi-Fi 経由で、トンネル越しの TCP スループットが約
+**これは apps 版(v0.1.1、FLAT)の数字です。** ESP32-S3 実機・実 Wi-Fi 経由で、トンネル越しの TCP スループットが約
 260 KiB/s です。7 MB の連続転送を問題なく通せています。ただしこれは
 「明らかなボトルネックを1つ潰した」段階の数字で、体系的なチューニングは
 していません。暗号処理がソフトウェア実装のままなので、そこがおそらく
-次のボトルネックです。
-*Say:* "About 260 KiB/s TCP through the tunnel on ESP32-S3 over real
-Wi-Fi, 7 MB transfers clean. That's after fixing one obvious bottleneck,
-not a tuned number — software crypto is probably next."
+次のボトルネックです。カーネルドライバのスループットはまだ測っていません
+(SPRESENSE での測定は ICMP の負荷で、スループットではありません)。
+*Say:* "That number is for the apps version: about 260 KiB/s TCP through the
+tunnel on ESP32-S3 over real Wi-Fi, 7 MB transfers clean. That's after fixing
+one obvious bottleneck, not a tuned number — software crypto is probably next.
+The kernel driver's throughput is not measured yet."
 
 **Q. 暗号処理はソフトウェア? ハードウェアアクセラレータは?**
 現状はNuttX自身のソフトウェア実装(BLAKE2s, ChaCha20-Poly1305,
@@ -275,14 +365,17 @@ task, out of scope here."
 ## バージョン依存
 
 **Q. NuttXのバージョンは何に依存しているのか?**
-していません。12.7.0とmasterの両方でビルドが通ります
+**apps 版は**していません。12.7.0とmasterの両方でビルドが通ります
 (`--build-arg NUTTX_REF=<ref>`)。masterでは`CONFIG_NSH_LINELEN`が
 `CONFIG_LINE_MAX`に改名されており、古い名前を指定してもエラーに
 ならないまま`wg set peer`の行だけが切れる、という静かな壊れ方を
 一度見つけて直しています。
-*Say:* "Builds clean on both 12.7.0 and master via a build arg. Found one
-silent breakage along the way — a renamed Kconfig symbol that truncated a
-config line without erroring — and fixed it."
+**カーネルドライバは別です:** NuttX 本体の小さな変更2つ(netdev upper half と
+ioctl 番号)が前提で、提出シリーズは master の上に載っています。
+*Say:* "The apps version builds clean on both 12.7.0 and master via a build arg.
+Found one silent breakage along the way — a renamed Kconfig symbol that truncated
+a config line without erroring — and fixed it. The kernel driver is different:
+it needs two small changes in the network core, and the series is on master."
 
 ---
 
@@ -294,5 +387,5 @@ config line without erroring — and fixed it."
   すべてこの資料で答えられるようにしてある。TZ・TIはどちらも
   もう閉じている(前者は測定、後者は「到達不能」の確認) — 古い
   資料や記憶で「まだ狭い」と言わないこと。
-- 逆にスライドに載っている数字を聞かれたら、スライド32・33・34を
+- 逆にスライドに載っている数字を聞かれたら、スライド31・32・33を
   直接指させばよい(URLハッシュ `#18` などで即座に飛べる)。
