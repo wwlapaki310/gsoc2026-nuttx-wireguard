@@ -145,7 +145,7 @@ CMake がすべて PASS(nuttx `bf6cd96143` + apps `304f6255c`)。BUILD_KERNEL/PR
 
 ### 2.4 やっていないこと
 
-- **実機(G5)**: 一度も動かしていない。§3 (b)
+- **実機(G5)**: ESP32-S3 は 2026-10-12 に `pr-latest/*`(nuttx `237b6e538e` / apps `fc640afc4`)の FLAT ビルドで取得済み([evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得。BUILD_PROTECTED / BUILD_KERNEL は実機で未確認
 - BUILD_PROTECTED の間欠 fault の原因調査(§2.3)
 - macOS(Darwin)の sim ビルドは CI にあるが試せていない。clang の `-Werror` で新しい警告が出る可能性は残る
 - 署名後の SHA での再検査。署名はメッセージしか変えないので木は同じだが、G4 は「提出する SHA で」なので、
@@ -465,7 +465,7 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | 規則 | 出典 | 本シリーズ |
 |---|---|---|
 | テンプレート(Summary / Impact / Testing / Self-Check)の**全項目**が必須 | 1.7.1 L168-170、2.3 L454-502 | **10/10 の下書きは Self-Check 節が無く、Impact が項目別でなかった → pr-drafts.md を直した** |
-| **実機 1 台以上**のビルド・実行ログが必須。QEMU は数えない(1.14 で明記) | 1.3 L76-78、1.7.2 L171-172、1.9 L230-231、1.14 L339-340 | **10/12 の SHA で実機ログは未取得**(§3 (b)) |
+| **実機 1 台以上**のビルド・実行ログが必須。QEMU は数えない(1.14 で明記) | 1.3 L76-78、1.7.2 L171-172、1.9 L230-231、1.14 L339-340 | ESP32-S3 は 10/12 の SHA で取得済み(FLAT、[evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得 |
 | 1 PR 1 機能。別機能は別 PR | 1.7.3-4 L173-176 | 5 PR に分割済み |
 | 各コミットが単独でビルド・実行・互換を壊さない | 1.7.5 L177-179 | §6.6 |
 | 束ねるしかない場合は「他に方法が無く、breaking change ではない」と明記 | 1.7.9 L184-187 | PR-K1 本文に記載 |
@@ -510,7 +510,7 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | R5 | **PR-K1 を apps master で CI にかけると sim:wireguard が FAIL**:defconfig の `CONFIG_SYSTEM_WG=y` / `CONFIG_SYSTEM_WG_CONFIG_PATH` は apps の PR-A が入るまで存在しない Kconfig 記号で、`refresh.sh` が消す。PR-K1 のマージ後・PR-A のマージ前は、sim-03 を回す他人の PR の CI も同じ理由で落ちる | build.yml(apps master を checkout)、testbuild.sh L432 | **判断待ち**(§6.5 の 2) |
 | R6 | 依存の書き方。CI は `depends-on:` 行だけを読む | depends_on.py L14-21, L52 | pr-drafts.md を直した |
 | R7 | PR テンプレートの Self-Check 節・Impact の各項目が下書きに無い | 2.3 L454-502 | pr-drafts.md を直した |
-| R8 | 実機ログ(10/12 の SHA で未取得) | 1.7.2、1.9 | 本人(§3 (b)) |
+| R8 | 実機ログ:ESP32-S3 は取得済み([evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得。署名後に SHA が変わるので、PR に貼るのは署名後の SHA で取り直したもの | 1.7.2、1.9 | 本人(§3 (b)) |
 | R9 | `wg_noise.c` は**開発が続いている** wireguard-lwip(BSD-3)由来。workflow.rst は活発なプロジェクトのコードは取り込まない、Apache-2.0 以外は望ましくない、としている | workflow.rst L44-57 | **判断待ち**(§6.5 の 3)。wireguard-lwip の最新コミットは 2026-08-14(GitHub API で確認) |
 | R10 | 会社員の場合の著作権・契約、業務用メール | workflow.rst L38-40、1.16 L365-366 | **判断待ち**(§6.5 の 4) |
 | R11 | making-changes.rst は「PR 前は通常 1 コミットに squash」と書く。本シリーズは PR 内を分けている | making-changes.rst L189-191。CONTRIBUTING 1.7.5 L177-179 は複数コミットを認める | 規則(CONTRIBUTING)上は可。レビューで squash を求められたら従う |
