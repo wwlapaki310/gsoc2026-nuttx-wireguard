@@ -265,7 +265,7 @@ them again on the day, or keep the date on the slide.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 26 — Why the Kernel: From App to Driver (18:06 → 18:53)
+## 26 — Version 2: WireGuard as a NuttX Kernel Driver (18:06 → 18:53)
 
 **On slide:** Two panels: Version 1, an app (in apps/, uses kernel internals, FLAT only, never an in-tree driver) / Version 2, a kernel driver (drivers/net/wireguard, set up by a small wg command through ioctl, made for FLAT, PROTECTED and KERNEL). One line on the three build modes.
 

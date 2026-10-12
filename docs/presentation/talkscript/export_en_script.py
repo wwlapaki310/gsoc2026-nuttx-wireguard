@@ -140,7 +140,7 @@ SLIDES = [
           "**It is the apps version.** Do not mix it with the "
           "kernel-version results later in the talk."]),
     ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
-    ("Why the Kernel: From App to Driver", "",
+    ("Version 2: WireGuard as a NuttX Kernel Driver", "",
          "Two panels: Version 1, an app (in apps/, uses kernel internals, "
          "FLAT only, never an in-tree driver) / Version 2, a kernel driver "
          "(drivers/net/wireguard, set up by a small wg command through ioctl, "
