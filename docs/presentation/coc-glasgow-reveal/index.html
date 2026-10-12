@@ -63,7 +63,8 @@
     line-height: 1.05;
     letter-spacing: .015em;
     text-transform: uppercase;}
-  .reveal .frame .slide:not(.title-slide) > .eyebrow::after {
+  .reveal .frame .slide:not(.title-slide) > .eyebrow::after,
+  .reveal .frame .slide:not(.title-slide) > h2::after {
     content: "";
     position: absolute;
     left: 0;
@@ -92,6 +93,18 @@
     line-height: 1.34;
     font-weight: 700;
     letter-spacing: 0;}
+  .reveal .frame .slide:not(.title-slide) > h2 {
+    position: relative;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 0;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: .015em;
+    text-transform: uppercase;}
   .reveal .frame h3 {
     margin-bottom: 12px;
     font-size: 25px;

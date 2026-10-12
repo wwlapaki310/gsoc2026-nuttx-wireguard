@@ -115,7 +115,8 @@
     letter-spacing: .015em;
     text-transform: uppercase;
   }
-  .slide:not(.title-slide) > .eyebrow::after {
+  .slide:not(.title-slide) > .eyebrow::after,
+  .slide:not(.title-slide) > h2::after {
     content: "";
     position: absolute;
     left: 0;
@@ -151,6 +152,19 @@
     line-height: 1.34;
     font-weight: 700;
     letter-spacing: 0;
+  }
+  .slide:not(.title-slide) > h2 {
+    position: relative;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 0;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: .015em;
+    text-transform: uppercase;
   }
   h3 {
     margin-bottom: 12px;
@@ -2435,7 +2449,6 @@ First, Alan, who told me about this conference and encouraged me to submit a tal
   </section>
   <section class="slide">
     <p class="eyebrow">Thank you</p>
-    <h2>WireGuard for Apache NuttX</h2>
     <div class="body">
       <div class="two">
         <div class="panel nx" style="display:flex;gap:22px;align-items:center">
