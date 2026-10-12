@@ -654,12 +654,13 @@
   .reveal .frame .tlv-body h3 { margin: 0 0 3px; font-size: 18px;}
   .reveal .frame .tlv-body p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.42;}
   .reveal .frame .history-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(250px, .8fr);
-    gap: 24px;
-    align-items: stretch;
-    height: 390px;}
+    position: relative;}
   .reveal .frame .history-products {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 230px;
+    height: 390px;
     display: grid;
     grid-template-rows: repeat(3, minmax(0, 1fr));
     gap: 10px;
