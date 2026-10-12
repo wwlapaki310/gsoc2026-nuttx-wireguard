@@ -997,7 +997,7 @@
     <div class="notes-src">
 Today I will talk about adding WireGuard to Apache NuttX.
 ||
-It is a WireGuard VPN that works as a network device called wg0. The tunnel runs over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the other side is always a real WireGuard program &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk, you will see the new driver running inside KERNEL and PROTECTED builds on QEMU, and in normal FLAT builds on both boards. That is the harder and more interesting half.
+It is a WireGuard VPN, a virtual private network, that works as a network device called wg0. The tunnel runs over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the other side is always a real WireGuard program &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk, you will see the new driver running inside KERNEL and PROTECTED builds on QEMU, a machine emulator, and in normal FLAT builds on both boards. That is the harder and more interesting half.
 ||
 This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it into the kernel brought out.
     </div>
@@ -1099,7 +1099,7 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
     <div class="notes-src">
 First, a little about me.
 ||
-I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, university in Sendai, and now I live in Kawasaki. Outside work, I am a hobby engineer. I build things around space, semiconductors and robots, I made DNA nanostructures at university, and I love Linux. On social media, I am the fox in this picture. I often join hackathons, I help run software conferences, and I wrote a book about open source.
+I am an engineer at Sony Semiconductor Solutions, working on edge AI: artificial intelligence that runs on the device itself. I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, university in Sendai, and now I live in Kawasaki. Outside work, I am a hobby engineer. I build things around space, semiconductors and robots, I made DNA nanostructures at university, and I love Linux. On social media, I am the fox in this picture. I often join hackathons, I help run software conferences, and I wrote a book about open source.
 ||
 My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road.
     </div>
@@ -1247,9 +1247,9 @@ Let's start with part one: an overview and the background.
     <div class="notes-src">
 Here is the whole idea in one picture.
 ||
-Apache NuttX is an RTOS that follows POSIX and has its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface. Applications see a normal interface. Under it, the encrypted data travels over a UDP socket. The other side is a real WireGuard peer &mdash; Linux, Windows, or another gateway.
+Apache NuttX is an RTOS, a real-time operating system. It follows POSIX, the Portable Operating System Interface, and it has its own TCP/IP stack: Transmission Control Protocol and Internet Protocol. It had no VPN. This project adds wg0 as a virtual network interface. Applications see a normal interface. Under it, the encrypted data travels over a UDP socket: User Datagram Protocol. The other side is a real WireGuard peer &mdash; Linux, Windows, or another gateway.
 ||
-Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work. FreeRTOS and Zephyr can run a VPN too. But on NuttX, a VPN can become a normal network device very naturally.
+Because NuttX follows POSIX and uses BSD sockets, the Berkeley style of sockets, it is a good fit for this work. FreeRTOS and Zephyr can run a VPN too. But on NuttX, a VPN can become a normal network device very naturally.
     </div>
   </section>
 
@@ -1309,7 +1309,7 @@ From June, I worked on it a little at a time. I did most of the work during the 
     <div class="notes-src">
 First, what is NuttX?
 ||
-NuttX is a real-time operating system that puts standards first. It follows the POSIX and ANSI APIs, it uses BSD sockets for networking, and it has a real file system, a shell called NSH, built-in networking and device drivers. All of this is made small enough to run on microcontrollers, from 8-bit to 64-bit. It is also a top-level project of the Apache Software Foundation, and its community develops it in the open.
+NuttX is a real-time operating system that puts standards first. It follows the POSIX and ANSI APIs, that is, the standard application programming interfaces, it uses BSD sockets for networking, and it has a real file system, a shell called NSH, the NuttShell, built-in networking and device drivers. All of this is made small enough to run on microcontrollers, from 8-bit to 64-bit. It is also a top-level project of the Apache Software Foundation, and its community develops it in the open.
 ||
 The one point I want you to remember: NuttX is a small RTOS, but you program it like Unix. That is rare. And that is why almost everything later in this talk &mdash; sockets, network devices, a POSIX-style port &mdash; is possible at all.
     </div>
@@ -1343,9 +1343,9 @@ The one point I want you to remember: NuttX is a small RTOS, but you program it 
     <div class="notes-src">
 Thirty seconds on where NuttX fits, and whether it is a toy.
 ||
-These are three good RTOSes, and each has a different focus. FreeRTOS is a small real-time kernel, on purpose, for MCU firmware and control. Zephyr is an all-in-one platform for connected devices, wearables and industrial IoT. NuttX is the Unix-like one: networking, file systems and drivers, used in drones and sensing. This is not a ranking. By GitHub stars, NuttX is the smallest of the three, and I want to say that clearly. But stars show how many developers notice a project, not how many devices use it.
+These are three good RTOSes, and each has a different focus. FreeRTOS is a small real-time kernel, on purpose, for MCU firmware, that is, microcontroller firmware, and control. Zephyr is an all-in-one platform for connected devices, wearables and industrial IoT, the Internet of Things. NuttX is the Unix-like one: networking, file systems and drivers, used in drones and sensing. This is not a ranking. By GitHub stars, NuttX is the smallest of the three, and I want to say that clearly. But stars show how many developers notice a project, not how many devices use it.
 ||
-And it is really used. Upstream, NuttX supports more than fifteen CPU architectures, more than three hundred boards, and more than fifteen hundred configurations. In real products it runs in Sony devices, PX4 flight controllers, and more than a thousand Xiaomi OpenVela products, and it flew on Japan's 2024 Moon mission. It is small next to the big ones, but it is not a toy.
+And it is really used. Upstream, NuttX supports more than fifteen CPU, or processor, architectures, more than three hundred boards, and more than fifteen hundred configurations. In real products it runs in Sony devices, PX4 flight controllers, and more than a thousand Xiaomi OpenVela products, and it flew on Japan's 2024 Moon mission. It is small next to the big ones, but it is not a toy.
     </div>
   </section>
 
@@ -1382,7 +1382,7 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
     <div class="notes-src">
 This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.
 ||
-Sony has sold audio products running NuttX since around 2015. A few years later, SPRESENSE and its CXD56xx chip added audio, GNSS, camera and multi-core support to NuttX. In 2019, Masayuki Ishikawa from Sony presented this work at Open Source Summit and Embedded Linux Conference Europe. After that, Sony engineers became major upstream contributors. One of them, Alin Jerpelea, later chaired the NuttX project management committee. His 2020 talk was called &ldquo;A Journey from Fork to Mainline.&rdquo;
+Sony has sold audio products running NuttX since around 2015. A few years later, SPRESENSE and its CXD56xx chip added audio, GNSS satellite positioning, camera and multi-core support to NuttX. In 2019, Masayuki Ishikawa from Sony presented this work at Open Source Summit and Embedded Linux Conference Europe. After that, Sony engineers became major upstream contributors. One of them, Alin Jerpelea, later chaired the NuttX project management committee. His 2020 talk was called &ldquo;A Journey from Fork to Mainline.&rdquo;
 ||
 I am not saying that one engineer made Sony choose NuttX. I have no source for that, so I will not say it. What public talks and documents do show is simpler: Sony used NuttX for many years before edge AI, and over time it spread into camera, GNSS and sensing work. My own work builds on that.
     </div>
@@ -1417,7 +1417,7 @@ I am not saying that one engineer made Sony choose NuttX. I have no source for t
     <div class="notes-src">
 That was Sony's history. This is mine. Same hardware family, but I see it from a different place.
 ||
-On SPRESENSE, I use the NuttX SDK for sensing, camera, GNSS and LTE &mdash; prototypes and embedded development, on the application side. On AITRIOS edge AI cameras, which are built with ESP32 and NuttX, my job is to set up cameras and keep them running on site, not on a desk next to a debugger.
+On SPRESENSE, I use the NuttX SDK, the software development kit, for sensing, camera, GNSS and LTE mobile networks &mdash; prototypes and embedded development, on the application side. On AITRIOS edge AI cameras, which are built with ESP32 and NuttX, my job is to set up cameras and keep them running on site, not on a desk next to a debugger.
 ||
 In both cases, I come to NuttX from the same direction: first application development, then putting the system together, then setting it up and running it. I never had to write a NuttX driver for any of that &mdash; until this project. And the question that brought me here was not &ldquo;How do I make NuttX run?&rdquo; It was &ldquo;How do I reach a NuttX device after it is installed?&rdquo;
     </div>
@@ -1513,7 +1513,7 @@ That is the background. Part two: the problem I wanted to solve, and the idea.
     <div class="notes-src">
 Now, the problem itself.
 ||
-Wi-Fi security is real, but it protects only one part of the path: the radio link between the device and the access point. Everything before that &mdash; the engineer, the Internet, the router &mdash; is outside what WPA2 or WPA3 can protect. What I needed was a secure path for the whole way, from the engineer to the device, not just the last few meters.
+Wi-Fi security is real, but it protects only one part of the path: the radio link between the device and the access point. Everything before that &mdash; the engineer, the Internet, the router &mdash; is outside what WPA2 or WPA3, the Wi-Fi security standards, can protect. What I needed was a secure path for the whole way, from the engineer to the device, not just the last few meters.
 ||
 Without that, every choice has a problem. You can give the device a public IP and hope. You can make your own secure protocol and keep it working forever. Or you can hand the connection to a vendor's cloud. The same problem appears in edge AI, industrial IoT, and remote systems in general. It is not limited to this project.
     </div>
@@ -1540,9 +1540,9 @@ Without that, every choice has a problem. You can give the device a public IP an
     <div class="notes-src">
 Before I chose WireGuard, I compared the usual ways to reach a device.
 ||
-Opening a port is easy, but then the whole Internet can reach the device. HTTPS and MQTT are what most IoT products use. The device connects out to a server, so NAT is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.
+Opening a port is easy, but then the whole Internet can reach the device. HTTPS, secure web requests, and MQTT, a small publish-and-subscribe messaging protocol, are what most IoT products use. The device connects out to a server, so NAT, network address translation, is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.
 ||
-A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours. But the last part of the path, on the LAN, is not protected. And at a customer's site, the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.
+A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours. But the last part of the path, on the LAN, the local network, is not protected. And at a customer's site, the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.
 ||
 A VPN on the device is the only row that has all three: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.
     </div>
@@ -1696,7 +1696,7 @@ Part three: the plan. How do you reuse an existing WireGuard?
     <div class="notes-src">
 Why I started from wireguard-lwip, an existing open-source WireGuard, and did not write the crypto myself.
 ||
-wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one small header file, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.
+wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS, any operating system. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one small header file, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.
 ||
 I did not have to rewrite the protocol or the crypto, and that was not luck. That is what a clean line between the protocol and the OS gives you. Because of it, this port took weeks, not months.
     </div>
@@ -1722,7 +1722,7 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
     <div class="notes-src">
 This was the most important porting decision.
 ||
-Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lwIP's network interface becomes a NuttX network driver, lwIP's packet buffers become NuttX's I/O buffers, adding an interface becomes registering a NuttX network device, and the send callback becomes NuttX's own poll. wg0 is registered as a TUN-type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.
+Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lwIP's network interface becomes a NuttX network driver, lwIP's packet buffers become NuttX's I/O buffers, adding an interface becomes registering a NuttX network device, and the send callback becomes NuttX's own poll. wg0 is registered as a TUN-type, or tunnel-type, network device, and the &ldquo;wire&rdquo; under it is a UDP socket.
     </div>
   </section>
 
@@ -1849,7 +1849,7 @@ I will tell two of them in detail, because their lessons are useful for anyone. 
     <div class="notes-src">
 This is my favorite bug in the project.
 ||
-On the same tunnel, ping was perfect, and even a TCP handshake finished &mdash; and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself &mdash; handshake replies, keepalives, ping replies, the SYN-ACK. Sends from any other task failed.
+On the same tunnel, ping was perfect, and even a TCP handshake finished &mdash; and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself &mdash; handshake replies, keepalives, ping replies, the SYN-ACK, the second step of a TCP connection. Sends from any other task failed.
 ||
 The reason: in NuttX, a file descriptor belongs to one task group. It is not shared by the whole system. The fix was to stop using file descriptors and use NuttX's internal socket API. It works on a struct socket, which is just memory, so any task can use it. That is exactly why the kernel version keeps the socket as a struct socket.
     </div>
@@ -1967,7 +1967,7 @@ Why did I move it into the kernel?
 ||
 Version one is an app. It lives in apps and reaches into socket internals of the kernel. That works in a FLAT build, where everything shares one memory space. But it can never be a proper in-tree driver, and it cannot work in PROTECTED or KERNEL builds, where apps and the kernel are kept apart.
 ||
-So I moved the device into the kernel, with the other network drivers, and a small wg command sets it up through ioctl. Version one showed that the protocol works on NuttX. Version two is about fitting NuttX itself: a normal device, in every build mode, in a shape the community can review.
+So I moved the device into the kernel, with the other network drivers, and a small wg command sets it up through ioctl, the input/output control call. Version one showed that the protocol works on NuttX. Version two is about fitting NuttX itself: a normal device, in every build mode, in a shape the community can review.
     </div>
   </section>
   <section class="slide">
@@ -2046,9 +2046,9 @@ On the way into the kernel, two more bugs came, and one of them was in NuttX its
 ||
 First, NuttX's own ChaCha20-Poly1305 wrote the counter into the wrong bytes of the nonce. When the counter is zero, both layouts are the same, so the handshake works, and then data packets after the first one fail to decrypt. Nothing in NuttX had called this code before, so nobody had hit it. It is a two-line fix, kept as its own crypto change.
 ||
-Second, a crash only in a kernel build. Setting the peers put a six-kilobyte array on a three-kilobyte kernel stack. In sim, with big stacks, it never showed up. It is the same stack lesson as bug four, one level deeper. I moved the array to the heap.
+Second, a crash only in a kernel build. Setting the peers put a six-kilobyte array on a three-kilobyte kernel stack. In the simulator, with big stacks, it never showed up. It is the same stack lesson as bug four, one level deeper. I moved the array to the heap.
 ||
-One more from the board side: on NuttX 13.0.1 and master, SPRESENSE did not boot with the high-resolution RTC option. I found the cause and fixed it locally. The report is drafted, but not sent.
+One more from the board side: on NuttX 13.0.1 and master, SPRESENSE did not boot with the high-resolution RTC, real-time clock, option. I found the cause and fixed it locally. The report is drafted, but not sent.
     </div>
   </section>
   <section class="slide">
@@ -2404,7 +2404,7 @@ First, I came to NuttX as an application user. This project took me into drivers
 ||
 Second, and I want to say this one clearly. I used AI, Claude, a lot in this project. It made research and writing code much faster. But embedded OS internals were new to me, and really understanding the design and the behavior was hard. I could not just take the code the AI wrote. I had to ask questions, read the NuttX source, test the behavior, and keep going until I could explain it myself. AI helped me code, but understanding was my job.
 ||
-Third, the community. NuttX has good documentation and contributing guides, and active technical discussion and review. It is open to AI tools, but people stay responsible: a commit says Assisted-by, and AI never adds a Signed-off-by. And CI and hackathons help new people join. Open source is not only code that is public. It grows when new people can join, learn, and contribute.
+Third, the community. NuttX has good documentation and contributing guides, and active technical discussion and review. It is open to AI tools, but people stay responsible: a commit says Assisted-by, and AI never adds a Signed-off-by. And CI, continuous integration, and hackathons help new people join. Open source is not only code that is public. It grows when new people can join, learn, and contribute.
 ||
 I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.
     </div>
@@ -2424,7 +2424,7 @@ I hope to keep contributing to Apache NuttX and the open-source community, and I
     <div class="notes-src">
 To sum up.
 ||
-I built wg0, a WireGuard network device inside the NuttX kernel. It runs on the ESP32-S3 and SPRESENSE in normal FLAT builds, and in KERNEL and PROTECTED builds on QEMU. It is prepared as small PRs, and nothing is sent upstream yet.
+I built wg0, a WireGuard network device inside the NuttX kernel. It runs on the ESP32-S3 and SPRESENSE in normal FLAT builds, and in KERNEL and PROTECTED builds on QEMU. It is prepared as small PRs, pull requests, and nothing is sent upstream yet.
 ||
 Three technical lessons. First, test beyond the handshake: long data runs, real hardware, and every build mode. Second, a clean line between your code and the OS pays off. The apps version ran on four CPU types &mdash; x86, Cortex-A7, Xtensa and Cortex-M4F &mdash; and on three NuttX versions, with no code change. Third, porting to a project is a chance to make it better: one bug was in NuttX's own crypto.
     </div>
@@ -2467,7 +2467,7 @@ First, Alan, who told me about this conference and encouraged me to submit a tal
     </div>
     <div class="num"><span class="part">PART 7 &middot; 5/5</span>40 / 40</div>
     <div class="notes-src">
-Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI, or the hardware.
+Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI, the binary interface, or the hardware.
     </div>
   </section>
 
