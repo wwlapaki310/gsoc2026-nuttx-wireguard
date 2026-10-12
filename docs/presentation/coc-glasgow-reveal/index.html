@@ -58,6 +58,7 @@
     position: relative;
     margin: 0 0 16px;
     padding-bottom: 14px;
+    border-bottom: 1px solid var(--heading-rule) !important;
     color: var(--slide-heading-color) !important;
     font-family: var(--mono);
     font-size: 38px;
@@ -67,14 +68,7 @@
     text-transform: uppercase;}
   .reveal .frame .eyebrow::after,
   .reveal .frame h2::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 112px;
-    height: 5px;
-    border-radius: 999px;
-    background: var(--heading-rule);}
+    content: none !important;}
   .reveal .frame h1,
   .reveal .frame h2,
   .reveal .frame h3,
