@@ -1799,8 +1799,8 @@ More than three thousand lines of protocol and crypto came over. The crypto came
   </section>
 
   <section class="slide">
-    <p class="eyebrow">The Testing Pattern</p>
-    <h2>Simple tests pass. Deeper tests fail.</h2>
+    <p class="eyebrow">Where it was hard</p>
+    <h2>The tunnel worked fast. The bugs took the time.</h2>
     <div class="body">
       <svg viewBox="0 0 1136 190" role="img" aria-label="A shallow test such as handshake or ping passes, leading to the assumption that area is correct, until a deeper test such as TCP, real hardware, kernel, or security fails" style="width:100%;height:auto;">
         <defs>
@@ -1827,15 +1827,15 @@ More than three thousand lines of protocol and crypto came over. The crypto came
         <text x="958" y="92" text-anchor="middle" font-size="16" font-weight="800" fill="#8d1f24">&#10007; FAIL</text>
       </svg>
       <div class="claim">
-        <p>A simple test passes. A deeper one fails.</p>
-        <small>Because the simple test passed, you trust that part and spend hours looking somewhere else. This happened again and again in this project, and not only in the apps version.</small>
+        <p>Six bugs took most of my time.</p>
+        <small>Most of them hid behind a test that passed, so I first looked in the wrong place. Four were in the apps version, two came after the move into the kernel.</small>
       </div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 2/7</span>21 / 43</div>
     <div class="notes-src">
-This is the main point of the talk.
+Now, where it was hard.
 ||
-Every hard bug in this project looked the same. A simple test passes, but a deeper one fails. Even worse, the passing test makes you believe that part is fine, so you look everywhere else for hours. The next slides are examples of this pattern &mdash; four in the apps version, and two more after I moved it into the kernel.
+The first tunnel worked quickly. Most of my time went into six bugs: four in the apps version, and two more after I moved it into the kernel. Most of them hid behind a test that passed, like a handshake or a ping, so I first looked in the wrong place. Here are the four from version one.
     </div>
   </section>
 
@@ -2068,7 +2068,7 @@ wg0 is now a lower-half network device in the kernel. It owns its UDP socket and
     </div>
     <div class="num"><span class="part">PART 5 &middot; 3/6</span>30 / 43</div>
     <div class="notes-src">
-And the same pattern came back in the kernel &mdash; twice.
+And the same kind of bug came back in the kernel &mdash; twice.
 ||
 First, a bug in NuttX's own ChaCha20-Poly1305: the counter was written into the wrong bytes of the nonce. When the counter is zero, both layouts are the same, so the handshake works, and then every data packet after the first one fails to decrypt. Simple test passes, deep test fails. Nothing in NuttX had called this code before, so nobody had hit it. It is a two-line fix, and it goes upstream as its own crypto PR. So porting to NuttX found a hidden bug in NuttX itself.
 ||
@@ -2425,7 +2425,7 @@ The work is split into small pieces: a small crypto fix that is useful on its ow
     <div class="body">
       <div class="takeaway"><b>Built</b><p><code>wg0</code>: a WireGuard network device in the NuttX kernel. It works on ESP32-S3 and SPRESENSE, talks to standard WireGuard peers, and is split into small PRs for upstream.</p></div>
       <ul class="big">
-        <li>Simple tests pass, deep tests fail <span>test deeply (long data runs, real hardware, a real kernel build), not just &ldquo;the handshake worked.&rdquo;</span></li>
+        <li>Test beyond the handshake <span>long data runs, real hardware, a real kernel build.</span></li>
         <li>A clean OS boundary pays off <span>the apps version: four CPU types, three NuttX versions, no code changes.</span></li>
         <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
       </ul>
@@ -2436,7 +2436,7 @@ To sum up.
 ||
 I built wg0, a WireGuard network device inside the NuttX kernel. It works on an ESP32-S3 and on SPRESENSE with the official Windows client, it talks to Linux kernel WireGuard in the simulator and in QEMU, and it is split into small PRs, ready for review. Nothing is sent upstream yet.
 ||
-And three things to remember. First, simple tests pass and deep tests fail &mdash; so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake. Second, a clean line between your code and the OS is worth the effort &mdash; in the apps version, four CPU types and three NuttX versions, with no code changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.
+And three things to remember. First, test beyond the handshake: long data runs, real hardware, a real kernel build. Second, a clean line between your code and the OS is worth the effort &mdash; in the apps version, four CPU types and three NuttX versions, with no code changes. Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.
     </div>
   </section>
 

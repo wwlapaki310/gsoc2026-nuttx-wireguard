@@ -114,7 +114,7 @@ SLIDES = [
          "small fixes (PATCHES.md) / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
-    ("The Testing Pattern: Simple Tests Pass, Deep Tests Fail", "",
+    ("Where It Was Hard", "",
          "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
          "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
          "security, FAIL).", []),
