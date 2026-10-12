@@ -24,6 +24,7 @@
 > **議論:** [apache/nuttx#18548](https://github.com/apache/nuttx/issues/18548)
 > **デモ:** [youtu.be/1kyX2av5WG4](https://youtu.be/1kyX2av5WG4) — telnet と Web サーバ、どちらもトンネル越し(apps 版)
 > **スライド:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html)（apps 版・9 枚）・[coc-glasgow-reveal](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html)（カーネル版・Community Over Code・公式テンプレート版。`S` で発表者ビュー）・[coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html)（同じ内容の単体版。こちらが正本）
+> **英語の台本:** [coc-glasgow-script-en.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-en.md)([PDF](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-en.pdf))— スライドごとに話す英文と時間配分・日本語版:[coc-glasgow-script-ja.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md)・想定 Q&A:[coc-glasgow-qa.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md)
 > **ゼロから理解する:** [初心者向けガイド](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-beginner-guide-ja.html)(ネットワーク・VPN・組込みOSを知らない人向けに、発表の内容を一から解説)・[スライドごとの解説](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slide-guide-ja.html)
 
 ---

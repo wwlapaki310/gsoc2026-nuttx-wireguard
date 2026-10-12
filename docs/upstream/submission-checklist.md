@@ -15,6 +15,31 @@
   AI は署名しない。`Assisted-by:` の文面は本人が決める)。§3 (a) の 1 コマンドで両方付く
 - 作者(Author)は候補と同じ `satoru akita <wwlap24@gmail.com>`。コミッターはこの PC の git 設定
 
+## 0. 他の PC で作業を続ける
+
+2026-10-12 から、提出用のブランチは fork にも置いてある(**署名前**。署名するとコミットが書き換わるので、そのときは同じ名前に `--force-with-lease` で push し直す)。
+
+| fork | ブランチ |
+|---|---|
+| [wwlapaki310/nuttx](https://github.com/wwlapaki310/nuttx) | `pr-latest/crypto-chachapoly` / `pr-latest/nxstyle-wg` / `pr-latest/wireguard-driver` / `pr-latest/doc-system-wg`(退避用 `bak/pr-latest-20261010/*`) |
+| [wwlapaki310/nuttx-apps](https://github.com/wwlapaki310/nuttx-apps) | `pr-latest/system-wg`(退避用 `bak/pr-latest-20261010/system-wg`、`bak/pr-latest-20261012/system-wg`、`bak/pr-latest-20261012b/system-wg`) |
+
+```bash
+# 3 つを同じ親フォルダに並べる(管理用のスクリプトはこの並びを前提にしている)
+git clone https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard.git
+git clone https://github.com/wwlapaki310/nuttx.git
+git clone https://github.com/wwlapaki310/nuttx-apps.git
+git -C nuttx remote add upstream https://github.com/apache/nuttx.git
+git -C nuttx-apps remote add upstream https://github.com/apache/nuttx-apps.git
+git -C nuttx fetch origin 'refs/heads/pr-latest/*:refs/heads/pr-latest/*' 'refs/heads/bak/*:refs/heads/bak/*'
+git -C nuttx-apps fetch origin 'refs/heads/pr-latest/*:refs/heads/pr-latest/*' 'refs/heads/bak/*:refs/heads/bak/*'
+git -C nuttx fetch upstream && git -C nuttx-apps fetch upstream
+```
+
+- **Windows で Docker にソースを渡すとき**は、改行を LF のままにする。`core.autocrlf=true` のまま取り出すと、ビルドが `bash` で止まる。作業用のツリーを `git worktree add` で作ったら、`git -c core.autocrlf=false -c core.eol=lf checkout-index -a -f` で取り出し直す
+- **鍵**(`%USERPROFILE%\stackchan-wg\`)、**Wi-Fi の情報**、**デモ用のファームウェア**(`%USERPROFILE%\stackchan-build\`)はリポジトリに入っていない。新しい PC では、`scripts/stackchan/wg_setup.py` を初めて動かしたときに鍵が新しく作られる。その場合は、ボード側の設定もやり直す
+- Docker のイメージは、管理用リポジトリの `Dockerfile` から作る(`README.md` の手順)。ESP32-S3 の PROTECTED 版用のブートローダーを作るには、ESP-IDF の Python の部品(`tools/requirements/requirements.core.txt`)と `IDF_COMPONENT_MANAGER=0` が要る
+
 ## 1. ブランチと PR の対応
 
 2 系統ある。**中身は同じ**で、載っている upstream だけが違う(`git range-diff` で全コミット `=`。

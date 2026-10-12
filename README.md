@@ -28,6 +28,8 @@ A WireGuard VPN implementation for [Apache NuttX](https://nuttx.apache.org/), ex
  
 > **Slides:** [short-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/short-slides.html) (apps version, 9 slides) · [coc-glasgow-reveal](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html) (in-kernel, Community Over Code, on the official CoC template; `S` for speaker view) · [coc-glasgow-slides.html](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slides.html) (same content, standalone source)
 
+> **Speaking script (English):** [coc-glasgow-script-en.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-en.md) ([PDF](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-en.pdf)) — what is said on each slide, with timings · Japanese: [coc-glasgow-script-ja.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md) · Q&A: [coc-glasgow-qa.md](https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md)
+
 > **Understand it from zero (Japanese):** [beginner guide](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-beginner-guide-ja.html) — the whole talk explained step by step for readers new to networking, VPNs and embedded OSes · [slide-by-slide guide](https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-slide-guide-ja.html)
 
 ---
