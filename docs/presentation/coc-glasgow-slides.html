@@ -1004,7 +1004,7 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
   </section>
 
   <section class="slide">
-    <h2>From Japan: I work at Sony, and I build things as a hobby.</h2>
+    <p class="eyebrow">About Me</p>
     <div class="body about">
       <div class="about-who">
         <img class="intro-avatar" src="assets/profile-avatar.jpg" alt="Satoru Akita">
@@ -1250,7 +1250,7 @@ Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work
   </section>
 
   <section class="slide">
-    <h2>From an idea in February to this talk in October.</h2>
+    <p class="eyebrow">How it started</p>
     <div class="body" style="gap:10px">
       <div class="ptl">
         <div class="ptl-ev l4 " style="left:5.19%"><b>MID FEB</b><span>Read the GSoC idea list. Started to study.</span></div><div class="ptl-ev l3 " style="left:12.59%;padding-bottom:137px"><b>EARLY MAR</b><span>Proposed the plan.</span></div><div class="ptl-ev l2 " style="left:18.15%"><b>MAR 20</b><span>Alan told me about this conference. Submitted a talk.</span></div><div class="ptl-ev l1 narrow" style="left:23.70%"><b>EARLY APR</b><span>Sent the GSoC proposal.</span></div><div class="ptl-ev l3 key" style="left:34.81%"><b>EARLY MAY</b><span>Talk accepted. GSoC proposal not selected. Kept going anyway.</span></div><div class="ptl-ev l1 right key" style="left:92.59%"><b>OCT 11&ndash;14</b><span>Glasgow &mdash; this talk.</span></div>
@@ -1338,7 +1338,7 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
   </section>
 
   <section class="slide">
-    <h2>History: NuttX at Sony, from audio to edge sensing</h2>
+    <p class="eyebrow">History: a long road with NuttX</p>
     <div class="body" style="gap:10px">
       <div class="timeline-v">
         <div class="tlv-item">
@@ -1389,7 +1389,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
   </section>
 
   <section class="slide">
-    <h2>Experience: NuttX in SPRESENSE and AITRIOS</h2>
+    <p class="eyebrow">Experience: NuttX in SPRESENSE and AITRIOS</p>
     <div class="body" style="gap:16px">
       <div class="two">
         <div class="photo-card">
@@ -1470,7 +1470,7 @@ That is the background. Part two: the problem I wanted to solve, and the idea.
   </section>
 
   <section class="slide">
-    <h2>Reaching a device from far away is hard.</h2>
+    <p class="eyebrow">Problem: Wi-Fi security stops too early</p>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 210" role="img" aria-label="Wi-Fi security protects only the last hop to the device; an authenticated path is needed all the way from the engineer to the NuttX device" style="width:100%;height:auto;">
         <text x="568" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#8d1f24">NEEDED &mdash; A SECURE PATH ALL THE WAY TO THE DEVICE</text>
@@ -1517,7 +1517,7 @@ Without that, every choice has a problem. You can give the device a public IP an
   </section>
 
   <section class="slide">
-    <h2>Other ways to reach a device &mdash; compared.</h2>
+    <p class="eyebrow">Options: MQTT, HTTP, router VPN, ...</p>
     <div class="body" style="gap:12px">
       <table class="options">
         <tr><th>Way</th><th>Who connects</th><th>Any service (telnet, web&hellip;)?</th><th>Server in the middle?</th><th>Security ends at</th><th>On NuttX today</th></tr>
@@ -1544,7 +1544,7 @@ A VPN on the device is the only row that has all three: any IP service, no serve
     </div>
   </section>
   <section class="slide">
-    <h2>Why WireGuard is a good fit.</h2>
+    <p class="eyebrow">Solution: a VPN on the device</p>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 150" role="img" aria-label="Engineer, Linux and Windows peers connect to the NuttX device through a WireGuard tunnel" style="width:100%;height:auto;">
         <rect x="40" y="40" width="330" height="70" fill="#fff" stroke="#d5dde2"></rect>
@@ -1575,7 +1575,7 @@ So I chose a standard protocol, instead of making my own or depending on a vendo
   </section>
 
   <section class="slide">
-    <h2>WireGuard on the NuttX network stack.</h2>
+    <p class="eyebrow">Architecture: where wg0 sits</p>
     <div class="body" style="gap:16px">
       <svg viewBox="0 0 900 340" role="img" aria-label="Application traffic flows down through TCP/UDP/IP, wg0, WireGuard encryption, a UDP socket, and out over wlan0 or usrsock; replies flow back up the same path" style="width:900px;height:auto;margin:0 auto;display:block;">
         <rect x="120" y="0" width="520" height="42" fill="#fff" stroke="#d5dde2"></rect>
@@ -1666,7 +1666,7 @@ Part three: the plan. How do you reuse an existing WireGuard?
   </section>
 
   <section class="slide">
-    <h2>Reusing wireguard-lwip without lwIP.</h2>
+    <p class="eyebrow">Porting: four functions to write</p>
     <div class="body">
       <div class="stack" style="gap:14px">
         <div class="fact nx" style="border-top-width:4px">
@@ -1695,7 +1695,7 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
   </section>
 
   <section class="slide">
-    <h2>Mapping lwIP onto NuttX netdev.</h2>
+    <p class="eyebrow">Design: one virtual network card</p>
     <div class="body">
       <table>
         <tr><th>Concept</th><th>lwIP</th><th>NuttX</th></tr>
@@ -1765,7 +1765,7 @@ Part four: version one, an app. It worked, and then the bugs came.
   </section>
 
   <section class="slide">
-    <h2>Version 1: WireGuard as a NuttX application</h2>
+    <p class="eyebrow">Version 1: WireGuard as a NuttX application</p>
     <div class="body">
       <table>
         <tr><th>Layer</th><th>Work needed</th><th>In this port</th></tr>
@@ -1788,7 +1788,7 @@ More than three thousand lines of protocol and crypto came over. The crypto came
   </section>
 
   <section class="slide">
-    <h2>The tunnel worked fast. Six bugs took most of the time.</h2>
+    <p class="eyebrow">Where it was hard: six bugs</p>
     <div class="body" style="gap:14px">
       <table class="options" style="font-size:17px">
         <tr><th>#</th><th>Bug</th><th>Showed up in</th><th>Lesson</th></tr>
@@ -1817,7 +1817,7 @@ I will tell two of them in detail, because their lessons are useful for anyone. 
     </div>
   </section>
   <section class="slide">
-    <h2>Bug 2/6: ping works. TCP dies.</h2>
+    <p class="eyebrow">Bug 2/6: ping works. TCP dies.</p>
     <div class="body">
       <div class="two">
         <div class="panel">
@@ -1842,7 +1842,7 @@ The reason: in NuttX, a file descriptor belongs to one task group. It is not sha
     </div>
   </section>
   <section class="slide">
-    <h2>Bug 3/6: &ldquo;No real impact&rdquo; was 10&times;.</h2>
+    <p class="eyebrow">Bug 3/6: &ldquo;No real impact&rdquo; was 10&times;.</p>
     <div class="body">
       <div class="claim">
         <p>Quick fix: check the socket every 50&nbsp;ms.</p>
@@ -1861,7 +1861,7 @@ The fix without file descriptors also broke poll, because poll works with file d
     </div>
   </section>
   <section class="slide">
-    <h2>Version one works: telnet and a web page through the tunnel.</h2>
+    <p class="eyebrow">Version 1 demo: the first video</p>
     <div class="body">
       <div class="two v1-still">
         <figure class="still"><img src="assets/demo-thumb.jpg" alt="A frame from the version 1 video: the Windows WireGuard client beside a telnet session into NuttX on an ESP32-S3"></figure>
@@ -1927,7 +1927,7 @@ That was version one. Part five, the harder half: a real kernel driver, and how 
   </section>
 
   <section class="slide">
-    <h2>Version 1 proved the protocol. Version 2 makes it a real NuttX device.</h2>
+    <p class="eyebrow">Why the kernel: from app to driver</p>
     <div class="body" style="gap:18px">
       <div class="two">
         <div class="panel" style="min-height:0">
@@ -1954,7 +1954,7 @@ So I moved the device into the kernel, with the other network drivers, and a sma
     </div>
   </section>
   <section class="slide">
-    <h2>One kernel device, set up by a small command.</h2>
+    <p class="eyebrow">The kernel design: the big picture</p>
     <div class="body" style="gap:16px">
       <svg class="route" viewBox="0 0 1136 340" role="img" aria-label="User space has only the wg command; it sends one flat ioctl struct across the user/kernel boundary to the wg0 netdev in the kernel, which owns its UDP socket, receive thread, timers and uses NuttX crypto, between the NuttX network stack and the encrypted UDP to the peer">
         <defs>
@@ -2004,7 +2004,7 @@ In the kernel, wg0 is a normal network device. It owns its UDP socket and its re
     </div>
   </section>
   <section class="slide">
-    <h2>Bugs 5 and 6: one was in NuttX itself.</h2>
+    <p class="eyebrow">Bugs 5 and 6: found in the kernel part</p>
     <div class="body">
       <div class="two">
         <div class="panel wg" style="min-height:0">
@@ -2033,7 +2033,7 @@ One more from the board side: on NuttX 13.0.1 and master, SPRESENSE did not boot
     </div>
   </section>
   <section class="slide">
-    <h2>Real boards in FLAT builds. KERNEL and PROTECTED on QEMU.</h2>
+    <p class="eyebrow">Testing: what ran where</p>
     <div class="body" style="gap:12px">
       <div class="three">
         <div class="fact nx">
@@ -2075,7 +2075,7 @@ What I have not shown is PROTECTED or KERNEL on real hardware. I tried PROTECTED
     </div>
   </section>
   <section class="slide">
-    <h2>Three problems that ping would never notice.</h2>
+    <p class="eyebrow">Testing: what ping misses</p>
     <div class="body" style="gap:20px">
       <div class="three">
         <div class="fact wg" style="padding:24px 26px">
@@ -2108,7 +2108,7 @@ Third, a long test, also in the simulator: a hundred and fifty-one forced rekeys
     </div>
   </section>
   <section class="slide">
-    <h2>The timestamp problem has no easy answer.</h2>
+    <p class="eyebrow">Design choice: trust the clock?</p>
     <div class="body" style="gap:16px">
       <p class="lead" style="max-width:100%;margin:0">Each handshake needs a newer timestamp than the peer has seen, <span class="hl">even after a reboot</span>.</p>
       <div class="two">
@@ -2185,7 +2185,7 @@ That was all engineering. Part six: what it actually looks like.
   </section>
 
   <section class="slide">
-    <h2>One tunnel, on a phone's local network.</h2>
+    <p class="eyebrow">Demo setup: the network</p>
     <div class="body" style="gap:10px">
       <svg class="route" viewBox="0 0 1136 372" role="img" aria-label="Laptop and StackChan on a phone hotspot, joined by a WireGuard tunnel">
         <defs>
@@ -2243,7 +2243,7 @@ Please watch two things: the addresses after I log in, and the packets. Outside 
     </div>
   </section>
   <section class="slide">
-    <h2>Log in through the tunnel, and talk to the robot.</h2>
+    <p class="eyebrow">Demo: live on the StackChan</p>
     <div class="body">
       <div class="two demo-layout">
         <div class="panel">
@@ -2325,7 +2325,7 @@ Last part: where the work stands, what I learned, and what to take home.
   </section>
 
   <section class="slide">
-    <h2>The Apache Way: small steps, in the open.</h2>
+    <p class="eyebrow">Giving back: where it stands</p>
     <div class="body">
       <ul class="big">
         <li>A small <code>crypto:</code> fix <span>the ChaCha20-Poly1305 nonce fix, kept apart from the driver because it is useful on its own.</span></li>
@@ -2344,7 +2344,7 @@ It is split into small pieces: a small crypto fix that is useful on its own, the
     </div>
   </section>
   <section class="slide">
-    <h2>Three things this project taught me.</h2>
+    <p class="eyebrow">What I learned</p>
     <div class="body" style="gap:18px">
       <div class="three">
         <div class="fact blue">
@@ -2384,7 +2384,7 @@ I hope to keep contributing to Apache NuttX and the open-source community, and I
     </div>
   </section>
   <section class="slide">
-    <h2>What I built, and three technical lessons.</h2>
+    <p class="eyebrow">Summary</p>
     <div class="body">
       <div class="takeaway"><b>Built</b><p><code>wg0</code>: a WireGuard network device in the NuttX kernel. It runs on ESP32-S3 and SPRESENSE (FLAT) and in KERNEL / PROTECTED builds on QEMU, with standard WireGuard peers. Prepared as small PRs; nothing sent yet.</p></div>
       <ul class="big">
@@ -2403,7 +2403,7 @@ Three technical lessons. First, test beyond the handshake: long data runs, real 
     </div>
   </section>
   <section class="slide">
-    <h2>Many people helped me get here.</h2>
+    <p class="eyebrow">Thanks: the people behind this talk</p>
     <div class="body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start;flex:0 0 auto">
         <div class="panel nx" style="min-height:0"><p><strong>Alan</strong></p><p>for telling me about this conference and encouraging me to submit a talk.</p></div>
