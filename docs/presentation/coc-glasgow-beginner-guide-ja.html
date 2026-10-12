@@ -48,7 +48,7 @@ blockquote { margin: 1em 0; padding: 0 1em; color: var(--muted); border-left: 4p
 <p>実装と試験結果の正本は、<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/in-kernel-design.md">現行設計</a>と
 <a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/verification-matrix.md">検証マトリクス</a>です。この文書は、それらを読む前の
 「やさしい地図」です。</p>
-<p>発表は<a href="coc-glasgow-slides.html">スライド</a>43枚で、7つの部に分かれています。まず
+<p>発表は<a href="coc-glasgow-slides.html">スライド</a>40枚で、7つの部に分かれています。まず
 <a href="#この発表の地図">この発表の地図</a>で全体の流れをつかみ、<a href="#部ごとの学習ルート">部ごとの学習ルート</a>で
 「その部を理解するには、この文書のどの章を読めばよいか」を確かめてください。1枚ずつの細かい解説は
 <a href="coc-glasgow-slide-guide-ja.html">スライド別解説</a>、読み上げる言葉は<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">日本語台本</a>
@@ -160,8 +160,8 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 だから発表のまとめの教訓の1つ目は「handshakeの先まで試す(長いdata、本物のhardware、本物のkernel build)」です。</p>
 <hr />
 <h2 id="この発表の地図">この発表の地図</h2>
-<p>発表は全部で43枚、7つの部に分かれています。スライド1はタイトル、スライド2は自己紹介、スライド3は目次です。部が変わる
-たびに目次のスライドに戻ってきて、今どこにいるかを示します(スライド4・11・16・19・27・34・37)。</p>
+<p>発表は全部で40枚、7つの部に分かれています。スライド1はタイトル、スライド2は自己紹介、スライド3は目次です。部が変わる
+たびに目次のスライドに戻ってきて、今どこにいるかを示します(スライド4・11・16・19・25・32・35)。</p>
 <table>
 <thead>
 <tr>
@@ -198,35 +198,35 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 <td>第4部</td>
 <td>Version 1: the app</td>
 <td>第1版(アプリ)は動いた。では「動いた」の裏に何が隠れていたか</td>
-<td>19〜26</td>
-<td style="text-align: right;">約5分</td>
+<td>19〜24</td>
+<td style="text-align: right;">約4分</td>
 </tr>
 <tr>
 <td>第5部</td>
 <td>Version 2: the kernel driver</td>
 <td>なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか</td>
-<td>27〜33</td>
-<td style="text-align: right;">約8分</td>
+<td>25〜31</td>
+<td style="text-align: right;">約7分</td>
 </tr>
 <tr>
 <td>第6部</td>
 <td>Live demo</td>
 <td>実物では、どう見えるのか</td>
-<td>34〜36</td>
+<td>32〜34</td>
 <td style="text-align: right;">約3分</td>
 </tr>
 <tr>
 <td>第7部</td>
 <td>Summary &amp; status</td>
-<td>実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか</td>
-<td>37〜43</td>
+<td>作業は今どこにあるのか。何を学んだか。何を持ち帰ればよいか</td>
+<td>35〜40</td>
 <td style="text-align: right;">約4分</td>
 </tr>
 </tbody>
 </table>
-<p>時間はスライド3の目安です(合計31分)。台本どおりに読むと合計約33分(33分06秒、デモ90秒を含む)なので、本番では
-30分枠に収まるよう削る順番(40 → 39 → 38)が<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">台本</a>に決めてあります。
-いちばん時間を使うのは第5部の検証(スライド31〜33)で、ここは削りません。</p>
+<p>時間はスライド3の目安です(合計29分)。台本どおりに読むと合計約31分(30分36秒、デモ90秒を含む)なので、本番では
+30分枠に収まるよう削る順番(36 → 24 → 23)が<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-script-ja.md">台本</a>に決めてあります。
+いちばん時間を使うのは第5部の検証(スライド29〜31)で、ここは削りません。</p>
 <h3 id="話の筋ストーリーライン">話の筋(ストーリーライン)</h3>
 <p>まず、<strong>なぜ必要か</strong>。小さな組込みOSのNuttXで作った機器は、現場に置いた後に遠くから安全に
 つなぐ方法がありませんでした(第1部・第2部)。そこで、標準のVPNであるWireGuardを、NuttXの普通の
@@ -378,10 +378,10 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 </table>
 <ul>
 <li><strong>先に読む基礎:</strong> <a href="#25-socketとは">2.5 socket</a>、<a href="#53-driver">5.3 driver</a>、<a href="#7-nuttxネットワーク用語">7.1〜7.3 netdev・upper/lower half・IOB</a></li>
-<li><strong>どこで確かめたか:</strong> 計画なので試験はありません。計画どおりだったかの答え合わせは第7部のスライド39です。</li>
+<li><strong>どこで確かめたか:</strong> 計画なので試験はありません。計画どおりだったかの答え合わせは第7部のスライド38です。</li>
 </ul>
 <h3 id="第4部-第1版-アプリ">第4部 第1版: アプリ</h3>
-<p><strong>スライド19〜26、約5分。</strong> 問い:第1版は動いた。では「動いた」の裏に何が隠れていたか。</p>
+<p><strong>スライド19〜24、約4分。</strong> 問い:第1版は動いた。では「動いた」の裏に何が隠れていたか。</p>
 <table>
 <thead>
 <tr>
@@ -400,21 +400,27 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 </tr>
 <tr>
 <td style="text-align: right;">21</td>
-<td>Where it was hard</td>
-<td>トンネルはすぐ動き、時間を使ったのは6つのバグ。多くは通った試験の陰に隠れていて、最初は違う場所を探した</td>
-<td><a href="#どこが難しかったか">0</a>、<a href="#14-なぜpingだけでは足りないのか">14</a></td>
+<td>Where it was hard: six bugs</td>
+<td>6つのバグを1枚の表に。トンネルはすぐ動き、時間を使ったのは6つのバグ。多くは通った試験の陰に隠れていて、最初は違う場所を探した</td>
+<td><a href="#どこが難しかったか">0</a>、<a href="#13-発表に出てくる6つの落とし穴">13</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">22〜25</td>
-<td>Bug 1〜4</td>
-<td>消えるスレッド(最初の症状は戻らない受信待ちで、タイムアウトの設定を疑った)、別タスクのfd、50 msのポーリング、測っていなかったスタック</td>
+<td style="text-align: right;">22</td>
+<td>Bug 2/6: ping works, TCP dies</td>
+<td>別taskからの送信が<code>EBADF</code>。fdは1つのtask groupのもの</td>
 <td><a href="#13-発表に出てくる6つの落とし穴">13</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">26</td>
+<td style="text-align: right;">23</td>
+<td>Bug 3/6: "No real impact" was 10×</td>
+<td>50 msのpollingで約10倍遅くなった。応急処置は測ってから</td>
+<td><a href="#13-発表に出てくる6つの落とし穴">13</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">24</td>
 <td>Version 1 demo</td>
 <td>第1版でtelnetとWebページがトンネル越しに使える動画の1コマ(静止画。再生しない)</td>
-<td><a href="#182-第1版の動画スライド26">18.2</a></td>
+<td><a href="#182-第1版の動画スライド24">18.2</a></td>
 </tr>
 </tbody>
 </table>
@@ -425,8 +431,8 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
   バグ4のスタック94%はESP32-S3の実機で測った値です。</li>
 </ul>
 <h3 id="第5部-第2版-カーネルドライバ">第5部 第2版: カーネルドライバ</h3>
-<p><strong>スライド27〜33、約8分。</strong> 問い:なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか。
-発表の重心はここ、特にスライド31〜33です。</p>
+<p><strong>スライド25〜31、約7分。</strong> 問い:なぜカーネルへ移したのか。正しく動くことを、どうやって確かめたのか。
+発表の重心はここ、特にスライド29〜31です。</p>
 <table>
 <thead>
 <tr>
@@ -438,39 +444,39 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">28</td>
-<td>Into the kernel</td>
-<td>第1版はFLATビルドでしか動かない。正式なドライバにするにはカーネルへ</td>
+<td style="text-align: right;">26</td>
+<td>Why the kernel</td>
+<td>第1版はFLATビルドでしか動かず、正式なドライバになれない。第2版はカーネルのdeviceにし、FLAT・PROTECTED・KERNELのどれにも合わせる</td>
 <td><a href="#75-flatprotectedkernel-build">7.5</a>、<a href="#82-2段階の開発">8.2</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">29</td>
-<td>The Kernel Design</td>
-<td>ドライバがソケットとスレッドを持つ。ポインタなしのioctl ABI。秘密鍵はwrite-only。プロトコルの中心<code>wg_noise.c</code>はwireguard-lwip由来のBSD-3のコード</td>
+<td style="text-align: right;">27</td>
+<td>The kernel design</td>
+<td>全体の絵。user側は小さな<code>wg</code> commandだけ(ポインタなしのioctl、秘密鍵はwrite-only)。kernelの<code>wg0</code>がUDPソケットと受信threadを持つ。暗号はNuttXの<code>crypto/</code></td>
 <td><a href="#85-現行driverの主なfile">8.5</a>、<a href="#10-ioctlとabi">10</a>、<a href="#11-並行処理をどう安全にしたか">11</a>、<a href="#12-起動と停止のライフサイクル">12</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">30</td>
+<td style="text-align: right;">28</td>
 <td>Bugs 5 &amp; 6</td>
-<td>NuttX自身の暗号のnonceのバグ、カーネルビルドだけで起きたスタックあふれ</td>
+<td>NuttX自身の暗号のnonceのバグ、カーネルビルドだけで起きたスタックあふれ。SPRESENSEの起動のバグ(<code>CONFIG_RTC_HIRES</code>)も1行</td>
 <td><a href="#46-nonceとcounter">4.6</a>、<a href="#13-発表に出てくる6つの落とし穴">13</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">31</td>
-<td>Testing: seven places</td>
-<td>sim、QEMUの3構成、SPRESENSEの実測、両ボードの実Wi-Fi(FLATビルド、最終rebase前)、apps版</td>
+<td style="text-align: right;">29</td>
+<td>Testing: what ran where</td>
+<td>3枚のカード:FLAT(実機)・KERNEL(QEMU)・PROTECTED(QEMU)。実機でのPROTECTED/KERNELはまだ</td>
 <td><a href="#15-検証結果の読み方">15</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">32</td>
+<td style="text-align: right;">30</td>
 <td>What ping misses</td>
 <td>毎回同じ鍵、downの後に残る鍵、時間がたってから出るリーク</td>
 <td><a href="#14-なぜpingだけでは足りないのか">14</a>、<a href="#16-鍵乱数ゼロ化">16</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">33</td>
+<td style="text-align: right;">31</td>
 <td>Design choice: trust the clock?</td>
-<td>再起動の後も新しいtimestampが要る。RTCのない機器には無料の答えがない</td>
+<td>再起動の後も新しいtimestampが要る。採用した案と、採用しなかった案</td>
 <td><a href="#17-最大の未解決事項-tai64nと再起動">17</a></td>
 </tr>
 </tbody>
@@ -484,7 +490,7 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
   <strong>#14(再起動後のtimestamp)は判断としてopen</strong> <strong>[未解決]</strong> です。</li>
 </ul>
 <h3 id="第6部-ライブデモ">第6部 ライブデモ</h3>
-<p><strong>スライド34〜36、約3分。</strong> 問い:実物では、どう見えるのか。</p>
+<p><strong>スライド32〜34、約3分。</strong> 問い:実物では、どう見えるのか。</p>
 <table>
 <thead>
 <tr>
@@ -496,16 +502,16 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">35</td>
+<td style="text-align: right;">33</td>
 <td>Demo setup</td>
 <td>会場のWi-Fiは機器どうしの通信を止めるので、スマホのテザリングで小さなネットワークを作る</td>
-<td><a href="#183-デモの構成スライド35">18.3</a></td>
+<td><a href="#183-デモの構成スライド33">18.3</a></td>
 </tr>
 <tr>
-<td style="text-align: right;">36</td>
+<td style="text-align: right;">34</td>
 <td>Demo</td>
 <td>telnetでログインし、顔を変え、声を出させ、tcpdumpでトンネルの外と中を比べる</td>
-<td><a href="#184-デモの7つの手順スライド36">18.4</a>、<a href="#185-tcpdumpでトンネルの外と中を見比べる">18.5</a></td>
+<td><a href="#184-デモの7つの手順スライド34">18.4</a>、<a href="#185-tcpdumpでトンネルの外と中を見比べる">18.5</a></td>
 </tr>
 </tbody>
 </table>
@@ -517,7 +523,7 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
   (<a href="#186-なぜライブデモはapps版なのか">18.6</a>)。</li>
 </ul>
 <h3 id="第7部-まとめと現状">第7部 まとめと現状</h3>
-<p><strong>スライド37〜43、約4分。</strong> 問い:実際に運用するには。作業は今どこにあるのか。何を持ち帰ればよいか。</p>
+<p><strong>スライド35〜40、約4分。</strong> 問い:作業は今どこにあるのか。何を学んだか。何を持ち帰ればよいか。</p>
 <table>
 <thead>
 <tr>
@@ -529,47 +535,41 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 </thead>
 <tbody>
 <tr>
+<td style="text-align: right;">36</td>
+<td>Giving back: where it stands</td>
+<td>crypto修正・ドライバ・コマンドの小さなPRとして準備済み。一式はESP32-S3のFLATで動いた。sign-offはまだで、何も送っていない</td>
+<td><a href="#193-本家への還元スライド36">19.3</a>、<a href="#83-なぜリポジトリが3つあるのか">8.3</a></td>
+</tr>
+<tr>
+<td style="text-align: right;">37</td>
+<td>What I learned</td>
+<td>アプリの利用者からOSの貢献者へ。AIはコードを助けたが、理解は自分の仕事。新しい人とAI toolに開かれたコミュニティ</td>
+<td><a href="#197-what-i-learnedスライド37">19.7</a></td>
+</tr>
+<tr>
 <td style="text-align: right;">38</td>
-<td>Running it for real</td>
-<td>鍵は動作中に作って設定する。4つの層を毎分確かめ、どこが落ちたかを言えるようにする</td>
-<td><a href="#191-運用できる形にするスライド38">19.1</a></td>
+<td>Summary</td>
+<td>作ったもの(<code>wg0</code>)の1行と、3つの技術の教訓</td>
+<td><a href="#194-summaryスライド38">19.4</a>、<a href="#192-ほかのcpuスライド38の教訓2">19.2</a></td>
 </tr>
 <tr>
 <td style="text-align: right;">39</td>
-<td>Other CPUs</td>
-<td>4つの関数に閉じこめた賭けは当たった。apps版は4種類のCPUで変更なしに動いた。カーネル版はこの4つを使わない</td>
-<td><a href="#192-ほかのcpuスライド39">19.2</a></td>
+<td>Thanks</td>
+<td>Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝</td>
+<td><a href="#195-謝辞スライド39">19.5</a></td>
 </tr>
 <tr>
 <td style="text-align: right;">40</td>
-<td>Giving back: where it stands</td>
-<td>crypto修正・ドライバ・コマンドの小さな単位に手元で分けてある。sign-offも実機での再試験もまだで、何も送っていない</td>
-<td><a href="#193-本家への還元スライド40">19.3</a>、<a href="#83-なぜリポジトリが3つあるのか">8.3</a></td>
-</tr>
-<tr>
-<td style="text-align: right;">41</td>
-<td>Summary</td>
-<td>作ったもの(<code>wg0</code>)の1行と、3つの教訓</td>
-<td><a href="#194-summaryスライド41">19.4</a></td>
-</tr>
-<tr>
-<td style="text-align: right;">42</td>
-<td>Thanks</td>
-<td>Alan、NuttXコミュニティ、ASFとCoCの運営、ソニーのNuttX開発者への感謝</td>
-<td><a href="#195-謝辞スライド42">19.5</a></td>
-</tr>
-<tr>
-<td style="text-align: right;">43</td>
 <td>Thank you</td>
-<td>質疑応答へ</td>
-<td><a href="#196-thank-youスライド43">19.6</a></td>
+<td>質疑応答へ(GitHubのリポジトリのQRコード)</td>
+<td><a href="#196-thank-youスライド40">19.6</a></td>
 </tr>
 </tbody>
 </table>
 <ul>
 <li><strong>先に読む基礎:</strong> <a href="#83-なぜリポジトリが3つあるのか">8.3 リポジトリ</a>、<a href="#152-主な数字と正しい言い方">15.2 正しい言い方</a></li>
-<li><strong>どこで確かめたか:</strong> スライド38・39は主に <strong>[apps・実機]</strong>。スライド41の「作ったもの」の1行は、
-  版と相手ごとに分けて読みます(<a href="#194-summaryスライド41">19.4</a>)。</li>
+<li><strong>どこで確かめたか:</strong> スライド36の一式の動作は <strong>[カーネル・実機]</strong>(ESP32-S3、FLAT)。スライド38の教訓2は <strong>[apps・実機]</strong>。スライド38の「作ったもの」の1行は、
+  版と相手ごとに分けて読みます(<a href="#194-summaryスライド38">19.4</a>)。</li>
 </ul>
 <hr />
 <h2 id="1-どこまで知っていればよいか">1. どこまで知っていればよいか</h2>
@@ -658,10 +658,10 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
 VPN内のネットワーク: wg0 = 10.11.0.2
 </code></pre>
 <p><code>wlan0</code>は現実のWi-Fi装置、<code>wg0</code>はソフトウェアで作った仮想装置です。</p>
-<p>上の数字は説明用の例です(VPN側の<code>10.11.0.2</code>は、スライド35に点線で出てくるSPRESENSEの<code>wg0</code>と
+<p>上の数字は説明用の例です(VPN側の<code>10.11.0.2</code>は、スライド33に点線で出てくるSPRESENSEの<code>wg0</code>と
 同じ値)。発表のライブデモ(スタックちゃん)では、<code>wlan0</code>は
 スマホのテザリングが配るアドレス、<code>wg0</code>は<code>10.10.0.2</code>(相手のPC側は<code>10.10.0.1</code>)です。どちらの例でも
-「物理の住所」と「VPNの中の住所」の2つを持つ、という形は同じです(<a href="#183-デモの構成スライド35">18.3</a>)。</p>
+「物理の住所」と「VPNの中の住所」の2つを持つ、という形は同じです(<a href="#183-デモの構成スライド33">18.3</a>)。</p>
 <h3 id="22-ポート番号は建物の受付番号">2.2 ポート番号は建物の受付番号</h3>
 <p>1台の機器では、Webサーバー、SSH、DNSなど複数の通信が動きます。IPアドレスが建物の住所なら、
 ポート番号は「どの窓口に届けるか」を示す番号です。</p>
@@ -988,7 +988,7 @@ WireGuardのtransport packetでは、増加するcounterがnonceに使われま�
 packet 2 → counter 1
 packet 3 → counter 2
 </code></pre>
-<p>今回見つけたNuttXのChaCha20-Poly1305バグ(スライド30)では、counterをnonceの誤った位置に入れていました。
+<p>今回見つけたNuttXのChaCha20-Poly1305バグ(スライド28)では、counterをnonceの誤った位置に入れていました。
 counter 0だけは正しい配置と誤った配置が偶然同じになるため、<strong>最初のデータパケットだけ通り、
 2つ目以降が失敗</strong>しました。handshakeという「通った試験」の陰にバグが隠れていた代表例です。</p>
 <h3 id="47-replay-attack">4.7 replay attack</h3>
@@ -1299,7 +1299,7 @@ GS2200M Wi-Fi moduleとの通信にこの経路を使います。</p>
 </tbody>
 </table>
 <p>最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。現行版(提出候補として小さく分けてある方)はdriverを
-kernel側へ移し、user側の<code>wg</code> commandとはioctlで通信します(スライド28)。</p>
+kernel側へ移し、user側の<code>wg</code> commandとはioctlで通信します(スライド26)。</p>
 <p>現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました <strong>[カーネル・QEMU]</strong>。PROTECTED buildも
 QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていました。
 原因は<code>wg</code> commandのstackあふれです。PROTECTEDではsystem callが呼び出し側のuser stackの上で動くので、
@@ -1366,8 +1366,8 @@ NuttXの通常のnetdevとして見せる:      する
 </tr>
 <tr>
 <td>発表での位置</td>
-<td>第4部(スライド19〜26)と、第6部のライブデモ</td>
-<td>第5部(スライド27〜33)</td>
+<td>第4部(スライド19〜24)と、第6部のライブデモ</td>
+<td>第5部(スライド25〜31)</td>
 </tr>
 </tbody>
 </table>
@@ -1553,7 +1553,7 @@ NuttX向けに置き換えた部分
 </tr>
 </tbody>
 </table>
-<p>スライド29(The Kernel Design)は、この形を4つの点でまとめます。</p>
+<p>スライド27(The Kernel Design)は、この形を4つの点でまとめます。</p>
 <ol>
 <li><strong>kernelのnetdev:</strong> driverがUDPソケット、受信thread、timer、cookieを自分で持つ。だから第1版の
    「起動したcommandが終わるとthreadも死ぬ」「fdが別taskから使えない」という問題は、設計上起きない</li>
@@ -1635,7 +1635,7 @@ user側のpointerをkernelが追いかける設計は、address spaceの違い�
 user側の設定fileが正本として秘密鍵を保持します。</p>
 <hr />
 <h2 id="11-並行処理をどう安全にしたか">11. 並行処理をどう安全にしたか</h2>
-<p>スライド29の「driverがsocketとthreadを持つ」設計を、内側から見た章です。発表では時間の都合で
+<p>スライド27の「driverがsocketとthreadを持つ」設計を、内側から見た章です。発表では時間の都合で
 詳しく話しませんが、質疑で聞かれやすいところです。</p>
 <h3 id="111-何が危険か">11.1 何が危険か</h3>
 <p>次の処理は同時に起こり得ます。</p>
@@ -1699,7 +1699,7 @@ loopで最大16 datagramまでというbudgetを持ちます。</p>
 <code>down</code>したときに回収します。失敗を隠して危険なcleanupを続けない設計です。</p>
 <hr />
 <h2 id="13-発表に出てくる6つの落とし穴">13. 発表に出てくる6つの落とし穴</h2>
-<p>1〜4は第1版(apps版)で、5・6は第2版(カーネル版)で見つかったものです。スライド21(Where it was hard)の
+<p>1〜4は第1版(apps版)で、5・6は第2版(カーネル版)で見つかったものです。スライド21はこの6つを1枚の表にまとめ、2と3だけを次の2枚(22・23)で詳しく話します。1と4は表の1行と台本だけで、5と6はスライド28です。スライド21(Where it was hard)の
 とおり、トンネルが動いた後、時間の大半はこの6つに使いました。多くは通った試験の陰に隠れていて、最初は違う場所を探しました。</p>
 <table>
 <thead>
@@ -1714,42 +1714,42 @@ loopで最大16 datagramまでというbudgetを持ちます。</p>
 <tbody>
 <tr>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">22</td>
+<td style="text-align: right;">21</td>
 <td>detached threadを作った。最初の症状は<code>recvfrom</code>が戻らないこと</td>
 <td>launcher終了とともにthreadも終了していた</td>
 <td>detachは寿命を保証しない。最初の症状から犯人を決めつけない</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">23</td>
+<td style="text-align: right;">22</td>
 <td>pingとTCP handshakeが通る</td>
 <td>別taskからのsendが<code>EBADF</code></td>
 <td>fdの所有範囲を理解する</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">24</td>
+<td style="text-align: right;">23</td>
 <td>50 ms pollingは小さな損</td>
 <td>全packetが最大50 ms待ち、約10倍低速</td>
 <td>性能影響を測る</td>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">25</td>
+<td style="text-align: right;">21</td>
 <td>simで動く</td>
 <td>実機の小さいstackでoverflow寸前。shellのredirectで設定を保存すると実機だけ固まる</td>
 <td>target上で資源を測る</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">30</td>
+<td style="text-align: right;">28</td>
 <td>handshakeと最初のdataが通る</td>
 <td>nonceのcounter配置が誤り、2 packet目以降失敗</td>
 <td>境界値0だけで試さない</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
-<td style="text-align: right;">30</td>
+<td style="text-align: right;">28</td>
 <td>FLAT/simで設定できる</td>
 <td>kernel stack上の約6 KB配列でoverflow</td>
 <td>本物のbuild分離とstackサイズで試す</td>
@@ -1770,18 +1770,18 @@ threadも終わっていたのです。apps版は<code>task_create()</code>で�
 SYN-ACKは成功し、別taskからのdataだけ失敗したため、pingでは見抜けませんでした。</p>
 <p>第1版の修正では、fdを経由せず、NuttXの内部socket API(<code>psock_*()</code>)で<code>struct socket</code>を直接使う形に
 しました。<code>struct socket</code>はただのmemoryなので、どのtaskからでも使えます。第2版では、この
-<code>struct socket</code>をkernelのdriverが所有する形にしました(スライド23・29)。</p>
+<code>struct socket</code>をkernelのdriverが所有する形にしました(スライド22・27)。</p>
 <p>この修正には副作用がありました。<code>poll</code>はfdを使う仕組みなので、fdをやめると<code>poll</code>も使えなくなります。
-そこで応急処置として50 msごとに確認(polling)したのが、3つ目の「約10倍遅い」の原因です(スライド24)。
+そこで応急処置として50 msごとに確認(polling)したのが、3つ目の「約10倍遅い」の原因です(スライド23)。
 本当の修正は、<code>psock_poll()</code>へのcallbackとsemaphoreによる正しい待ち方でした。</p>
 <h3 id="4つ目をもう少し">4つ目をもう少し</h3>
-<p>スライド25には2つの話があります。1つは、shellのredirect(<code>wg showconf &gt; /data/wg0.conf</code>のように
+<p>スライド21には2つの話があります。1つは、shellのredirect(<code>wg showconf &gt; /data/wg0.conf</code>のように
 出力をfileへ書く操作)で設定を保存すると、実機のflash file system(SPIFFS)でだけboardが固まったこと。
 simでは一度も再現せず、file自身を書く<code>wg saveconf</code>を足して解決しました。もう1つは受信taskの
 <strong>stack</strong>(関数呼び出しやlocal変数に使う、threadごとのmemory)です。受信taskは自分のstackの上で
 IP stackを呼ぶので、TCPの呼び出しの深さ全体と、すぐ返事をするpacketの暗号化までがそこに乗ります。
 既定の3072 byteは誰も測ったことのない数字で、実機で測ると94%使っていて、残りは176 byteだけでした
-<strong>[apps・実機]</strong>。この話は第2版で2回戻ってきます。スライド30(バグ6、kernelのstackあふれ)と、スライド31(第2版の
+<strong>[apps・実機]</strong>。この話は第2版で2回戻ってきます。スライド28(バグ6、kernelのstackあふれ)と、スライド29(第2版の
 受信threadをSPRESENSEで実測すると6096 byte中1472 byte <strong>[カーネル・実機]</strong>)です。</p>
 <hr />
 <h2 id="14-なぜpingだけでは足りないのか">14. なぜpingだけでは足りないのか</h2>
@@ -1829,14 +1829,14 @@ IP stackを呼ぶので、TCPの呼び出しの深さ全体と、すぐ返事を
 </tbody>
 </table>
 <p><strong>試験は、期待する成功を確認するだけでなく、間違った実装なら失敗する形にする</strong>必要があります。</p>
-<p>スライド32は、このうち3つを例に出します。毎回同じ秘密鍵になる問題、<code>down</code>の後にsession keyが残る問題、
+<p>スライド30は、このうち3つを例に出します。毎回同じ秘密鍵になる問題、<code>down</code>の後にsession keyが残る問題、
 何時間もたってから出るleakです。どれも「pingが通れば気づくか?」の答えは「気づかない」で、
 <strong>普通の試験を全部通りながら壊れている</strong>ことがあり得ます。確かめ方は<a href="#16-鍵乱数ゼロ化">16</a>と
 <a href="#152-主な数字と正しい言い方">15.2</a>にあります。</p>
 <hr />
 <h2 id="15-検証結果の読み方">15. 検証結果の読み方</h2>
 <h3 id="151-主な検証環境">15.1 主な検証環境</h3>
-<p>スライド31(Testing: seven places)は、どの版をどこで確かめたかを7行の表にしています。</p>
+<p>スライド29(Testing: what ran where)は、どの版をどのビルドで確かめたかを3枚のカード(FLAT・実機 / KERNEL・QEMU / PROTECTED・QEMU)にしています。下の表は、そのカードの中身を行に分けたものです。2026-10-12には、upstream向けに用意した一式そのものを、スタックちゃんの中のESP32-S3(FLAT)で動かし、Linux kernelのWireGuardとhandshake、両方向のping、最大のpacket sizeまで確かめました <strong>[カーネル・実機]</strong>。実機でのPROTECTED/KERNELはまだです(CoreS3でPROTECTEDを試したが、このboardはbootloaderを使うimageがどれも起動しない。WireGuardの問題ではない)。</p>
 <table>
 <thead>
 <tr>
@@ -2019,7 +2019,7 @@ KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNEL�
 同じseedから同じ列を作るsoftware PRNG経路があり得るため、driverは適切なrandom sourceを要求します。</p>
 <p>具体的には、NuttXは<code>/dev/urandom</code>の裏に<strong>xorshift128</strong>という方式を選べて、そのseed(乱数の種)は
 build時の設定値から来ることがあります。その経路のままのboardは、起動するたびに同じ秘密鍵を配り得ます。
-handshakeもpingもデモも通るのに、tunnelは無価値です(スライド32)。</p>
+handshakeもpingもデモも通るのに、tunnelは無価値です(スライド30)。</p>
 <p>試験ではSPRESENSEを3回reset(電源を切ったのではなくresetだけ)し、そのたびに鍵を1つ作って比べ、3つとも異なること、設定がxorshift128ではなく
 entropy poolの経路であることを確認しました <strong>[カーネル・実機]</strong>。ただし、これは
 <strong>暗号学的なentropy品質の認証</strong>ではありません。</p>
@@ -2036,7 +2036,7 @@ deviceを見つけ、driverのheaderから計算した位置で、秘密のfield
 <hr />
 <h2 id="17-最大の未解決事項-tai64nと再起動">17. 最大の未解決事項: TAI64Nと再起動</h2>
 <h3 id="171-なぜhandshakeに時刻が必要か">17.1 なぜhandshakeに時刻が必要か</h3>
-<p>スライド33(Design choice: trust the clock?)の内容です。この発表で唯一、「試験」ではなく「判断」が
+<p>スライド31(Design choice: trust the clock?)の内容です。この発表で唯一、「試験」ではなく「判断」が
 必要だった場所です。</p>
 <p>WireGuardのresponderは、peerごとに「今まで受理した最大のhandshake timestamp」を覚えます。同じ値や
 古い値が来たら、録画された古いhandshakeかもしれないので捨てます。</p>
@@ -2149,13 +2149,13 @@ pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のt
 <h2 id="18-デモで何を見せているのか">18. デモで何を見せているのか</h2>
 <h3 id="181-この発表の2つのデモ">18.1 この発表の2つのデモ</h3>
 <p>発表には、動いている様子を見せる場面が2つあります。どちらも <strong>apps版(第1版)</strong> です。カーネル版の
-実績は、スライド31の表で示します(<a href="#151-主な検証環境">15.1</a>)。</p>
+実績は、スライド29の表で示します(<a href="#151-主な検証環境">15.1</a>)。</p>
 <table>
 <thead>
 <tr>
 <th></th>
-<th>第1版の動画(スライド26)</th>
-<th>ライブデモ(スライド35・36)</th>
+<th>第1版の動画(スライド24)</th>
+<th>ライブデモ(スライド33・34)</th>
 </tr>
 </thead>
 <tbody>
@@ -2201,8 +2201,8 @@ pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のt
 </tr>
 </tbody>
 </table>
-<h3 id="182-第1版の動画スライド26">18.2 第1版の動画(スライド26)</h3>
-<p>スライド26(Version 1 demo: the first video)では、第1版で何ができるかを、動画の1コマ(静止画)で見せます。
+<h3 id="182-第1版の動画スライド24">18.2 第1版の動画(スライド24)</h3>
+<p>スライド24(Version 1 demo: the first video)では、第1版で何ができるかを、動画の1コマ(静止画)で見せます。
 本番では再生しません。動画(youtu.be/1kyX2av5WG4)はライブデモが止まったときの予備です。動画の中の手順は次のとおりです。</p>
 <ol>
 <li><code>telnet 10.10.0.2</code> — <code>wg0</code>越しにboardへログインする</li>
@@ -2216,10 +2216,10 @@ pingがpeer側にhandshakeを始めさせ、答える側(responder)は自分のt
 ということです。相手はWindowsの公式WireGuard clientです <strong>[apps・実機]</strong>。</p>
 <p>スライドの結論は「第1版でもデモには十分だった。次に、これを本物のNuttXのdriverにした」です。ここで
 第4部が終わり、第5部(カーネル版)へ進みます。<strong>この動画はapps版なので、後のカーネル版の結果と混ぜて
-話しません。</strong> スライド36の予備の動画とスライド43の動画も、この同じ動画です(スタックちゃんの録画では
+話しません。</strong> スライド34の予備の動画とスライド40の動画も、この同じ動画です(スタックちゃんの録画では
 ありません)。</p>
-<h3 id="183-デモの構成スライド35">18.3 デモの構成(スライド35)</h3>
-<p>スライド35(Demo setup: the network)は、ライブデモの配線図です。</p>
+<h3 id="183-デモの構成スライド33">18.3 デモの構成(スライド33)</h3>
+<p>スライド33(Demo setup: the network)は、ライブデモの配線図です。</p>
 <pre><code class="language-text">会場のWi-Fi(機器どうしの通信を遮断)  ← スマホ自身のインターネットはこれかモバイル回線(デモには不要)
           │
    スマホのテザリング(2台だけの小さなローカルネットワーク)
@@ -2255,7 +2255,7 @@ UDPとしてテザリングを渡ります。</p>
 <p><strong>Docker</strong>は、1台のPCの中に独立した小さなLinux環境(<strong>container</strong>)を作る道具です。ラップトップは
 Windowsですが、相手にはcontainerの中の<strong>Linux kernelのWireGuard</strong>を使います。このPCはWindowsの
 firewallが外からの受信を拒否し、ruleも追加できないためです(Windowsの公式clientとの接続は、
-別にスライド31で確かめています)。</p>
+別にスライド29で確かめています)。</p>
 <p>そのため、tunnelは<strong>PC側から張ります</strong>。container側にスタックちゃんのendpoint(<a href="#48-endpointとallowedips">4.8</a>)と
 25秒のPersistentKeepalive(<a href="#49-persistentkeepalive">4.9</a>)を設定し、スタックちゃん側のpeerには
 endpointを設定しません。スタックちゃんは、最初に届いた正しいhandshakeから相手の住所を覚えます。</p>
@@ -2267,8 +2267,8 @@ endpointを設定しません。スタックちゃんは、最初に届いた正
 <p>図の点線のSPRESENSE + Wi-Fi add-on(<code>wg0</code> 10.11.0.2)は、「2台目のpeerもある」という図示で、デモの手順には
 出てきません。</p>
 <p>スライドの結論は「スマホも会場も、見るのは暗号化されたUDPだけ。間にserverもcloudもない」です。</p>
-<h3 id="184-デモの7つの手順スライド36">18.4 デモの7つの手順(スライド36)</h3>
-<p>スライド36(Demo: live on the StackChan)の要点は、<strong>特別なことは何も起きない</strong>ことです。スタックちゃんは、
+<h3 id="184-デモの7つの手順スライド34">18.4 デモの7つの手順(スライド34)</h3>
+<p>スライド34(Demo: live on the StackChan)の要点は、<strong>特別なことは何も起きない</strong>ことです。スタックちゃんは、
 暗号化tunnelの向こう側にある普通のコンピュータです。</p>
 <table>
 <thead>
@@ -2287,7 +2287,7 @@ endpointを設定しません。スタックちゃんは、最初に届いた正
 <tr>
 <td>2. <code>telnet 10.10.0.2</code></td>
 <td>tunnelの中の住所へ遠隔ログイン</td>
-<td>pingだけでなくTCPと、taskをまたぐ送信が動く(スライド23のバグが直っている)</td>
+<td>pingだけでなくTCPと、taskをまたぐ送信が動く(スライド22のバグが直っている)</td>
 </tr>
 <tr>
 <td>3. <code>ifconfig</code></td>
@@ -2340,13 +2340,13 @@ tunnelの外ではWireGuardが暗号化しています。平文が見えるの�
 <li>確認の記録(<a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/development/stackchan-hardware-check-2026-10-08.md">スタックちゃん実機確認</a>)も、apps版の
   WireGuardと<code>stackchan</code> appの組み合わせで行っています</li>
 <li>カーネル版をスタックちゃんで動かした記録はありません。カーネル版の実機の結果は、ESP32-S3とSPRESENSEで
-  スライド31に示したものです</li>
+  スライド29に示したものです</li>
 </ul>
 <p>つまり、スタックちゃんのデモは「apps版の上に作ったデモ」です。デモの目的は、利用者から見て何ができるか
 (普通のtelnet、Web、操作が暗号化tunnel越しにできる)を直感的に見せることで、それはapps版でも示せます。
 <strong>「カーネルドライバのデモです」とは言いません。</strong> 今の画面には「Runs the apps version (v0.1.1), FLAT build.」と
 書いてあり、台本も「このボードはapps版で動いている。動画と同じアプリ。カーネルドライバもこのchipで動いたが
-(スライド31)、ロボットのデモはアプリの上に作ってある」と言います。</p>
+(スライド29)、ロボットのデモはアプリの上に作ってある」と言います。</p>
 <h3 id="187-デモで起きうることと画面に出さないもの">18.7 デモで起きうることと、画面に出さないもの</h3>
 <p>記録に残っている未解決の点です <strong>[未解決]</strong>。</p>
 <ul>
@@ -2354,8 +2354,8 @@ tunnelの外ではWireGuardが暗号化しています。平文が見えるの�
   原因は分かっていません。止まったら電源を入れ直して同じ手順に戻ります</li>
 <li>Web serverを連続で叩くと、30回中12回しか成功しないことがある(NuttXのTCP側で接続を使い切る件。
   根本原因は未調査)。1秒間隔なら30/30なので、デモではbrowserを連打しません</li>
-<li>テザリングを入れ直すとアドレスの範囲が変わることがある(<a href="#183-デモの構成スライド35">18.3</a>)</li>
-<li>ライブが止まったら、すぐ録画(<a href="#182-第1版の動画スライド26">18.2</a>の動画)へ切り替えます。そのときは
+<li>テザリングを入れ直すとアドレスの範囲が変わることがある(<a href="#183-デモの構成スライド33">18.3</a>)</li>
+<li>ライブが止まったら、すぐ録画(<a href="#182-第1版の動画スライド24">18.2</a>の動画)へ切り替えます。そのときは
   「同じことを以前、別のboardでやった録画です」と一言添えます</li>
 </ul>
 <p>画面に出さないもの:<code>wg showconf</code>の出力(秘密鍵を表示する)、PCの鍵fileの置き場所、テザリングの
@@ -2400,8 +2400,8 @@ passphrase、buildの設定(<code>.config</code>)。Wi-Fiのpassphraseはboard�
 です。安全性・停止・資源・再起動は別の試験で示します(第5部、<a href="#15-検証結果の読み方">15</a>〜<a href="#17-最大の未解決事項-tai64nと再起動">17</a>)。</p>
 <hr />
 <h2 id="19-第7部-運用移植性還元まとめ謝辞">19. 第7部: 運用・移植性・還元・まとめ・謝辞</h2>
-<h3 id="191-運用できる形にするスライド38">19.1 運用できる形にする(スライド38)</h3>
-<p>スライド38(Running it for real)は、「デモで動く」から「置いておける」への違いを2点で示します。</p>
+<h3 id="191-運用できる形にする背景">19.1 運用できる形にする(背景)</h3>
+<p>以前のデッキには「Running it for real」というスライドがありました(今のデッキにはありません)。「デモで動く」から「置いておける」への違いを2点で示していました。</p>
 <table>
 <thead>
 <tr>
@@ -2430,8 +2430,8 @@ build logが残ったりすると鍵も一緒に漏れます。同じfileを何�
 いるか」「applicationのdataが流れているか」です。たとえばROUTERとLANが生きていてTUNだけ止まれば
 WireGuardの問題、LANから止まればWi-Fiやboardの問題、と切り分けられます。これは主に
 <strong>[apps・実機]</strong> での運用の話です。</p>
-<h3 id="192-ほかのcpuスライド39">19.2 ほかのCPU(スライド39)</h3>
-<p>スライド39(Other CPUs)は、第3部の「OS依存を4つの関数に閉じこめる」という賭けの答え合わせです。
+<h3 id="192-ほかのcpuスライド38の教訓2">19.2 ほかのCPU(スライド38の教訓2)</h3>
+<p>以前のデッキの「Other CPUs」のスライドは、今はスライド38(Summary)の教訓2の1行になっています。第3部の「OS依存を4つの関数に閉じこめる」という賭けの答え合わせです。
 apps版(FLAT)は、4種類のCPUでcodeの変更なしに動きました <strong>[apps・実機]</strong>(simとQEMUを含む)。</p>
 <table>
 <thead>
@@ -2472,9 +2472,9 @@ apps版(FLAT)は、4種類のCPUでcodeの変更なしに動きました <strong
 <p><strong>CPUアーキテクチャ</strong>が違うと、機械語、register、関数の呼び方の約束まで違います。Cで書いたprogramは
 compilerがそれぞれの機械語に変えてくれますが、OSに依存する部分が散らばっていると、移すたびにあちこち
 直すことになります。<strong>カーネル版はこの4つの差し込み口を使わない</strong>(時計や乱数はkernelの中で直接使う)ので、
-この確認はapps版だけのものです。カーネル版がどこで動いたかはスライド31にあります。</p>
-<h3 id="193-本家への還元スライド40">19.3 本家への還元(スライド40)</h3>
-<p>スライド40(Giving back: where it stands)は、本家(upstream)への還元が今どこにあるかの報告です。
+この確認はapps版だけのものです。カーネル版がどこで動いたかはスライド29にあります。</p>
+<h3 id="193-本家への還元スライド36">19.3 本家への還元(スライド36)</h3>
+<p>スライド36(Giving back: where it stands)は、本家(upstream)への還元が今どこにあるかの報告です。
 計画や日程は話しません。言葉は<a href="#83-なぜリポジトリが3つあるのか">8.3</a>のfork、PR(Pull Request、
 「この変更を取り込んでください」という依頼)を使います。画面には4つの項目があります。</p>
 <ol>
@@ -2485,19 +2485,20 @@ compilerがそれぞれの機械語に変えてくれますが、OSに依存す�
 </ol>
 <p>なぜ小さく分けるのか。大きなPRは読むのが大変で、1か所に問題があると全部が止まります。crypto修正は
 driverがなくても役に立つので、別の単位にしてあります。</p>
-<p><strong>現状:</strong> 作業は手元で小さな単位に分けてあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
-ただし<strong>まだsign-offしておらず、実機での再試験もしていません。何も送っていません。</strong> commitには本人の
-<code>Signed-off-by</code>と、AI toolの手を借りたことを示す<code>Assisted-by</code>の行がまだなく、最終的な一式は実機で動かして
-いません。<strong>dev@での議論もupstreamへのPRもしていません。</strong> 「もうPRを出した」「merge可能」とは
+<p><strong>現状:</strong> 作業は小さなPRとして準備してあり、どのcommitもstyle検査(checkpatch / nxstyle)を通り、buildできます。
+一式は2026-10-12にESP32-S3のFLAT buildで動きました。commandの既定のstackはPROTECTEDもカバーするようにしました
+(apps側のPR-Aは<code>90a390e0e</code> + <code>3a54cc458</code>。後者は<code>wg_x25519.c</code>の<code>x1</code>→<code>x1i</code>の位置合わせの打ち間違いも直す)。
+ただし<strong>まだsign-offしておらず、何も送っていません。</strong> commitには本人の
+<code>Signed-off-by</code>と、AI toolの手を借りたことを示す<code>Assisted-by</code>の行がまだありません。<strong>dev@での議論もupstreamへのPRもしていません。</strong> 「もうPRを出した」「merge可能」とは
 言いません。いつ出すか、誰が保守するかのような、約束できないことも言いません。台本の言葉では、Community over codeとは「仕事が本当はどこまで来ているかを正直に言い、
 reviewに変えてもらうこと」です。</p>
-<h3 id="194-summaryスライド41">19.4 Summary(スライド41)</h3>
-<p>スライド41の題は「Summary — What I built, and three things to remember」(作ったものと、覚えておいて
-ほしい3つ)です。</p>
+<h3 id="194-summaryスライド38">19.4 Summary(スライド38)</h3>
+<p>スライド38の題は「Summary — What I built, and three technical lessons」(作ったものと、3つの技術の教訓)です。
+その前のスライド37(What I learned)では、技術ではない3つの学びを話します(<a href="#197-what-i-learnedスライド37">19.7</a>)。</p>
 <h4 id="作ったものの1行">「作ったもの」の1行</h4>
 <blockquote>
-<p><strong>Built <code>wg0</code>:</strong> NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSEの上で動き、標準の
-WireGuardのpeerと話し、upstream向けに小さなPRに分けてある。</p>
+<p><strong>Built <code>wg0</code>:</strong> NuttXのkernelの中のWireGuardネットワークデバイス。ESP32-S3とSPRESENSE(FLAT)と、QEMUの上の
+KERNEL / PROTECTEDのbuildで、標準のWireGuardのpeerと動く。小さなPRとして準備済みで、まだ何も送っていない。</p>
 </blockquote>
 <p>この1行には、別々の確認がまとめて入っています。分けて読むと次のとおりです。</p>
 <table>
@@ -2511,12 +2512,12 @@ WireGuardのpeerと話し、upstream向けに小さなPRに分けてある。</p
 <tbody>
 <tr>
 <td>kernelの中の<code>wg0</code></td>
-<td>カーネル版(スライド28・29)</td>
+<td>カーネル版(スライド26・27)</td>
 <td>本命はカーネル版。apps版は第1版</td>
 </tr>
 <tr>
 <td>ESP32-S3とSPRESENSEで動く</td>
-<td><strong>[カーネル・実機]</strong> 両boardのFLATビルドで実Wi-Fiのtunnel(スライド31)</td>
+<td><strong>[カーネル・実機]</strong> 両boardのFLATビルドで実Wi-Fiのtunnel(スライド29)</td>
 <td>実機の試験はrebase前の版。KERNEL/PROTECTEDはQEMUだけ</td>
 </tr>
 <tr>
@@ -2526,24 +2527,24 @@ WireGuardのpeerと話し、upstream向けに小さなPRに分けてある。</p
 </tr>
 <tr>
 <td>小さなPRに分けてある</td>
-<td>分割と検査は済み(<a href="#193-本家への還元スライド40">19.3</a>)</td>
+<td>分割と検査は済み(<a href="#193-本家への還元スライド36">19.3</a>)</td>
 <td>PRはまだ出していない。sign-offもまだ</td>
 </tr>
 </tbody>
 </table>
 <h4 id="3つの教訓">3つの教訓</h4>
 <ol>
-<li><strong>handshakeの先まで試す。</strong> 長いdataの流れ、本物のhardware、本物のkernel build(<a href="#13-発表に出てくる6つの落とし穴">13</a>、
+<li><strong>handshakeの先まで試す。</strong> 長いdataの流れ、本物のhardware、すべてのbuildの種類(<a href="#13-発表に出てくる6つの落とし穴">13</a>、
    <a href="#14-なぜpingだけでは足りないのか">14</a>)</li>
 <li><strong>きれいなOSの境界は、手間をかける価値がある。</strong> apps版で、4種類のCPU、3つのNuttXのversion(13.0.1・master・12.7.0)、
-   codeの変更なし。これは<strong>apps版</strong>の数字で、カーネル版はこの4関数を使いません(<a href="#192-ほかのcpuスライド39">19.2</a>)</li>
+   codeの変更なし。これは<strong>apps版</strong>の数字で、カーネル版はこの4関数を使いません(<a href="#192-ほかのcpuスライド38の教訓2">19.2</a>)</li>
 <li><strong>あるprojectへの移植は、そのproject自体を良くする機会になる。</strong> 途中でNuttX自身のChaCha20-Poly1305に
-   隠れていたバグ(nonceのcounterの位置、<a href="#46-nonceとcounter">4.6</a>、スライド30)を見つけた。その修正はそれだけで成り立つ</li>
+   隠れていたバグ(nonceのcounterの位置、<a href="#46-nonceとcounter">4.6</a>、スライド28)を見つけた。その修正はそれだけで成り立つ</li>
 </ol>
-<p>以前の版のスライドは、3つ目にSPRESENSEの起動のバグ(#9、高分解能のRTCを有効にすると手を加えていないrelease版が
-shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305のバグだけです。#9は質問されたら答える程度にします。</p>
-<h3 id="195-謝辞スライド42">19.5 謝辞(スライド42)</h3>
-<p>スライド42(Thanks)は、この仕事を支えた人たちへの感謝です。</p>
+<p>SPRESENSEの起動のバグ(#9、高分解能のRTCを有効にすると手を加えていないrelease版がshellまで起動しない)は、今はスライド28に
+「NuttXではほかにも」の1行として載っています。手元で直し、報告は下書きのままで、まだ送っていません。</p>
+<h3 id="195-謝辞スライド39">19.5 謝辞(スライド39)</h3>
+<p>スライド39(Thanks)は、この仕事を支えた人たちへの感謝です。</p>
 <table>
 <thead>
 <tr>
@@ -2572,12 +2573,28 @@ shellまで起動しない)も挙げていましたが、今はChaCha20-Poly1305
 </table>
 <p>発表の名前でもある「Community Over Code」は、「codeよりcommunity」というApacheの標語です。謝辞は
 その実践でもあります。技術的な主張はないスライドです。</p>
-<h3 id="196-thank-youスライド43">19.6 Thank you(スライド43)</h3>
-<p>最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、<a href="#182-第1版の動画スライド26">18.2</a>と同じapps版の
+<h3 id="196-thank-youスライド40">19.6 Thank you(スライド40)</h3>
+<p>最後のスライドには、デモの動画(youtu.be/1kyX2av5WG4、<a href="#182-第1版の動画スライド24">18.2</a>と同じapps版の
 動画)、「Code &amp; records: github.com/wwlapaki310/gsoc2026-nuttx-wireguard」(コードと作業の記録があるこの
-repository)、名前と所属、「Questions welcome.」があります。本家には<strong>まだ何も送っていません</strong>(<a href="#193-本家への還元スライド40">19.3</a>)。質疑応答では
+repository)、名前と所属、「Questions welcome.」があります。本家には<strong>まだ何も送っていません</strong>(<a href="#193-本家への還元スライド36">19.3</a>)。質疑応答では
 <a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/presentation/talkscript/coc-glasgow-qa.md">想定Q&amp;A</a>を手元に置き、数字は<a href="#152-主な数字と正しい言い方">15.2</a>の
 「言ってよいこと」の範囲で答えます。</p>
+<h3 id="197-what-i-learnedスライド37">19.7 What I learned(スライド37)</h3>
+<p>スライド37は、Summaryの前に置いた「このプロジェクトで自分が学んだこと」です。技術の教訓(スライド38)とは別に、
+3つと、希望の1行を話します。</p>
+<ol>
+<li><strong>アプリの利用者からOSの貢献者へ。</strong> 長年NuttXをアプリの側から使ってきた。このプロジェクトで、driver、kernel、
+   そしてNuttX自身のバグまで入っていった</li>
+<li><strong>AIはコードを助けたが、理解するのは自分の仕事。</strong> Claudeをたくさん使い、調査とcodeはずっと速くなった。しかし
+   組込みOSの内部は初めてで、設計と動きを本当に理解するのは難しかった。AIが書いたcodeをそのまま使わず、質問し、
+   NuttXのsourceを読み、動きを試し、自分で説明できるまで続けた</li>
+<li><strong>迎え入れてくれるコミュニティ。</strong> NuttXには良い文書と貢献の手引きがあり、議論とreviewが活発。AI toolに開かれて
+   いるが、責任は人が持つ:commitには<code>Assisted-by</code>を書き、AIは<code>Signed-off-by</code>を付けない。CIやhackathonが新しい人の
+   参加を助ける</li>
+</ol>
+<p>台本の言葉では「オープンソースは、codeが公開されているだけではない。新しい人が参加し、学び、貢献できるときに育つ」。
+最後に「これからもApache NuttXとオープンソースのコミュニティに貢献を続け、NuttXが育っていくのを楽しみにしている」と
+結びます。技術的な試験の対象ではないスライドです。</p>
 <hr />
 <h2 id="20-発表の各部で理解すべき一文">20. 発表の各部で理解すべき一文</h2>
 <table>
@@ -2606,33 +2623,33 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 </tr>
 <tr>
 <td>第4部 第1版</td>
-<td>19〜26</td>
+<td>19〜24</td>
 <td>第1版は動いたが、最初の症状、ping、simだけでは4つの重要な故障を見逃した</td>
 </tr>
 <tr>
 <td>第5部 第2版(driver)</td>
-<td>27〜30</td>
+<td>25〜28</td>
 <td>driverがsocket/thread/stateを所有し、user側はioctlで設定する。kernelの深さでも同じ形のバグが2つ出た</td>
 </tr>
 <tr>
 <td>第5部 第2版(検証)</td>
-<td>31〜32</td>
+<td>29〜30</td>
 <td>複数build・実機・故障注入で、各主張の範囲を測った。動くtunnelだけでは鍵や資源の問題は見えない</td>
 </tr>
 <tr>
 <td>第5部 第2版(TAI64N)</td>
-<td>33</td>
+<td>31</td>
 <td>replay防止には再起動を越える時刻が必要で、RTCなしには無料の解決がない</td>
 </tr>
 <tr>
 <td>第6部 ライブデモ</td>
-<td>34〜36</td>
+<td>32〜34</td>
 <td>普通のtelnet・Web・操作が、普通のWireGuard peer越しに使え、外からは暗号化UDPしか見えない(apps版)</td>
 </tr>
 <tr>
 <td>第7部 まとめ</td>
-<td>37〜43</td>
-<td>動作だけでなく、運用、移植性、ABI、証拠、未解決範囲を公開レビューに出す。教訓は「深く試す」「境界をきれいに」「移植は本家を良くする」</td>
+<td>35〜40</td>
+<td>動作だけでなく、運用、移植性、ABI、証拠、未解決範囲を公開レビューに出す。教訓は「深く試す」「境界をきれいに」「移植は本家を良くする」。学んだことは「利用者から貢献者へ」「理解は自分の仕事」「開かれたコミュニティ」</td>
 </tr>
 </tbody>
 </table>
@@ -3047,7 +3064,7 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 <p><a href="#部ごとの学習ルート">部ごとの学習ルート</a>の表を1部ずつ使います。各部の「先に読む基礎」を読み、
 <a href="coc-glasgow-slide-guide-ja.html">スライド別解説</a>でその部のスライドを1枚ずつ確かめ、最後に
 <a href="#20-発表の各部で理解すべき一文">20章</a>の一文を自分の言葉で言えるか試します。時間が足りなければ、
-第5部(スライド31〜33、<a href="#15-検証結果の読み方">15</a>〜<a href="#17-最大の未解決事項-tai64nと再起動">17</a>章)を最優先にします。</p>
+第5部(スライド29〜31、<a href="#15-検証結果の読み方">15</a>〜<a href="#17-最大の未解決事項-tai64nと再起動">17</a>章)を最優先にします。</p>
 <h3 id="技術質問へ備える場合">技術質問へ備える場合</h3>
 <ol>
 <li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/in-kernel-design.md">現行設計</a></li>

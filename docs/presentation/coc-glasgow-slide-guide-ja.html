@@ -190,7 +190,7 @@
 
 <header class="top" id="top">
   <h1>WireGuard for Apache NuttX — スライド解説書</h1>
-  <p>Community Over Code Glasgow 2026 の発表スライド(全 43 枚)を、1 枚ずつ日本語で解説する。対象は「大学 1 年生程度のプログラミング経験はあるが、OS・ネットワーク・暗号・組込みの知識はまだない」人。各スライドについて、画面の中身、前提となる背景知識、主張とその根拠、話し方、想定質問、用語を順に説明する。2026-10-10 版(スライド番号は現行デッキに一致)。</p>
+  <p>Community Over Code Glasgow 2026 の発表スライド(全 40 枚)を、1 枚ずつ日本語で解説する。対象は「大学 1 年生程度のプログラミング経験はあるが、OS・ネットワーク・暗号・組込みの知識はまだない」人。各スライドについて、画面の中身、前提となる背景知識、主張とその根拠、話し方、想定質問、用語を順に説明する。2026-10-10 版(スライド番号は現行デッキに一致)。</p>
 </header>
 
 <div class="box key">
@@ -226,10 +226,10 @@
         <a href="#ch1">①Overview &amp; background(4〜10)</a> ·
         <a href="#ch2">②The problem and the idea(11〜15)</a> ·
         <a href="#ch3">③The plan(16〜18)</a> ·
-        <a href="#ch4">④Version 1: the app(19〜26)</a> ·
-        <a href="#ch5">⑤Version 2: the kernel driver(27〜33)</a> ·
-        <a href="#ch6">⑥Live demo(34〜36)</a> ·
-        <a href="#ch7">⑦Summary &amp; status(37〜43)</a>
+        <a href="#ch4">④Version 1: the app(19〜24)</a> ·
+        <a href="#ch5">⑤Version 2: the kernel driver(25〜31)</a> ·
+        <a href="#ch6">⑥Live demo(32〜34)</a> ·
+        <a href="#ch7">⑦Summary &amp; status(35〜40)</a>
       </div>
     </li>
     <li><a href="#part3">用語辞典(読み方つき)</a></li>
@@ -242,9 +242,9 @@
 <div class="tbl"><table class="slidetoc">
   <tr><th>No.</th><th>スライドの見出し(画面のとおり)</th><th>部</th></tr>
   <tr><td><a href="#s1">1</a></td><td><a href="#s1">WireGuard for Apache NuttX(タイトル)</a></td><td>—</td></tr>
-  <tr class="agenda"><td><a href="#s3">2</a></td><td><a href="#s3">Agenda(全体の目次)</a></td><td>—</td></tr>
-  <tr class="agenda"><td><a href="#s4">3</a></td><td><a href="#s4">Agenda — ①</a></td><td>① Overview</td></tr>
-  <tr><td><a href="#s2">4</a></td><td><a href="#s2">About Me</a></td><td>① Overview</td></tr>
+  <tr><td><a href="#s2">2</a></td><td><a href="#s2">About Me</a></td><td>—</td></tr>
+  <tr class="agenda"><td><a href="#s3">3</a></td><td><a href="#s3">Agenda(全体の目次)</a></td><td>—</td></tr>
+  <tr class="agenda"><td><a href="#s4">4</a></td><td><a href="#s4">Agenda — ①</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s5">5</a></td><td><a href="#s5">Overview: the project in one slide</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s6">6</a></td><td><a href="#s6">How it started</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s7">7</a></td><td><a href="#s7">Background: the OS behind this work</a></td><td>① Overview</td></tr>
@@ -261,29 +261,26 @@
   <tr><td><a href="#s18">18</a></td><td><a href="#s18">Design: one virtual network card</a></td><td>③ Plan</td></tr>
   <tr class="agenda"><td><a href="#s19">19</a></td><td><a href="#s19">Agenda — ④</a></td><td>④ Version 1</td></tr>
   <tr><td><a href="#s20">20</a></td><td><a href="#s20">Result: the first working tunnel</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s21">21</a></td><td><a href="#s21">Where it was hard — The tunnel worked fast. The bugs took the time.</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s22">22</a></td><td><a href="#s22">Bug 1 / 6 — Created successfully. Did not survive</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s23">23</a></td><td><a href="#s23">Bug 2 / 6 · my favorite — ping works. TCP dies</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s24">24</a></td><td><a href="#s24">Bug 3 / 6 — “No real impact” was 10×</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s25">25</a></td><td><a href="#s25">Bug 4 / 6 — sim passes. Real hardware is different</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s26">26</a></td><td><a href="#s26">Version 1 demo: the first video</a></td><td>④ Version 1</td></tr>
-  <tr class="agenda"><td><a href="#s27">27</a></td><td><a href="#s27">Agenda — ⑤</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s28">28</a></td><td><a href="#s28">Part 5 · Going deeper — Into the kernel</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s29">29</a></td><td><a href="#s29">The Kernel Design</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s30">30</a></td><td><a href="#s30">Bugs 5 &amp; 6 / 6: same shape</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s31">31</a></td><td><a href="#s31">Testing: simulator, QEMU, real boards</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s32">32</a></td><td><a href="#s32">Testing: what ping misses</a></td><td>⑤ Version 2</td></tr>
-  <tr><td><a href="#s33">33</a></td><td><a href="#s33">Design choice: trust the clock?</a></td><td>⑤ Version 2</td></tr>
-  <tr class="agenda"><td><a href="#s34">34</a></td><td><a href="#s34">Agenda — ⑥</a></td><td>⑥ Live demo</td></tr>
-  <tr><td><a href="#s35">35</a></td><td><a href="#s35">Demo setup: the network</a></td><td>⑥ Live demo</td></tr>
-  <tr><td><a href="#s36">36</a></td><td><a href="#s36">Demo: live on the StackChan</a></td><td>⑥ Live demo</td></tr>
-  <tr class="agenda"><td><a href="#s37">37</a></td><td><a href="#s37">Agenda — ⑦</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s38">38</a></td><td><a href="#s38">Running it for real</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s39">39</a></td><td><a href="#s39">Other CPUs: beyond the first board</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s40">40</a></td><td><a href="#s40">Giving back: where it stands</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s41">41</a></td><td><a href="#s41">Summary — What I built, and three things to remember</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s42">42</a></td><td><a href="#s42">Thanks: the people behind this talk</a></td><td>⑦ Summary</td></tr>
-  <tr><td><a href="#s43">43</a></td><td><a href="#s43">Thank you</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s21">21</a></td><td><a href="#s21">Where it was hard: six bugs</a></td><td>④ Version 1</td></tr>
+  <tr><td><a href="#s22">22</a></td><td><a href="#s22">Bug 2 / 6 · my favorite — ping works. TCP dies</a></td><td>④ Version 1</td></tr>
+  <tr><td><a href="#s23">23</a></td><td><a href="#s23">Bug 3 / 6 — “No real impact” was 10×</a></td><td>④ Version 1</td></tr>
+  <tr><td><a href="#s24">24</a></td><td><a href="#s24">Version 1 demo: the first video</a></td><td>④ Version 1</td></tr>
+  <tr class="agenda"><td><a href="#s25">25</a></td><td><a href="#s25">Agenda — ⑤</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s26">26</a></td><td><a href="#s26">Why the kernel: from app to driver</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s27">27</a></td><td><a href="#s27">The kernel design: the big picture</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s28">28</a></td><td><a href="#s28">Bugs 5 &amp; 6 / 6: found in the kernel part</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s29">29</a></td><td><a href="#s29">Testing: what ran where</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s30">30</a></td><td><a href="#s30">Testing: what ping misses</a></td><td>⑤ Version 2</td></tr>
+  <tr><td><a href="#s31">31</a></td><td><a href="#s31">Design choice: trust the clock?</a></td><td>⑤ Version 2</td></tr>
+  <tr class="agenda"><td><a href="#s32">32</a></td><td><a href="#s32">Agenda — ⑥</a></td><td>⑥ Live demo</td></tr>
+  <tr><td><a href="#s33">33</a></td><td><a href="#s33">Demo setup: the network</a></td><td>⑥ Live demo</td></tr>
+  <tr><td><a href="#s34">34</a></td><td><a href="#s34">Demo: live on the StackChan</a></td><td>⑥ Live demo</td></tr>
+  <tr class="agenda"><td><a href="#s35">35</a></td><td><a href="#s35">Agenda — ⑦</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s36">36</a></td><td><a href="#s36">Giving back: where it stands</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s37">37</a></td><td><a href="#s37">What I learned</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s38">38</a></td><td><a href="#s38">Summary — What I built, and three technical lessons</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s39">39</a></td><td><a href="#s39">Thanks: the people behind this talk</a></td><td>⑦ Summary</td></tr>
+  <tr><td><a href="#s40">40</a></td><td><a href="#s40">Thank you</a></td><td>⑦ Summary</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
@@ -357,24 +354,24 @@
     <text x="834" y="173" text-anchor="middle" font-size="12" class="t2">Poly1305 / 16 B</text>
     <text x="10" y="214" font-size="13" class="t2">途中のルーターやインターネットは、外側 IP と UDP しか読めない。中身も、誰と誰が何をしているかも見えない。</text>
   </svg>
-  <figcaption>図 1-2 カプセル化。スライド 5・15 の「wg0 の下の“線”は UDP ソケット」、スライド 36 の「外では暗号化された UDP しか見えない」の意味がこれ。</figcaption>
+  <figcaption>図 1-2 カプセル化。スライド 5・15 の「wg0 の下の“線”は UDP ソケット」、スライド 34 の「外では暗号化された UDP しか見えない」の意味がこれ。</figcaption>
 </figure>
 
 <h3>1.4 2 つの実装(混ぜないこと)</h3>
-<p>このプロジェクトには実装が 2 つある。発表の前半(④ Version 1、スライド 19〜26)は 1 つ目、後半(⑤ Version 2、スライド 27〜33)は 2 つ目の話。<b>どの結果がどちらの実装のものかを、話すときに混ぜないことが一番大事。</b></p>
+<p>このプロジェクトには実装が 2 つある。発表の前半(④ Version 1、スライド 19〜24)は 1 つ目、後半(⑤ Version 2、スライド 25〜31)は 2 つ目の話。<b>どの結果がどちらの実装のものかを、話すときに混ぜないことが一番大事。</b></p>
 <div class="tbl"><table>
   <tr><th></th><th><span class="tag apps">apps 版</span> v0.1.1(凍結)</th><th><span class="tag kern">カーネル版</span>(提出候補として分けてある方)</th></tr>
   <tr><td>置き場所</td><td><code>apps/netutils/wireguard/</code>(アプリ側)</td><td><code>drivers/net/wireguard/</code>(OS の中)+ <code>apps/system/wg</code>(操作コマンド)</td></tr>
   <tr><td>動くビルド</td><td>FLAT のみ</td><td>FLAT(実機と sim)・KERNEL / PROTECTED(QEMU のみ)</td></tr>
   <tr><td>設定方法</td><td><code>wg</code> コマンドが同じメモリ空間で直接</td><td><code>wg</code> コマンドが ioctl で OS に頼む</td></tr>
-  <tr><td>実機の実績</td><td>ESP32-S3・SPRESENSE。telnet、HTTP、7 MB 転送、rekey、電源再投入。最初の動画(スライド 26)と<b>スタックちゃんのデモもこちら</b></td><td>両ボードの FLAT ビルド(最終 rebase の前の版)で Windows 公式クライアントとトンネル(ping 4/4・6/6)。SPRESENSE で資源を実測</td></tr>
-  <tr><td>主なスライド</td><td>17〜26、35〜36、38、39</td><td>1(副題)、28〜33、40、41</td></tr>
+  <tr><td>実機の実績</td><td>ESP32-S3・SPRESENSE。telnet、HTTP、7 MB 転送、rekey、電源再投入。最初の動画(スライド 24)と<b>スタックちゃんのデモもこちら</b></td><td>両ボードの FLAT ビルド(最終 rebase の前の版)で Windows 公式クライアントとトンネル(ping 4/4・6/6)。SPRESENSE で資源を実測</td></tr>
+  <tr><td>主なスライド</td><td>17〜24、33〜34、38(教訓 2)</td><td>1(副題)、26〜31、36</td></tr>
 </table></div>
 
 <h3>1.5 発表の構成と時間配分</h3>
-<p>スライド 1 はタイトル、スライド 2 は自己紹介、スライド 3 が目次「7 部・約 30 分」。各部の目安(5 / 4 / 2 / 5 / 8 / 3 / 4 分)を足すと 31 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 33 分 06 秒</b>になる。試験の 3 枚(31〜33)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> に移してある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分(①は区切りのスライド 4 から)。</p>
+<p>スライド 1 はタイトル、スライド 2 は自己紹介、スライド 3 が目次「7 部・約 30 分」。各部の目安(5 / 4 / 2 / 4 / 7 / 3 / 4 分)を足すと 29 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 30 分 36 秒</b>になる。6 つのバグはスライド 21 の 1 枚の表にまとめ、詳しく話すのは 2 つだけ(22・23)。試験の 3 枚(29〜31)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> と GitHub のリポジトリにある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分(①は区切りのスライド 4 から)。</p>
 <figure>
-  <svg viewBox="0 0 960 310" role="img" aria-label="7 部の時間配分。⑤ カーネルドライバと試験が約 8 分で最も長い">
+  <svg viewBox="0 0 960 310" role="img" aria-label="7 部の時間配分。⑤ カーネルドライバと試験が約 7 分で最も長い">
     <g font-size="14">
       <line class="grid" x1="220" y1="20" x2="220" y2="270"/>
       <text x="220" y="290" text-anchor="middle" class="t3" font-size="12">0</text>
@@ -384,37 +381,35 @@
       <text x="504" y="290" text-anchor="middle" class="t3" font-size="12">6 分</text>
       <line class="grid" x1="646" y1="20" x2="646" y2="270"/>
       <text x="646" y="290" text-anchor="middle" class="t3" font-size="12">9 分</text>
-      <line class="grid" x1="788" y1="20" x2="788" y2="270"/>
-      <text x="788" y="290" text-anchor="middle" class="t3" font-size="12">12 分</text>
       <text x="210" y="40" text-anchor="end">① Overview &amp; background</text>
-      <path class="bar" d="M220 28 h260 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-260 z" data-tip="① Overview &amp; background: 約 5.6 分(スライド 4〜10、2:11→7:46)"/>
+      <path class="bar" d="M220 28 h260 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-260 z" data-tip="① Overview &amp; background: 約 5.6 分(スライド 4〜10、2:16→7:51)"/>
       <text x="496" y="43" class="t2" font-size="13">約 6 分</text>
       <text x="210" y="76" text-anchor="end">② The problem and the idea</text>
-      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:46→11:46)"/>
+      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:51→11:51)"/>
       <text x="421" y="79" class="t2" font-size="13">約 4 分</text>
       <text x="210" y="112" text-anchor="end">③ The plan</text>
-      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:46→13:19)"/>
+      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:51→13:24)"/>
       <text x="305" y="115" class="t2" font-size="13">約 1.6 分</text>
       <text x="210" y="148" text-anchor="end">④ Version 1: the app</text>
-      <path class="bar" d="M220 136 h247 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-247 z" data-tip="④ Version 1: the app: 約 5.3 分(スライド 19〜26、13:19→18:37)"/>
-      <text x="483" y="151" class="t2" font-size="13">約 5 分</text>
+      <path class="bar" d="M220 136 h187 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-187 z" data-tip="④ Version 1: the app: 約 4.0 分(スライド 19〜24、13:24→17:26)"/>
+      <text x="423" y="151" class="t2" font-size="13">約 4 分</text>
       <text x="210" y="184" text-anchor="end">⑤ Version 2: kernel driver</text>
-      <path class="bar hi" d="M220 172 h394 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-394 z" data-tip="⑤ Version 2: kernel driver: 約 8.4 分(スライド 27〜33、18:37→27:01)。試験の 3 枚(31〜33)を含む"/>
-      <text x="630" y="187" class="t2" font-size="13">約 8 分 — 核心</text>
+      <path class="bar hi" d="M220 172 h319 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-319 z" data-tip="⑤ Version 2: kernel driver: 約 6.8 分(スライド 25〜31、17:26→24:16)。試験の 3 枚(29〜31)を含む"/>
+      <text x="555" y="187" class="t2" font-size="13">約 7 分 — 核心</text>
       <text x="210" y="220" text-anchor="end">⑥ Live demo</text>
-      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 34〜36、27:01→29:39)"/>
+      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 32〜34、24:16→26:54)"/>
       <text x="356" y="223" class="t2" font-size="13">約 2.6 分</text>
       <text x="210" y="256" text-anchor="end">⑦ Summary &amp; status</text>
-      <path class="bar" d="M220 244 h159 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-159 z" data-tip="⑦ Summary &amp; status: 約 3.5 分(スライド 37〜43、29:39→33:06)"/>
-      <text x="395" y="259" class="t2" font-size="13">約 3 分</text>
+      <path class="bar" d="M220 244 h171 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-171 z" data-tip="⑦ Summary &amp; status: 約 3.7 分(スライド 35〜40、26:54→30:36)"/>
+      <text x="407" y="259" class="t2" font-size="13">約 4 分</text>
     </g>
   </svg>
-  <figcaption>図 1-3 部ごとの時間(英語の台本の累積時刻より。合計約 33 分 06 秒。タイトル・自己紹介・目次の 3 枚で約 2 分)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 40 → 39 → 38。31〜33 は削らない。</figcaption>
+  <figcaption>図 1-3 部ごとの時間(英語の台本の累積時刻より。合計約 30 分 36 秒。タイトル・自己紹介・目次の 3 枚で約 2 分)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 36 → 24 → 23。29〜31 は削らない。</figcaption>
 </figure>
 
 <div class="box key">
   <span class="label">どこが難しかったか</span>
-  <p><b>トンネルはすぐ動いた。時間を使ったのは 6 つのバグ。</b>その多くは、通った試験(handshake や ping)の陰に隠れていたので、最初は別の場所を探してしまった。スライド 21「Where it was hard」がその入口で、22〜25(apps 版の 4 つ)と 30(カーネル版の 2 つ)が中身、31〜33 が「では何をどこまで確かめたか」の答え。</p>
+  <p><b>トンネルはすぐ動いた。時間を使ったのは 6 つのバグ。</b>その多くは、通った試験(handshake や ping)の陰に隠れていたので、最初は別の場所を探してしまった。スライド 21「Where it was hard: six bugs」が 6 つを 1 枚の表にまとめ、22・23 が詳しく話す 2 つ、28 がカーネル版の 2 つ、29〜31 が「では何をどこまで確かめたか」の答え。</p>
 </div>
 
 <h3>1.6 「確かめた」の 4 段階</h3>
@@ -445,7 +440,7 @@
     <tr><th>小見出し</th><th>噛み砕くと</th></tr>
     <tr><td>ESP32-S3 &amp; SPRESENSE / TUNNEL UP OVER REAL WI-FI</td><td>2 種類の本物のボードで、本物の Wi-Fi 越しにトンネルが成立した</td></tr>
     <tr><td>Real WireGuard peers / LINUX KERNEL, WINDOWS CLIENT</td><td>相手は自作の偽物ではなく、Linux カーネル内蔵の WireGuard と Windows 公式クライアント</td></tr>
-    <tr><td>rv-virt knetnsh64 / RUNS IN A KERNEL BUILD ON QEMU (BUILD_KERNEL)</td><td>QEMU の仮想 RISC-V ボードで、アプリと OS のメモリが完全に分かれた構成でも動いた(スライド 28・31)。実機は普通の FLAT ビルド</td></tr>
+    <tr><td>rv-virt knetnsh64 / RUNS IN A KERNEL BUILD ON QEMU (BUILD_KERNEL)</td><td>QEMU の仮想 RISC-V ボードで、アプリと OS のメモリが完全に分かれた構成でも動いた(スライド 26・29)。実機は普通の FLAT ビルド</td></tr>
     <tr><td>NuttX 13.0.1 / master / 12.7.0 / APPS V0.1.1 · ONE SOURCE</td><td>apps 版は、NuttX の 3 つのバージョンで同じソースのままビルドできた</td></tr>
   </table></div>
   <h4>③ このスライドの主張と根拠</h4>
@@ -467,7 +462,7 @@
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>もうマージされているのですか?</dt>
-    <dd>まだ。PR も dev@ への投稿もしていない。何も送っていない(スライド 40)。"Nothing is sent, and nothing is merged."</dd>
+    <dd>まだ。PR も dev@ への投稿もしていない。何も送っていない(スライド 36)。"Nothing is sent, and nothing is merged."</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -526,23 +521,25 @@
     <tr><td>1</td><td>Overview &amp; background(NuttX とは・始まり)</td><td>約 5 分</td><td>4〜10</td></tr>
     <tr><td>2</td><td>The problem and the idea(遠くの機器に届く・なぜ WireGuard)</td><td>約 4 分</td><td>11〜15</td></tr>
     <tr><td>3</td><td>The plan(wireguard-lwip の再利用・NuttX への合わせ込み)</td><td>約 2 分</td><td>16〜18</td></tr>
-    <tr><td>4</td><td>Version 1: the app(最初のトンネル・隠れた 4 つのバグ・最初のデモ)</td><td>約 5 分</td><td>19〜26</td></tr>
-    <tr><td>5</td><td>Version 2: the kernel driver(カーネルの設計・もう 2 つのバグ・試験)</td><td>約 8 分</td><td>27〜33</td></tr>
-    <tr><td>6</td><td>Live demo(トンネル越しのスタックちゃん)</td><td>約 3 分</td><td>34〜36</td></tr>
-    <tr><td>7</td><td>Summary &amp; status(upstream の状況・3 つの教訓・謝辞)</td><td>約 4 分</td><td>37〜43</td></tr>
+    <tr><td>4</td><td>Version 1: the app(最初のトンネル・6 つのバグ、うち 2 つを詳しく・最初のデモ)</td><td>約 4 分</td><td>19〜24</td></tr>
+    <tr><td>5</td><td>Version 2: the kernel driver(なぜドライバか・NuttX のバグ・試験)</td><td>約 7 分</td><td>25〜31</td></tr>
+    <tr><td>6</td><td>Live demo(トンネル越しのスタックちゃん)</td><td>約 3 分</td><td>32〜34</td></tr>
+    <tr><td>7</td><td>Summary &amp; status(今の状況・学んだこと・謝辞)</td><td>約 4 分</td><td>35〜40</td></tr>
   </table></div>
-  <p><b>要点:</b>前半が「バージョン 1 = アプリ」、後半が「バージョン 2 = カーネルドライバ」という 2 段の物語。バグは全部で 6 つ(バージョン 1 で 4 つ、カーネルで 2 つ)。試験の 3 枚(31〜33)はバージョン 2 の部に入っている。目安を足すと 31 分、台本どおりに話すと約 33 分 06 秒(<a href="#part1">図 1-3</a>)。</p>
+  <p><b>要点:</b>前半が「バージョン 1 = アプリ」、後半が「バージョン 2 = カーネルドライバ」という 2 段の物語。バグは全部で 6 つ(バージョン 1 で 4 つ、カーネルで 2 つ)で、スライド 21 の 1 枚の表にまとめ、2 つだけ詳しく話す。試験の 3 枚(29〜31)はバージョン 2 の部に入っている。目安を足すと 29 分、台本どおりに話すと約 30 分 36 秒(<a href="#part1">図 1-3</a>)。</p>
   <p><b>話し方:</b>"There are seven parts." と言って各部を 1 行ずつ読み、"About thirty minutes, then questions." で締める。</p>
 </section>
+
 <div class="divider" id="ch1"><b>① Overview &amp; background</b>(スライド 4〜10、約 5 分)— NuttX とは何か、どう始まったか</div>
 <section class="slide short" id="s4">
   <div class="head"><span class="no">4</span><h3>4 — Agenda(① を強調)</h3><span class="en">Let's start with part one: an overview and the background.</span></div>
   <a class="shot" href="renders/glasgow/slide-04.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-04.png" alt="スライド 2 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-04.png</code> · <a href="coc-glasgow-slides.html#4" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>スライド 3 と同じ目次で、①だけが色付き、他は薄い。</p>
-  <p><b>要点:</b>部の区切り(divider、ディバイダー)。スライド 11・16・19・27・34・37 も同じ役割。読み上げるものではなく、指して一拍置くだけ(各 10 秒)。</p>
+  <p><b>要点:</b>部の区切り(divider、ディバイダー)。スライド 11・16・19・25・32・35 も同じ役割。読み上げるものではなく、指して一拍置くだけ(各 10 秒)。</p>
   <p><b>話し方:</b>"Let's start with part one: an overview and the background."</p>
 </section>
+
 <section class="slide" id="s5">
   <div class="head"><span class="no">5</span><h3>5 — Overview: the project in one slide</h3><span class="en">This project adds WireGuard to NuttX as a network device.</span></div>
   <a class="shot" href="renders/glasgow/slide-05.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-05.png" alt="スライド 5 の画像"></a>
@@ -617,7 +614,7 @@
   <h4>② 背景知識</h4>
   <p><b>GSoC(Google Summer of Code)</b>は、Google が学生などのオープンソース開発を夏の間支援する制度。オープンソースのプロジェクトが「こういう作業をしてほしい」というアイデア一覧を出し、応募者が提案書を書く。NuttX もこれに参加しており、そのアイデア一覧がこのプロジェクトのきっかけになった。<b>この発表で GSoC に触れるのはこのスライドだけ</b>。発表の軸は制度ではなく、実装・失敗・検証・upstream にある。</p>
   <p><b>issue</b>:GitHub などで「この問題をどうするか」「こういう機能を作りたい」と書き込む掲示板の 1 件。オープンソースでは、コードを書く前に issue で計画を公開して意見をもらうのが普通。</p>
-  <p><b>FLAT のアプリ → カーネルドライバ</b>:最初はアプリとして作り(apps 版)、9 月に OS の中の正式なドライバへ作り直した(スライド 28)。時間軸の最後に、発表の後半にあたる難しい部分が来ていることを見せている。</p>
+  <p><b>FLAT のアプリ → カーネルドライバ</b>:最初はアプリとして作り(apps 版)、9 月に OS の中の正式なドライバへ作り直した(スライド 26)。時間軸の最後に、発表の後半にあたる難しい部分が来ていることを見せている。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:提案は採択されなかったが作業は続き、難しい半分(カーネルドライバ)は最後に来た。根拠は本人の経緯。日付は台本と一致させる。</p>
   <h4>④ 話すときのポイント</h4>
@@ -672,7 +669,7 @@
   <h5>VFS とファイルシステム</h5>
   <p>VFS(Virtual File System)は、フラッシュメモリ、SD カード、RAM ディスク、さらにはデバイスまで、いろいろなものを「ファイル」として同じ形で扱う仕組み。NuttX では <code>/dev/urandom</code>(乱数)や <code>/data/wg0.conf</code>(設定ファイル)のような名前でアクセスする。</p>
   <h5>Apache のトップレベルプロジェクト</h5>
-  <p>Apache Software Foundation(ASF)で、独り立ちしたと認められたプロジェクト。重要なのは、開発が公開の場(メーリングリスト、GitHub)で行われ、コードだけでなく設計理由やライセンスまでレビューされること。これがスライド 40 の進め方につながる。</p>
+  <p>Apache Software Foundation(ASF)で、独り立ちしたと認められたプロジェクト。重要なのは、開発が公開の場(メーリングリスト、GitHub)で行われ、コードだけでなく設計理由やライセンスまでレビューされること。これがスライド 36 の進め方につながる。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:NuttX は小さな RTOS だが、Unix のように書ける。だから後半のソケット、ネットワークデバイス、POSIX 流の移植が成り立つ。根拠は NuttX 公式の説明(nuttx.apache.org)。</p>
   <h4>④ 話すときのポイント</h4>
@@ -695,7 +692,7 @@
     <tr><td>POSIX</td><td class="yomi">ポジックス</td><td>Unix 系 OS の API の標準</td></tr>
     <tr><td>ANSI C</td><td class="yomi">アンシ・シー</td><td>C 言語の標準(<code>printf</code> など)</td></tr>
     <tr><td>VFS</td><td class="yomi">ブイエフエス</td><td>Virtual File System</td></tr>
-    <tr><td>MCU / MPU</td><td class="yomi">エムシーユー / エムピーユー</td><td>マイコン / より大きいプロセッサ。※スライド 31 の MPU(メモリ保護装置)とは別物</td></tr>
+    <tr><td>MCU / MPU</td><td class="yomi">エムシーユー / エムピーユー</td><td>マイコン / より大きいプロセッサ。※スライド 29 の MPU(メモリ保護装置)とは別物</td></tr>
     <tr><td>TLP</td><td class="yomi">ティーエルピー</td><td>Apache の Top-Level Project</td></tr>
   </table></div>
 </section>
@@ -768,7 +765,7 @@
   <h4>① 画面にあるもの</h4>
   <p>4 つの時期:2015 年 ソニーのオーディオ製品に NuttX / 2018〜19 年 SPRESENSE と CXD56xx(オーディオ・GNSS・カメラ・マルチコアの対応が NuttX に入り、Open Source Summit + ELC Europe 2019 で発表)/ 2020 年 本家との協業(ソニーのエンジニアが主要な貢献者に。「A Journey from Fork to Mainline」、NuttX Online Workshop 2020)/ 2020 年代 カメラ・GNSS・センシングへ。下に出典(石川氏・Jerpelea 氏の講演、NuttX 文書)。</p>
   <h4>② 背景知識</h4>
-  <p><b>fork と mainline</b>:オープンソースを会社で使うとき、まず自社用に分岐(fork)して手を入れることが多い。しかし分岐したままだと、本家(mainline)の改良を取り込むたびに苦労する。そこで自社の変更を本家に戻していく(upstream する)。「fork から mainline へ」はこの道のりのこと。このプロジェクトの今の状況はスライド 40。</p>
+  <p><b>fork と mainline</b>:オープンソースを会社で使うとき、まず自社用に分岐(fork)して手を入れることが多い。しかし分岐したままだと、本家(mainline)の改良を取り込むたびに苦労する。そこで自社の変更を本家に戻していく(upstream する)。「fork から mainline へ」はこの道のりのこと。このプロジェクトの今の状況はスライド 36。</p>
   <p><b>GNSS</b>:GPS などの衛星測位の総称。<b>マルチコア</b>:1 つのチップに CPU が複数あること。<b>PMC(Project Management Committee)</b>:Apache のプロジェクトを運営する委員会。台本では Alin Jerpelea 氏が後に NuttX の PMC 議長を務めたと述べている。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:ソニーはエッジ AI よりずっと前から NuttX を使っており、オーディオと SPRESENSE の経験がセンシングとカメラにつながった。根拠はスライド下の公開講演と文書。</p>
@@ -834,6 +831,7 @@
   <p><b>要点:</b>背景(NuttX と自分)から、解きたい問題(遠くに置いた機器に安全に届く)へ移る区切り。</p>
   <p><b>話し方:</b>"That is the background. Part two: the problem I wanted to solve, and the idea."</p>
 </section>
+
 <section class="slide" id="s12">
   <div class="head"><span class="no">12</span><h3>12 — Problem: Wi-Fi security stops too early</h3><span class="en">Reaching a device from far away is hard.</span></div>
   <a class="shot" href="renders/glasgow/slide-12.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-12.png" alt="スライド 12 の画像"></a>
@@ -965,7 +963,7 @@
       <line class="ln-nx" x1="640" y1="95" x2="126" y2="110" stroke-width="2"/><text x="380" y="94" text-anchor="middle" font-size="13">② handshake response(応答)</text>
       <line class="ln-wg" x1="120" y1="140" x2="634" y2="150" stroke-width="3"/><text x="380" y="134" text-anchor="middle" font-size="13" fill="var(--wg)">③ 以後のデータは session key と counter で暗号化</text>
     </svg>
-    <figcaption>図 S13 handshake は 2 通だけ。開始した側を initiator、応答した側を responder と呼ぶ(スライド 33 で重要になる)。</figcaption>
+    <figcaption>図 S13 handshake は 2 通だけ。開始した側を initiator、応答した側を responder と呼ぶ(スライド 31 で重要になる)。</figcaption>
   </figure>
   <h5>IPsec と OpenVPN</h5>
   <p>WireGuard より前からある代表的な VPN。高機能だが、選べる暗号や設定が多く、コードも大きい。WireGuard はあえて選択肢を減らし、使う暗号を固定することで小さくしている。マイコンでは、この小ささがそのまま「載るかどうか」と「レビューできるかどうか」に効く。</p>
@@ -984,9 +982,9 @@
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>WireGuard の暗号は自分で実装したのですか?</dt>
-    <dd>していない。暗号とプロトコルは既存の wireguard-lwip のもの(apps 版)と NuttX 自身の <code>crypto/</code>(カーネル版)を使う(スライド 17・29)。</dd>
+    <dd>していない。暗号とプロトコルは既存の wireguard-lwip のもの(apps 版)と NuttX 自身の <code>crypto/</code>(カーネル版)を使う(スライド 17・27)。</dd>
     <dt>WireGuard の弱点は?</dt>
-    <dd>暗号を選べない(固定)、相手の公開鍵を手で配る必要がある、handshake が時刻に依存する(スライド 33)。</dd>
+    <dd>暗号を選べない(固定)、相手の公開鍵を手で配る必要がある、handshake が時刻に依存する(スライド 31)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -1035,7 +1033,7 @@
   <h5>TUN 型のデバイス</h5>
   <p>普通の Ethernet の口は、IP パケットの外に Ethernet のヘッダ(機器の物理アドレス MAC など)を付けて送る。<b>TUN</b> 型の口は IP パケットだけを扱い、Ethernet のヘッダを持たない。WireGuard が運ぶのは IP パケットそのものなので、TUN 型がちょうどよい。NuttX では <code>NET_LL_TUN</code>(LL は Link Layer)という種類で登録する。</p>
   <h5>usrsock とは</h5>
-  <p>SPRESENSE の Wi-Fi は外付けモジュール GS2200M で、そのモジュール自身が TCP/IP の処理を持っている。NuttX は「ソケットの処理をこのモジュール(を操作するデーモン)に任せる」経路 <b>usrsock</b> を使う。ESP32-S3 は NuttX のネットワークスタックが直接 Wi-Fi を使う(native)。経路が違うので、2 つのボードで試す意味がある(スライド 31)。</p>
+  <p>SPRESENSE の Wi-Fi は外付けモジュール GS2200M で、そのモジュール自身が TCP/IP の処理を持っている。NuttX は「ソケットの処理をこのモジュール(を操作するデーモン)に任せる」経路 <b>usrsock</b> を使う。ESP32-S3 は NuttX のネットワークスタックが直接 Wi-Fi を使う(native)。経路が違うので、2 つのボードで試す意味がある(スライド 29)。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:NuttX から見て <code>wg0</code> は普通のネットワークデバイス。その下で WireGuard がパケットを暗号化した UDP に変える。ここから先の仕事は、上の層も下の層も変えずに、この真ん中を作ること。根拠は実装の構造(apps 版の <code>nuttx-wireguardif.c</code>、カーネル版の <code>drivers/net/wireguard/wireguard.c</code>、<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>)。</p>
   <h4>④ 話すときのポイント</h4>
@@ -1069,6 +1067,7 @@
   <p><b>要点:</b>ここから実装の話。既存の WireGuard をどう再利用するかの作戦。</p>
   <p><b>話し方:</b>"Part three: the plan. How do you reuse an existing WireGuard?"</p>
 </section>
+
 <section class="slide" id="s17">
   <div class="head"><span class="no">17</span><h3>17 — Porting: four functions to write</h3><span class="en">Reusing wireguard-lwip without lwIP.</span></div>
   <a class="shot" href="renders/glasgow/slide-17.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-17.png" alt="スライド 17 の画像"></a>
@@ -1103,7 +1102,7 @@
     <tr><td><code>wireguard_tai64n_now()</code></td><td>handshake に入れる時刻(TAI64N 形式)</td><td><code>clock_gettime(CLOCK_REALTIME)</code>(日付の時計)</td></tr>
     <tr><td><code>wireguard_is_under_load()</code></td><td>今、負荷が高いか(DoS 対策の cookie を使うか)</td><td>常に <code>false</code></td></tr>
   </table></div>
-  <p><b>MONOTONIC と REALTIME の違い</b>:MONOTONIC は起動からの経過時間で、決して戻らない(ストップウォッチ)。REALTIME はカレンダーの日時で、設定し直すと進んだり戻ったりする(壁掛け時計)。タイマーにはストップウォッチ、相手に「今は何時」と伝えるには壁掛け時計を使う。この違いがスライド 33 の問題の根っこになる。</p>
+  <p><b>MONOTONIC と REALTIME の違い</b>:MONOTONIC は起動からの経過時間で、決して戻らない(ストップウォッチ)。REALTIME はカレンダーの日時で、設定し直すと進んだり戻ったりする(壁掛け時計)。タイマーにはストップウォッチ、相手に「今は何時」と伝えるには壁掛け時計を使う。この違いがスライド 31 の問題の根っこになる。</p>
   <h5>暗号の部品(名前だけ覚えればよい)</h5>
   <div class="tbl"><table>
     <tr><th>部品</th><th>役割</th><th>たとえ</th></tr>
@@ -1126,7 +1125,7 @@
     <dt>is_under_load が常に false で大丈夫ですか?</dt>
     <dd>apps 版ではそう割り切った。カーネル版は cookie(DoS 対策)を持ち、handshake の洪水で cookie の返事が出ることを試験している(TR (b):8 回送って 4 回返事、<span class="tag sim">sim</span>)。</dd>
     <dt>ライセンスは?</dt>
-    <dd>wireguard-lwip 由来のコードは BSD-3-Clause で、元のヘッダを残したまま取り込んでいる。カーネル版は NuttX 自身の <code>crypto/</code> を使う(スライド 29)。</dd>
+    <dd>wireguard-lwip 由来のコードは BSD-3-Clause で、元のヘッダを残したまま取り込んでいる。カーネル版は NuttX 自身の <code>crypto/</code> を使う(スライド 27)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -1188,15 +1187,16 @@
   </table></div>
 </section>
 
-<div class="divider" id="ch4"><b>④ Version 1: the app</b>(スライド 19〜26、約 5 分)— 最初のトンネル、デモが隠した 4 つのバグ、最初のデモ</div>
+<div class="divider" id="ch4"><b>④ Version 1: the app</b>(スライド 19〜24、約 4 分)— 最初のトンネル、6 つのバグ(うち 2 つを詳しく)、最初のデモ</div>
 <section class="slide short" id="s19">
   <div class="head"><span class="no">19</span><h3>19 — Agenda(④ を強調)</h3><span class="en">Part four: version one, an app.</span></div>
   <a class="shot" href="renders/glasgow/slide-19.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-19.png" alt="スライド 19 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-19.png</code> · <a href="coc-glasgow-slides.html#19" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>目次の④「Version 1: the app」が色付き。</p>
-  <p><b>要点:</b>apps 版(v0.1.1)の部。動いた(20)→ どこが難しかったか(21)→ 4 つのバグ(22〜25)→ 最初のデモの動画(26)。</p>
+  <p><b>要点:</b>apps 版(v0.1.1)の部。動いた(20)→ どこが難しかったか:6 つのバグの表(21)→ 詳しく話す 2 つ(22・23)→ 最初のデモの動画(24)。</p>
   <p><b>話し方:</b>"Part four: version one, an app. It worked, and then the bugs came."</p>
 </section>
+
 <section class="slide" id="s20">
   <div class="head"><span class="no">20</span><h3>20 — Result: the first working tunnel</h3><span class="en">A working tunnel is only the beginning.</span></div>
   <a class="shot" href="renders/glasgow/slide-20.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-20.png" alt="スライド 20 の画像"></a>
@@ -1221,7 +1221,7 @@
 wg set ...         # 秘密鍵や相手(peer)を設定する
 wg setconf ...     # 設定ファイルから読み込む
 wg show            # 状態を表示する(秘密鍵は出さない)</code></pre>
-  <p>以前は鍵をビルド設定(Kconfig)に書き込み、変えるたびにファームウェアを作り直していた。動作中に設定できれば、鍵がファームウェアのファイルに入らない(スライド 37)。</p>
+  <p>以前は鍵をビルド設定(Kconfig)に書き込み、変えるたびにファームウェアを作り直していた。動作中に設定できれば、鍵がファームウェアのファイルに入らない(スライド 36)。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:トンネルが動くまでは簡単な段階だった。面白いことはほとんど「動いた後」に起きた。根拠:<span class="tag apps">apps 版</span>。暗号はそのまま、プロトコルの中心は 2 つの修正(<a href="../../nuttx_port/apps/netutils/wireguard/PATCHES.md">PATCHES.md</a>)。<code>wg</code> の実装は <code>wg_main.c</code>(<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>)。</p>
   <p>注意:以前の資料にあった「3,079 行が完全に同じ」は、もう言わない(プロトコルの中心に修正を入れたため)。言ってよいのは「3,000 行以上のプロトコルと暗号を持ってきた。暗号はそのまま、プロトコルの中心は小さな修正 2 つ」。</p>
@@ -1255,76 +1255,16 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
 </section>
 
 <section class="slide" id="s21">
-  <div class="head"><span class="no">21</span><h3>21 — Where it was hard</h3><span class="en">The tunnel worked fast. The bugs took the time.</span></div>
+  <div class="head"><span class="no">21</span><h3>21 — Where it was hard: six bugs</h3><span class="en">The tunnel worked fast. Six bugs took most of the time.</span></div>
   <a class="shot" href="renders/glasgow/slide-21.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-21.png" alt="スライド 21 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-21.png</code> · <a href="coc-glasgow-slides.html#21" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>3 つの箱が矢印でつながる図:SIMPLE TEST(handshake / ping)✓ PASS → ASSUMPTION「そこは正しい」→ DEEPER TEST(TCP / 実機 / カーネル / セキュリティ)✗ FAIL。下に「時間の大半は 6 つのバグに使った。その多くは通った試験の陰に隠れていたので、最初は違う場所を探した。4 つは apps 版で、2 つはカーネルへ移した後」。</p>
+  <p>6 つのバグを 1 枚にまとめた表(# / バグ / どこで出たか / 教訓)。1 受信スレッドが <code>wg</code> コマンドの終了と一緒に止まった(apps 版)— <code>pthread_detach()</code> はメモリを後で解放するだけで、スレッドを生かし続けはしない。2 ping は通るのに TCP が死ぬ(apps 版、次のスライドで詳しく)— fd は 1 つのタスクグループのもの。3「実害なし」が 10 倍(apps 版、詳しく)— 応急処置はタダと言う前に測る。4 スタックが 94% 使用・設定の保存でボードが固まる(実機だけ、sim では出ない)— 実機で測る。sim の大きなスタックが隠す。5 handshake は通るのにデータが失敗:NuttX 自身の ChaCha20-Poly1305(第 5 部、カーネルドライバ)— handshake が通ってもデータの経路は証明されない。6 3 KB のカーネルスタックに 6 KB の配列(第 5 部、QEMU の BUILD_KERNEL)— 同じスタックの教訓が一段深く。右下に GitHub の QR コードと URL(実装の詳細、デバッグの記録、試験の結果)。下に「多くは通った試験の陰に隠れていたので、最初は違う場所を探した」。</p>
   <h4>② 背景知識</h4>
   <h5>ping とは何を確かめるか</h5>
-  <p><code>ping</code> は「相手に小さなパケットを送り、返事が来るか」を見るコマンド。届くこと、往復時間は分かる。しかし分かるのはそれだけで、大きなデータ、長時間、別のタスクからの送信、鍵の扱いなどは何も確かめていない。handshake も同じで、「最初のやり取りができた」ことしか分からない。</p>
-  <h5>なぜ「違う場所を探す」のか</h5>
-  <p>人は一度「ここは正しい」と思うと、そこを疑わなくなる。試験が通った部分は「確認済み」の棚に入り、本当の原因がそこにあっても探さない。図の 3 つの箱はこの流れを描いている。</p>
-  <figure>
-    <svg viewBox="0 0 900 140" role="img" aria-label="簡単な試験が通る、思い込む、深い試験で落ちる">
-      <rect class="box-nx" x="10" y="30" width="230" height="80" rx="8"/>
-      <text x="125" y="62" text-anchor="middle" font-size="16" font-weight="700">簡単な試験</text>
-      <text x="125" y="86" text-anchor="middle" font-size="14">handshake / ping → ✓ 通る</text>
-      <rect class="box-2" x="335" y="30" width="230" height="80" rx="8" stroke-dasharray="6 4"/>
-      <text x="450" y="62" text-anchor="middle" font-size="16" font-weight="700">思い込み</text>
-      <text x="450" y="86" text-anchor="middle" font-size="14">「そこは正しいはず」</text>
-      <rect class="box-wg" x="660" y="30" width="230" height="80" rx="8"/>
-      <text x="775" y="62" text-anchor="middle" font-size="16" font-weight="700">もっと深い試験</text>
-      <text x="775" y="86" text-anchor="middle" font-size="14">TCP・実機・カーネル → ✗ 落ちる</text>
-      <line class="ln" x1="240" y1="70" x2="330" y2="70" stroke-width="2"/><path d="M322 64 L334 70 L322 76 z" fill="var(--ink-3)"/>
-      <line class="ln" x1="565" y1="70" x2="655" y2="70" stroke-width="2"/><path d="M647 64 L659 70 L647 76 z" fill="var(--ink-3)"/>
-    </svg>
-  </figure>
-  <h5>6 つのバグの一覧</h5>
-  <div class="tbl"><table>
-    <tr><th>#</th><th>表面上は</th><th>実際は</th><th>どちらの版</th><th>スライド</th></tr>
-    <tr><td>1</td><td>受信待ちが戻らない(タイムアウトの設定を疑った)</td><td>受信スレッドが、起動したコマンドの終了と一緒に消えていた</td><td>apps</td><td>22</td></tr>
-    <tr><td>2</td><td>ping が通る</td><td>別タスクからの送信が EBADF で失敗し、TCP が死ぬ</td><td>apps</td><td>23</td></tr>
-    <tr><td>3</td><td>50 ms ごとの確認は「害なし」</td><td>全パケットが最大 50 ms 待ち、約 10 倍遅い</td><td>apps</td><td>24</td></tr>
-    <tr><td>4</td><td>sim で動く</td><td>実機では保存で固まり、スタックは 94% 使用</td><td>apps</td><td>25</td></tr>
-    <tr><td>5</td><td>handshake が通る</td><td>NuttX の暗号の nonce の位置がずれていて、2 個目以降のパケットが全滅</td><td>カーネル(NuttX 本体のバグ)</td><td>30</td></tr>
-    <tr><td>6</td><td>sim で設定できる</td><td>カーネルビルドではスタック上の 6 KB 配列であふれる</td><td>カーネル</td><td>30</td></tr>
-  </table></div>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:最初のトンネルはすぐ動き、時間の大半は 6 つのバグに使った。多くは通った試験の陰に隠れていて、最初は違う場所を探した。根拠:次のスライドの実例(apps 版の 4 つは <a href="../development/">docs/development/</a> の作業記録、カーネル版の 2 つは <a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found and fixed」)。</p>
-  <p>言い方の注意:以前のデッキにあった「Simple tests pass. Deeper tests fail.」という標語は、今のデッキにはない。「全部のバグが同じ形」とも言わず、「ここが難しかった。多くは通った試験の陰にあった」と、起きたことをそのまま話す。</p>
-  <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">Now, where it was hard.</blockquote>
-  <p class="gloss">では、どこが難しかったか。</p>
-  <blockquote class="en">The first tunnel worked quickly. Most of my time went into six bugs: four in the apps version, and two more after I moved it into the kernel.</blockquote>
-  <p class="gloss">最初のトンネルはすぐ動きました。時間の大半は 6 つのバグに使いました。apps 版で 4 つ、カーネルへ移してからさらに 2 つ。</p>
-  <span class="pause">間</span>
-  <blockquote class="en">Most of them hid behind a test that passed, like a handshake or a ping, so I first looked in the wrong place.</blockquote>
-  <p class="gloss">その多くは、handshake や ping のような通った試験の陰に隠れていたので、最初は違う場所を探しました。</p>
-  <blockquote class="en">Here are the four from version one.</blockquote>
-  <p class="gloss">ここからはバージョン 1 の 4 つです。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
-  <dl class="qa">
-    <dt>では最初からどんな試験を書けばよかったのですか?</dt>
-    <dd>handshake の先まで試すもの。たとえば 2 個目以降のパケット、別タスクからの送信、実機の小さいスタック、本物のカーネルビルド(スライド 41 の教訓 1、初心者ガイド §14)。</dd>
-  </dl>
-  <h4>⑥ 用語</h4>
-  <div class="tbl"><table class="terms">
-    <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>ping</td><td class="yomi">ピング</td><td>届くかを確かめる小さな往復</td></tr>
-    <tr><td>assumption</td><td class="yomi">アサンプション</td><td>思い込み・前提</td></tr>
-    <tr><td>PASS / FAIL</td><td class="yomi">パス / フェイル</td><td>合格 / 不合格</td></tr>
-    <tr><td>sim</td><td class="yomi">シム</td><td>NuttX を PC 上のプログラムとして動かす模擬環境</td></tr>
-  </table></div>
-</section>
-
-<section class="slide" id="s22">
-  <div class="head"><span class="no">22</span><h3>22 — Bug 1 / 6: Created successfully. Did not survive.</h3><span class="en">first symptom SO_RCVTIMEO, real cause pthread_detach</span></div>
-  <a class="shot" href="renders/glasgow/slide-22.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-22.png" alt="スライド 22 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-22.png</code> · <a href="coc-glasgow-slides.html#22" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>最初の症状:<code>recvfrom()</code> が戻らなかったので、<code>SO_RCVTIMEO</code> を疑った。本当の原因はここ:受信スレッドは <code>pthread_create()</code> + <code>pthread_detach()</code> で起動した。<code>wg</code> コマンドが終わるとスレッドも止まった(<code>ps</code> にも出ない)。作成直後に <code>usleep()</code> を入れるとスレッドの <code>printf</code> が出た — 作成はされていた。自分の思い違い:detach は「コマンドより長生きする」意味だと思っていた。実際はスレッドのメモリをいつ解放するかを決めるだけ。下に「<code>pthread_detach()</code> はメモリの解放時期を決めるもので、スレッドの寿命ではない。detach したスレッドも、起動したタスクグループと一緒に死ぬ」。</p>
-  <h4>② 背景知識</h4>
+  <p><code>ping</code> は「相手に小さなパケットを送り、返事が来るか」を見るコマンド。届くこと、往復時間は分かる。しかし分かるのはそれだけで、大きなデータ、長時間、別のタスクからの送信、鍵の扱いなどは何も確かめていない。handshake も同じで、「最初のやり取りができた」ことしか分からない。人は一度「ここは正しい」と思うと、そこを疑わなくなる。だから「通った試験の陰に隠れたバグ」は、見つけるのに時間がかかる。</p>
+  <p>表の 6 つのうち、2 と 3 は次の 2 枚(22・23)で詳しく話し、5 と 6 は第 5 部(スライド 28)。1 と 4 はこの表の 1 行と台本で済ませる。以前のデッキではそれぞれ 1 枚ずつあったので、その中身をここにまとめておく。</p>
+  <h4 style="color:var(--ink-2)">②-a バグ 1 をもう少し:作れたのに、生き残らなかったスレッド</h4>
   <h5>最初に見えた症状:ブロッキングとタイムアウト</h5>
   <p><code>recvfrom()</code> はデータが来るまで、そこで止まって待つ(<b>ブロックする</b>)。<code>SO_RCVTIMEO</code> は「最大○秒待ったらあきらめて戻ってこい」という設定。apps 版は、受信待ちの合間に「しばらく何も来なければ、こちらから handshake を始める」というタイマー処理をする設計だった。だから受信待ちが戻らないと、タイマーが回らず、handshake も送られない。</p>
   <figure>
@@ -1365,44 +1305,73 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p>作った直後に少し待つと、スレッドが動き出して <code>printf</code> を出した。つまり「作れていない」のではなく、「作れたが、コマンドが戻った瞬間に消えた」。この切り分けが原因の特定につながった。</p>
   <h5>SO_RCVTIMEO は無実だった</h5>
   <p>台本の締め:NuttX の UDP のコードは、このタイムアウトの設定をちゃんと使う。古い経路を試し直さなかっただけ。最初の症状から犯人を決めつけると、本当の原因を見落とす — これも「通った試験・見えた症状を信じすぎる」型の一例。</p>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:<code>pthread_detach()</code> はメモリの解放時期を決めるだけで、スレッドの寿命は決めない。detach したスレッドも、起動したタスクグループと一緒に死ぬ。だからカーネル版では、スレッドをドライバ自身が持つ(スライド 29)。根拠:<span class="tag apps">apps 版</span><span class="tag sim">sim</span>(<a href="../development/phase3-log.md">phase3-log.md</a>「バグ1」「バグ2」:<code>usleep(300000)</code> を入れるとスレッドの <code>printf</code> が出る、入れないと 1 行も出ずに消える)。apps 版の対応は、pthread をやめて <code>task_create()</code> で独立したタスク <code>wg_rx</code> として起動すること。<span class="tag kern">カーネル版</span> では受信スレッドはカーネルスレッド(<code>wg_rx</code>)で、<code>wg_ifup</code> で作り <code>wg_ifdown</code> で終わる(<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>)。</p>
-  <p>注意:以前の版のスライドは「<code>setsockopt(SO_RCVTIMEO)</code> が 0 を返したのに効かなかった」を独立したバグとして数えていた。今は「最初の症状で、疑ったが本当の原因ではなかった」という扱い。「SO_RCVTIMEO は NuttX のバグ」とは言わない。</p>
+    <h4 style="color:var(--ink-2)">②-b バグ 4 をもう少し:sim は通るのに実機は違う</h4>
+  <h5>シェルのリダイレクト</h5>
+  <p><code>&gt;</code> は「コマンドの画面出力を、画面ではなくファイルに書く」というシェルの機能(<b>リダイレクト</b>)。NSH は <code>wg</code> のような組み込みアプリを別のタスクとして起動し、その出力をファイルにつなぎ替える。この組み合わせが ESP32-S3 の SPIFFS 相手だと固まった。原因はプラットフォーム側の相互作用と判断し、アプリ自身が <code>fopen</code> してファイルを書く <code>wg saveconf</code> を作って回り道した(<code>wg setconf</code> が自分でファイルを読むのと対称)。</p>
+  <h5>スタックとは</h5>
+  <p>関数を呼ぶたびに、その関数の作業メモリ(局所変数、戻り先)を積み上げる場所。関数から戻ると取り除く。皿を積み重ねるイメージ。スレッドごとに 1 本あり、<b>大きさは作るときに決める</b>。PC なら数 MB あるのが普通だが、マイコンでは数 KB しかない。</p>
+  <figure>
+    <svg viewBox="0 0 900 230" role="img" aria-label="スタックに関数呼び出しが積み重なり、上限に近づく">
+      <rect class="box-2" x="40" y="20" width="260" height="190" rx="4"/>
+      <text x="170" y="14" text-anchor="middle" font-size="13" class="t2">wg_rx のスタック(既定 3072 B)</text>
+      <g font-size="13">
+        <rect class="box-n" x="50" y="170" width="240" height="30"/><text x="170" y="190" text-anchor="middle">受信ループ</text>
+        <rect class="box-n" x="50" y="136" width="240" height="30"/><text x="170" y="156" text-anchor="middle">復号</text>
+        <rect class="box-n" x="50" y="102" width="240" height="30"/><text x="170" y="122" text-anchor="middle">ipv4_input()</text>
+        <rect class="box-n" x="50" y="68" width="240" height="30"/><text x="170" y="88" text-anchor="middle">TCP の処理</text>
+        <rect class="box-wg" x="50" y="34" width="240" height="30"/><text x="170" y="54" text-anchor="middle">返信の暗号化 ← 残り 176 B</text>
+      </g>
+      <text x="340" y="60" font-size="14">深い呼び出しが 1 本のスタックに積み重なる。</text>
+      <text x="340" y="88" font-size="14">sim はスタックが大きいので、足りなくても気付かない。</text>
+      <text x="340" y="116" font-size="14">実機では、あふれると隣のメモリを壊して固まる。</text>
+      <text x="340" y="160" font-size="14" font-weight="700">測り方:CONFIG_STACK_COLORATION + ps</text>
+      <text x="340" y="186" font-size="13" class="t2">スタックを決まった模様で塗っておき、塗りが消えた深さ</text>
+      <text x="340" y="206" font-size="13" class="t2">(= 実際に使った最大量)を ps で表示する</text>
+    </svg>
+  </figure>
+  <h5>スタックがあふれると何が起きるか</h5>
+  <p>上限を超えると、隣にある別のデータを上書きして壊す(<b>スタックオーバーフロー</b>)。すぐに止まるとは限らず、しばらくしてから関係ない場所で固まるので、原因を探しにくい。残り 176 B は、少し深い呼び出しが 1 つ増えれば越えてしまう幅。</p>
+  <h5>なぜ sim では起きないか</h5>
+  <p>sim は NuttX を PC のプログラムとして動かすので、スタックも PC 並みに大きく取られる(ある記録では約 72 KB)。3 KB で足りなくても、sim では余裕で収まってしまう。ファイルシステムも PC 側のものなので、SPIFFS の振る舞いも見えない。</p>
+  <h5>stack coloration(スタックの塗り分け)</h5>
+  <p>スタックを最初に決まった模様で塗っておき、後で「模様が消えた一番深いところ」を調べる。そこまでは実際に使われた、と分かる。この最大使用量を <b>high-water mark(最高水位)</b>と呼ぶ。洪水の後に壁に残る水の跡のようなもの。</p>
+    <h4>③ このスライドの主張と根拠</h4>
+  <p>主張:最初のトンネルはすぐ動き、時間の大半は 6 つのバグに使った。多くは通った試験の陰に隠れていて、最初は違う場所を探した。根拠:apps 版の 4 つは作業記録(<a href="../development/phase3-log.md">phase3-log.md</a>、<a href="../development/phase4-log.md">phase4-log.md</a>、<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>)、カーネル版の 2 つは <a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found and fixed」。記録はすべて GitHub のリポジトリにある(QR コード)。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">The first symptom was simple: recvfrom never returned, the timer never ran, and no handshake was sent.</blockquote>
-  <p class="gloss">最初の症状は単純でした。recvfrom が戻らず、タイマーが回らず、handshake が送られませんでした。</p>
-  <blockquote class="en">I blamed the receive timeout option and switched to poll, but still nothing was sent. The real cause was here.</blockquote>
-  <p class="gloss">受信のタイムアウトの設定を疑って poll に切り替えましたが、それでも何も送られません。本当の原因はここでした。</p>
+  <blockquote class="en">The first tunnel worked quickly. Most of my time went into six bugs: four in the apps version, and two more after I moved it into the kernel.</blockquote>
+  <p class="gloss">最初のトンネルはすぐ動きました。時間の大半は 6 つのバグに使いました。apps 版で 4 つ、カーネルへ移してからさらに 2 つ。</p>
+  <blockquote class="en">Most of them hid behind a test that passed, like a handshake or a ping, so I first looked in the wrong place.</blockquote>
+  <p class="gloss">その多くは、handshake や ping のような通った試験の陰に隠れていたので、最初は違う場所を探しました。</p>
   <span class="pause">間</span>
-  <blockquote class="en">My mistake was thinking that “detached” means “it lives longer than the command.”</blockquote>
-  <p class="gloss">私の間違いは、「detach したスレッドはコマンドより長生きする」と思っていたことです。</p>
-  <blockquote class="en">That is why, in the kernel version, the driver itself owns the thread.</blockquote>
-  <p class="gloss">だからカーネル版では、ドライバ自身がスレッドを持っています。</p>
+  <blockquote class="en">Detach only decides when the memory is freed, not how long the thread lives. That is why, in the kernel version, the driver owns its thread.</blockquote>
+  <p class="gloss">detach はメモリをいつ解放するかを決めるだけで、スレッドの寿命は決めません。だからカーネル版では、ドライバ自身がスレッドを持ちます。</p>
+  <blockquote class="en">On the board, the receive task's stack was ninety-four percent full, with only 176 bytes left. Sim has big stacks, so it never saw it. Please remember this one.</blockquote>
+  <p class="gloss">ボードでは受信タスクのスタックが 94% 埋まっていて、残りは 176 バイトだけでした。sim はスタックが大きいので、これが見えませんでした。これは覚えておいてください。</p>
+  <blockquote class="en">I will tell two of them in detail, because their lessons are useful for anyone.</blockquote>
+  <p class="gloss">そのうち 2 つは、誰にとっても役に立つ教訓なので、詳しく話します。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>SO_RCVTIMEO は NuttX のバグだったのですか?</dt>
-    <dd>違う。NuttX の UDP のコードはその設定を使う。症状を見て疑ったが、本当の原因はスレッドが消えていたこと。古い経路を試し直していないだけ(台本)。</dd>
-    <dt>apps 版ではどう直したのですか?</dt>
-    <dd>pthread ではなく <code>task_create()</code> で独立したタスクにした(<code>ps</code> にも独立したタスクとして出る)。根本的な解決は、カーネル版で「ソケットとスレッドはドライバが所有する」設計にしたこと。</dd>
+    <dd>違う。最初の症状(受信待ちが戻らない)から疑ったが、本当の原因はスレッドが消えていたこと。NuttX の UDP のコードはその設定を使う。</dd>
+    <dt>では最初からどんな試験を書けばよかったのですか?</dt>
+    <dd>handshake の先まで試すもの。2 個目以降のパケット、別タスクからの送信、実機の小さいスタック、本物のカーネルビルド(スライド 38 の教訓 1)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
     <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>recvfrom()</td><td class="yomi">レシーブ・フロム</td><td>UDP でデータを受け取る関数。来るまで待つ</td></tr>
-    <tr><td>SO_RCVTIMEO</td><td class="yomi">エスオー・レシーブ・タイムオー</td><td>受信待ちのタイムアウトの設定項目</td></tr>
-    <tr><td>block</td><td class="yomi">ブロック</td><td>そこで止まって待つこと</td></tr>
-    <tr><td>pthread</td><td class="yomi">ピースレッド</td><td>POSIX のスレッド</td></tr>
-    <tr><td>pthread_detach / join</td><td class="yomi">デタッチ / ジョイン</td><td>後片付けを自動に / 終わりを待って回収</td></tr>
+    <tr><td>ping</td><td class="yomi">ピング</td><td>届くかを確かめる小さな往復</td></tr>
+    <tr><td>pthread_detach</td><td class="yomi">ピースレッド・デタッチ</td><td>スレッドの後片付けを自動にする指定。寿命は延ばさない</td></tr>
     <tr><td>task group</td><td class="yomi">タスク・グループ</td><td>NuttX のプログラム単位(Linux のプロセスに近い)</td></tr>
-    <tr><td>ps</td><td class="yomi">ピーエス</td><td>動いているタスクの一覧を出すコマンド</td></tr>
-    <tr><td>usleep()</td><td class="yomi">ユー・スリープ</td><td>マイクロ秒単位で待つ関数</td></tr>
+    <tr><td>stack / high-water mark</td><td class="yomi">スタック / ハイウォーター・マーク</td><td>関数の作業メモリを積む場所 / いちばん深く使ったところ</td></tr>
+    <tr><td>SPIFFS</td><td class="yomi">スピフス</td><td>フラッシュ向けの小さなファイルシステム</td></tr>
+    <tr><td>QR code</td><td class="yomi">キューアール・コード</td><td>スマホで読むと URL が開く 2 次元のコード</td></tr>
   </table></div>
 </section>
 
-<section class="slide" id="s23">
-  <div class="head"><span class="no">23</span><h3>23 — Bug 2 / 6 · my favorite: ping works. TCP dies.</h3><span class="en">EBADF</span></div>
-  <a class="shot" href="renders/glasgow/slide-23.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-23.png" alt="スライド 22 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-23.png</code> · <a href="coc-glasgow-slides.html#23" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s22">
+  <div class="head"><span class="no">22</span><h3>22 — Bug 2 / 6 · my favorite: ping works. TCP dies.</h3><span class="en">EBADF</span></div>
+  <a class="shot" href="renders/glasgow/slide-22.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-22.png" alt="スライド 21 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-22.png</code> · <a href="coc-glasgow-slides.html#22" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>同じトンネルで ping は損失 0%。telnet の 3-way handshake まで成功するのに、その後に接続が死ぬ。ログ:<code>wg_encrypt_and_send: psock_sendto ret=-1 errno=9 EBADF</code>。成功した送信は全部 <code>wg_rx</code> タスクの中から。別タスクからの送信は EBADF。原因:fd は 1 つのタスクグループのもので、全体で共通ではない。修正:fd を使わない内部 API(<code>struct socket</code> に対する <code>psock_*()</code>)で、どのタスクからも使える。</p>
   <h4>② 背景知識</h4>
@@ -1437,7 +1406,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p>NuttX の内部には、番号を経由せずにソケットの実体(<code>struct socket</code>、メモリ上のデータ)を直接扱う関数群 <code>psock_*()</code> がある。実体を指せば、どのタスクからでも同じソケットを使える。部屋番号ではなく、部屋そのものの住所を渡すイメージ。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:NuttX では fd は 1 つのタスクグループのもの。同じソケットを指していても、別のタスクはその番号を使えない。根拠:<span class="tag apps">apps 版</span><span class="tag hw">実機</span> ESP32-S3 でトンネル越し telnet をしたときに発見(<a href="../development/phase4-log.md">phase4-log.md</a>、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>)。失敗していた「別のタスク」は、NuttX が起動時から持っている作業用タスク(LPWORK)で、<code>wg_rx</code> とは親子関係がないので fd 表を受け継いでいなかった。修正後、telnet でコマンド実行まで確認。<span class="tag kern">カーネル版</span> はソケットを最初から <code>struct socket</code> として持つ。</p>
-  <p>ただし、<code>psock_*()</code> は「同じメモリ空間」でしか使えない内部 API なので、apps 版は FLAT ビルド専用になった。これがスライド 28 の「カーネルへ移す」理由になる。</p>
+  <p>ただし、<code>psock_*()</code> は「同じメモリ空間」でしか使えない内部 API なので、apps 版は FLAT ビルド専用になった。これがスライド 26 の「カーネルへ移す」理由になる。</p>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">This is my favorite bug in the project.</blockquote>
   <p class="gloss">このプロジェクトで一番好きなバグです。</p>
@@ -1464,15 +1433,15 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s24">
-  <div class="head"><span class="no">24</span><h3>24 — Bug 3 / 6: “No real impact” was 10×</h3><span class="en">50 ms polling</span></div>
-  <a class="shot" href="renders/glasgow/slide-24.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-24.png" alt="スライド 23 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-24.png</code> · <a href="coc-glasgow-slides.html#24" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s23">
+  <div class="head"><span class="no">23</span><h3>23 — Bug 3 / 6: “No real impact” was 10×</h3><span class="en">50 ms polling</span></div>
+  <a class="shot" href="renders/glasgow/slide-23.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-23.png" alt="スライド 21 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-23.png</code> · <a href="coc-glasgow-slides.html#23" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>fd を使わない修正で <code>poll()</code> も使えなくなった。応急処置:50 ms ごとに確認。「暇なときに CPU を起こすだけ」と思っていた。間違い — 各パケットが最大 50 ms 待ち、約 10 倍遅くなった。修正:<code>psock_poll()</code> にコールバックとセマフォを付け、本当の「待ち」にした。</p>
   <h4>② 背景知識</h4>
   <h5>poll と polling</h5>
-  <p>紛らわしいが別物。<code>poll()</code> は「データが来たら起こして」と OS に頼んで眠る関数(呼び鈴)。<b>polling</b> は自分で一定間隔ごとに見に行くこと(郵便受けを何度も覗きに行く)。<code>poll()</code> は fd を使う関数なので、fd をやめた修正(スライド 23)で使えなくなり、仕方なく polling にした。</p>
+  <p>紛らわしいが別物。<code>poll()</code> は「データが来たら起こして」と OS に頼んで眠る関数(呼び鈴)。<b>polling</b> は自分で一定間隔ごとに見に行くこと(郵便受けを何度も覗きに行く)。<code>poll()</code> は fd を使う関数なので、fd をやめた修正(スライド 22)で使えなくなり、仕方なく polling にした。</p>
   <h5>なぜ 10 倍も遅くなるのか — TCP のやり取り</h5>
   <p>TCP は「受け取りました(ACK)」の返事が来るまで、次のデータをたくさんは送らない。1 往復ごとに最大 50 ms の余計な待ちが入ると、往復のたびにそれが積み重なり、全体の速度(スループット)が大きく落ちる。</p>
   <figure>
@@ -1521,91 +1490,17 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s25">
-  <div class="head"><span class="no">25</span><h3>25 — Bug 4 / 6: sim passes. Real hardware is different.</h3><span class="en">stack size</span></div>
-  <a class="shot" href="renders/glasgow/slide-25.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-25.png" alt="スライド 24 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-25.png</code> · <a href="coc-glasgow-slides.html#25" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>2 つの話。1 つ目:設定を <code>wg showconf &gt; /data/wg0.conf</code> で保存するとボードが固まった — SPIFFS の実機だけで、sim では一度も起きない。ファイルを自分で書く <code>wg saveconf</code> で解決。2 つ目:<code>wg_rx</code> タスクは自分のスタックで <code>ipv4_input()</code> を呼ぶので、TCP の呼び出し全体と、返信の暗号化がそこに乗る。既定の 3072 B は誰も測っていない数字だった。ボードで測ると 94% 使用、残り 176 B(<code>CONFIG_STACK_COLORATION</code> + <code>ps</code>)。</p>
-  <h4>② 背景知識</h4>
-  <h5>シェルのリダイレクト</h5>
-  <p><code>&gt;</code> は「コマンドの画面出力を、画面ではなくファイルに書く」というシェルの機能(<b>リダイレクト</b>)。NSH は <code>wg</code> のような組み込みアプリを別のタスクとして起動し、その出力をファイルにつなぎ替える。この組み合わせが ESP32-S3 の SPIFFS 相手だと固まった。原因はプラットフォーム側の相互作用と判断し、アプリ自身が <code>fopen</code> してファイルを書く <code>wg saveconf</code> を作って回り道した(<code>wg setconf</code> が自分でファイルを読むのと対称)。</p>
-  <h5>スタックとは</h5>
-  <p>関数を呼ぶたびに、その関数の作業メモリ(局所変数、戻り先)を積み上げる場所。関数から戻ると取り除く。皿を積み重ねるイメージ。スレッドごとに 1 本あり、<b>大きさは作るときに決める</b>。PC なら数 MB あるのが普通だが、マイコンでは数 KB しかない。</p>
-  <figure>
-    <svg viewBox="0 0 900 230" role="img" aria-label="スタックに関数呼び出しが積み重なり、上限に近づく">
-      <rect class="box-2" x="40" y="20" width="260" height="190" rx="4"/>
-      <text x="170" y="14" text-anchor="middle" font-size="13" class="t2">wg_rx のスタック(既定 3072 B)</text>
-      <g font-size="13">
-        <rect class="box-n" x="50" y="170" width="240" height="30"/><text x="170" y="190" text-anchor="middle">受信ループ</text>
-        <rect class="box-n" x="50" y="136" width="240" height="30"/><text x="170" y="156" text-anchor="middle">復号</text>
-        <rect class="box-n" x="50" y="102" width="240" height="30"/><text x="170" y="122" text-anchor="middle">ipv4_input()</text>
-        <rect class="box-n" x="50" y="68" width="240" height="30"/><text x="170" y="88" text-anchor="middle">TCP の処理</text>
-        <rect class="box-wg" x="50" y="34" width="240" height="30"/><text x="170" y="54" text-anchor="middle">返信の暗号化 ← 残り 176 B</text>
-      </g>
-      <text x="340" y="60" font-size="14">深い呼び出しが 1 本のスタックに積み重なる。</text>
-      <text x="340" y="88" font-size="14">sim はスタックが大きいので、足りなくても気付かない。</text>
-      <text x="340" y="116" font-size="14">実機では、あふれると隣のメモリを壊して固まる。</text>
-      <text x="340" y="160" font-size="14" font-weight="700">測り方:CONFIG_STACK_COLORATION + ps</text>
-      <text x="340" y="186" font-size="13" class="t2">スタックを決まった模様で塗っておき、塗りが消えた深さ</text>
-      <text x="340" y="206" font-size="13" class="t2">(= 実際に使った最大量)を ps で表示する</text>
-    </svg>
-  </figure>
-  <h5>スタックがあふれると何が起きるか</h5>
-  <p>上限を超えると、隣にある別のデータを上書きして壊す(<b>スタックオーバーフロー</b>)。すぐに止まるとは限らず、しばらくしてから関係ない場所で固まるので、原因を探しにくい。残り 176 B は、少し深い呼び出しが 1 つ増えれば越えてしまう幅。</p>
-  <h5>なぜ sim では起きないか</h5>
-  <p>sim は NuttX を PC のプログラムとして動かすので、スタックも PC 並みに大きく取られる(ある記録では約 72 KB)。3 KB で足りなくても、sim では余裕で収まってしまう。ファイルシステムも PC 側のものなので、SPIFFS の振る舞いも見えない。</p>
-  <h5>stack coloration(スタックの塗り分け)</h5>
-  <p>スタックを最初に決まった模様で塗っておき、後で「模様が消えた一番深いところ」を調べる。そこまでは実際に使われた、と分かる。この最大使用量を <b>high-water mark(最高水位)</b>と呼ぶ。洪水の後に壁に残る水の跡のようなもの。</p>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:既定のスタックサイズは、本物のハードウェアで測るまではただの推測。sim の大きなスタックは問題を隠す。根拠:<span class="tag apps">apps 版</span><span class="tag hw">実機</span> ESP32-S3(<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>)。</p>
-  <div class="tbl"><table>
-    <tr><th>話</th><th>記録の内容</th></tr>
-    <tr><td>保存の固まり</td><td><code>wg showconf &gt; /data/...</code> も <code>wg show &gt; /data/...</code> も固まる。NSH の内部コマンドの <code>echo</code> での書き込みは正常。→ アプリ自身が書く <code>wg saveconf</code> を追加(表示と保存の内容は同じ関数で出す)</td></tr>
-    <tr><td><code>wg_rx</code> のスタック</td><td>TCP 約 1.2 MB + 大きな ping の後で 2,896 B、修正後の TCP 約 7 MB + ping で 2,960 B。3072 B に対して 94.3%、余裕 176 B。既定を 4096 に変更</td></tr>
-  </table></div>
-  <p>この話は後で 2 回戻ってくる:スライド 30(カーネルのスタック 3 KB に 6 KB の配列)と、スライド 31(<span class="tag kern">カーネル版</span><span class="tag hw">実機</span> SPRESENSE で受信スレッドの最大使用量を実測:6096 B 中 1472 B)。</p>
-  <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">The fourth, and it will come back later: stack sizes nobody had measured.</blockquote>
-  <p class="gloss">4 つ目は、後でまた出てきます。誰も測っていなかったスタックの大きさです。</p>
-  <blockquote class="en">Two things only real hardware showed me.</blockquote>
-  <p class="gloss">実機だけが見せてくれたことが 2 つあります。</p>
-  <blockquote class="en">When I measured it on the board with stack coloration and ps, it was ninety-four percent full — only 176 bytes left.</blockquote>
-  <p class="gloss">ボードでスタックの塗り分けと ps で測ると、94% 埋まっていて、残りは 176 バイトだけでした。</p>
-  <span class="pause">間</span>
-  <blockquote class="en">Please remember this one.</blockquote>
-  <p class="gloss">これは覚えておいてください。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
-  <dl class="qa">
-    <dt>保存の固まりの本当の原因は?</dt>
-    <dd>NSH が組み込みアプリを別タスクで起動して出力をリダイレクトする組み合わせが、SPIFFS 相手だと固まる、というところまで切り分けた。ドライバの外の問題と判断し、リダイレクトを使わない <code>wg saveconf</code> で回避した。根本原因まで特定したとは言わない。</dd>
-    <dt>今の既定値はいくつですか?</dt>
-    <dd>カーネル版の受信スレッドの既定は 6144 B(<code>CONFIG_NET_WIREGUARD_RXSTACKSIZE</code>)。SPRESENSE の実測で最大 1472 B、sim の長時間試験で 2536 B(64 ビットの sim は大きめに出る)。観測した負荷では余裕がある、まで言える(スライド 31・32)。</dd>
-  </dl>
-  <h4>⑥ 用語</h4>
-  <div class="tbl"><table class="terms">
-    <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>redirect</td><td class="yomi">リダイレクト</td><td>コマンドの出力をファイルへつなぎ替えること</td></tr>
-    <tr><td>stack</td><td class="yomi">スタック</td><td>関数の作業メモリを積む場所</td></tr>
-    <tr><td>stack overflow</td><td class="yomi">スタック・オーバーフロー</td><td>スタックがあふれて隣のメモリを壊すこと</td></tr>
-    <tr><td>SPIFFS</td><td class="yomi">スピフス</td><td>フラッシュ向けの小さなファイルシステム</td></tr>
-    <tr><td>ipv4_input()</td><td class="yomi">アイピーブイフォー・インプット</td><td>受け取った IP パケットを処理する NuttX の関数</td></tr>
-    <tr><td>STACK_COLORATION</td><td class="yomi">スタック・カラーレーション</td><td>スタックの使用量を測る NuttX の設定</td></tr>
-    <tr><td>high-water mark</td><td class="yomi">ハイウォーター・マーク</td><td>最高水位。いちばん深く使ったところ</td></tr>
-  </table></div>
-</section>
-
-<section class="slide" id="s26">
-  <div class="head"><span class="no">26</span><h3>26 — Version 1 demo: the first video</h3><span class="en">Version one works: telnet and a web page through the tunnel.</span></div>
-  <a class="shot" href="renders/glasgow/slide-26.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-26.png" alt="スライド 26 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-26.png</code> · <a href="coc-glasgow-slides.html#26" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s24">
+  <div class="head"><span class="no">24</span><h3>24 — Version 1 demo: the first video</h3><span class="en">Version one works: telnet and a web page through the tunnel.</span></div>
+  <a class="shot" href="renders/glasgow/slide-24.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-24.png" alt="スライド 23 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-24.png</code> · <a href="coc-glasgow-slides.html#24" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>左に動画の 1 コマ(Windows の公式 WireGuard クライアントと、ESP32-S3 上の NuttX への telnet の画面が並ぶ)。右に手順:1 <code>telnet 10.10.0.2</code> / 2 <code>uname -a</code>, <code>ifconfig</code> / 3 <code>webserver &amp;</code> / 4 ブラウザで <code>http://10.10.0.2/</code>。説明:ESP32-S3 DevKit、apps 版(FLAT)。USB は抜いてある。相手は Windows 公式の WireGuard クライアント。小さく動画の URL(youtu.be/1kyX2av5WG4)。下に「バージョン 1 はデモには十分だった。次に、本物の NuttX ドライバにした」。<b>本番では再生しない</b>(静止画で十分。動画はライブデモの予備)。</p>
   <h4>② 背景知識</h4>
   <h5>1 コマが示していること</h5>
   <div class="tbl"><table>
     <tr><th>手順</th><th>示すこと</th></tr>
-    <tr><td><code>telnet 10.10.0.2</code></td><td>トンネルの中の住所へ TCP でログインできる。スライド 23 の EBADF のバグ(別タスクからの送信が失敗)が直っていることの目に見える証拠</td></tr>
+    <tr><td><code>telnet 10.10.0.2</code></td><td>トンネルの中の住所へ TCP でログインできる。スライド 22 の EBADF のバグ(別タスクからの送信が失敗)が直っていることの目に見える証拠</td></tr>
     <tr><td><code>uname -a</code>, <code>ifconfig</code></td><td>普通のコマンドが打てる。<code>uname -a</code> には NuttX の版とビルドの日付が出る</td></tr>
     <tr><td><code>webserver &amp;</code></td><td>ボードの上で小さな Web サーバーを起動する(<code>&amp;</code> は「裏で動かす」)</td></tr>
     <tr><td>ブラウザ</td><td>既存のアプリ(Web)を、VPN 専用に書き換えずにトンネル越しに使える</td></tr>
@@ -1614,7 +1509,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p>USB がつながっていると、PC と USB で通信しているのでは、と疑える。電源アダプタだけで動かせば、通信の道は Wi-Fi(とその上のトンネル)しかない。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:バージョン 1 はデモには十分だった。次に本物の NuttX ドライバにした。根拠:<span class="tag apps">apps 版</span><span class="tag hw">実機</span> ESP32-S3 と Windows 公式クライアント(<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>「デモ動画」、<a href="../development/phase4-summary.md">phase4-summary.md</a>)。</p>
-  <div class="box warn"><p>この動画は<b>古い apps 版のビルド</b>で撮ったもの(<a href="../development/phase4-log.md">phase4-log.md</a> の <code>uname -a</code>:NuttX 12.7.0、2026 年 8 月 16 日のビルド)。スタックちゃんのライブデモ(スライド 36)も apps 版(v0.1.1、FLAT)だが、別の新しいビルド。カーネル版の実績(スライド 31)とも混ぜない。</p></div>
+  <div class="box warn"><p>この動画は<b>古い apps 版のビルド</b>で撮ったもの(<a href="../development/phase4-log.md">phase4-log.md</a> の <code>uname -a</code>:NuttX 12.7.0、2026 年 8 月 16 日のビルド)。スタックちゃんのライブデモ(スライド 34)も apps 版(v0.1.1、FLAT)だが、別の新しいビルド。カーネル版の実績(スライド 29)とも混ぜない。</p></div>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">Here is a frame from the version one video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board.</blockquote>
   <p class="gloss">これはバージョン 1 の動画の 1 コマです。トンネル越しに telnet でログインし、コマンドをいくつか打ち、ボード上の小さな Web ページを開きました。</p>
@@ -1626,7 +1521,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>デモができたのに、なぜ作り直したのですか?</dt>
-    <dd>apps 版は NuttX 内部の <code>psock_*()</code> に頼るので FLAT 専用で、正式な in-tree ドライバにはなれず、PROTECTED / KERNEL では動かないから(スライド 28)。</dd>
+    <dd>apps 版は NuttX 内部の <code>psock_*()</code> に頼るので FLAT 専用で、正式な in-tree ドライバにはなれず、PROTECTED / KERNEL では動かないから(スライド 26)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -1637,22 +1532,24 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
     <tr><td>webserver &amp;</td><td class="yomi">ウェブサーバー・アンド</td><td>Web サーバーを裏で起動する</td></tr>
   </table></div>
 </section>
-<div class="divider" id="ch5"><b>⑤ Version 2: the kernel driver</b>(スライド 27〜33、約 8 分)— カーネルへの移動、もう 2 つのバグ、そして発表の核心の試験 3 枚</div>
-<section class="slide short" id="s27">
-  <div class="head"><span class="no">27</span><h3>27 — Agenda(⑤ を強調)</h3><span class="en">Part five, the harder half: a real kernel driver, and how I checked it.</span></div>
-  <a class="shot" href="renders/glasgow/slide-27.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-27.png" alt="スライド 26 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-27.png</code> · <a href="coc-glasgow-slides.html#27" target="_blank">スライド本体で開く</a></p>
+
+<div class="divider" id="ch5"><b>⑤ Version 2: the kernel driver</b>(スライド 25〜31、約 7 分)— なぜカーネルか、設計、もう 2 つのバグ、そして発表の核心の試験 3 枚</div>
+<section class="slide short" id="s25">
+  <div class="head"><span class="no">25</span><h3>25 — Agenda(⑤ を強調)</h3><span class="en">Part five, the harder half: a real kernel driver, and how I checked it.</span></div>
+  <a class="shot" href="renders/glasgow/slide-25.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-25.png" alt="スライド 23 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-25.png</code> · <a href="coc-glasgow-slides.html#25" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>目次の⑤「Version 2: the kernel driver」が色付き。</p>
-  <p><b>要点:</b>ここから後半。カーネル版の設計(28〜30)と、発表の重心の試験 3 枚(31「どこで動くか」→ 32「動いたことは何を証明しないか」→ 33「唯一、判断で答えた場所」)。台本は 31〜33 を「削らない」としている。読み上げは短くしてあり、細部は Q&amp;A に移した。</p>
+  <p><b>要点:</b>ここから後半。なぜカーネルか(26)→ 設計の全体の絵(27)→ もう 2 つのバグ、うち 1 つは NuttX 自身(28)→ 発表の重心の試験 3 枚(29「何がどこで動いたか」→ 30「ping が見逃すもの」→ 31「唯一、判断で答えた場所」)。台本は 29〜31 を「削らない」としている。</p>
   <p><b>話し方:</b>"That was version one. Part five, the harder half: a real kernel driver, and how I checked it."</p>
 </section>
-<section class="slide" id="s28">
-  <div class="head"><span class="no">28</span><h3>28 — Part 5 · Going deeper: Into the kernel</h3><span class="en">The limit of version 1 / The move</span></div>
-  <a class="shot" href="renders/glasgow/slide-28.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-28.png" alt="スライド 27 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-28.png</code> · <a href="coc-glasgow-slides.html#28" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>左「バージョン 1 の限界」:<code>apps/</code> にあり、<code>psock_*</code> の内部関数を使う。FLAT では動くが、正式な in-tree ドライバにはなれず、アプリとカーネルが分かれる PROTECTED / KERNEL では動かない。右「移動」:デバイスをカーネル(<code>drivers/net/wireguard/</code>)に置き、小さなユーザー空間の <code>wg</code> コマンドから ioctl で操作する。</p>
-  <h4>② 背景知識</h4>
+
+<section class="slide" id="s26">
+  <div class="head"><span class="no">26</span><h3>26 — Why the kernel: from app to driver</h3><span class="en">Version 1 proved the protocol. Version 2 makes it a real NuttX device.</span></div>
+  <a class="shot" href="renders/glasgow/slide-26.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-26.png" alt="スライド 21 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-26.png</code> · <a href="coc-glasgow-slides.html#26" target="_blank">スライド本体で開く</a></p>
+    <h4>① 画面にあるもの</h4>
+  <p>2 つの箱。Version 1: an app — <code>apps/</code> にあり、カーネルの内部(<code>psock_*</code>)に手を伸ばす。FLAT ビルドでしか動かない。正式な in-tree ドライバには決してなれない。Version 2: a kernel driver — <code>wg0</code> は <code>drivers/net/wireguard/</code> にあり、小さな <code>wg</code> コマンドが ioctl で設定する。FLAT・PROTECTED・KERNEL のビルドのために作った。下に 1 行でビルドの種類(FLAT:アプリとカーネルが 1 つのメモリ空間 / PROTECTED:MPU がアプリをカーネルのメモリから締め出す / KERNEL:プログラムごとに別のアドレス空間、MMU)。下に「目標:NuttX の作り方に合う 1 つのデバイスを、どのビルドでも、コミュニティがレビューできる形で」。</p>
+<h4>② 背景知識</h4>
   <h5>カーネルとユーザー空間</h5>
   <p><b>カーネル</b>は OS の中心で、ハードウェアと大事な資源を管理する強い権限の部分。<b>ユーザー空間</b>は普通のアプリが動く、権限の制限された部分。分けておけば、アプリのバグで OS 全体が壊れることを防げる。その代わり、アプリはカーネルの中のデータに直接触れず、決められた入口(<b>システムコール</b>)から頼むしかない。銀行の窓口のようなもの:客は金庫に入れず、窓口で頼む。</p>
   <h5>NuttX の 3 つのビルド構成</h5>
@@ -1693,15 +1590,17 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <p><b>ドライバ</b>は、OS が特定の機器(または仮想の機器)を扱うための部品。<code>wg0</code> は物理のチップではないが、OS からはネットワーク機器に見えるので、ネットワークドライバとして作る。<b>ioctl</b>(アイオーコントロール)は、読む・書くでは表しにくい「設定して」「状態を教えて」をアプリからドライバへ頼む入口。<code>wg set</code> や <code>wg show</code> はこれを使う。</p>
   <h5>in-tree</h5>
   <p>NuttX 本家のソースツリーの中に正式に入っていること。<code>apps/</code> の外部アプリではなく、<code>drivers/net/</code> の他のドライバと並ぶ「一人前の部品」になる。</p>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:アプリとしての移植はプロトコルが動くことを示す。しかし正式なデバイスとして、PROTECTED と KERNEL でも動くのはカーネルドライバだけ。根拠:<span class="tag apps">apps 版</span> が <code>psock_*()</code>(同じメモリ空間でしか使えない内部 API)に依存していること(スライド 23)と、<span class="tag kern">カーネル版</span> の構成(<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>「Components」)。PROTECTED・KERNEL で実際に動いたかはスライド 31。</p>
+    <h4>③ このスライドの主張と根拠</h4>
+  <p>主張:バージョン 1 はプロトコルが NuttX で動くことを示した。バージョン 2 は NuttX そのものに合わせること — 普通のデバイスとして、どのビルドでも、レビューできる形で。根拠:<span class="tag apps">apps 版</span> が <code>psock_*()</code>(同じメモリ空間でしか使えない内部 API)に依存していること(スライド 22)と、<span class="tag kern">カーネル版</span> の構成(<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>「Components」)。どのビルドで実際に動いたかはスライド 29(実機は FLAT、KERNEL / PROTECTED は QEMU)。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">This is the work I did after the first version, and it is the part that NuttX needs before this can go upstream.</blockquote>
-  <p class="gloss">これは最初の版の後にした仕事で、本家に入れるには NuttX ではこの部分が必要です。</p>
-  <blockquote class="en">So I moved the device into the kernel, under drivers/net/wireguard, and I control it from a small user-space wg command through ioctl.</blockquote>
-  <p class="gloss">そこでデバイスをカーネルの drivers/net/wireguard へ移し、小さなユーザー空間の wg コマンドから ioctl で操作するようにしました。</p>
-  <p>注意:「もうマージできる」とは言わない(Q&amp;A の方針:「全部検証済み」「マージ可能」とは絶対に言わない)。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
+  <blockquote class="en">Why did I move it into the kernel?</blockquote>
+  <p class="gloss">なぜカーネルへ移したのか。</p>
+  <blockquote class="en">But it can never be a proper in-tree driver, and it cannot work in PROTECTED or KERNEL builds, where apps and the kernel are kept apart.</blockquote>
+  <p class="gloss">でも正式な in-tree ドライバには決してなれませんし、アプリとカーネルが分けられている PROTECTED や KERNEL のビルドでは動きません。</p>
+  <span class="pause">間</span>
+  <blockquote class="en">Version one showed that the protocol works on NuttX. Version two is about fitting NuttX itself: a normal device, in every build mode, in a shape the community can review.</blockquote>
+  <p class="gloss">バージョン 1 は、プロトコルが NuttX で動くことを示しました。バージョン 2 は NuttX そのものに合わせること。普通のデバイスとして、どのビルドでも、コミュニティがレビューできる形で。</p>
+<h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>apps 版とカーネル版、どちらが本物ですか?</dt>
     <dd>どちらも本物で目的が違う。apps 版はプロトコルの移植を証明し、FLAT で 4 つのバグを見つけた。提出候補として小さく分けてあるのはカーネル版で、FLAT だけでなくどの権限モデルでも動く(Q&amp;A)。</dd>
@@ -1719,17 +1618,17 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s29">
-  <div class="head"><span class="no">29</span><h3>29 — The Kernel Design</h3><span class="en">A kernel netdev, an ioctl ABI, a write-only key.</span></div>
-  <a class="shot" href="renders/glasgow/slide-29.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-29.png" alt="スライド 28 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-29.png</code> · <a href="coc-glasgow-slides.html#29" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>4 つの設計の札。Kernel netdev:<code>netdev_lowerhalf</code> で、自分の UDP ソケット・受信スレッド・タイマー・cookie を持つ — ドライバがソケットとスレッドを所有するので、起動したコマンドと一緒に死なない。ポインタのない単純な ioctl ABI:<code>SIOCS/GWGIF</code>、<code>SIOCS/D/GWGPEER</code>。大きさの決まった平らな構造体 1 つで、PROTECTED / KERNEL ではカーネルは呼び出しの間にそれを読み、ユーザーのメモリの中のポインタをたどる必要がない。秘密鍵は書き込み専用:取得の ioctl は秘密鍵を返さない。カーネルの暗号は NuttX 自身のもの:<code>crypto/</code> の BLAKE2s・ChaCha20-Poly1305・Curve25519。プロトコルの中心 <code>wg_noise.c</code> は wireguard-lwip から派生した BSD-3 のコード(<code>LICENSE</code> に記載)。ユーザー空間のコマンドには、オフラインの <code>genkey</code> 用に MIT ライセンスの X25519 が 1 つある。</p>
-  <h4>② 背景知識</h4>
+<section class="slide" id="s27">
+  <div class="head"><span class="no">27</span><h3>27 — The kernel design: the big picture</h3><span class="en">One kernel device, set up by a small command.</span></div>
+  <a class="shot" href="renders/glasgow/slide-27.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-27.png" alt="スライド 24 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-27.png</code> · <a href="coc-glasgow-slides.html#27" target="_blank">スライド本体で開く</a></p>
+    <h4>① 画面にあるもの</h4>
+  <p>全体の絵(SVG)。上が USER SPACE:<code>wg</code> コマンド(<code>apps/system/wg</code>、genkey・set・show)。そこから ioctl:平らな構造体 1 つでポインタなし、秘密鍵は書き込み専用。真ん中に USER / KERNEL BOUNDARY(境界)。下が NUTTX KERNEL:NuttX のネットワークスタック(TCP / UDP / IP)、<code>wg0</code> netdev(<code>drivers/net/wireguard</code> — 自分の UDP ソケットと受信スレッドを持つ、タイマー・peer・cookie)、NuttX の暗号(<code>crypto/</code>)。そこから暗号化された UDP が <code>wlan0</code> / usrsock を通って peer へ。下に「ドライバは動き続ける必要があるものを全部持つ。コマンドは設定を送るだけで、その後は終わってよい」。</p>
+<h4>② 背景知識</h4>
   <h5>upper half と lower half</h5>
   <p>NuttX のドライバは 2 つに分けて作る。<b>upper half</b> は OS 共通の部分(ネットワークスタックとのやり取り)、<b>lower half</b> は機器ごとの部分(ここでは WireGuard の暗号化と UDP の送受信)。共通部分を毎回書かずに済む。<code>netdev_lowerhalf</code> はその新しい書き方。</p>
   <h5>所有権(誰が持ち、誰が片付けるか)</h5>
-  <p>スライド 22・23 のバグは「スレッドやソケットを、いつ消えるか分からないコマンドが持っていた」ことが原因。カーネル版では、ドライバ自身がソケットと受信スレッド(<code>wg_rx</code>)を持ち、<code>wg up</code> で作り、<code>wg down</code> で片付ける。コマンドは「設定して」と頼んで終わるだけ。</p>
+  <p>スライド 21・22 のバグは「スレッドやソケットを、いつ消えるか分からないコマンドが持っていた」ことが原因。カーネル版では、ドライバ自身がソケットと受信スレッド(<code>wg_rx</code>)を持ち、<code>wg up</code> で作り、<code>wg down</code> で片付ける。コマンドは「設定して」と頼んで終わるだけ。</p>
   <h5>ABI とポインタ</h5>
   <p><b>ABI</b>(Application Binary Interface)は、アプリとカーネルが「どの番号の命令で、どんな並びのデータをやり取りするか」の約束。<b>ポインタ</b>は「メモリの何番地にあるか」を表す値。PROTECTED や KERNEL では、アプリの「何番地」はカーネルから見ると別の場所か、見えない場所になる。だから構造体の中にポインタを入れると、カーネルはその先をたどってユーザーのメモリを読みに行くことになり、危ないうえに正しく読めないことがある。宅配便の箱に「中身は私の家の棚の 3 段目」と書いても、受け取る側はその棚を見られないのと同じ。<b>中身そのものを箱に入れる</b>(大きさの決まった平らな構造体 1 つ)のが正解で、カーネルは ioctl の呼び出しの間にその 1 つを読むだけで済む。</p>
   <div class="tbl"><table>
@@ -1760,21 +1659,22 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
       <text x="510" y="132" font-size="14">6. 送り終わったら箱を捨てる</text>
       <text x="510" y="164" font-size="13" class="t2">Wi-Fi 側が詰まっても、設定や停止は待たされない</text>
     </svg>
-    <figcaption>図 S28 queued output(送信の行列)。<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>「Data path」。スライド 31 の SMP 試験と、usrsock の詰まりを強制した試験は、この設計を確かめたもの。</figcaption>
+    <figcaption>図 S28 queued output(送信の行列)。<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>「Data path」。スライド 29 の SMP 試験と、usrsock の詰まりを強制した試験は、この設計を確かめたもの。</figcaption>
   </figure>
   <p><b>ロック</b>は「この共有データを今触っているのは 1 人だけ」にする仕組み(トイレの鍵)。時間のかかる送信中ずっと鍵をかけたままだと、<code>wg show</code> や <code>wg down</code> まで待たされる。そこで、暗号化までを鍵の中で済ませ、出来上がった箱を行列に入れ、送るのは鍵の外で受信スレッドだけ、と分けた。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:ソケット、スレッド、ポインタのない ABI は、1 つの規則に従っている — 終わるかもしれないコードや、カーネルから届かないメモリに頼らない。根拠:<span class="tag kern">カーネル版</span> の設計書 <a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>(<code>wireguard.c</code> が netdev_lowerhalf・ソケット・RX スレッド・タイマー・5 つの ioctl、<code>wg_noise.c</code> がプロトコル、<code>wg_crypto.c</code> が NuttX <code>crypto/</code> への薄い層、<code>include/nuttx/net/wireguard.h</code> がポインタのない ABI)。ioctl の不正値はすべて拒否されることを試験済み(TF、<span class="tag sim">sim</span>)。</p>
-  <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">It owns its UDP socket and its receive thread, so the socket and thread problems from version one cannot happen, by design.</blockquote>
-  <p class="gloss">UDP ソケットと受信スレッドを自分で持つので、バージョン 1 のソケットとスレッドの問題(スライド 22・23)は、設計上起きません。</p>
-  <blockquote class="en">No pointers: the kernel reads the one struct the caller passed, during the call, and never has to follow a pointer into user memory.</blockquote>
-  <p class="gloss">ポインタなし。カーネルは呼び出し元が渡した構造体 1 つを、呼び出しの間に読むだけで、ユーザーのメモリの中のポインタをたどる必要がありません。</p>
-  <blockquote class="en">The protocol core is still derived from wireguard-lwip, under BSD-3-Clause, so the driver needs ALLOW_BSD_COMPONENTS, and I say so in the LICENSE file.</blockquote>
-  <p class="gloss">プロトコルの中心は今も wireguard-lwip から派生した BSD-3-Clause のコードなので、ドライバには ALLOW_BSD_COMPONENTS が必要で、LICENSE ファイルにそう書いています。</p>
-  <blockquote class="en">The private key is write-only: no ioctl ever gives it back — but it is still in the config file on the user side.</blockquote>
-  <p class="gloss">秘密鍵は書き込み専用で、どの ioctl も返しません。ただし、ユーザー側の設定ファイルには残っています。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
+    <h4>④ 話すときのポイント</h4>
+  <blockquote class="en">In user space, there is only a small wg command. It sends settings to the kernel through ioctl.</blockquote>
+  <p class="gloss">ユーザー空間にあるのは小さな wg コマンドだけです。ioctl でカーネルに設定を送ります。</p>
+  <blockquote class="en">Each ioctl carries one flat struct with no pointers inside, so in PROTECTED and KERNEL builds the kernel never has to follow a pointer into user memory.</blockquote>
+  <p class="gloss">どの ioctl も、中にポインタのない平らな構造体を 1 つ運ぶので、PROTECTED や KERNEL のビルドでも、カーネルがユーザーのメモリの中のポインタをたどる必要はありません。</p>
+  <span class="pause">間</span>
+  <blockquote class="en">It owns its UDP socket and its receive thread, so the thread and socket bugs from version one cannot happen, by design.</blockquote>
+  <p class="gloss">UDP ソケットと受信スレッドを自分で持つので、バージョン 1 のスレッドとソケットのバグは、設計上起きません。</p>
+  <blockquote class="en">The crypto is NuttX's own. The protocol core is still derived from wireguard-lwip under BSD-3-Clause, and the LICENSE file says so.</blockquote>
+  <p class="gloss">暗号は NuttX 自身のものです。プロトコルの中心は今も wireguard-lwip から派生した BSD-3-Clause のコードで、LICENSE ファイルにそう書いてあります。</p>
+<h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>カーネルに BSD-3 のコードを入れるのですか?</dt>
     <dd>はい。<code>wg_noise.c</code> は wireguard-lwip(BSD-3-Clause)から派生していて、SPDX と <code>LICENSE</code> に書き、<code>ALLOW_BSD_COMPONENTS</code> に依存させている。書き直しは可能だが、出自を正直に書く方を選んだ。どちらがよいかは決まっていない(Q&amp;A)。"Yes. The protocol core, wg_noise.c, is derived from wireguard-lwip under BSD-3-Clause."</dd>
@@ -1799,12 +1699,12 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s30">
-  <div class="head"><span class="no">30</span><h3>30 — Bugs 5 &amp; 6 / 6: same shape</h3><span class="en">Deeper level, same kind of bug.</span></div>
-  <a class="shot" href="renders/glasgow/slide-30.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-30.png" alt="スライド 29 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-30.png</code> · <a href="coc-glasgow-slides.html#30" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s28">
+  <div class="head"><span class="no">28</span><h3>28 — Bugs 5 &amp; 6 / 6: found in the kernel part</h3><span class="en">Two more bugs, and one was in NuttX itself.</span></div>
+  <a class="shot" href="renders/glasgow/slide-28.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-28.png" alt="スライド 25 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-28.png</code> · <a href="coc-glasgow-slides.html#28" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>左「NuttX 自身の暗号のバグ」:<code>chacha20poly1305</code> が counter を nonce の間違ったバイトに置いていた。counter 0 なら一致するので handshake は成功し、最初以降のデータパケットはすべて失敗。NuttX の中で使っている人がいなかった。2 行の修正で、ドライバとは別の <code>crypto:</code> の変更として分けてある。右「BUILD_KERNEL だけのクラッシュ」:<code>wg_set_if()</code> が peer をスタック上の 6 KB の配列にコピー。カーネルのスタックは 3 KB → あふれる → ヒープ破壊 → パニック。sim(FLAT、大きなスタック)では起きない。ヒープへ移した。</p>
+  <p>左「NuttX 自身の暗号のバグ」:<code>chacha20poly1305</code> が counter を nonce の間違ったバイトに置いていた。counter 0 なら一致するので handshake は成功し、最初以降のデータパケットはすべて失敗。NuttX の中で使っている人がいなかった。2 行の修正で、ドライバとは別の <code>crypto:</code> の変更として分けてある。右「BUILD_KERNEL だけのクラッシュ」:<code>wg_set_if()</code> が peer をスタック上の 6 KB の配列にコピー。カーネルのスタックは 3 KB → あふれる → ヒープ破壊 → パニック。sim(FLAT、大きなスタック)では起きない。ヒープへ移した。下に「NuttX ではほかにも:SPRESENSE(cxd56)が NuttX 13.0.1 と master で <code>CONFIG_RTC_HIRES</code> を有効にすると起動しなかった。手元で直し、報告は下書き済みで未送信」。結びは「NuttX への移植で NuttX のバグも見つかった。移植はプロジェクトに何かを返せる」。</p>
   <h4>② 背景知識</h4>
   <h5>nonce と counter</h5>
   <p>同じ鍵で何度も暗号化するとき、毎回違う値を混ぜないと暗号が破れる。この「1 回しか使わない値」を <b>nonce</b>(number used once)と呼ぶ。WireGuard では、パケットの通し番号(<b>counter</b>:0, 1, 2, …)を nonce に入れる。ChaCha20-Poly1305 の nonce は 12 バイトで、標準(RFC 8439)では「先頭 4 バイトは 0、後ろ 8 バイトに counter」。NuttX は counter を<b>前の 8 バイト</b>に置いていた。</p>
@@ -1829,7 +1729,9 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h5>なぜ誰も気付かなかったか</h5>
   <p>NuttX の中に、この関数(64 ビットの counter を使う版)を呼ぶコードがなかった。使われていない関数のバグは、使われるまで見つからない。WireGuard が初めての利用者だった。</p>
   <h5>スタックとヒープ</h5>
-  <p><b>スタック</b>は関数ごとの小さな作業机(スライド 25)。<b>ヒープ</b>は必要なときに確保して、使い終わったら返す大きな倉庫(<code>malloc</code> / <code>free</code>、カーネルでは <code>kmm_malloc</code> / <code>kmm_free</code>)。大きなデータは机ではなく倉庫に置く。6 KB の配列を 3 KB の机に置こうとして、机からあふれ、隣の倉庫の管理情報まで壊した(ヒープ破壊)。OS は続けられずに止まった(<b>パニック</b>)。</p>
+  <p><b>スタック</b>は関数ごとの小さな作業机(スライド 21)。<b>ヒープ</b>は必要なときに確保して、使い終わったら返す大きな倉庫(<code>malloc</code> / <code>free</code>、カーネルでは <code>kmm_malloc</code> / <code>kmm_free</code>)。大きなデータは机ではなく倉庫に置く。6 KB の配列を 3 KB の机に置こうとして、机からあふれ、隣の倉庫の管理情報まで壊した(ヒープ破壊)。OS は続けられずに止まった(<b>パニック</b>)。</p>
+  <h5>もう 1 つの NuttX のバグ:SPRESENSE の起動(#9)</h5>
+  <p>SPRESENSE(cxd56)で高分解能の RTC(<code>CONFIG_RTC_HIRES</code>)を有効にすると、NuttX 13.0.1 と master の手を加えていない版がシェル(NSH)まで起動しなかった。NuttX の時間を進める仕組み(<b>watchdog</b>、決めた時間の後に関数を呼ぶタイマー)が時刻を RTC から読むようになり、RTC が動き出す前は時刻が 0 のまま進まないので、「RTC の起動を最後まで終わらせる」はずの watchdog が永久に発火しない — 鶏と卵の形で止まる。手元で直したが、本家への報告は下書きのままで、まだ送っていない。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:handshake が動いても、データの経路やカーネルのコードが正しいとは限らない。どちらのバグも handshake の後で、本物のカーネルビルドで初めて出た。根拠:<a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found and fixed during verification」。</p>
   <ul>
@@ -1837,13 +1739,13 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
     <li>6 KB の配列:<b>新しく書いたドライバ側のバグ</b>(<code>wg_set_if()</code>)。<span class="tag qemu">QEMU</span> の T6(BUILD_KERNEL)だけで発見。sim の大きなスタックが隠していた。<code>kmm_malloc</code> / <code>kmm_free</code> に移して修正。</li>
   </ul>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">When the counter is zero, both layouts are the same, so the handshake works, and then every data packet after the first one fails to decrypt.</blockquote>
-  <p class="gloss">counter が 0 なら両方の並びが同じなので handshake は動き、その後、最初以降のデータパケットはすべて復号に失敗します。</p>
-  <blockquote class="en">So porting to NuttX found a hidden bug in NuttX itself.</blockquote>
-  <p class="gloss">つまり、NuttX への移植が NuttX 自身に隠れていたバグを見つけたのです。</p>
+  <blockquote class="en">When the counter is zero, both layouts are the same, so the handshake works, and then data packets after the first one fail to decrypt.</blockquote>
+  <p class="gloss">counter が 0 なら両方の並びが同じなので handshake は動き、その後、最初以降のデータパケットは復号に失敗します。</p>
+  <blockquote class="en">On the way into the kernel, two more bugs came, and one of them was in NuttX itself.</blockquote>
+  <p class="gloss">カーネルへ移す途中で、さらに 2 つのバグが出ました。そのうち 1 つは NuttX 自身の中にありました。</p>
   <span class="pause">間</span>
-  <blockquote class="en">It was the same stack lesson as before, one level deeper.</blockquote>
-  <p class="gloss">前と同じスタックの教訓が、一段深いところで出ました。</p>
+  <blockquote class="en">It is the same stack lesson as bug four, one level deeper.</blockquote>
+  <p class="gloss">バグ 4 と同じスタックの教訓が、一段深いところで出ました。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>nonce のバグは誰が直すのですか? このプロジェクトの成果ですか?</dt>
@@ -1864,107 +1766,88 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s31">
-  <div class="head"><span class="no">31</span><h3>31 — Testing: simulator, QEMU, real boards</h3><span class="en">Seven places it must work.</span></div>
-  <a class="shot" href="renders/glasgow/slide-31.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-31.png" alt="スライド 30 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-31.png</code> · <a href="coc-glasgow-slides.html#31" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s29">
+  <div class="head"><span class="no">29</span><h3>29 — Testing: what ran where</h3><span class="en">Real boards in FLAT builds. KERNEL and PROTECTED on QEMU.</span></div>
+  <a class="shot" href="renders/glasgow/slide-29.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-29.png" alt="スライド 29 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-29.png</code> · <a href="coc-glasgow-slides.html#29" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>7 行の表(場所 / 版 / 確かめたこと)。版の列には、QEMU で動かした行に「(QEMU)」、実機の行に「FLAT(before final rebase)」、最後の行に「Version 1 (app), v0.1.1」と書いてある。下に「sim のトンネルだけでは足りない。本物のビルド、複数の CPU、本物のハードウェアで試す」。</p>
+  <p>3 枚のカード。<b>FLAT · real boards</b>:ESP32-S3(2026-10-12、提出する一式そのもの)で Linux と handshake、両方向の ping、最大の MTU まで。ESP32-S3 + SPRESENSE(前のビルド)で Windows クライアントとトンネル。SPRESENSE で 40 回の down/up の前後でメモリが同じ、受信スレッドは 6096 B 中 1472 B。<b>KERNEL · QEMU rv-virt</b>:Linux の WireGuard とトンネル。<code>wg</code> は別のプログラムで、システムコールで呼ぶ。4 CPU で、設定変更と down/up をしながら大量の通信:例外なし(台本どおりの 1 回)。<b>PROTECTED · QEMU rv-virt</b>:トンネルは動く。すべての ioctl が MPU の境界を越える。まれな例外の原因は <code>wg</code> のスタックのあふれ(システムコールは呼び出し元のスタックで動くため)。既定値を大きくして直した:20/20。下に「まだ見せていないもの:実機での PROTECTED / KERNEL。CoreS3 で PROTECTED を試したが、このボードはブートローダを使うイメージがどれも起動しない(WireGuard の問題ではない)」と、GitHub の QR コード。</p>
   <h4>② 背景知識</h4>
+  <h5>3 つのビルドの種類(スライド 26)</h5>
+  <div class="tbl"><table>
+    <tr><th>種類</th><th>アプリとカーネル</th><th>どこで試したか</th></tr>
+    <tr><td>FLAT</td><td>1 つのメモリ空間を共有</td><td>実機(ESP32-S3、SPRESENSE)と sim</td></tr>
+    <tr><td>KERNEL</td><td>プログラムごとに別のアドレス空間(MMU)</td><td>QEMU の rv-virt(RISC-V の仮想ボード)</td></tr>
+    <tr><td>PROTECTED</td><td>MPU がアプリをカーネルのメモリから締め出す</td><td>QEMU の rv-virt</td></tr>
+  </table></div>
   <h5>試験の場所の違い</h5>
   <div class="tbl"><table>
     <tr><th>環境</th><th>何か</th><th>分かること</th><th>分からないこと</th></tr>
     <tr><td><span class="tag sim">sim</span></td><td>NuttX を PC(x86_64)のプログラムとして動かす</td><td>プロトコル、異常系、自動の回帰試験</td><td>実機のスタック、Wi-Fi、フラッシュ</td></tr>
-    <tr><td><span class="tag qemu">QEMU</span></td><td>CPU ごと模擬する仮想マシン。rv-virt はその上の仮想 RISC-V ボード</td><td>システムコールの境界、別 ELF、MPU の分割、複数 CPU</td><td>本物のチップ固有の動き</td></tr>
+    <tr><td><span class="tag qemu">QEMU</span></td><td>CPU ごと模擬する仮想マシン</td><td>システムコールの境界、別 ELF、MPU の分割、複数 CPU</td><td>本物のチップ固有の動き</td></tr>
     <tr><td><span class="tag hw">実機</span></td><td>ESP32-S3、SPRESENSE と本物の Wi-Fi</td><td>本物のスタック・メモリ・Wi-Fi・usrsock</td><td>他のボードや他の Wi-Fi チップ</td></tr>
   </table></div>
-  <h5>SMP とレースコンディション</h5>
-  <p><b>SMP</b>(Symmetric Multi-Processing)は、複数の CPU で OS を同時に動かすこと。本当に同時に動くので、ロックの使い方が間違っていると、実行の順番しだいでデータが壊れる(<b>レースコンディション</b>)。1 CPU では「たまたま順番に動く」ので見えないことが多い。</p>
-  <h5>virtio-net</h5>
-  <p>仮想マシン用の仮想ネットワークカード。QEMU の中の NuttX と、外の Linux(本物の WireGuard)をつなぐ。</p>
-  <h5>rebase</h5>
-  <p>自分の変更を、本家の最新の上に載せ直すこと。載せ直した後に、前に通った試験がまた通るかを確かめ直す必要がある。</p>
-  <h4>③ このスライドの主張と根拠(行ごと)</h4>
-  <p>主張:sim でトンネルが動くだけでは足りない。本物のビルド構成、複数 CPU、本物のハードウェアで試した。根拠はすべて <a href="../upstream/verification-matrix.md">verification-matrix.md</a>。</p>
+  <h5>なぜ PROTECTED で wg のスタックがあふれたか</h5>
+  <p>PROTECTED ビルドでは、アプリが ioctl などのシステムコールを呼ぶと、カーネル側の処理が<b>呼び出し元(<code>wg</code> コマンド)のスタックの上で</b>動く。だから <code>wg</code> のスタックには、自分の処理に加えてカーネル側の処理の分まで積み重なる。既定の大きさではまれに足りず、繰り返し試験で 8 回中 2 回ほど例外になっていた。<code>wg</code> の既定のスタックを大きくして、20 回中 20 回通るようになった(スライド 36 の「スタックの既定値が PROTECTED もカバーする」)。スライド 21 のバグ 4(「既定値は測るまで推測」)と同じ種類の話。</p>
+  <h5>SMP とレース</h5>
+  <p><b>SMP</b> は複数の CPU で OS を同時に動かすこと。ロックの使い方が間違っていると、実行の順番しだいでデータが壊れる(<b>レースコンディション</b>)。4 CPU の試験は台本どおりの 1 回で、レースの網羅的な探索ではない。</p>
+  <h5>usrsock と GS2200M</h5>
+  <p>SPRESENSE の Wi-Fi は外付けの GS2200M で、ソケットの処理をモジュールに任せる usrsock を通る。ESP32-S3 は NuttX のスタックが直接 Wi-Fi を使う。経路が違うので 2 枚のボードで試す意味がある(スライド 15)。</p>
+  <h4>③ このスライドの主張と根拠</h4>
+  <p>主張:どの版を、どのビルドで、どこで動かしたかを分けて言う。実機は FLAT、KERNEL と PROTECTED は QEMU。根拠は <a href="../upstream/verification-matrix.md">verification-matrix.md</a> と <a href="../upstream/submission-checklist.md">submission-checklist.md</a>。</p>
   <div class="tbl"><table>
-    <tr><th>行</th><th>印</th><th>確かめたこと(噛み砕き)</th><th>matrix の ID と限界</th></tr>
-    <tr><td>sim:wireguard</td><td><span class="tag kern">カーネル版</span><span class="tag sim">sim</span></td><td>エラーなしでビルドできる。この構成はドライバのシリーズに入っている</td><td>T8(ビルド)。sim の実行試験一式(T1・TF・TV・TR・TN・T3・TZ・T7 など)も別にある</td></tr>
-    <tr><td>rv-virt knetnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_KERNEL。virtio-net で Linux カーネルの WireGuard と双方向のトンネル。<code>wg</code> は別のプログラム(ELF)として読み込まれ、システムコールでドライバに届く</td><td>T6 PASS。最初に計画した qemu-armv7a は virtio-net が使えずビルドのみ(T4 は実行していない)</td></tr>
-    <tr><td>rv-virt pnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_PROTECTED。MPU の分割で起動し、<code>wg</code> は <code>nuttx_user</code> 側。設定の ioctl はすべて境界を越え、Linux とトンネル(ping 3/3)、<code>wg show</code> の読み出しも成功。繰り返すと <b>8 回中 2 回</b>例外が出ていたが、原因は <code>wg</code> のスタック不足で、直した後は <b>20 回中 20 回</b>成功</td><td>TP(2026-09-28 の 1 回は PASS)。2026-10-10 の繰り返しで間欠的な失敗、2026-10-12 に原因が分かり修正(submission-checklist §2.3)。QEMU の MPU のモデルで、本物のチップではない</td></tr>
-    <tr><td>rv-virt knetnsh64_smp</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>4 CPU。2000 パケットの flood ping と同時に、<code>wg show</code> 5 回・設定変更 5 回・down/up をしても、例外なし、トンネル回復</td><td>TS PASS。1 つの決まった筋書きで、レースの網羅的な探索ではない。実機の SMP はない</td></tr>
-    <tr><td>SPRESENSE, measured</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span> FLAT(最終 rebase 前)</td><td>120 秒の負荷(ping 375/375)と 40 回の down/up(毎回 usrsock でソケットを開き直し、実 Wi-Fi で handshake し直す)の前後で、ヒープ使用量 43,760 B・確保数 112・IOB 8/8・全スタックの最高水位が<b>完全に同じ</b>。受信スレッドの最大使用量は 6096 B 中 1472 B(24.1%)</td><td>TH PASS(2026-09-28)。1 ボード、数分。ESP32-S3 は未測定。STACK_COLORATION は「観測した最大」で最悪値ではない</td></tr>
-    <tr><td>ESP32-S3 + SPRESENSE</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span> FLAT(最終 rebase 前)</td><td>本物の Wi-Fi で Windows 公式クライアントとトンネル。ESP32-S3 は内蔵 Wi-Fi で ping 4/4、SPRESENSE は usrsock 経由で 6/6</td><td>T5 PASS(2026-09-26)。FLAT の実機なので、PROTECTED / KERNEL の分離を示すものではない</td></tr>
-    <tr><td>same two boards</td><td><span class="tag apps">apps 版</span><span class="tag hw">実機</span></td><td>Linux・Windows の相手と、telnet、HTTP、7 MB 転送、rekey、電源再投入</td><td>Version 1(アプリ)、v0.1.1 の実績(<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>)。カーネル版の実績と混ぜない</td></tr>
+    <tr><th>カード</th><th>印</th><th>内容</th><th>限界</th></tr>
+    <tr><td>FLAT:ESP32-S3(10/12)</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span></td><td>提出する一式そのものを、スタックちゃんの中の ESP32-S3 で。Linux の WireGuard と handshake、両方向の ping、最大のパケットまで</td><td>FLAT ビルド。1 ボード</td></tr>
+    <tr><td>FLAT:両ボード(前のビルド)</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span></td><td>本物の Wi-Fi で Windows 公式クライアントとトンネル(ESP32-S3 内蔵 Wi-Fi で ping 4/4、SPRESENSE usrsock で 6/6)</td><td>最終 rebase の前の版(T5)</td></tr>
+    <tr><td>FLAT:SPRESENSE の実測</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span></td><td>120 秒の負荷と 40 回の down/up の前後で、ヒープ・バッファ・全スタックの最高水位が完全に同じ。受信スレッドの最大は 1472 B / 6096 B</td><td>1 ボード、数分。ESP32-S3 は未測定。観測した最大で最悪値ではない(TH)</td></tr>
+    <tr><td>KERNEL</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>rv-virt knetnsh64 で Linux とトンネル。4 CPU(knetnsh64_smp)で flood と設定変更と down/up の同時実行で例外なし</td><td>1 つの筋書き。実機の SMP はない(T6、TS)</td></tr>
+    <tr><td>PROTECTED</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>rv-virt pnsh64 でトンネル、すべての ioctl が境界を越える。まれな例外は <code>wg</code> のスタックのあふれで、既定値を大きくして 20/20</td><td>QEMU の MPU のモデルで、本物のチップではない(TP)</td></tr>
+    <tr><td>Version 1(アプリ)</td><td><span class="tag apps">apps 版</span><span class="tag hw">実機</span></td><td>両ボードで Linux・Windows の相手と、telnet、HTTP、7 MB 転送、rekey、電源再投入(台本の最後の一言)</td><td>カーネル版の実績と混ぜない</td></tr>
   </table></div>
-  <figure>
-    <svg viewBox="0 0 760 110" role="img" aria-label="SPRESENSE の受信スレッドのスタック使用量 1472 B / 6096 B">
-      <text x="10" y="22" font-size="14" font-weight="700">SPRESENSE 受信スレッドのスタック(観測した最大)</text>
-      <rect x="10" y="36" width="700" height="22" rx="4" fill="var(--surface-2)" stroke="var(--line)"/>
-      <path class="bar" d="M10 36 h165 a4 4 0 0 1 4 4 v14 a4 4 0 0 1 -4 4 h-165 z" data-tip="使用 1472 B / 確保 6096 B(約 24%)"/>
-      <text x="10" y="82" font-size="13">使った最大 1472 B</text>
-      <text x="710" y="82" font-size="13" text-anchor="end" class="t2">確保している 6096 B</text>
-      <text x="10" y="102" font-size="12" class="t3">約 24%。観測した負荷の範囲で余裕がある(最悪条件の保証ではない)</text>
-    </svg>
-    <figcaption>図 S31 スライド 25 で「誰も測っていなかった」既定値が、ここで実測になった。</figcaption>
-  </figure>
-  <h5>台本から Q&amp;A に移した 2 つの事実</h5>
-  <p>読み上げを短くしたため、次の 2 つは台本から外して <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> 側にある。聞かれたら答える。</p>
-  <ul>
-    <li><b>PROTECTED のメモリ</b>:既定のメモリの分け方のまま、カーネル側は自分の領域の約 80%(<code>.text</code> 209,832 B / 256 KB)、ユーザー側の <code>wg</code> は約 8%(21,576 B / 256 KB)を使う(TP)。</li>
-    <li><b>usrsock の詰まりの強制</b>:SPRESENSE で、送信 1 つを usrsock 側で止めたまま(テスト用の設定 <code>DEBUG_TX_STALL</code>)、制御のコマンドを送った。問い合わせは返事が来た、相手の更新は受け付けられた、<code>wg down</code> は固まらずにタイムアウトを報告した、止めたままの暗号文は書き換えられなかった、2 回目の down で片付き、インターフェースが戻った(2026-09-27、<span class="tag kern">カーネル版</span><span class="tag hw">実機</span>)。スライド 29 の「送信の行列」の設計の中心の主張を、本物の経路で確かめたもの。</li>
-  </ul>
-  <div class="box warn">
-    <p><b>まだ確かめていないこと(台本でも言う):</b>実機で IOB を使い切ること、送信の途中で Wi-Fi が切れること、長時間の重い通信。ESP32-S3 での資源の実測と、実チップ上の PROTECTED(<code>esp32s3-devkit:knsh</code>)。日単位の連続稼働。</p>
-    <p><b>PROTECTED の間欠的な失敗 — 原因が分かり、直した(<a href="../upstream/submission-checklist.md">submission-checklist.md</a> §2.3):</b>提出用に分割したブランチで <code>rv-virt:pnsh64</code> の試験を繰り返すと、8 回中 2 回、分割前の候補でも 9 回中 1 回、<code>wg</code> の設定中にユーザー空間側で例外が起きていた。原因は <code>wg</code> コマンドのタスクのスタックあふれ。PROTECTED ではシステムコールが呼び出し側のユーザースタックの上で動くので、4096 バイトのスタックに、コマンド、システムコールのトラップフレーム、ドライバの ioctl(鍵や peer を設定するときは X25519 の計算)、その最中の割り込みのフレームが同時に乗り、約 4.3 KB でスタックの一番下の TLS ブロックまであふれた。割り込みが一番深いところで入ったときだけなので間欠的だった。PROTECTED のときの <code>SYSTEM_WG_STACKSIZE</code> の既定値を 6144 にして(PR-A に含めた)、20 回中 20 回成功。QEMU だけで、実機では確かめていない。</p>
-  </div>
+  <div class="box warn"><p><b>まだ確かめていないこと:</b>実機での PROTECTED / KERNEL(CoreS3 で PROTECTED を試したが、このボードはブートローダを使うイメージがどれも起動しない。WireGuard の問題ではない)。実機での IOB の枯渇、送信中の Wi-Fi 切断、長時間の重い通信、日単位の連続稼働、ESP32-S3 での資源の実測。</p></div>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">Let me be exact about which version was checked where.</blockquote>
-  <p class="gloss">どの版をどこで確かめたか、正確に言います。</p>
-  <blockquote class="en">Next, PROTECTED, also in QEMU. The ioctl ABI has no pointers inside, so the kernel only touches the one struct the caller passed.</blockquote>
-  <p class="gloss">次は PROTECTED で、これも QEMU。ioctl の ABI の中にはポインタがないので、カーネルは呼び出し元が渡した構造体 1 つにしか触れません。</p>
-  <blockquote class="en">In repeated runs, two out of eight hit a fault. The cause was a stack overflow: here a system call runs on the caller's own stack, and the wg stack was too small for it.</blockquote>
-  <p class="gloss">繰り返すと、8 回中 2 回、例外が起きました。原因はスタックあふれでした。このビルドではシステムコールが呼び出し側のスタックの上で動き、<code>wg</code> のスタックはそれには小さすぎました。</p>
-  <blockquote class="en">With a bigger default, twenty out of twenty passed, in QEMU.</blockquote>
-  <p class="gloss">既定のスタックを大きくすると、QEMU で 20 回中 20 回成功しました。</p>
-  <blockquote class="en">But this is one scripted run, not a full search for race conditions.</blockquote>
-  <p class="gloss">でもこれは台本どおりの 1 回の実行で、レースの網羅的な探索ではありません。</p>
-  <span class="pause">間</span>
+  <blockquote class="en">Let me be exact about which version ran where. There are three build modes, and I keep them apart.</blockquote>
+  <p class="gloss">どの版がどこで動いたか、正確に言います。ビルドの種類は 3 つあり、私はそれを分けて話します。</p>
+  <blockquote class="en">Today, October twelfth, I ran the exact series I prepared for upstream on the ESP32-S3 inside the StackChan: a handshake with Linux WireGuard, and ping both ways, up to the full packet size.</blockquote>
+  <p class="gloss">今日 10 月 12 日、upstream 向けに用意した一式そのものを、スタックちゃんの中の ESP32-S3 で動かしました。Linux の WireGuard との handshake と、両方向の ping を、最大のパケットサイズまで。</p>
   <blockquote class="en">That default used to be a guess. Now it is a measurement.</blockquote>
   <p class="gloss">その既定値は、以前は推測でした。今は実測です。</p>
-  <blockquote class="en">These are normal FLAT builds, from the version before the final rebase. KERNEL and PROTECTED ran only in QEMU, and the KERNEL and SMP tunnels were run again after the rebase.</blockquote>
-  <p class="gloss">これは普通の FLAT ビルドで、最後の rebase の前の版です。KERNEL と PROTECTED は QEMU でだけ動かし、KERNEL と SMP のトンネルは rebase の後にもう一度動かしました。</p>
+  <span class="pause">間</span>
+  <blockquote class="en">The cause was a stack overflow in the wg command, because in this mode a system call runs on the caller's own stack. A bigger default fixed it: twenty out of twenty.</blockquote>
+  <p class="gloss">原因は wg コマンドのスタックのあふれでした。このモードでは、システムコールが呼び出し元自身のスタックの上で動くからです。既定値を大きくして直りました。20 回中 20 回です。</p>
+  <blockquote class="en">What I have not shown is PROTECTED or KERNEL on real hardware.</blockquote>
+  <p class="gloss">まだ見せていないのは、実機での PROTECTED と KERNEL です。</p>
+  <p>台本の日付の言い方("Today, October twelfth")は、録画や別の日の本番では日付だけを言う("On October twelfth")ように直す。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
-    <dt>7 つの場所で検証したと言うが、実機で足りていないものは?</dt>
-    <dd>ESP32-S3 での資源の実測と、実チップ上の PROTECTED。資源の実測はスクリプトを用意してあるが、まだ回せていない。PROTECTED は試した:ビルドは通るが、CoreS3 は bootloader を使う形式のイメージを FLAT でも起動せず、UART0 が出ていないので起動ログも読めない(WireGuard とは関係しない。UART0 の出ている DevKitC が要る)。ESP32-S3 のトンネル自体(内蔵 Wi-Fi、4/4)は確認済み(Q&amp;A)。</dd>
     <dt>PROTECTED は本当に問題ないのですか?</dt>
-    <dd>MPU の分割を有効にしたままトンネルは動く。繰り返すと 8 回中 2 回例外が起きていたが、原因は <code>wg</code> のスタックあふれ(システムコールが呼び出し側のスタックで動くので、ドライバの鍵の計算と割り込みのフレームまで乗っていた)。PROTECTED の既定のスタックを大きくして、QEMU で 20 回中 20 回成功。実機の PROTECTED は未確認(Q&amp;A、submission-checklist §2.3)。"The tunnel works with the MPU split on. In repeated runs, two out of eight first hit a fault. It was a stack overflow: in a PROTECTED build a system call runs on the caller's own stack, so the small wg stack also had to hold the driver's key math and an interrupt frame, and only sometimes it ran out. I made the default stack bigger for PROTECTED builds, and then twenty out of twenty runs passed. That is in QEMU; I have not run PROTECTED on real hardware."</dd>
+    <dd>QEMU では、まれな例外の原因(<code>wg</code> のスタックのあふれ)を見つけて既定値を大きくし、20/20 で通るようになった。ただし実機の PROTECTED はまだ動かしていない。</dd>
+    <dt>実機で足りていないものは?</dt>
+    <dd>実機での PROTECTED / KERNEL、ESP32-S3 での資源の実測、日単位の連続稼働。CoreS3 はブートローダを使うイメージが起動しないので、PROTECTED は別のボードが要る。</dd>
     <dt>長時間の安定性は?</dt>
-    <dd>apps 版は ESP32-S3 で最長 4 時間 28 分(止まった原因は Wi-Fi ドライバ側)。カーネル版は sim の 620 秒の試験と、SPRESENSE の 120 秒 + 40 回の down/up。日単位はまだ言えない(Q&amp;A)。</dd>
+    <dd>apps 版は ESP32-S3 で最長 4 時間 28 分(止まった原因は Wi-Fi ドライバ側)。カーネル版は sim の 620 秒の試験と SPRESENSE の 40 回の down/up。日単位はまだ言えない(Q&amp;A)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
     <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>QEMU</td><td class="yomi">キューエミュ</td><td>CPU ごと模擬するソフト</td></tr>
-    <tr><td>RISC-V / rv-virt</td><td class="yomi">リスク・ファイブ / アールブイ・バート</td><td>オープンな命令セット / その仮想ボード</td></tr>
-    <tr><td>knetnsh64 / pnsh64</td><td class="yomi">ケーネット・エヌエスエイチ / ピー・エヌエスエイチ</td><td>KERNEL / PROTECTED の構成名(64 ビット)</td></tr>
-    <tr><td>virtio-net</td><td class="yomi">バートアイオー・ネット</td><td>仮想マシンの仮想ネットワークカード</td></tr>
+    <tr><td>QEMU / rv-virt</td><td class="yomi">キューエミュ / アールブイ・バート</td><td>CPU ごと模擬するソフト / その上の仮想 RISC-V ボード</td></tr>
+    <tr><td>MPU / MMU</td><td class="yomi">エムピーユー / エムエムユー</td><td>メモリ保護装置 / メモリ管理装置</td></tr>
+    <tr><td>syscall</td><td class="yomi">シスコール</td><td>アプリが OS に頼む正式な入口</td></tr>
+    <tr><td>stack overflow</td><td class="yomi">スタック・オーバーフロー</td><td>スタックがあふれて隣のメモリを壊すこと</td></tr>
     <tr><td>SMP</td><td class="yomi">エスエムピー</td><td>複数 CPU での同時実行</td></tr>
-    <tr><td>race condition</td><td class="yomi">レース・コンディション</td><td>実行の順番しだいで壊れるバグ</td></tr>
-    <tr><td>nuttx_user</td><td class="yomi">ナットエックス・ユーザー</td><td>PROTECTED のユーザー側の塊</td></tr>
-    <tr><td>Cortex-M4F</td><td class="yomi">コーテックス・エムフォー・エフ</td><td>SPRESENSE の CPU</td></tr>
+    <tr><td>MTU</td><td class="yomi">エムティーユー</td><td>1 回に送れるパケットの最大サイズ</td></tr>
+    <tr><td>bootloader</td><td class="yomi">ブートローダ</td><td>電源投入後に OS を読み込んで起動するプログラム</td></tr>
     <tr><td>rebase</td><td class="yomi">リベース</td><td>変更を本家の最新に載せ直すこと</td></tr>
-    <tr><td>CI</td><td class="yomi">シーアイ</td><td>PR ごとの自動ビルド・試験</td></tr>
   </table></div>
 </section>
 
-<section class="slide" id="s32">
-  <div class="head"><span class="no">32</span><h3>32 — Testing: what ping misses</h3><span class="en">A working tunnel does not prove enough.</span></div>
-  <a class="shot" href="renders/glasgow/slide-32.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-32.png" alt="スライド 31 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-32.png</code> · <a href="coc-glasgow-slides.html#32" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>3 行の表(問題 / ping で気付くか / 何を測ったか)。毎回の起動で同じ秘密鍵(xorshift128 の <code>/dev/urandom</code> はビルド時の値を種にしうる)— 気付かない — 3 回再起動で 3 つの違う鍵。entropy pool の経路の基本的な確認であって、乱数の質の証明ではない。down の後もセッション鍵がメモリに残る — 気付かない — 動作中のメモリを読む:動作中は送受信の鍵 32/32 バイトが非ゼロ → down 後はすべてゼロ。固定の秘密鍵は前後とも 1 つだけ。何時間も経って出るリーク — 気付かない — 鍵の寿命を越える 151 回の強制 rekey、10 回の接続先変更、100 回の down/up:バッファの失いなし、確保数は起動時と完全一致、受信スレッドのスタック最大 2.5 KB(64 ビットの sim。ボードでは 1.5 KB)で増えない。下に「どれも普通の試験には全部通りながら壊れている」。</p>
-  <h4>② 背景知識</h4>
+<section class="slide" id="s30">
+  <div class="head"><span class="no">30</span><h3>30 — Testing: what ping misses</h3><span class="en">Three problems that ping would never notice.</span></div>
+  <a class="shot" href="renders/glasgow/slide-30.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-30.png" alt="スライド 27 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-30.png</code> · <a href="coc-glasgow-slides.html#30" target="_blank">スライド本体で開く</a></p>
+    <h4>① 画面にあるもの</h4>
+  <p>3 枚のカード。<b>毎回の起動で同じ鍵?</b>(SPRESENSE):3 回のリセットで 3 つの違う鍵。簡単な確認で、乱数の質の証明ではない。<b>down の後もメモリに鍵が残る?</b>(sim):down の後、セッション鍵はすべてゼロ。固定の鍵は、再び up できるように意図的に残す。<b>何時間も経って出るリーク?</b>(sim):151 回の rekey と 100 回の down/up で何も失われず、メモリは起動時の数に戻る。1 週間の試験ではない。下に「リスクごとに専用の試験が要る。通るトンネルはそのどれでもない」。</p>
+<h4>② 背景知識</h4>
   <h5>乱数が弱いと何が起きるか</h5>
   <p>秘密鍵は乱数から作る。乱数が予測できれば、暗号がどれだけ強くても鍵が当てられる。コンピュータの乱数には 2 種類ある。</p>
   <div class="tbl"><table>
@@ -1989,15 +1872,15 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
   <p>台本の補足:handshake の一時データは、鍵ができた瞬間に消されるので、普段の動作中にはもう残っていない。その後の追加試験(UDP の中継で相手の確認を止める、応答のない開始要求を送る)で、handshake の一時データと「次の鍵(next_keypair)」が非ゼロの瞬間をわざと作り、それも down 後にゼロになることを確かめた(TZ の追記、Q&amp;A)。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">Then a board gives out the same private key every time it starts, and the handshake, the ping and the demo all still work.</blockquote>
-  <p class="gloss">するとボードは起動のたびに同じ秘密鍵を作るのに、handshake も ping もデモも全部動いてしまいます。</p>
+  <blockquote class="en">Then a board makes the same private key every time it starts, and everything still works.</blockquote>
+  <p class="gloss">するとボードは起動のたびに同じ秘密鍵を作るのに、全部動いてしまいます。</p>
   <span class="pause">間</span>
-  <blockquote class="en">Second, in the simulator: I read the device's memory while the tunnel was up, and again after down.</blockquote>
-  <p class="gloss">2 つ目はシミュレータで。トンネルが動いている間と、down の後に、デバイスのメモリを読みました。</p>
-  <blockquote class="en">The buffers all came back, and the live allocations went back to exactly the start-up number.</blockquote>
-  <p class="gloss">バッファはすべて戻り、確保中のメモリの数は起動時の数にぴったり戻りました。</p>
-  <blockquote class="en">What I am not saying is that it ran for a week, or that the simulator's memory acts like the board.</blockquote>
-  <p class="gloss">1 週間動いたとか、シミュレータのメモリがボードと同じように振る舞うとかは、言っていません。</p>
+  <blockquote class="en">Second, I read the device's memory in the simulator. After down, the session keys were all zero.</blockquote>
+  <p class="gloss">2 つ目。シミュレータでデバイスのメモリを読みました。down の後、セッション鍵はすべてゼロでした。</p>
+  <blockquote class="en">No buffer was lost, and memory went back to exactly the start-up number.</blockquote>
+  <p class="gloss">バッファは 1 つも失われず、メモリは起動時の数にぴったり戻りました。</p>
+  <blockquote class="en">I am not saying it ran for a week, or that the simulator acts like the board.</blockquote>
+  <p class="gloss">1 週間動いたとか、シミュレータがボードと同じように振る舞うとかは、言っていません。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>handshake 中の状態や next_keypair が非ゼロになる瞬間は見られましたか?</dt>
@@ -2020,13 +1903,13 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<section class="slide" id="s33">
-  <div class="head"><span class="no">33</span><h3>33 — Design choice: trust the clock?</h3><span class="en">The timestamp problem has no easy answer.</span></div>
-  <a class="shot" href="renders/glasgow/slide-33.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-33.png" alt="スライド 32 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-33.png</code> · <a href="coc-glasgow-slides.html#33" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>上に規則:相手は、これまで見た最新より新しくない時刻の handshake を捨てる。だから機器は、再起動の後でも、常にもっと新しい時刻を送らないといけない。4 つの案の表(フラッシュへの書き込み / RTC なしで動くか / 結果):実時刻 + この起動中の最大値(書き込みなし、動かない、<b>採用</b>)/ 毎回保存(毎回、動く、フラッシュが摩耗し handshake が遅くなる)/ フラッシュに範囲を予約(N 回に 1 回、動く、確かめられなかった書き込みの保証が要る)/ 追いつくまで待つ(なし、動かない、前回動いていた時間だけ待つ)。下に実機の結果:何も送らず、変えたのは 1 つだけ。時計未設定 → 75 秒見ていて handshake なし、時計設定 → 4.1 秒。「Linux や wireguard-go と同じ規則、それに警告を足した」。</p>
-  <h4>② 背景知識</h4>
+<section class="slide" id="s31">
+  <div class="head"><span class="no">31</span><h3>31 — Design choice: trust the clock?</h3><span class="en">The timestamp problem has no easy answer.</span></div>
+  <a class="shot" href="renders/glasgow/slide-31.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-31.png" alt="スライド 28 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-31.png</code> · <a href="coc-glasgow-slides.html#31" target="_blank">スライド本体で開く</a></p>
+    <h4>① 画面にあるもの</h4>
+  <p>上に規則「handshake は毎回、相手が見たものより新しい時刻が要る。再起動の後でも」。<b>Chosen(採用)</b>:実時刻 + この起動中に使った最大の値。Linux や wireguard-go と同じ規則に、時計が一度も設定されていないときの警告を足した。<b>Not chosen(不採用)</b>:毎回の時刻を保存する — フラッシュがすり減る / フラッシュに範囲を予約する — 確かめられなかった書き込みの保証が要る / 待つ — 前回動いていた時間だけ待つ。下に実機の結果「同じボード、何も送らずに:時計未設定 → 75 秒見て handshake なし。時計設定 → 4.1 秒」と、「時計がないと、機器は自分からつなぎ直せないかもしれず、ping の試験ではそれが見えない」。</p>
+<h4>② 背景知識</h4>
   <h5>リプレイ攻撃</h5>
   <p>攻撃者が、以前の正しいパケットを録画のように保存しておき、あとで送り直す攻撃。中身を解読できなくても、「同じ開始要求をもう一度受け付けさせる」ことができれば悪用できる。WireGuard は handshake の開始要求に<b>時刻</b>(TAI64N 形式、秒 8 バイト + ナノ秒 4 バイト)を入れ、相手(responder)は相手ごとに「今まで受け付けた最大の時刻」を覚えて、同じか古い時刻は捨てる。</p>
   <pre><code>今まで受け付けた最大: 1000
@@ -2083,16 +1966,16 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">This is the one place where I had to decide, not test. And then I measured my decision.</blockquote>
   <p class="gloss">ここは、試験ではなく判断が必要だった唯一の場所です。そして、その判断を測りました。</p>
-  <blockquote class="en">With an uptime-based timestamp, a device is cut off for as long as it ran last time: a device that ran for a month cannot reconnect for a month.</blockquote>
-  <p class="gloss">uptime を時刻にすると、機器は前回動いていた時間だけつながらなくなります。1 か月動いていた機器は、1 か月つながりません。</p>
-  <blockquote class="en">Shipping that would look solved without being solved. Here, the easy choice and the right choice were not the same.</blockquote>
+  <blockquote class="en">And just waiting means a device that ran for a month cannot reconnect for a month.</blockquote>
+  <p class="gloss">そしてただ待つなら、1 か月動いていた機器は 1 か月つながりません。</p>
+  <blockquote class="en">Here, the easy choice and the right choice were not the same.</blockquote>
   <p class="gloss">それを出せば、解決していないのに解決したように見えます。ここでは、楽な選択と正しい選択が同じではありませんでした。</p>
   <div class="box"><span class="label">小ネタ(任意)</span><p>「the easy choice and the right choice were not the same」は『ハリー・ポッターと炎のゴブレット』のダンブルドアの言葉("a choice between what is right and what is easy")へのオマージュ。知らない人には普通の一文として聞こえ、外しても流れは変わらない。</p></div>
   <span class="pause">間</span>
-  <blockquote class="en">The obvious test passes: reset the board, ping it, and the tunnel is back — because your ping made the peer start the handshake.</blockquote>
-  <p class="gloss">すぐ思いつく試験は通ってしまいます。ボードをリセットして ping すればトンネルは戻ります。ping が相手側に handshake を始めさせたからです。</p>
-  <blockquote class="en">Without a clock, the device may not reconnect by itself, and a ping test will not show it. That is why the driver prints a warning.</blockquote>
-  <p class="gloss">時計がないと、機器は自分からつなぎ直せないかもしれず、ping の試験ではそれが見えません。だからドライバは警告を出します。</p>
+  <blockquote class="en">I sent the board nothing at all, because a ping from the peer would start the handshake for it.</blockquote>
+  <p class="gloss">ボードには何も送りませんでした。相手からの ping が、ボードの代わりに handshake を始めてしまうからです。</p>
+  <blockquote class="en">With the clock as it boots: no handshake in a seventy-five-second watch. With the clock set: four point one seconds. That is why the driver prints a warning.</blockquote>
+  <p class="gloss">起動したままの時計では、75 秒見ていても handshake なし。時計を設定すると 4.1 秒。だからドライバは警告を出します。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>#14 は証拠が足りないから open なのでは?</dt>
@@ -2116,19 +1999,20 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </table></div>
 </section>
 
-<div class="divider" id="ch6"><b>⑥ Live demo</b>(スライド 34〜36、約 3 分)— スタックちゃんにトンネル越しにログインする</div>
-<section class="slide short" id="s34">
-  <div class="head"><span class="no">34</span><h3>34 — Agenda(⑥ を強調)</h3><span class="en">Part six: what it actually looks like.</span></div>
-  <a class="shot" href="renders/glasgow/slide-34.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-34.png" alt="スライド 33 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-34.png</code> · <a href="coc-glasgow-slides.html#34" target="_blank">スライド本体で開く</a></p>
+<div class="divider" id="ch6"><b>⑥ Live demo</b>(スライド 32〜34、約 3 分)— スタックちゃんにトンネル越しにログインする</div>
+<section class="slide short" id="s32">
+  <div class="head"><span class="no">32</span><h3>32 — Agenda(⑥ を強調)</h3><span class="en">Part six: what it actually looks like.</span></div>
+  <a class="shot" href="renders/glasgow/slide-32.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-32.png" alt="スライド 29 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-32.png</code> · <a href="coc-glasgow-slides.html#32" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>目次の⑥「Live demo」(StackChan through the tunnel)が色付き。</p>
   <p><b>要点:</b>技術の話を目に見える形にする区切り。次の 2 枚で、スタックちゃんにトンネル越しにログインし、表情を変えてしゃべらせる。</p>
   <p><b>話し方:</b>"That was all engineering. Part six: what it actually looks like."</p>
 </section>
-<section class="slide" id="s35">
-  <div class="head"><span class="no">35</span><h3>35 — Demo setup: the network</h3><span class="en">One tunnel, on a phone's local network.</span></div>
-  <a class="shot" href="renders/glasgow/slide-35.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-35.png" alt="スライド 34 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-35.png</code> · <a href="coc-glasgow-slides.html#35" target="_blank">スライド本体で開く</a></p>
+
+<section class="slide" id="s33">
+  <div class="head"><span class="no">33</span><h3>33 — Demo setup: the network</h3><span class="en">One tunnel, on a phone's local network.</span></div>
+  <a class="shot" href="renders/glasgow/slide-33.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-33.png" alt="スライド 30 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-33.png</code> · <a href="coc-glasgow-slides.html#33" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>構成図。上に会場の Wi-Fi(Apache)— 機器どうしの通信を遮断。その下にスマホのテザリング(独自の小さなローカルネットワーク)。スマホ自身の上流は会場 Wi-Fi かモバイル回線(デモには不要)。左にラップトップ(Windows):Docker の中の Linux の WireGuard peer、<code>wg0</code> 10.10.0.1、telnet・ブラウザ・tcpdump、音声ファイル(Windows の音声合成で事前に作成、10.10.0.1:8000 で配信、クラウド API なし)。右にスタックちゃん(ESP32-S3 + Apache NuttX):<code>wg0</code> 10.10.0.2、<code>wlan0</code>(テザリングのアドレス)の上、telnetd・Web サーバー・顔・首のサーボ・スピーカー。間に WireGuard トンネル(UDP 51820、中は telnet・HTTP・音声)。スタックちゃんの箱には「apps version (v0.1.1), FLAT build」。点線で 2 台目のピア SPRESENSE + Wi-Fi アドオン(<code>wg0</code> 10.11.0.2)。下に「スマホと会場が見るのは暗号化された UDP だけ — 間にサーバーなし、クラウドなし」。</p>
   <h4>② 背景知識</h4>
@@ -2147,7 +2031,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:スマホも会場も、見るのは暗号化された UDP だけ。間にサーバーもクラウドもない。根拠:<a href="../development/stackchan-hardware-check-2026-10-08.md">stackchan-hardware-check-2026-10-08.md</a> §6〜§9(PC 側コンテナからの handshake 成立、コンテナから <code>ping 10.10.0.2</code> 10/10、トンネル越し telnet と Web、再起動後に操作なしで全部上がる、会場の Wi-Fi の遮断、スマホでの構成、音声)。</p>
   <div class="box warn">
-    <p><b>このデモは <span class="tag apps">apps 版</span> の WireGuard。</b>スタックちゃんのファームは Dockerfile の <code>esp32s3-stackchan</code> ステージ(<code>esp32s3</code> ステージ = <code>apps/netutils/wireguard</code> の上にアプリを重ねたもの)で作っている。カーネル版の実績(スライド 31)と混ぜて「カーネルドライバのデモ」と言わない。</p>
+    <p><b>このデモは <span class="tag apps">apps 版</span> の WireGuard。</b>スタックちゃんのファームは Dockerfile の <code>esp32s3-stackchan</code> ステージ(<code>esp32s3</code> ステージ = <code>apps/netutils/wireguard</code> の上にアプリを重ねたもの)で作っている。カーネル版の実績(スライド 29)と混ぜて「カーネルドライバのデモ」と言わない。</p>
     <p>点線の SPRESENSE(10.11.0.2)は「2 台目のピアもある」という図示で、デモの手順には登場しない。</p>
   </div>
   <h4>④ 話すときのポイント</h4>
@@ -2161,9 +2045,9 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>なぜ Windows の公式クライアントではなく Docker の Linux なのですか?</dt>
-    <dd>この PC は Windows のファイアウォールが受信を拒否し、ルールも追加できないため。Windows 公式クライアントとの相互接続は別に確認済み(スライド 31、T5)。</dd>
+    <dd>この PC は Windows のファイアウォールが受信を拒否し、ルールも追加できないため。Windows 公式クライアントとの相互接続は別に確認済み(スライド 29、T5)。</dd>
     <dt>これはカーネルドライバのデモですか?</dt>
-    <dd>いいえ、スタックちゃんは apps 版。カーネル版は QEMU と両ボードで確認している(スライド 31)。</dd>
+    <dd>いいえ、スタックちゃんは apps 版。カーネル版は QEMU と両ボードで確認している(スライド 29)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -2179,10 +2063,10 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   </table></div>
 </section>
 
-<section class="slide" id="s36">
-  <div class="head"><span class="no">36</span><h3>36 — Demo: live on the StackChan</h3><span class="en">Log in through the tunnel, and talk to the robot.</span></div>
-  <a class="shot" href="renders/glasgow/slide-36.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-36.png" alt="スライド 35 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-36.png</code> · <a href="coc-glasgow-slides.html#36" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s34">
+  <div class="head"><span class="no">34</span><h3>34 — Demo: live on the StackChan</h3><span class="en">Log in through the tunnel, and talk to the robot.</span></div>
+  <a class="shot" href="renders/glasgow/slide-34.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-34.png" alt="スライド 31 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-34.png</code> · <a href="coc-glasgow-slides.html#34" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>左に 7 つの手順:1 <code>wg show</code>(handshake、バイト数)/ 2 <code>telnet 10.10.0.2</code>(ログイン)/ 3 <code>ifconfig</code>(<code>wlan0</code> と <code>wg0</code>)/ 4 <code>stackchan face happy</code> / 5 <code>stackchan say hello.wav</code> / 6 tcpdump:外と中 / 7 <code>wg show</code>(バイト数が増えた)。画面に「Runs the apps version (v0.1.1), FLAT build.」。右に「トンネルの外(スマホのネットワーク):UDP 51820 の暗号化されたものだけ」「トンネルの中(<code>wg0</code>):今打った telnet の文字」と、予備の動画(以前のデモ、youtu.be/1kyX2av5WG4)。</p>
   <h4>② 背景知識</h4>
@@ -2190,7 +2074,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <div class="tbl"><table>
     <tr><th>手順</th><th>何をするか</th><th>何を示すか</th></tr>
     <tr><td><code>wg show</code></td><td>PC 側の WireGuard の状態を表示</td><td>latest handshake(最後の handshake からの時間)が新しい → 認証とセッション確立が動いた。endpoint にスタックちゃんのテザリング側の住所が見える</td></tr>
-    <tr><td><code>telnet 10.10.0.2</code></td><td>トンネルの中の住所へ遠隔ログイン</td><td>ping だけでなく TCP と、タスクをまたぐ送信が動く(スライド 23 のバグが直っている)</td></tr>
+    <tr><td><code>telnet 10.10.0.2</code></td><td>トンネルの中の住所へ遠隔ログイン</td><td>ping だけでなく TCP と、タスクをまたぐ送信が動く(スライド 22 のバグが直っている)</td></tr>
     <tr><td><code>ifconfig</code></td><td>スタックちゃんのネットワークの口を一覧</td><td><code>wlan0</code>(物理)と <code>wg0</code>(VPN)の両方がある → 本当にトンネル越しにログインしている</td></tr>
     <tr><td><code>stackchan face happy</code></td><td>表情を笑顔にする</td><td>普通のコマンドで機器を操作できる</td></tr>
     <tr><td><code>stackchan say hello.wav</code></td><td>PC の 10.10.0.1:8000 から音声を HTTP で取ってきて再生</td><td>機器側から PC 側への通信(HTTP)も同じトンネルを通る</td></tr>
@@ -2209,11 +2093,11 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
       <li>テザリングを入れ直すとアドレス範囲が変わることがあり、そのときは <code>nsh_wifi.py</code> と <code>wg_setup.py</code> をやり直す。</li>
     </ul>
     <p><b>画面に出さないもの:</b><code>wg showconf</code>(秘密鍵を表示する)、PC の鍵ファイルの置き場所、テザリングのパスフレーズ、<code>.config</code>。</p>
-    <p><b>予備の動画について:</b>スライドには「Backup video (earlier demo)」とある。youtu.be/1kyX2av5WG4 は以前の apps 版のデモ(ESP32-S3 に telnet でログイン → コマンド → Web サーバー起動 → ブラウザ、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>)で、スライド 26 で見せた動画と同じもの。スタックちゃんの録画ではない。切り替えたときは「同じことを以前、別のボードでやった録画です」と一言添える。</p>
+    <p><b>予備の動画について:</b>スライドには「Backup video (earlier demo)」とある。youtu.be/1kyX2av5WG4 は以前の apps 版のデモ(ESP32-S3 に telnet でログイン → コマンド → Web サーバー起動 → ブラウザ、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>)で、スライド 24 で見せた動画と同じもの。スタックちゃんの録画ではない。切り替えたときは「同じことを以前、別のボードでやった録画です」と一言添える。</p>
   </div>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">This board runs the apps version — the same app as in the video. The kernel driver ran on this chip too, on slide 31, but the robot demo is built on the app.</blockquote>
-  <p class="gloss">このボードは apps 版で動いています。動画と同じアプリです。カーネルドライバもこのチップで動きました(スライド 31)が、ロボットのデモはアプリの上に作ってあります。</p>
+  <blockquote class="en">This board runs the apps version — the same app as in the video. The kernel driver ran on this chip too, as you saw in the testing part, but the robot demo is built on the app.</blockquote>
+  <p class="gloss">このボードは apps 版で動いています。動画と同じアプリです。カーネルドライバもこのチップで動きました(試験の部で見たとおり)が、ロボットのデモはアプリの上に作ってあります。</p>
   <blockquote class="en">The point of this demo is that there is nothing special to see. The StackChan is just a normal computer at the far end of an encrypted tunnel.</blockquote>
   <p class="gloss">このデモの要点は、特別なものは何も見えないことです。スタックちゃんは、暗号化トンネルの向こう側にある普通のコンピュータです。</p>
   <blockquote class="en">When I type ifconfig, you see both: wlan0 on the phone's network, and wg0 inside the tunnel. So I am really logged in through the tunnel.</blockquote>
@@ -2244,135 +2128,54 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   </table></div>
 </section>
 
-<div class="divider" id="ch7"><b>⑦ Summary &amp; status</b>(スライド 37〜43、約 4 分)— 運用、他の CPU、本家への還元の現状、3 つの教訓、謝辞</div>
-<section class="slide short" id="s37">
-  <div class="head"><span class="no">37</span><h3>37 — Agenda(⑦ を強調)</h3><span class="en">Last part: where the work stands, and what to take home.</span></div>
-  <a class="shot" href="renders/glasgow/slide-37.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-37.png" alt="スライド 36 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-37.png</code> · <a href="coc-glasgow-slides.html#37" target="_blank">スライド本体で開く</a></p>
+<div class="divider" id="ch7"><b>⑦ Summary &amp; status</b>(スライド 35〜40、約 4 分)— 本家への還元の現状、学んだこと、まとめ、謝辞</div>
+<section class="slide short" id="s35">
+  <div class="head"><span class="no">35</span><h3>35 — Agenda(⑦ を強調)</h3><span class="en">Last part: where the work stands, and what to take home.</span></div>
+  <a class="shot" href="renders/glasgow/slide-35.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-35.png" alt="スライド 32 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-35.png</code> · <a href="coc-glasgow-slides.html#35" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>目次の⑦「Summary &amp; status」が色付き(キーワード行は「Upstream status · three lessons · thanks」)。</p>
-  <p><b>要点:</b>最後の部。時間が足りないときは 40 → 39 → 38 の順に削る(台本)。41 のまとめと 42 の謝辞は残す。</p>
+  <p><b>要点:</b>最後の部。今の状況(36)→ 学んだこと(37)→ まとめ(38)→ 謝辞(39)→ 質疑(40)。時間が足りないときは 36 → 24 → 23 の順に削る(台本)。</p>
   <p><b>話し方:</b>"Last part: where the work stands, and what to take home."</p>
 </section>
-<section class="slide" id="s38">
-  <div class="head"><span class="no">38</span><h3>38 — Running it for real</h3><span class="en">From a demo to something you can run.</span></div>
-  <a class="shot" href="renders/glasgow/slide-38.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-38.png" alt="スライド 37 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-38.png</code> · <a href="coc-glasgow-slides.html#38" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>前後の比較表。鍵:前は Kconfig に埋め込み、変えるには作り直し → 後は <code>genkey / set / setconf</code> を動作中に、ファームウェアのイメージには決して入らない。止まったとき:前は推測 → 後は ROUTER / LAN / TUN / TCP を 1 分ごとに確認し、どこが落ちたかを見つける。「4 つの別々の確認が 1 つの問いに答える:トンネルが静かになったとき、自分の側か?」</p>
-  <h4>② 背景知識</h4>
-  <h5>鍵をファームウェアに入れない理由</h5>
-  <p><b>ファームウェア</b>は機器に書き込むプログラムの塊。ビルド設定(Kconfig)に鍵を書くと、鍵がそのファイルに入る。ファイルを配ったり、ビルドのログが残ったりすると、鍵も一緒に漏れる。同じファイルを何台にも書けば、全部が同じ鍵になる。動作中に機器の上で鍵を作れば、鍵は機器の中(と保存した設定ファイル)にしかない。</p>
-  <h5>層ごとに確かめる</h5>
-  <p>「つながらない」には、いろいろな原因がある。1 つずつ切り分けると「どこが悪いか」が言える。</p>
-  <div class="tbl"><table>
-    <tr><th>信号</th><th>読み方</th><th>確かめていること(台本より)</th><th>たとえ</th></tr>
-    <tr><td>ROUTER</td><td class="yomi">ルーター</td><td>ルーター側が生きているか</td><td>道路が通じているか</td></tr>
-    <tr><td>LAN</td><td class="yomi">ラン</td><td>ボードがネットワーク上にいるか</td><td>家に電気が来ているか</td></tr>
-    <tr><td>TUN</td><td class="yomi">タン</td><td>WireGuard がトラフィックを運んでいるか</td><td>専用線がつながっているか</td></tr>
-    <tr><td>TCP</td><td class="yomi">ティーシーピー</td><td>アプリのデータが流れているか</td><td>会話が続いているか</td></tr>
-  </table></div>
-  <p>たとえば ROUTER と LAN が生きていて TUN だけ止まれば WireGuard の問題、LAN から止まれば Wi-Fi やボードの問題、と言える。</p>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:動作中の鍵設定と層ごとの確認が、「トンネルが落ちた」を「ルーター側が落ちた」に変える。それが、デモと「置いておけるもの」の違い。根拠:<span class="tag apps">apps 版</span>。動作中の鍵設定は <code>wg</code> コマンド(スライド 20)、設定の保存の不具合 2 件(#17)を修正済み(<a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found」)。長時間の運用では ESP32-S3 で 4 時間 28 分の連続稼働(1 分ごとの ping + telnet)の後、Wi-Fi ドライバ側のクラッシュで止まり、シリアルの記録で WireGuard とは無関係と特定できた(<a href="../development/phase4-log.md">phase4-log.md</a>)。4 つの信号の方針は <a href="coc-glasgow-outline.md">coc-glasgow-outline.md</a> にあり、検証マトリクスの試験項目ではない。</p>
-  <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">Keys are no longer built into the firmware. You make them and set them at run time, and they never end up in the firmware image.</blockquote>
-  <p class="gloss">鍵はもうファームウェアに入っていません。動作中に作って設定し、ファームウェアのイメージには入りません。</p>
-  <blockquote class="en">So when it goes quiet, I can say which part failed instead of guessing.</blockquote>
-  <p class="gloss">だから静かになったとき、推測ではなく、どの部分が落ちたかを言えます。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
-  <dl class="qa">
-    <dt>鍵の管理はどうしていますか?</dt>
-    <dd><code>wg genkey</code> で作り、<code>wg set private-key</code> で設定、<code>wg saveconf</code> で保存すると次回の起動で読み込まれる。設定ファイルが同時の書き込みで壊れるバグを 2 件見つけて直した。SmartFS での電源断への耐性は、切り替えられる電源がなくて未検証(Q&amp;A)。</dd>
-  </dl>
-  <h4>⑥ 用語</h4>
-  <div class="tbl"><table class="terms">
-    <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>firmware / image</td><td class="yomi">ファームウェア / イメージ</td><td>機器に書き込むプログラムの塊 / そのファイル</td></tr>
-    <tr><td>Kconfig</td><td class="yomi">ケーコンフィグ</td><td>NuttX のビルド時の設定</td></tr>
-    <tr><td>run time</td><td class="yomi">ランタイム</td><td>動作中</td></tr>
-    <tr><td>headless</td><td class="yomi">ヘッドレス</td><td>画面もシリアルもつながない運用</td></tr>
-    <tr><td>saveconf</td><td class="yomi">セーブコンフ</td><td>設定をファイルに保存する wg のサブコマンド</td></tr>
-  </table></div>
-</section>
 
-<section class="slide" id="s39">
-  <div class="head"><span class="no">39</span><h3>39 — Other CPUs: beyond the first board</h3><span class="en">Did the “four functions” bet work?</span></div>
-  <a class="shot" href="renders/glasgow/slide-39.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-39.png" alt="スライド 38 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-39.png</code> · <a href="coc-glasgow-slides.html#39" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s36">
+  <div class="head"><span class="no">36</span><h3>36 — Giving back: where it stands</h3><span class="en">The Apache Way: small steps, in the open.</span></div>
+  <a class="shot" href="renders/glasgow/slide-36.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-36.png" alt="スライド 36 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-36.png</code> · <a href="coc-glasgow-slides.html#36" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>「apps(FLAT)版は 4 種類の CPU で、コードの変更なしに動いた」の表:x86_64(sim)— 変更なし — トンネル / ARM Cortex-A7(QEMU)— なし — トンネル / Xtensa LX7(ESP32-S3)— なし — 実 Wi-Fi でトンネル / ARM Cortex-M4F(SPRESENSE)— なし — 実 Wi-Fi(GS2200M)でトンネル。下に「apps 版では、4 つの小さな OS 関数のおかげで 1 つのソースが 4 種類の CPU で変更なしに動いた」と、注記「apps(FLAT)版で確認。カーネルドライバはこの 4 つの差し込み口を使わない」。</p>
-  <h4>② 背景知識</h4>
-  <p><b>CPU アーキテクチャ</b>が違うと、機械語、レジスタ、メモリの並べ方(エンディアン)、関数の呼び方の約束まで違う。C で書いたプログラムは、コンパイラがそれぞれの機械語に変えてくれるが、OS に依存する部分(時計、乱数、ネットワーク)が散らばっていると、移すたびにあちこち直すことになる。スライド 17 の「4 関数に閉じ込める」はそれを防ぐ賭けだった。</p>
-  <div class="tbl"><table>
-    <tr><th>CPU</th><th>読み方</th><th>どこで使われるか</th></tr>
-    <tr><td>x86_64</td><td class="yomi">エックスハチロク・ロクヨン</td><td>普通の PC。sim はこの上で動く</td></tr>
-    <tr><td>ARM Cortex-A7</td><td class="yomi">アーム・コーテックス・エーセブン</td><td>小型の Linux 機などのアプリ用プロセッサ</td></tr>
-    <tr><td>Xtensa LX7</td><td class="yomi">エクステンサ・エルエックス・セブン</td><td>ESP32-S3 の CPU</td></tr>
-    <tr><td>ARM Cortex-M4F</td><td class="yomi">コーテックス・エムフォー・エフ</td><td>SPRESENSE などのマイコン(F は浮動小数点つき)</td></tr>
-    <tr><td>RISC-V</td><td class="yomi">リスク・ファイブ</td><td>カーネル版の QEMU 試験(rv-virt)</td></tr>
-  </table></div>
-  <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:4 つの小さな OS 関数のおかげで、1 つのソースが 4 種類の CPU で変更なしに動いた。賭けは当たった。根拠:<span class="tag apps">apps 版</span>(<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>「sim / QEMU / Xtensa / ARM Cortex-M4F すべてで無変更で動作」、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a> の Phase 3・4)。<b>カーネル版はこの 4 つの差し込み口を使わない</b>(時計や乱数はカーネルの中で直接使う)ので、この確認は apps 版だけのもの。カーネル版がどこで動いたかはスライド 31(sim、QEMU の rv-virt、両ボードの実機)。</p>
-  <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">Keeping the OS behind a few functions was a bet.</blockquote>
-  <p class="gloss">OS を少数の関数の後ろに隠すのは、賭けでした。</p>
-  <blockquote class="en">The bet paid off.</blockquote>
-  <p class="gloss">賭けは当たりました。</p>
-  <h4>⑤ 聞かれそうな質問</h4>
-  <dl class="qa">
-    <dt>Raspberry Pi Pico 2 W では動きますか?</dt>
-    <dd>そのボードの Wi-Fi チップ(CYW43439)のドライバは、NuttX では RP2040 版にしか組み込まれていない。移植はできそうだが別のドライバ開発になるので、今回の範囲外(Q&amp;A)。</dd>
-  </dl>
-  <h4>⑥ 用語</h4>
-  <div class="tbl"><table class="terms">
-    <tr><th>語</th><th>読み方</th><th>意味</th></tr>
-    <tr><td>architecture</td><td class="yomi">アーキテクチャ</td><td>CPU の命令の体系</td></tr>
-    <tr><td>portability</td><td class="yomi">ポータビリティ</td><td>移植のしやすさ</td></tr>
-    <tr><td>Xtensa</td><td class="yomi">エクステンサ</td><td>ESP32 の CPU の種類</td></tr>
-    <tr><td>Cortex-A7 / M4F</td><td class="yomi">コーテックス・エーセブン / エムフォーエフ</td><td>ARM の CPU の種類</td></tr>
-  </table></div>
-</section>
-
-<section class="slide" id="s40">
-  <div class="head"><span class="no">40</span><h3>40 — Giving back: where it stands</h3><span class="en">The Apache Way: small steps, in the open.</span></div>
-  <a class="shot" href="renders/glasgow/slide-40.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-40.png" alt="スライド 39 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-40.png</code> · <a href="coc-glasgow-slides.html#40" target="_blank">スライド本体で開く</a></p>
-  <h4>① 画面にあるもの</h4>
-  <p>4 つの段:小さな <code>crypto:</code> の修正(ChaCha20-Poly1305 の nonce の修正。それだけで役に立つので、ドライバとは分けてある)/ ドライバ(<code>drivers/net/wireguard</code> — カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ)/ コマンド(<code>apps/system/wg</code> — ドライバと話すコマンド)/ ここまでに確かめたこと(checkpatch / nxstyle を通過、どのコミットも単独でビルドできる、ライセンスを一覧にした)。下に「小さく分かれた部品はレビューしやすく、crypto の修正はドライバがなくても役に立つ」と、状況「手元で小さな部品に分けて準備済み。sign-off も、実機での再試験もまだ。何も送っていない」。</p>
+  <p>4 つの段:小さな <code>crypto:</code> の修正(ChaCha20-Poly1305 の nonce。それだけで役に立つので、ドライバとは分けてある)/ ドライバ(<code>drivers/net/wireguard</code>:カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ)/ コマンド(<code>apps/system/wg</code>:ドライバと話す。スタックの既定値が PROTECTED ビルドもカバーするようになった)/ ここまでに確かめたこと(checkpatch / nxstyle を通過、どのコミットも単独でビルドできる、ライセンスを一覧にした。一式は ESP32-S3 の FLAT で 2026-10-12 に動いた)。下に「小さく分かれた部品はレビューしやすく、crypto の修正はドライバがなくても役に立つ」と状況「小さな PR として準備済み。まだ sign-off していない。upstream には何も送っていない」。</p>
   <h4>② 背景知識</h4>
   <h5>PR(Pull Request)と upstream</h5>
-  <p>GitHub で「この変更を本家に取り込んでください」と頼む手続きが <b>PR</b>。本家(ここでは apache/nuttx と apache/nuttx-apps)を <b>upstream</b>、自分のアカウントに分岐したものを <b>fork</b> と呼ぶ。PR はメンテナーが読んでレビューし、直す点があればやり取りし、合意できれば取り込まれる(マージ)。</p>
+  <p>GitHub で「この変更を本家に取り込んでください」と頼む手続きが <b>PR</b>。本家(apache/nuttx と apache/nuttx-apps)を <b>upstream</b>、自分のアカウントに分岐したものを <b>fork</b> と呼ぶ。PR はメンテナーが読んでレビューし、合意できれば取り込まれる(マージ)。</p>
   <h5>なぜ小さく分けるか</h5>
-  <p>大きな PR は読むのが大変で、どこか 1 か所に問題があると全部が止まる。NuttX の CONTRIBUTING は「PR は小さく 1 機能」「PR の中のコミットは 1 つずつビルドと動作を壊さない」と定めている。だから「1 コミットずつビルドできる」ことを機械で確かめている。nonce の修正は WireGuard がなくても役に立つので、ドライバとは別の単位にしてある。</p>
-  <h5>dev@ メーリングリスト</h5>
-  <p>Apache のプロジェクトでは、大きな設計の相談はメーリングリスト(<code>dev@nuttx.apache.org</code>)で公開して行う。「コードを出す前に、設計を公開の場で話す」のが The Apache Way。</p>
+  <p>大きな PR は読むのが大変で、どこか 1 か所に問題があると全部が止まる。NuttX の CONTRIBUTING は「PR は小さく 1 機能」「PR の中のコミットは 1 つずつビルドと動作を壊さない」と定めている。nonce の修正は WireGuard がなくても役に立つので、単独で出せば、ドライバが受け入れられるかどうかと関係なく本家が取り込める。</p>
   <h5>checkpatch / nxstyle と署名</h5>
-  <p>NuttX のコードの書き方の規則を機械的に検査するツール。CI でも同じ検査が走る。<b>署名(Signed-off-by)</b>は「この変更は自分が出してよいものだ」と本人が証明する行で、本人が付ける。</p>
+  <p>NuttX のコードの書き方の規則を機械的に検査するツール。CI でも同じ検査が走る。<b>署名(Signed-off-by)</b>は「この変更は自分が出してよいものだ」と本人が証明する行で、本人が付ける。AI ツールの手を借りたときは <b>Assisted-by</b> の行を付け、AI は Signed-off-by を付けない(スライド 37)。</p>
+  <h5>鍵は動作中に設定する(旧スライド「Running it for real」の要点)</h5>
+  <p>鍵はビルド設定(Kconfig)に入れず、動作中に <code>wg genkey</code> / <code>set</code> / <code>setconf</code> で作って設定するので、ファームウェアのファイルに鍵は入らない(スライド 20)。長時間の運用では 1 分ごとに ping と telnet で様子を見て、apps 版で 4 時間 28 分の連続稼働を記録した(止まった原因は Wi-Fi ドライバ側)。</p>
   <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:作業は小さな単位に分けてあり、crypto の修正はドライバがなくても役に立つ。まだ何も送っていない。根拠と現状(<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>):</p>
+  <p>主張:小さく分かれた部品はレビューしやすく、crypto の修正はドライバがなくても役に立つ。根拠と現状(<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>):</p>
   <ul>
-    <li>最新の upstream に載せ替え、CONTRIBUTING に合わせて手元で PR の単位に分けた。中心は 5 本(PR-C:crypto、PR-N:nxstyle の除外、PR-K1:ドライバ、PR-D:<code>system/wg</code> の文書、PR-A:apps のコマンド)で、任意で PR-K0 / K0'(SPRESENSE の起動回帰 #9 と usrsock の修正 #10)。スライドの 3 項目は、このうちの大きなまとまり(crypto・ドライバ・コマンド)。</li>
-    <li>各コミットを 1 つずつ取り出して <code>-Werror</code> でビルド、<code>checkpatch.sh -g</code> も通過(submission-checklist §2)。</li>
-    <li>ブランチはまだローカルだけ。コミットにはまだ本人の <code>Signed-off-by</code> と、AI ツールの手を借りたことを示す <code>Assisted-by</code> の行がない。最終的な一式は、実機で動かしていない。fork への push、PR、dev@ への投稿はまだ何もしていない(同 §1、台本)。</li>
-    <li>ドライバの PR の「ネットワークの中心部分への小さな変更 2 つ」は、IP パケットだけを扱う lower half を upper half が受け付けるようにする変更と、WireGuard の制御用の ioctl を netdev に通す変更(submission-checklist §1 の PR-K1 のコミット)。</li>
+    <li>最新の upstream に載せ替え、CONTRIBUTING に合わせて PR に分けた。中心は crypto、nxstyle の除外、ドライバ、<code>system/wg</code> の文書、apps のコマンド(PR-A は <code>90a390e0e</code> + <code>3a54cc458</code>。後者は PROTECTED 用のスタックの既定値と、<code>wg_x25519.c</code> の <code>x1</code> → <code>x1i</code> の位置合わせの打ち間違いも直す)。</li>
+    <li>どのコミットも checkpatch を通り、単独でビルドできる。一式は 2026-10-12 に ESP32-S3 の FLAT ビルドで動いた(スライド 29)。</li>
+    <li>まだ sign-off していない。送る前に、すべてのコミットに本人の <code>Signed-off-by</code> と <code>Assisted-by</code> の行が要る。fork への push、PR、dev@ への投稿はまだ何もしていない。</li>
   </ul>
-  <p><b>「もう PR を出した」「マージ可能」とは言わない。いつ出すか、誰が保守するかなど、約束できないことも言わない。</b>細かい分け方を聞かれたら「本家の規則に合わせて、文書と style の例外を別の単位にしてある」と答える。</p>
+  <p><b>「もう PR を出した」「マージ可能」とは言わない。</b></p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">The work is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the command for user space.</blockquote>
-  <p class="gloss">作業は小さな単位に分けてあります。それだけで役に立つ小さな crypto の修正、カーネルのデバイスのドライバ、ユーザー空間のコマンドです。</p>
-  <blockquote class="en">Every commit passes the patch checks and builds on its own. Nothing is sent yet.</blockquote>
-  <p class="gloss">どのコミットも検査を通り、単独でビルドできます。まだ何も送っていません。</p>
-  <blockquote class="en">Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series has not run on real hardware.</blockquote>
-  <p class="gloss">どのコミットにも、まだ私の sign-off と Assisted-by の行がありません。AI ツールに手伝ってもらったので、この行が要ります。そして最終的な一式は、まだ実機で動かしていません。</p>
+  <blockquote class="en">Here is where the work stands.</blockquote>
+  <p class="gloss">作業が今どこにあるかです。</p>
+  <blockquote class="en">The PROTECTED stack fix is in the command's default settings.</blockquote>
+  <p class="gloss">PROTECTED のスタックの修正は、コマンドの既定の設定に入っています。</p>
+  <blockquote class="en">Nothing is sent yet. Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me.</blockquote>
+  <p class="gloss">まだ何も送っていません。どのコミットにもまだ私の sign-off と Assisted-by の行が要ります。AI ツールに手伝ってもらったからです。</p>
   <span class="pause">間</span>
   <blockquote class="en">Community over code means being honest about where the work really is, and then letting review change it.</blockquote>
   <p class="gloss">Community over code とは、仕事が本当はどこまで来ているかを正直に言い、レビューに変えてもらうことです。</p>
+  <p>時間が足りないときは、このスライドを最初に削る(台本)。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>もう PR は出しましたか? マージされていますか?</dt>
-    <dd>まだ。載せ替えと再検証を済ませ、手元で小さな単位に分けた候補がある。PR の作成も dev@ への投稿もしていない(Q&amp;A)。"Nothing is sent, and nothing is merged."</dd>
-    <dt>マージされたら、誰が保守しますか?</dt>
-    <dd>決まっていない、と正直に言う。約束できないことは言わない。言えるのは、ドライバが NuttX の既存の部品(netdev lower half、<code>crypto/</code>、UDP ソケット)の上にあり、外のコードに追従する部分が小さいという事実だけ(Q&amp;A)。"That is not decided, and I don't want to promise what I can't."</dd>
+    <dd>まだ。小さな PR に分けた候補を用意し、ESP32-S3 で動かした段階。sign-off も、PR の作成と dev@ への投稿もこれから。"Not upstream yet."</dd>
     <dt>checkpatch や nxstyle は通っていますか?</dt>
     <dd>通っている。ファイル単位の <code>nxstyle -f</code> と、CI と同じパッチ形式の <code>checkpatch.sh -g</code> の両方(Q&amp;A)。</dd>
   </dl>
@@ -2381,66 +2184,114 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
     <tr><th>語</th><th>読み方</th><th>意味</th></tr>
     <tr><td>PR(Pull Request)</td><td class="yomi">ピーアール(プルリクエスト)</td><td>変更の取り込みの依頼</td></tr>
     <tr><td>upstream / fork</td><td class="yomi">アップストリーム / フォーク</td><td>本家 / 自分の分岐</td></tr>
-    <tr><td>merge</td><td class="yomi">マージ</td><td>本家に取り込まれること</td></tr>
     <tr><td>commit</td><td class="yomi">コミット</td><td>変更の 1 単位</td></tr>
-    <tr><td>dev@nuttx.apache.org</td><td class="yomi">デブ・アット・ナットエックス・ドット・アパッチ・ドット・オーグ</td><td>NuttX の開発者メーリングリスト</td></tr>
     <tr><td>checkpatch / nxstyle</td><td class="yomi">チェックパッチ / エヌエックス・スタイル</td><td>NuttX のコードの書式の検査ツール</td></tr>
-    <tr><td>Signed-off-by</td><td class="yomi">サインド・オフ・バイ</td><td>本人が付ける「出してよい」の署名行</td></tr>
-    <tr><td>Assisted-by</td><td class="yomi">アシステッド・バイ</td><td>AI ツールなどの手を借りたことを示す行</td></tr>
+    <tr><td>Signed-off-by / Assisted-by</td><td class="yomi">サインド・オフ・バイ / アシステッド・バイ</td><td>本人の「出してよい」の署名行 / AI などの手を借りたことを示す行</td></tr>
     <tr><td>The Apache Way</td><td class="yomi">ジ・アパッチ・ウェイ</td><td>公開の場で、合意で進める Apache の流儀</td></tr>
   </table></div>
 </section>
 
-<section class="slide" id="s41">
-  <div class="head"><span class="no">41</span><h3>41 — Summary</h3><span class="en">What I built, and three things to remember.</span></div>
-  <a class="shot" href="renders/glasgow/slide-41.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-41.png" alt="スライド 41 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-41.png</code> · <a href="coc-glasgow-slides.html#41" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s37">
+  <div class="head"><span class="no">37</span><h3>37 — What I learned</h3><span class="en">Three things this project taught me.</span></div>
+  <a class="shot" href="renders/glasgow/slide-37.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-37.png" alt="スライド 37 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-37.png</code> · <a href="coc-glasgow-slides.html#37" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE で動き、標準の WireGuard の相手と話し、upstream 向けに小さな PR に分けてある」。その下に 3 つの教訓。① handshake の先まで試す — 長いデータ、本物のハードウェア、本物のカーネルビルド。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。その修正はそれだけで成り立つ。</p>
+  <p>3 つの教訓と、希望の 1 行。<b>Lesson 1 アプリの利用者から OS の貢献者へ</b>:長年 NuttX をアプリの側から使ってきた。このプロジェクトでドライバ、カーネル、NuttX 自身のバグまで入っていった。<b>Lesson 2 AI はコードを助けたが、理解するのは自分の仕事</b>:Claude をたくさん使い、調査とコードはずっと速くなった。OS の内部は初めてだった。AI のコードをそのまま使わず、質問し、読み、試し、自分で説明できるまで続けた。そこが難しいところだった。<b>Lesson 3 迎え入れてくれるオープンソースのコミュニティ</b>:良い文書と貢献の手引き。活発な議論とレビュー。AI ツールに開かれていて、責任は人が持つ(<code>Assisted-by</code>、AI は <code>Signed-off-by</code> を付けない)。CI とハッカソンが新しい人の参加を助ける。<b>Hope</b>:これからも Apache NuttX とオープンソースのコミュニティに貢献を続け、NuttX が育っていくのを楽しみにしている。</p>
   <h4>② 背景知識</h4>
-  <h5>「作ったもの」の言い方</h5>
-  <p>台本は「ESP32-S3 と SPRESENSE で Windows 公式クライアントと動き、シミュレータと QEMU で Linux カーネルの WireGuard と話し、小さな PR に分けてレビューの準備ができている。まだ何も本家に送っていない」と言う。どこで何を確かめたか(実機 = FLAT ビルド、KERNEL / PROTECTED = QEMU)の区別は、スライド 31 と同じ。</p>
+  <h5>技術の教訓と、人としての教訓</h5>
+  <p>次のスライド 38(Summary)が技術の 3 つの教訓で、このスライドはその前に置いた「このプロジェクトで自分が学んだこと」。Community Over Code というカンファレンスの名前どおり、コードの話だけでなく、どうやってコミュニティに入っていったかを話す場所。</p>
+  <h5>AI を使った開発と責任</h5>
+  <p>生成 AI(ここでは Claude)は、調べものやコードを書く速さを大きく上げる。しかし、出てきたコードが正しいか、なぜそう動くのかを確かめるのは人の仕事。とくに OS の内部のように初めての分野では、AI がもっともらしいが間違ったものを出すこともある。だから「質問する → NuttX のソースを読む → 動きを試す → 自分で説明できるまで続ける」を繰り返した。</p>
+  <p>NuttX の CONTRIBUTING は AI ツールの利用を認めているが、コミットには <code>Assisted-by</code> の行で AI の手を借りたことを書き、<code>Signed-off-by</code>(「自分が出してよいものだ」という証明)は人だけが付ける。責任は人に残る、という決まり(スライド 36)。</p>
+  <h5>新しい人が入れるコミュニティ</h5>
+  <p>文書、貢献の手引き、レビュー、CI(PR ごとの自動ビルドと試験)、ハッカソンなどがそろっていると、外から来た人でも参加し、学び、貢献できる。台本の言葉では「オープンソースは、コードが公開されているだけではない。新しい人が参加し、学び、貢献できるときに育つ」。</p>
+  <h4>③ このスライドの主張と根拠</h4>
+  <p>主張:アプリの利用者から OS の貢献者になれた。AI は速さを与えたが、理解は自分でやった。NuttX のコミュニティは新しい人と AI ツールに開かれていて、責任は人に残る。根拠は本人の経験(技術的な試験の対象ではない)。AI と署名の決まりは NuttX の CONTRIBUTING(<a href="../upstream/submission-checklist.md">submission-checklist.md</a> に要約)。</p>
+  <h4>④ 話すときのポイント</h4>
+  <blockquote class="en">Before the summary, three things I learned.</blockquote>
+  <p class="gloss">まとめの前に、学んだことを 3 つ。</p>
+  <blockquote class="en">I could not just take the code the AI wrote. I had to ask questions, read the NuttX source, test the behavior, and keep going until I could explain it myself.</blockquote>
+  <p class="gloss">AI が書いたコードを、そのまま使うことはできませんでした。質問し、NuttX のソースを読み、動きを試し、自分で説明できるまで続ける必要がありました。</p>
+  <blockquote class="en">AI helped me code, but understanding was my job.</blockquote>
+  <p class="gloss">AI はコードを助けてくれましたが、理解するのは私の仕事でした。</p>
+  <span class="pause">間</span>
+  <blockquote class="en">Open source is not only code that is public. It grows when new people can join, learn, and contribute.</blockquote>
+  <p class="gloss">オープンソースは、コードが公開されているだけではありません。新しい人が参加し、学び、貢献できるときに育ちます。</p>
+  <blockquote class="en">I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.</blockquote>
+  <p class="gloss">これからも Apache NuttX とオープンソースのコミュニティに貢献を続けたいと思いますし、NuttX が育っていくのを楽しみにしています。</p>
+  <h4>⑤ 聞かれそうな質問</h4>
+  <dl class="qa">
+    <dt>AI はどのくらいコードを書いたのですか?</dt>
+    <dd>調査とコードを書く速さに大きく効いた。ただし、どのコードも自分で読み、試し、説明できるまで確かめた。提出するコミットには Assisted-by を付け、Signed-off-by は本人が付ける。</dd>
+    <dt>生成 AI の時代に、なぜ NuttX なのですか?</dt>
+    <dd>NuttX は POSIX なので、AI がいちばんよく知っている Linux の書き方がそのまま効く。sim と QEMU で実機なしに「ビルド → 実行 → 確認」を回せる。ただし AI は NuttX にない機能をもっともらしく作ることがあるので、深い試験で確かめるのが前提(Q&amp;A)。</dd>
+  </dl>
+  <h4>⑥ 用語</h4>
+  <div class="tbl"><table class="terms">
+    <tr><th>語</th><th>読み方</th><th>意味</th></tr>
+    <tr><td>contributor</td><td class="yomi">コントリビューター</td><td>プロジェクトに貢献する人</td></tr>
+    <tr><td>Claude</td><td class="yomi">クロード</td><td>Anthropic の生成 AI</td></tr>
+    <tr><td>Assisted-by</td><td class="yomi">アシステッド・バイ</td><td>AI ツールなどの手を借りたことを示すコミットの行</td></tr>
+    <tr><td>contributing guide</td><td class="yomi">コントリビューティング・ガイド</td><td>貢献の手引き</td></tr>
+    <tr><td>CI</td><td class="yomi">シーアイ</td><td>PR ごとの自動ビルド・試験</td></tr>
+  </table></div>
+</section>
+
+<section class="slide" id="s38">
+  <div class="head"><span class="no">38</span><h3>38 — Summary</h3><span class="en">What I built, and three technical lessons.</span></div>
+  <a class="shot" href="renders/glasgow/slide-38.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-38.png" alt="スライド 38 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-38.png</code> · <a href="coc-glasgow-slides.html#38" target="_blank">スライド本体で開く</a></p>
+  <h4>① 画面にあるもの</h4>
+  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE(FLAT)と、QEMU の上の KERNEL / PROTECTED のビルドで、標準の WireGuard の相手と動く。小さな PR として準備済み。まだ何も送っていない」。その下に 3 つの技術の教訓。① handshake の先まで試す — 長いデータ、本物のハードウェア、すべてのビルドの種類。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。その修正はそれだけで成り立つ。</p>
+  <h4>② 背景知識</h4>
+  <h5>② の教訓:4 種類の CPU(旧スライド「Other CPUs」の要点)</h5>
+  <p>apps 版は、OS 依存を 4 つの関数(スライド 17)に閉じ込めたおかげで、コードを変えずに 4 種類の CPU で動いた。カーネル版はこの 4 つの差し込み口を使わないので、これは apps 版だけの数字。</p>
+  <div class="tbl"><table>
+    <tr><th>CPU</th><th>読み方</th><th>どこで</th><th>結果</th></tr>
+    <tr><td>x86_64</td><td class="yomi">エックスハチロク・ロクヨン</td><td>sim(普通の PC)</td><td>トンネル</td></tr>
+    <tr><td>ARM Cortex-A7</td><td class="yomi">アーム・コーテックス・エーセブン</td><td>QEMU</td><td>トンネル</td></tr>
+    <tr><td>Xtensa LX7</td><td class="yomi">エクステンサ・エルエックス・セブン</td><td>ESP32-S3</td><td>本物の Wi-Fi でトンネル</td></tr>
+    <tr><td>ARM Cortex-M4F</td><td class="yomi">コーテックス・エムフォー・エフ</td><td>SPRESENSE</td><td>本物の Wi-Fi(GS2200M)でトンネル</td></tr>
+  </table></div>
+  <p><b>CPU アーキテクチャ</b>が違うと、機械語、レジスタ、関数の呼び方の約束まで違う。OS に依存する部分が散らばっていると、移すたびにあちこち直すことになる。</p>
   <h5>③ の教訓</h5>
-  <p>nonce の置き場所のバグ(スライド 30)は NuttX に以前からあったもので、NuttX の中に使う人がいなかったので見つからなかった。WireGuard を移植したことで初めて使われ、見つかった。外から来た利用者が、プロジェクト自身を良くする — Community Over Code の精神。</p>
+  <p>nonce の置き場所のバグ(スライド 28)は NuttX に以前からあったもので、NuttX の中に使う人がいなかったので見つからなかった。WireGuard を移植したことで初めて使われ、見つかった。スライド 28 には SPRESENSE の起動のバグ(<code>CONFIG_RTC_HIRES</code>)も「NuttX でも見つかった」として載っている。</p>
   <h4>③ このスライドの主張と根拠</h4>
   <ul>
-    <li>作ったもの:<span class="tag kern">カーネル版</span> の実績(スライド 31、<a href="../upstream/verification-matrix.md">verification-matrix.md</a>)。実機は FLAT のビルドで、最後の rebase の前の版。</li>
-    <li>① の根拠:スライド 21〜25・30 の 6 つのバグ(多くは handshake や ping が通った後に見つかった)と、31〜33 の試験。</li>
-    <li>② の根拠:<span class="tag apps">apps 版</span> の 4 CPU・3 バージョン(スライド 1・39)。カーネル版は 4 関数の差し込み口を使わないので、カーネル版の数字ではない。</li>
-    <li>③ の根拠:nonce は verification-matrix「Bugs found」(pre-existing NuttX)。修正はまだ送っていない(スライド 40)。</li>
+    <li>作ったもの:<span class="tag kern">カーネル版</span> の実績(スライド 29)。実機は FLAT、KERNEL / PROTECTED は QEMU。</li>
+    <li>① の根拠:スライド 21〜23・28 の 6 つのバグと、29〜31 の試験。</li>
+    <li>② の根拠:<span class="tag apps">apps 版</span> の 4 CPU・3 バージョン(スライド 1、<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>)。</li>
+    <li>③ の根拠:nonce は verification-matrix「Bugs found」(pre-existing NuttX)。修正はまだ送っていない(スライド 36)。</li>
   </ul>
-  <p>注意:以前の版のスライドは ③ に「SPRESENSE で素のリリースが起動しない起動の回帰(#9)」も挙げていたが、今は ChaCha20-Poly1305 のバグだけ。#9 は Q&amp;A で聞かれたら答える程度にする。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">I built wg0, a WireGuard network device inside the NuttX kernel.</blockquote>
-  <p class="gloss">NuttX のカーネルの中に、WireGuard のネットワークデバイス wg0 を作りました。</p>
-  <blockquote class="en">Nothing is sent upstream yet.</blockquote>
-  <p class="gloss">まだ何も本家に送っていません。</p>
-  <span class="pause">間</span>
-  <blockquote class="en">First, test beyond the handshake: long data runs, real hardware, a real kernel build.</blockquote>
-  <p class="gloss">1 つ目。handshake の先まで試してください。長いデータ、本物のハードウェア、本物のカーネルビルド。</p>
-  <blockquote class="en">Second, a clean line between your code and the OS is worth the effort — in the apps version, four CPU types and three NuttX versions, with no code changes.</blockquote>
-  <p class="gloss">2 つ目。自分のコードと OS の間のきれいな線は、手間をかける価値があります。apps 版では、4 種類の CPU と 3 つの NuttX の版で、コードの変更なし。</p>
-  <blockquote class="en">Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.</blockquote>
-  <p class="gloss">3 つ目。プロジェクトへの移植は、それを良くする機会です。1 つのバグは NuttX 自身の暗号にあり、その修正はそれだけで成り立ちます。</p>
+  <blockquote class="en">I built wg0, a WireGuard network device inside the NuttX kernel. It runs on the ESP32-S3 and SPRESENSE in normal FLAT builds, and in KERNEL and PROTECTED builds on QEMU.</blockquote>
+  <p class="gloss">NuttX のカーネルの中に、WireGuard のネットワークデバイス wg0 を作りました。ESP32-S3 と SPRESENSE の普通の FLAT ビルドと、QEMU の上の KERNEL・PROTECTED ビルドで動きます。</p>
+  <blockquote class="en">First, test beyond the handshake: long data runs, real hardware, and every build mode.</blockquote>
+  <p class="gloss">1 つ目。handshake の先まで試すこと。長いデータ、本物のハードウェア、そしてすべてのビルドの種類。</p>
+  <blockquote class="en">Second, a clean line between your code and the OS pays off: the apps version ran on four CPU types, x86, Cortex-A7, Xtensa and Cortex-M4F, and on three NuttX versions, with no code change.</blockquote>
+  <p class="gloss">2 つ目。自分のコードと OS の間のきれいな線は報われます。apps 版は 4 種類の CPU と 3 つの NuttX の版で、コードの変更なしに動きました。</p>
+  <blockquote class="en">Third, porting to a project is a chance to make it better: one bug was in NuttX's own crypto.</blockquote>
+  <p class="gloss">3 つ目。プロジェクトへの移植は、それを良くする機会です。1 つのバグは NuttX 自身の暗号にありました。</p>
   <span class="pause">間(締め)</span>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
-    <dt>他に NuttX 本体の問題は見つかりましたか?</dt>
-    <dd>SPRESENSE(cxd56)で <code>CONFIG_RTC_HIRES</code> を有効にすると素のリリースが起動しない回帰(#9)と、ESP32-S3 の I2C / I2S のドライバの問題(スタックちゃんのデモの作業中)がある。どれも小さな独立した修正の候補で、まだ送っていない。</dd>
+    <dt>Raspberry Pi Pico 2 W では動きますか?</dt>
+    <dd>そのボードの Wi-Fi チップ(CYW43439)のドライバは、NuttX では RP2040 版にしか組み込まれていない。移植はできそうだが別のドライバ開発になるので、今回の範囲外(Q&amp;A)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
     <tr><th>語</th><th>読み方</th><th>意味</th></tr>
     <tr><td>summary</td><td class="yomi">サマリー</td><td>まとめ</td></tr>
-    <tr><td>regression</td><td class="yomi">リグレッション</td><td>以前は動いたものが動かなくなること</td></tr>
-    <tr><td>upstream</td><td class="yomi">アップストリーム</td><td>本家</td></tr>
+    <tr><td>architecture</td><td class="yomi">アーキテクチャ</td><td>CPU の命令の体系</td></tr>
+    <tr><td>portability</td><td class="yomi">ポータビリティ</td><td>移植のしやすさ</td></tr>
+    <tr><td>build mode</td><td class="yomi">ビルド・モード</td><td>FLAT / PROTECTED / KERNEL の種類</td></tr>
   </table></div>
 </section>
 
-<section class="slide" id="s42">
-  <div class="head"><span class="no">42</span><h3>42 — Thanks: the people behind this talk</h3><span class="en">Many people helped me get here.</span></div>
-  <a class="shot" href="renders/glasgow/slide-42.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-42.png" alt="スライド 41 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-42.png</code> · <a href="coc-glasgow-slides.html#42" target="_blank">スライド本体で開く</a></p>
+<section class="slide" id="s39">
+  <div class="head"><span class="no">39</span><h3>39 — Thanks: the people behind this talk</h3><span class="en">Many people helped me get here.</span></div>
+  <a class="shot" href="renders/glasgow/slide-39.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-39.png" alt="スライド 36 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-39.png</code> · <a href="coc-glasgow-slides.html#39" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
   <p>4 つの感謝:Alan(このカンファレンスを教えてくれ、講演の応募を勧めてくれた)/ Apache NuttX のコミュニティ(GSoC の提案について話をしてくれ、続けるよう励ましてくれた)/ Apache Software Foundation と Community Over Code の運営者・ボランティア(このイベントを実現してくれた)/ ソニーの NuttX 開発者(過去と現在。NuttX を製品に取り入れ、プロジェクトに多くを還元してきた)。</p>
   <h4>② 背景知識</h4>
@@ -2464,12 +2315,13 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
     <tr><td>Community Over Code</td><td class="yomi">コミュニティ・オーバー・コード</td><td>Apache の標語であり、このカンファレンスの名前</td></tr>
   </table></div>
 </section>
-<section class="slide short" id="s43">
-  <div class="head"><span class="no">43</span><h3>43 — Thank you</h3><span class="en">Questions welcome.</span></div>
-  <a class="shot" href="renders/glasgow/slide-43.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-43.png" alt="スライド 42 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-43.png</code> · <a href="coc-glasgow-slides.html#43" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>「Thank you」、デモの動画(youtu.be/1kyX2av5WG4)、コードと記録(github.com/wwlapaki310/gsoc2026-nuttx-wireguard)、名前と所属、「Questions welcome.」</p>
-  <p><b>要点:</b>リンク先は、このプロジェクトの設計・試験・記録を集めたリポジトリ。本家にはまだ何も送っていない(スライド 40)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
+
+<section class="slide short" id="s40">
+  <div class="head"><span class="no">40</span><h3>40 — Thank you</h3><span class="en">Questions welcome.</span></div>
+  <a class="shot" href="renders/glasgow/slide-40.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-40.png" alt="スライド 38 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-40.png</code> · <a href="coc-glasgow-slides.html#40" target="_blank">スライド本体で開く</a></p>
+  <p><b>画面:</b>「Thank you」、コードと記録(github.com/wwlapaki310/gsoc2026-nuttx-wireguard と QR コード)、デモの動画(youtu.be/1kyX2av5WG4)、名前と所属、「Questions welcome.」</p>
+  <p><b>要点:</b>リンク先は、このプロジェクトの設計・試験・記録を集めたリポジトリ。本家にはまだ何も送っていない(スライド 36)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
   <p><b>話し方:</b>"Thank you. I am happy to take your questions — about the kernel driver, the bugs, the ioctl ABI, or the hardware." 想定質問と答えは <a href="talkscript/coc-glasgow-qa.md">coc-glasgow-qa.md</a>。数字を答えるときは<a href="#part4">第 4 部</a>の「言ってよい範囲」を守る。</p>
 </section>
 
@@ -2477,147 +2329,147 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
 <p>アルファベット順。「出てくる所」の数字は現行のスライド番号。読み方は一般的なもので、括弧内は別の言い方。</p>
 <div class="tbl"><table class="glossary">
   <tr><th>用語</th><th>読み方</th><th>意味</th><th>出てくる所</th></tr>
-  <tr><td>ABI</td><td class="yomi">エービーアイ</td><td>アプリとカーネルのやり取りの約束(番号・構造体の並び)</td><td>29, 31</td></tr>
-  <tr><td>ACK</td><td class="yomi">アック</td><td>「受け取りました」の返事</td><td>24</td></tr>
-  <tr><td>AEAD</td><td class="yomi">エーイーエーディー</td><td>暗号化と改ざん検知を一緒に行う方式(ChaCha20-Poly1305 など)</td><td>17, 30</td></tr>
-  <tr><td>ALLOW_BSD_COMPONENTS</td><td class="yomi">アロウ・ビーエスディー・コンポーネンツ</td><td>BSD ライセンスの部品を含めてよいとする NuttX の設定。wg_noise.c のため必要</td><td>29</td></tr>
+  <tr><td>ABI</td><td class="yomi">エービーアイ</td><td>アプリとカーネルのやり取りの約束(番号・構造体の並び)</td><td>27, 29</td></tr>
+  <tr><td>ACK</td><td class="yomi">アック</td><td>「受け取りました」の返事</td><td>23</td></tr>
+  <tr><td>AEAD</td><td class="yomi">エーイーエーディー</td><td>暗号化と改ざん検知を一緒に行う方式(ChaCha20-Poly1305 など)</td><td>17, 28</td></tr>
+  <tr><td>ALLOW_BSD_COMPONENTS</td><td class="yomi">アロウ・ビーエスディー・コンポーネンツ</td><td>BSD ライセンスの部品を含めてよいとする NuttX の設定。wg_noise.c のため必要</td><td>27</td></tr>
   <tr><td>AllowedIPs</td><td class="yomi">アラウド・アイピーズ</td><td>その相手に送ってよい・相手から受けてよい IP の範囲。宛先から相手を選ぶのにも使う</td><td>20</td></tr>
   <tr><td>APN</td><td class="yomi">エーピーエヌ</td><td>携帯回線の接続先の設定。プライベート APN は閉じた網</td><td>13</td></tr>
-  <tr><td>apps / nuttx-apps</td><td class="yomi">アップス</td><td>NuttX のアプリ集のリポジトリ。カーネルとは別</td><td>1, 28, 40</td></tr>
-  <tr><td>ARP</td><td class="yomi">アープ</td><td>同じネットワークで相手の機器を探す問い合わせ</td><td>35</td></tr>
-  <tr><td>BLAKE2s</td><td class="yomi">ブレイク・ツー・エス</td><td>ハッシュ関数</td><td>17, 29</td></tr>
+  <tr><td>apps / nuttx-apps</td><td class="yomi">アップス</td><td>NuttX のアプリ集のリポジトリ。カーネルとは別</td><td>1, 26, 36</td></tr>
+  <tr><td>ARP</td><td class="yomi">アープ</td><td>同じネットワークで相手の機器を探す問い合わせ</td><td>33</td></tr>
+  <tr><td>BLAKE2s</td><td class="yomi">ブレイク・ツー・エス</td><td>ハッシュ関数</td><td>17, 27</td></tr>
   <tr><td>broker</td><td class="yomi">ブローカー</td><td>MQTT の掲示板役のサーバー</td><td>13</td></tr>
   <tr><td>BSD socket</td><td class="yomi">ビーエスディー・ソケット</td><td>通信プログラムの標準的な書き方</td><td>5, 7</td></tr>
   <tr><td>BSD-3-Clause</td><td class="yomi">ビーエスディー・スリー・クローズ</td><td>ライセンスの一種。wireguard-lwip 由来のコードがこれ</td><td>17</td></tr>
-  <tr><td>BUILD_KERNEL</td><td class="yomi">ビルド・カーネル</td><td>アプリごとに別メモリ空間を持つ構成</td><td>1, 28, 30, 31</td></tr>
-  <tr><td>BUILD_PROTECTED</td><td class="yomi">ビルド・プロテクテッド</td><td>MPU でアプリとカーネルを分ける構成</td><td>28, 31</td></tr>
-  <tr><td>callback</td><td class="yomi">コールバック</td><td>出来事が起きたら呼んでもらう関数</td><td>18, 24</td></tr>
+  <tr><td>BUILD_KERNEL</td><td class="yomi">ビルド・カーネル</td><td>アプリごとに別メモリ空間を持つ構成</td><td>1, 26, 28, 29</td></tr>
+  <tr><td>BUILD_PROTECTED</td><td class="yomi">ビルド・プロテクテッド</td><td>MPU でアプリとカーネルを分ける構成</td><td>26, 29</td></tr>
+  <tr><td>callback</td><td class="yomi">コールバック</td><td>出来事が起きたら呼んでもらう関数</td><td>18, 23</td></tr>
   <tr><td>CA / certificate</td><td class="yomi">シーエー / サーティフィケイト</td><td>認証局 / 証明書。WireGuard は使わない</td><td>14</td></tr>
-  <tr><td>ChaCha20-Poly1305</td><td class="yomi">チャチャ・トゥエンティ・ポリ・イチサンゼロゴー</td><td>暗号化 + 改ざん検知の方式</td><td>17, 29, 30, 41</td></tr>
-  <tr><td>checkpatch / nxstyle</td><td class="yomi">チェックパッチ / エヌエックス・スタイル</td><td>NuttX のコードの書式の検査ツール</td><td>40</td></tr>
-  <tr><td>CI</td><td class="yomi">シーアイ</td><td>Continuous Integration。PR ごとの自動ビルド・試験</td><td>31</td></tr>
-  <tr><td>client isolation</td><td class="yomi">クライアント・アイソレーション</td><td>同じ Wi-Fi の機器どうしの通信を遮断する設定</td><td>35</td></tr>
-  <tr><td>CLOCK_MONOTONIC / REALTIME</td><td class="yomi">モノトニック / リアルタイム</td><td>戻らない経過時間 / カレンダーの日時</td><td>17, 33</td></tr>
-  <tr><td>container / Docker</td><td class="yomi">コンテナ / ドッカー</td><td>PC の中の独立した小さな Linux 環境 / それを作る道具</td><td>35</td></tr>
-  <tr><td>cookie</td><td class="yomi">クッキー</td><td>WireGuard の DoS 対策の仕組み</td><td>17, 29</td></tr>
-  <tr><td>Cortex-A7 / M4F</td><td class="yomi">コーテックス・エーセブン / エムフォーエフ</td><td>ARM の CPU の種類</td><td>31, 39</td></tr>
-  <tr><td>counter</td><td class="yomi">カウンター</td><td>パケットの通し番号</td><td>30</td></tr>
-  <tr><td>crypto/</td><td class="yomi">クリプト</td><td>NuttX のカーネル内の暗号機能のディレクトリ</td><td>29, 30, 40</td></tr>
-  <tr><td>cryptodev</td><td class="yomi">クリプトデブ</td><td>アプリからカーネルの暗号を使う窓口</td><td>29</td></tr>
-  <tr><td>Curve25519 / X25519</td><td class="yomi">カーブ / エックス・ニーゴーゴーイチキュー</td><td>鍵交換の楕円曲線 / それを使った鍵交換の関数</td><td>17, 29</td></tr>
-  <tr><td>CXD56xx</td><td class="yomi">シーエックスディー・ゴーロク</td><td>SPRESENSE のソニー製チップ</td><td>9, 41</td></tr>
-  <tr><td>d_lock</td><td class="yomi">ディー・ロック</td><td>netdev ごとの鍵。プロトコルの状態を守る</td><td>29, 31</td></tr>
-  <tr><td>deadlock</td><td class="yomi">デッドロック</td><td>互いに待ち合って止まること</td><td>22</td></tr>
+  <tr><td>ChaCha20-Poly1305</td><td class="yomi">チャチャ・トゥエンティ・ポリ・イチサンゼロゴー</td><td>暗号化 + 改ざん検知の方式</td><td>17, 27, 28, 38</td></tr>
+  <tr><td>checkpatch / nxstyle</td><td class="yomi">チェックパッチ / エヌエックス・スタイル</td><td>NuttX のコードの書式の検査ツール</td><td>36</td></tr>
+  <tr><td>CI</td><td class="yomi">シーアイ</td><td>Continuous Integration。PR ごとの自動ビルド・試験</td><td>29</td></tr>
+  <tr><td>client isolation</td><td class="yomi">クライアント・アイソレーション</td><td>同じ Wi-Fi の機器どうしの通信を遮断する設定</td><td>33</td></tr>
+  <tr><td>CLOCK_MONOTONIC / REALTIME</td><td class="yomi">モノトニック / リアルタイム</td><td>戻らない経過時間 / カレンダーの日時</td><td>17, 31</td></tr>
+  <tr><td>container / Docker</td><td class="yomi">コンテナ / ドッカー</td><td>PC の中の独立した小さな Linux 環境 / それを作る道具</td><td>33</td></tr>
+  <tr><td>cookie</td><td class="yomi">クッキー</td><td>WireGuard の DoS 対策の仕組み</td><td>17, 27</td></tr>
+  <tr><td>Cortex-A7 / M4F</td><td class="yomi">コーテックス・エーセブン / エムフォーエフ</td><td>ARM の CPU の種類</td><td>29, 38</td></tr>
+  <tr><td>counter</td><td class="yomi">カウンター</td><td>パケットの通し番号</td><td>28</td></tr>
+  <tr><td>crypto/</td><td class="yomi">クリプト</td><td>NuttX のカーネル内の暗号機能のディレクトリ</td><td>27, 28, 36</td></tr>
+  <tr><td>cryptodev</td><td class="yomi">クリプトデブ</td><td>アプリからカーネルの暗号を使う窓口</td><td>27</td></tr>
+  <tr><td>Curve25519 / X25519</td><td class="yomi">カーブ / エックス・ニーゴーゴーイチキュー</td><td>鍵交換の楕円曲線 / それを使った鍵交換の関数</td><td>17, 27</td></tr>
+  <tr><td>CXD56xx</td><td class="yomi">シーエックスディー・ゴーロク</td><td>SPRESENSE のソニー製チップ</td><td>9, 38</td></tr>
+  <tr><td>d_lock</td><td class="yomi">ディー・ロック</td><td>netdev ごとの鍵。プロトコルの状態を守る</td><td>27, 29</td></tr>
+  <tr><td>deadlock</td><td class="yomi">デッドロック</td><td>互いに待ち合って止まること</td><td>21</td></tr>
   <tr><td>defconfig</td><td class="yomi">デフコンフィグ</td><td>ボードごとの設定テンプレート</td><td>8</td></tr>
-  <tr><td>detach / join</td><td class="yomi">デタッチ / ジョイン</td><td>スレッドの後片付けを自動に / 終わりを待って回収</td><td>22</td></tr>
-  <tr><td>dev@</td><td class="yomi">デブ・アット</td><td>NuttX の開発者メーリングリスト</td><td>40</td></tr>
+  <tr><td>detach / join</td><td class="yomi">デタッチ / ジョイン</td><td>スレッドの後片付けを自動に / 終わりを待って回収</td><td>21</td></tr>
+  <tr><td>dev@</td><td class="yomi">デブ・アット</td><td>NuttX の開発者メーリングリスト</td><td>36</td></tr>
   <tr><td>devif_poll()</td><td class="yomi">デブイフ・ポール</td><td>NuttX がドライバに送信データを取りに来る関数</td><td>18</td></tr>
-  <tr><td>DoS</td><td class="yomi">ドス</td><td>Denial of Service。大量の要求で相手を動けなくする攻撃</td><td>17, 29</td></tr>
-  <tr><td>down / up</td><td class="yomi">ダウン / アップ</td><td>トンネルの停止 / 開始</td><td>31, 32</td></tr>
-  <tr><td>driver</td><td class="yomi">ドライバ</td><td>OS が機器(仮想の機器も)を扱うための部品</td><td>28, 29</td></tr>
-  <tr><td>EBADF</td><td class="yomi">イー・バッド・エフ</td><td>「無効な fd」のエラー</td><td>23</td></tr>
-  <tr><td>ELF</td><td class="yomi">エルフ</td><td>実行ファイルの形式</td><td>28, 31</td></tr>
+  <tr><td>DoS</td><td class="yomi">ドス</td><td>Denial of Service。大量の要求で相手を動けなくする攻撃</td><td>17, 27</td></tr>
+  <tr><td>down / up</td><td class="yomi">ダウン / アップ</td><td>トンネルの停止 / 開始</td><td>29, 30</td></tr>
+  <tr><td>driver</td><td class="yomi">ドライバ</td><td>OS が機器(仮想の機器も)を扱うための部品</td><td>26, 27</td></tr>
+  <tr><td>EBADF</td><td class="yomi">イー・バッド・エフ</td><td>「無効な fd」のエラー</td><td>22</td></tr>
+  <tr><td>ELF</td><td class="yomi">エルフ</td><td>実行ファイルの形式</td><td>26, 29</td></tr>
   <tr><td>end-to-end</td><td class="yomi">エンド・トゥ・エンド</td><td>端から端まで</td><td>13</td></tr>
-  <tr><td>endpoint</td><td class="yomi">エンドポイント</td><td>相手の実際の IP アドレスとポート</td><td>32, 36</td></tr>
-  <tr><td>entropy</td><td class="yomi">エントロピー</td><td>乱数の予測できなさ</td><td>32</td></tr>
-  <tr><td>errno</td><td class="yomi">エラーノ(エラーナンバー)</td><td>エラーの種類の番号</td><td>22, 23</td></tr>
-  <tr><td>ESP32-S3</td><td class="yomi">イーエスピー・サンニー・エスサン</td><td>Wi-Fi 内蔵マイコン。スタックちゃんの中身</td><td>1, 31, 35, 39</td></tr>
-  <tr><td>fd(file descriptor)</td><td class="yomi">エフディー</td><td>開いたファイル・ソケットの番号</td><td>23</td></tr>
-  <tr><td>firmware</td><td class="yomi">ファームウェア</td><td>機器に書き込むプログラムの塊</td><td>38</td></tr>
-  <tr><td>FLAT</td><td class="yomi">フラット</td><td>アプリとカーネルが同じメモリ空間の構成</td><td>6, 28, 39</td></tr>
-  <tr><td>fork</td><td class="yomi">フォーク</td><td>本家を自分のアカウントに分岐したもの</td><td>9, 40</td></tr>
+  <tr><td>endpoint</td><td class="yomi">エンドポイント</td><td>相手の実際の IP アドレスとポート</td><td>30, 34</td></tr>
+  <tr><td>entropy</td><td class="yomi">エントロピー</td><td>乱数の予測できなさ</td><td>30</td></tr>
+  <tr><td>errno</td><td class="yomi">エラーノ(エラーナンバー)</td><td>エラーの種類の番号</td><td>21, 22</td></tr>
+  <tr><td>ESP32-S3</td><td class="yomi">イーエスピー・サンニー・エスサン</td><td>Wi-Fi 内蔵マイコン。スタックちゃんの中身</td><td>1, 29, 33, 38</td></tr>
+  <tr><td>fd(file descriptor)</td><td class="yomi">エフディー</td><td>開いたファイル・ソケットの番号</td><td>22</td></tr>
+  <tr><td>firmware</td><td class="yomi">ファームウェア</td><td>機器に書き込むプログラムの塊</td><td>36</td></tr>
+  <tr><td>FLAT</td><td class="yomi">フラット</td><td>アプリとカーネルが同じメモリ空間の構成</td><td>6, 26, 38</td></tr>
+  <tr><td>fork</td><td class="yomi">フォーク</td><td>本家を自分のアカウントに分岐したもの</td><td>9, 36</td></tr>
   <tr><td>GNSS</td><td class="yomi">ジーエヌエスエス</td><td>衛星測位(GPS など)</td><td>9, 10</td></tr>
-  <tr><td>GS2200M</td><td class="yomi">ジーエス・ニーニーゼロゼロ・エム</td><td>SPRESENSE 用の外付け Wi-Fi モジュール</td><td>15, 39</td></tr>
+  <tr><td>GS2200M</td><td class="yomi">ジーエス・ニーニーゼロゼロ・エム</td><td>SPRESENSE 用の外付け Wi-Fi モジュール</td><td>15, 38</td></tr>
   <tr><td>GSoC</td><td class="yomi">ジーソック</td><td>Google Summer of Code</td><td>6</td></tr>
-  <tr><td>handshake</td><td class="yomi">ハンドシェイク</td><td>相手を確かめ session key を作るやり取り</td><td>14, 21, 30, 33</td></tr>
-  <tr><td>heap</td><td class="yomi">ヒープ</td><td>必要に応じて確保するメモリ置き場</td><td>30, 31</td></tr>
-  <tr><td>high-water mark</td><td class="yomi">ハイウォーター・マーク</td><td>これまでの最大値</td><td>25, 31, 33</td></tr>
-  <tr><td>hotspot / tethering</td><td class="yomi">ホットスポット / テザリング</td><td>スマホを Wi-Fi ルーターにする機能</td><td>35</td></tr>
+  <tr><td>handshake</td><td class="yomi">ハンドシェイク</td><td>相手を確かめ session key を作るやり取り</td><td>14, 21, 28, 31</td></tr>
+  <tr><td>heap</td><td class="yomi">ヒープ</td><td>必要に応じて確保するメモリ置き場</td><td>28, 29</td></tr>
+  <tr><td>high-water mark</td><td class="yomi">ハイウォーター・マーク</td><td>これまでの最大値</td><td>21, 29, 31</td></tr>
+  <tr><td>hotspot / tethering</td><td class="yomi">ホットスポット / テザリング</td><td>スマホを Wi-Fi ルーターにする機能</td><td>33</td></tr>
   <tr><td>HTTPS / TLS</td><td class="yomi">エイチティーティーピーエス / ティーエルエス</td><td>Web の暗号化通信 / その暗号の方式</td><td>12, 13</td></tr>
-  <tr><td>initiator / responder</td><td class="yomi">イニシエーター / レスポンダー</td><td>handshake を始める側 / 受ける側</td><td>14, 33</td></tr>
-  <tr><td>IOB</td><td class="yomi">アイオービー</td><td>I/O Buffer。NuttX のパケット用の、数に上限のある箱</td><td>18, 31, 32</td></tr>
-  <tr><td>ioctl</td><td class="yomi">アイオーコントロール(アイオクトル)</td><td>ドライバへの設定・取得の依頼</td><td>28, 29, 31</td></tr>
+  <tr><td>initiator / responder</td><td class="yomi">イニシエーター / レスポンダー</td><td>handshake を始める側 / 受ける側</td><td>14, 31</td></tr>
+  <tr><td>IOB</td><td class="yomi">アイオービー</td><td>I/O Buffer。NuttX のパケット用の、数に上限のある箱</td><td>18, 29, 30</td></tr>
+  <tr><td>ioctl</td><td class="yomi">アイオーコントロール(アイオクトル)</td><td>ドライバへの設定・取得の依頼</td><td>26, 27, 29</td></tr>
   <tr><td>IPsec / OpenVPN</td><td class="yomi">アイピーセック / オープンブイピーエヌ</td><td>WireGuard より前からある VPN</td><td>14</td></tr>
-  <tr><td>KAT</td><td class="yomi">ケーエーティー</td><td>Known Answer Test。答えの分かっている入力で暗号を検査する</td><td>30</td></tr>
-  <tr><td>Kconfig</td><td class="yomi">ケーコンフィグ</td><td>ビルド時の設定の仕組み</td><td>20, 38</td></tr>
-  <tr><td>keepalive</td><td class="yomi">キープアライブ</td><td>無通信でも接続を保つために定期的に送る小さなパケット</td><td>23, 35</td></tr>
-  <tr><td>kernel / user space</td><td class="yomi">カーネル / ユーザー・スペース</td><td>OS の中心 / 普通のアプリの領域</td><td>28, 29</td></tr>
-  <tr><td>leak</td><td class="yomi">リーク</td><td>返し忘れによる資源の減少</td><td>32</td></tr>
-  <tr><td>lock</td><td class="yomi">ロック</td><td>共有データを一度に 1 つの処理だけが触るための鍵</td><td>29, 31</td></tr>
+  <tr><td>KAT</td><td class="yomi">ケーエーティー</td><td>Known Answer Test。答えの分かっている入力で暗号を検査する</td><td>28</td></tr>
+  <tr><td>Kconfig</td><td class="yomi">ケーコンフィグ</td><td>ビルド時の設定の仕組み</td><td>20, 36</td></tr>
+  <tr><td>keepalive</td><td class="yomi">キープアライブ</td><td>無通信でも接続を保つために定期的に送る小さなパケット</td><td>22, 33</td></tr>
+  <tr><td>kernel / user space</td><td class="yomi">カーネル / ユーザー・スペース</td><td>OS の中心 / 普通のアプリの領域</td><td>26, 27</td></tr>
+  <tr><td>leak</td><td class="yomi">リーク</td><td>返し忘れによる資源の減少</td><td>30</td></tr>
+  <tr><td>lock</td><td class="yomi">ロック</td><td>共有データを一度に 1 つの処理だけが触るための鍵</td><td>27, 29</td></tr>
   <tr><td>lwIP</td><td class="yomi">エルダブリューアイピー</td><td>マイコン向けの小さなネットワーク部品</td><td>17, 18</td></tr>
   <tr><td>mainline</td><td class="yomi">メインライン</td><td>本家の本流</td><td>9</td></tr>
   <tr><td>mbedTLS</td><td class="yomi">エムベッド・ティーエルエス</td><td>組込み向けの暗号ライブラリ</td><td>13</td></tr>
-  <tr><td>MIT License</td><td class="yomi">エムアイティー・ライセンス</td><td>ゆるいライセンス。同梱の X25519 がこれ</td><td>29</td></tr>
-  <tr><td>MMU</td><td class="yomi">エムエムユー</td><td>Memory Management Unit。アプリごとに別のメモリ空間を作る</td><td>28</td></tr>
-  <tr><td>MPU(保護)</td><td class="yomi">エムピーユー</td><td>Memory Protection Unit。メモリに壁を作る(スライド 7 の MPU = プロセッサとは別)</td><td>28, 31</td></tr>
+  <tr><td>MIT License</td><td class="yomi">エムアイティー・ライセンス</td><td>ゆるいライセンス。同梱の X25519 がこれ</td><td>27</td></tr>
+  <tr><td>MMU</td><td class="yomi">エムエムユー</td><td>Memory Management Unit。アプリごとに別のメモリ空間を作る</td><td>26</td></tr>
+  <tr><td>MPU(保護)</td><td class="yomi">エムピーユー</td><td>Memory Protection Unit。メモリに壁を作る(スライド 7 の MPU = プロセッサとは別)</td><td>26, 29</td></tr>
   <tr><td>MQTT</td><td class="yomi">エムキューティーティー</td><td>IoT 向けの軽いメッセージ配送の方式</td><td>13</td></tr>
   <tr><td>MTU</td><td class="yomi">エムティーユー</td><td>1 回に送れるパケットの最大サイズ。wg0 は 1420</td><td>15</td></tr>
   <tr><td>NAT</td><td class="yomi">ナット</td><td>内側の住所を外側の 1 つの住所にまとめる仕組み</td><td>12, 13</td></tr>
   <tr><td>NET_LL_TUN</td><td class="yomi">ネット・エルエル・タン</td><td>IP パケットだけを扱う仮想の口の種類</td><td>15, 18</td></tr>
-  <tr><td>netdev</td><td class="yomi">ネットデブ</td><td>ネットワークの口</td><td>5, 15, 18, 29</td></tr>
-  <tr><td>netdev_lowerhalf / upper half</td><td class="yomi">ロワーハーフ / アッパーハーフ</td><td>ドライバの機器固有部分 / OS 共通部分</td><td>29</td></tr>
-  <tr><td>nonce</td><td class="yomi">ノンス</td><td>1 回だけ使う値</td><td>30, 40, 41</td></tr>
+  <tr><td>netdev</td><td class="yomi">ネットデブ</td><td>ネットワークの口</td><td>5, 15, 18, 27</td></tr>
+  <tr><td>netdev_lowerhalf / upper half</td><td class="yomi">ロワーハーフ / アッパーハーフ</td><td>ドライバの機器固有部分 / OS 共通部分</td><td>27</td></tr>
+  <tr><td>nonce</td><td class="yomi">ノンス</td><td>1 回だけ使う値</td><td>28, 36, 38</td></tr>
   <tr><td>NSH</td><td class="yomi">エヌエスエイチ(ナットシェル)</td><td>NuttX のコマンド入力画面</td><td>5, 7</td></tr>
   <tr><td>PATCHES.md</td><td class="yomi">パッチズ</td><td>取り込んだ wireguard-lwip への変更(2 つ)の一覧</td><td>17, 20</td></tr>
   <tr><td>pbuf</td><td class="yomi">ピーバフ</td><td>lwIP のパケットの箱</td><td>18</td></tr>
-  <tr><td>peer</td><td class="yomi">ピア</td><td>トンネルの相手</td><td>1, 14, 35</td></tr>
+  <tr><td>peer</td><td class="yomi">ピア</td><td>トンネルの相手</td><td>1, 14, 33</td></tr>
   <tr><td>PMC</td><td class="yomi">ピーエムシー</td><td>Apache プロジェクトの運営委員会</td><td>9</td></tr>
-  <tr><td>pointer</td><td class="yomi">ポインタ</td><td>メモリの番地を表す値</td><td>29</td></tr>
-  <tr><td>poll / polling</td><td class="yomi">ポール / ポーリング</td><td>待つ関数 / 定期的に見に行く方式</td><td>13, 24</td></tr>
+  <tr><td>pointer</td><td class="yomi">ポインタ</td><td>メモリの番地を表す値</td><td>27</td></tr>
+  <tr><td>poll / polling</td><td class="yomi">ポール / ポーリング</td><td>待つ関数 / 定期的に見に行く方式</td><td>13, 23</td></tr>
   <tr><td>POSIX</td><td class="yomi">ポジックス</td><td>Unix 系 OS の共通ルール</td><td>5, 7</td></tr>
-  <tr><td>PR</td><td class="yomi">ピーアール(プルリク)</td><td>Pull Request。取り込みの依頼</td><td>30, 40</td></tr>
-  <tr><td>psock_*()</td><td class="yomi">ピーソック</td><td>NuttX 内部の、fd を使わないソケット関数群</td><td>23, 24, 28</td></tr>
-  <tr><td>pthread</td><td class="yomi">ピースレッド</td><td>POSIX のスレッド</td><td>22</td></tr>
-  <tr><td>QEMU</td><td class="yomi">キューエミュ</td><td>CPU ごと模擬するソフト</td><td>31, 39</td></tr>
-  <tr><td>race condition</td><td class="yomi">レース・コンディション</td><td>実行の順番しだいで壊れるバグ</td><td>31</td></tr>
-  <tr><td>rebase</td><td class="yomi">リベース</td><td>自分の変更を、本家の最新の上に載せ直すこと</td><td>31, 40</td></tr>
-  <tr><td>regression</td><td class="yomi">リグレッション</td><td>以前は動いたものが動かなくなること</td><td>41</td></tr>
-  <tr><td>rekey</td><td class="yomi">リキー</td><td>セッション鍵の更新</td><td>14, 31, 32</td></tr>
-  <tr><td>replay attack</td><td class="yomi">リプレイ・アタック</td><td>録画した古い通信を再送する攻撃</td><td>33</td></tr>
-  <tr><td>RFC</td><td class="yomi">アールエフシー</td><td>インターネットの標準を定める文書</td><td>30</td></tr>
-  <tr><td>RISC-V / rv-virt</td><td class="yomi">リスク・ファイブ / アールブイ・バート</td><td>オープンな CPU の命令セット / その仮想ボード</td><td>1, 31, 39</td></tr>
-  <tr><td>RTC</td><td class="yomi">アールティーシー</td><td>電源を切っても動く時計</td><td>33, 41</td></tr>
+  <tr><td>PR</td><td class="yomi">ピーアール(プルリク)</td><td>Pull Request。取り込みの依頼</td><td>28, 36</td></tr>
+  <tr><td>psock_*()</td><td class="yomi">ピーソック</td><td>NuttX 内部の、fd を使わないソケット関数群</td><td>22, 23, 26</td></tr>
+  <tr><td>pthread</td><td class="yomi">ピースレッド</td><td>POSIX のスレッド</td><td>21</td></tr>
+  <tr><td>QEMU</td><td class="yomi">キューエミュ</td><td>CPU ごと模擬するソフト</td><td>29, 38</td></tr>
+  <tr><td>race condition</td><td class="yomi">レース・コンディション</td><td>実行の順番しだいで壊れるバグ</td><td>29</td></tr>
+  <tr><td>rebase</td><td class="yomi">リベース</td><td>自分の変更を、本家の最新の上に載せ直すこと</td><td>29, 36</td></tr>
+  <tr><td>regression</td><td class="yomi">リグレッション</td><td>以前は動いたものが動かなくなること</td><td>38</td></tr>
+  <tr><td>rekey</td><td class="yomi">リキー</td><td>セッション鍵の更新</td><td>14, 29, 30</td></tr>
+  <tr><td>replay attack</td><td class="yomi">リプレイ・アタック</td><td>録画した古い通信を再送する攻撃</td><td>31</td></tr>
+  <tr><td>RFC</td><td class="yomi">アールエフシー</td><td>インターネットの標準を定める文書</td><td>28</td></tr>
+  <tr><td>RISC-V / rv-virt</td><td class="yomi">リスク・ファイブ / アールブイ・バート</td><td>オープンな CPU の命令セット / その仮想ボード</td><td>1, 29, 38</td></tr>
+  <tr><td>RTC</td><td class="yomi">アールティーシー</td><td>電源を切っても動く時計</td><td>31, 38</td></tr>
   <tr><td>RTOS</td><td class="yomi">アールトス</td><td>リアルタイム OS</td><td>7, 8</td></tr>
-  <tr><td>RX / TX</td><td class="yomi">アールエックス / ティーエックス</td><td>受信 / 送信</td><td>15, 22</td></tr>
-  <tr><td>semaphore</td><td class="yomi">セマフォ</td><td>スレッドを眠らせて合図で起こす道具</td><td>24</td></tr>
-  <tr><td>session key</td><td class="yomi">セッション・キー</td><td>1 回の通信の間だけ使う暗号鍵</td><td>14, 32</td></tr>
-  <tr><td>setsockopt</td><td class="yomi">セット・ソック・オプト</td><td>ソケットの設定関数</td><td>22</td></tr>
-  <tr><td>Signed-off-by</td><td class="yomi">サインド・オフ・バイ</td><td>本人が付ける「出してよい」の署名行</td><td>40</td></tr>
-  <tr><td>SIOC…WG…</td><td class="yomi">シオック</td><td>WireGuard の設定・取得の ioctl 群</td><td>29</td></tr>
-  <tr><td>sim</td><td class="yomi">シム</td><td>PC 上で NuttX を動かす模擬環境</td><td>21, 25, 31, 32</td></tr>
-  <tr><td>SMP</td><td class="yomi">エスエムピー</td><td>複数 CPU での同時実行</td><td>31</td></tr>
-  <tr><td>SO_RCVTIMEO</td><td class="yomi">エスオー・レシーブ・タイムオー</td><td>受信待ちのタイムアウト設定</td><td>22</td></tr>
-  <tr><td>soak test</td><td class="yomi">ソーク・テスト</td><td>長時間・多数回動かし続けて資源が戻るかを見る試験</td><td>32</td></tr>
-  <tr><td>socket</td><td class="yomi">ソケット</td><td>プログラムがネットワークを使う差込口</td><td>5, 15, 23</td></tr>
-  <tr><td>SPIFFS / SmartFS</td><td class="yomi">スピフス / スマートエフエス</td><td>フラッシュ向けファイルシステム(ESP32-S3 / SPRESENSE)</td><td>25, 38</td></tr>
-  <tr><td>SPRESENSE</td><td class="yomi">スプレッセンス</td><td>ソニーのマイコンボード</td><td>1, 9, 10, 31</td></tr>
-  <tr><td>stack</td><td class="yomi">スタック</td><td>関数ごとの作業メモリを積む場所</td><td>25, 30, 31</td></tr>
-  <tr><td>STACK_COLORATION</td><td class="yomi">スタック・カラーレーション</td><td>スタックの使用量を測る NuttX の設定</td><td>25, 31</td></tr>
-  <tr><td>StackChan</td><td class="yomi">スタックちゃん</td><td>M5Stack に顔と首を付けた小さなロボット</td><td>35, 36</td></tr>
-  <tr><td>struct</td><td class="yomi">ストラクト(構造体)</td><td>データをまとめた C の型</td><td>18, 29</td></tr>
-  <tr><td>syscall</td><td class="yomi">シスコール(システムコール)</td><td>アプリから OS への正式な依頼口</td><td>28, 31</td></tr>
-  <tr><td>TAI64N</td><td class="yomi">タイ・ロクヨン・エヌ</td><td>handshake に入れる 12 バイトの時刻</td><td>17, 33</td></tr>
-  <tr><td>task group</td><td class="yomi">タスク・グループ</td><td>NuttX のプログラム単位(Linux のプロセスに近い)</td><td>22, 23</td></tr>
+  <tr><td>RX / TX</td><td class="yomi">アールエックス / ティーエックス</td><td>受信 / 送信</td><td>15, 21</td></tr>
+  <tr><td>semaphore</td><td class="yomi">セマフォ</td><td>スレッドを眠らせて合図で起こす道具</td><td>23</td></tr>
+  <tr><td>session key</td><td class="yomi">セッション・キー</td><td>1 回の通信の間だけ使う暗号鍵</td><td>14, 30</td></tr>
+  <tr><td>setsockopt</td><td class="yomi">セット・ソック・オプト</td><td>ソケットの設定関数</td><td>21</td></tr>
+  <tr><td>Signed-off-by</td><td class="yomi">サインド・オフ・バイ</td><td>本人が付ける「出してよい」の署名行</td><td>36</td></tr>
+  <tr><td>SIOC…WG…</td><td class="yomi">シオック</td><td>WireGuard の設定・取得の ioctl 群</td><td>27</td></tr>
+  <tr><td>sim</td><td class="yomi">シム</td><td>PC 上で NuttX を動かす模擬環境</td><td>21, 29, 30</td></tr>
+  <tr><td>SMP</td><td class="yomi">エスエムピー</td><td>複数 CPU での同時実行</td><td>29</td></tr>
+  <tr><td>SO_RCVTIMEO</td><td class="yomi">エスオー・レシーブ・タイムオー</td><td>受信待ちのタイムアウト設定</td><td>21</td></tr>
+  <tr><td>soak test</td><td class="yomi">ソーク・テスト</td><td>長時間・多数回動かし続けて資源が戻るかを見る試験</td><td>30</td></tr>
+  <tr><td>socket</td><td class="yomi">ソケット</td><td>プログラムがネットワークを使う差込口</td><td>5, 15, 22</td></tr>
+  <tr><td>SPIFFS / SmartFS</td><td class="yomi">スピフス / スマートエフエス</td><td>フラッシュ向けファイルシステム(ESP32-S3 / SPRESENSE)</td><td>21, 36</td></tr>
+  <tr><td>SPRESENSE</td><td class="yomi">スプレッセンス</td><td>ソニーのマイコンボード</td><td>1, 9, 10, 29</td></tr>
+  <tr><td>stack</td><td class="yomi">スタック</td><td>関数ごとの作業メモリを積む場所</td><td>21, 28, 29</td></tr>
+  <tr><td>STACK_COLORATION</td><td class="yomi">スタック・カラーレーション</td><td>スタックの使用量を測る NuttX の設定</td><td>21, 29</td></tr>
+  <tr><td>StackChan</td><td class="yomi">スタックちゃん</td><td>M5Stack に顔と首を付けた小さなロボット</td><td>33, 34</td></tr>
+  <tr><td>struct</td><td class="yomi">ストラクト(構造体)</td><td>データをまとめた C の型</td><td>18, 27</td></tr>
+  <tr><td>syscall</td><td class="yomi">シスコール(システムコール)</td><td>アプリから OS への正式な依頼口</td><td>26, 29</td></tr>
+  <tr><td>TAI64N</td><td class="yomi">タイ・ロクヨン・エヌ</td><td>handshake に入れる 12 バイトの時刻</td><td>17, 31</td></tr>
+  <tr><td>task group</td><td class="yomi">タスク・グループ</td><td>NuttX のプログラム単位(Linux のプロセスに近い)</td><td>21, 22</td></tr>
   <tr><td>TCP / UDP</td><td class="yomi">ティーシーピー / ユーディーピー</td><td>確実に届ける通信 / 送りっぱなしの通信</td><td>5 ほか多数</td></tr>
-  <tr><td>tcpdump</td><td class="yomi">ティーシーピーダンプ</td><td>パケットを覗く道具</td><td>35, 36</td></tr>
-  <tr><td>telnet / telnetd</td><td class="yomi">テルネット / テルネット・ディー</td><td>遠隔でコマンドを打つ仕組み / その受け付け側</td><td>23, 35, 36</td></tr>
-  <tr><td>throughput</td><td class="yomi">スループット</td><td>転送速度</td><td>24</td></tr>
-  <tr><td>TTS</td><td class="yomi">ティーティーエス</td><td>文字から音声を作ること</td><td>35</td></tr>
-  <tr><td>TUN</td><td class="yomi">タン</td><td>IP パケットだけを扱う仮想の口</td><td>15, 38</td></tr>
-  <tr><td>upstream</td><td class="yomi">アップストリーム</td><td>本家</td><td>20, 31, 40</td></tr>
-  <tr><td>uptime</td><td class="yomi">アップタイム</td><td>起動からの経過時間</td><td>33</td></tr>
-  <tr><td>usrsock</td><td class="yomi">ユーザーソック</td><td>ソケット処理を外部(Wi-Fi モジュール)に任せる仕組み</td><td>15, 31</td></tr>
+  <tr><td>tcpdump</td><td class="yomi">ティーシーピーダンプ</td><td>パケットを覗く道具</td><td>33, 34</td></tr>
+  <tr><td>telnet / telnetd</td><td class="yomi">テルネット / テルネット・ディー</td><td>遠隔でコマンドを打つ仕組み / その受け付け側</td><td>22, 33, 34</td></tr>
+  <tr><td>throughput</td><td class="yomi">スループット</td><td>転送速度</td><td>23</td></tr>
+  <tr><td>TTS</td><td class="yomi">ティーティーエス</td><td>文字から音声を作ること</td><td>33</td></tr>
+  <tr><td>TUN</td><td class="yomi">タン</td><td>IP パケットだけを扱う仮想の口</td><td>15, 36</td></tr>
+  <tr><td>upstream</td><td class="yomi">アップストリーム</td><td>本家</td><td>20, 29, 36</td></tr>
+  <tr><td>uptime</td><td class="yomi">アップタイム</td><td>起動からの経過時間</td><td>31</td></tr>
+  <tr><td>usrsock</td><td class="yomi">ユーザーソック</td><td>ソケット処理を外部(Wi-Fi モジュール)に任せる仕組み</td><td>15, 29</td></tr>
   <tr><td>VFS</td><td class="yomi">ブイエフエス</td><td>仮想ファイルシステム</td><td>7</td></tr>
-  <tr><td>virtio-net</td><td class="yomi">バートアイオー・ネット</td><td>仮想マシン用の仮想ネットワークカード</td><td>31</td></tr>
+  <tr><td>virtio-net</td><td class="yomi">バートアイオー・ネット</td><td>仮想マシン用の仮想ネットワークカード</td><td>29</td></tr>
   <tr><td>VPN</td><td class="yomi">ブイピーエヌ</td><td>暗号化した仮想の専用線</td><td>全体</td></tr>
-  <tr><td>watchdog(wd)</td><td class="yomi">ウォッチドッグ</td><td>NuttX では、決めた時間後に関数を呼ぶタイマー</td><td>41</td></tr>
+  <tr><td>watchdog(wd)</td><td class="yomi">ウォッチドッグ</td><td>NuttX では、決めた時間後に関数を呼ぶタイマー</td><td>38</td></tr>
   <tr><td>wg / wg0</td><td class="yomi">ダブリュージー / ダブリュージー・ゼロ</td><td>WireGuard の操作コマンド / 1 つ目の WireGuard の口</td><td>全体</td></tr>
   <tr><td>WireGuard</td><td class="yomi">ワイヤーガード</td><td>VPN の一種</td><td>全体</td></tr>
-  <tr><td>wireguard-go</td><td class="yomi">ワイヤーガード・ゴー</td><td>Go 言語の WireGuard 実装</td><td>33</td></tr>
+  <tr><td>wireguard-go</td><td class="yomi">ワイヤーガード・ゴー</td><td>Go 言語の WireGuard 実装</td><td>31</td></tr>
   <tr><td>WPA2 / WPA3</td><td class="yomi">ダブリューピーエー</td><td>Wi-Fi の暗号化方式</td><td>12</td></tr>
-  <tr><td>Xtensa</td><td class="yomi">エクステンサ</td><td>ESP32 の CPU の種類</td><td>39</td></tr>
-  <tr><td>xorshift128</td><td class="yomi">エックスオア・シフト</td><td>予測可能な疑似乱数</td><td>32</td></tr>
-  <tr><td>zeroization</td><td class="yomi">ゼロ化(ゼロイゼーション)</td><td>秘密を 0 で消すこと</td><td>32</td></tr>
+  <tr><td>Xtensa</td><td class="yomi">エクステンサ</td><td>ESP32 の CPU の種類</td><td>38</td></tr>
+  <tr><td>xorshift128</td><td class="yomi">エックスオア・シフト</td><td>予測可能な疑似乱数</td><td>30</td></tr>
+  <tr><td>zeroization</td><td class="yomi">ゼロ化(ゼロイゼーション)</td><td>秘密を 0 で消すこと</td><td>30</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
@@ -2628,40 +2480,40 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <tr><td>16.5k / 7.8k / 4.1k</td><td>Zephyr / FreeRTOS / NuttX の GitHub スター(2026 年 10 月)</td><td>—</td><td>8</td><td>開発者の目に触れる度合い</td><td>使われている台数・シェア</td></tr>
   <tr><td>15+ / 300+ / 1,500+</td><td>CPU アーキテクチャ / ボード / 構成テンプレート</td><td>NuttX 本家</td><td>8</td><td>本家が対応している数</td><td>WireGuard がその全部で動く</td></tr>
   <tr><td>3,000 行以上 / 修正 2 つ</td><td>持ってきたプロトコルと暗号のコード / プロトコルの中心に入れた修正(PATCHES.md)</td><td><span class="tag apps">apps</span></td><td>20</td><td>暗号はそのまま、プロトコルの中心は小さな修正 2 つ</td><td>「3,079 行が完全に同じ」「何も変えていない」</td></tr>
-  <tr><td>4 関数</td><td>OS に合わせて書いた差し込み口</td><td><span class="tag apps">apps</span></td><td>17, 20, 39</td><td>OS 依存はこれだけに閉じ込めた</td><td>移植作業は 4 関数だけ(実際は netdev 部分が本当の作業)。「カーネル版も 4 関数で移した」(カーネル版はこの差し込み口を使わない)</td></tr>
-  <tr><td>約 10 倍</td><td>50 ms ポーリングで落ちた速度</td><td><span class="tag apps">apps</span></td><td>24</td><td>約 1 桁遅くなった</td><td>正確に 10.0 倍</td></tr>
-  <tr><td>約 260 KiB/s / 7 MB</td><td>トンネル越し TCP の速度 / 連続転送</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>24, 31(Q&amp;A)</td><td>1 つボトルネックを潰した後の数字</td><td>チューニング済みの性能、カーネル版の性能</td></tr>
-  <tr><td>3072 B → 2,896〜2,960 B</td><td>旧既定の <code>wg_rx</code> スタック / ESP32-S3 での実測(94% 使用)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span></td><td>25</td><td>測ると余裕が 176 B しかなかった</td><td>—</td></tr>
-  <tr><td>6 KB / 3 KB</td><td>スタック上の配列 / カーネルのスタック</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>30</td><td>KERNEL ビルドだけであふれた</td><td>—</td></tr>
-  <tr><td>2 行</td><td>nonce の修正</td><td>NuttX <code>crypto/</code></td><td>30, 40</td><td>小さく独立した修正</td><td>もう本家に入った</td></tr>
-  <tr><td>80% / 8%</td><td>PROTECTED のカーネル側 / ユーザー側の <code>.text</code> の使用率(各 256 KB)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31(Q&amp;A)</td><td>既定の分け方のままで収まった</td><td>どのボードでも収まる(lm3s6965 級では溢れる)</td></tr>
-  <tr><td>4 CPU / 2000 パケット</td><td>SMP の試験</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31</td><td>1 つの筋書きでの並行実行で異常なし</td><td>競合状態が存在しないことの証明</td></tr>
-  <tr><td>1472 / 6096 B</td><td>SPRESENSE 受信スレッドのスタック最大使用量 / 確保量(24.1%)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>観測した負荷では余裕があった</td><td>最悪条件でも絶対安全、ESP32-S3 でも同じ</td></tr>
-  <tr><td>120 秒 / 40 回 / 375/375</td><td>SPRESENSE の負荷 / down/up / ping の応答</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>その範囲で資源が完全に戻った</td><td>日単位で安定</td></tr>
-  <tr><td>2/8(9/28 は 1/1 PASS)</td><td>PROTECTED の繰り返し試験で例外が起きた回数(分割前の候補でも 1/9)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31</td><td>原因は <code>wg</code> のスタック不足で、直した後は 20/20(QEMU)</td><td>実機の PROTECTED でも PASS</td></tr>
-  <tr><td>4/4・6/6</td><td>Windows クライアントとの実機トンネルの ping(ESP32 内蔵 Wi-Fi / SPRESENSE usrsock)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>両経路で成立した</td><td>あらゆるボードで動く</td></tr>
-  <tr><td>7 MB・rekey・電源再投入</td><td>同じ 2 ボードの実績</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span></td><td>31</td><td>apps 版の実績</td><td>カーネル版の実績</td></tr>
-  <tr><td>3 回 → 3 つの鍵</td><td>再起動ごとに鍵が違った</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span> SPRESENSE</td><td>32</td><td>乱数の経路が正しく選ばれている</td><td>乱数の品質が認証された</td></tr>
-  <tr><td>32/32 B → 0</td><td>down 後のセッション鍵のゼロ化</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>32</td><td>観測したフィールドはゼロになった</td><td>メモリ全体に鍵の断片が一切ない、実機でも同じ</td></tr>
-  <tr><td>151 / 10 / 100</td><td>強制 rekey / 接続先の変更 / down/up(620 秒)</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>32</td><td>制御した試験でその回数成功</td><td>長期間絶対に失敗しない</td></tr>
-  <tr><td>2.5 KB(2536 B)/ 1.5 KB</td><td>上の試験中の受信スレッドのスタック最大(増えない)/ ボードでの値(1472 B)</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>32</td><td>試験中に増えなかった。64 ビットなので大きめに出る</td><td>ボードでの値</td></tr>
-  <tr><td>約 75 秒(回復)</td><td>uptime を使っていた頃の、再起動後の回復時間(tai64n-reboot.md。今の台本は数字を言わない)</td><td><span class="tag sim">sim</span></td><td>33</td><td>前回のセッションが短かったから</td><td>実機の数字</td></tr>
-  <tr><td>75 秒 / 4.1 秒</td><td>時計未設定で 75 秒見ても不成立 / 時計設定で成立</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span> SPRESENSE</td><td>33</td><td>時計だけを変えた対照実験</td><td>#14 が解決した</td></tr>
-  <tr><td>16 秒</td><td>再起動後に ping するとトンネルが戻るまでの時間(証跡の記録。今の台本は数字を言わない)</td><td><span class="tag hw">実機</span></td><td>33</td><td>この試験は何も証明しない(相手が initiator になる)</td><td>再接続できることの証明</td></tr>
-  <tr><td>10/10 / 30/30</td><td>デモ構成でのコンテナからの ping / 1 秒間隔の Web</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> スタックちゃん</td><td>35, 36</td><td>その構成で通った</td><td>連続アクセスでも安定(連打では 12/30)</td></tr>
-  <tr><td>4 時間 28 分</td><td>最長の連続稼働(止まった原因は Wi-Fi ドライバ側)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>38(Q&amp;A)</td><td>apps 版でそこまで動いた</td><td>カーネル版の連続稼働</td></tr>
-  <tr><td>約 904 B / peer、1〜16</td><td>peer 1 つあたりの RAM / 設定できる数</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>29(Q&amp;A)</td><td>2 peer を sim で確認</td><td>実機で複数 peer を確認</td></tr>
-  <tr><td>約 30 分 / 31 分 / 33 分 06 秒</td><td>目標(スライド 3)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>3</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
+  <tr><td>4 関数</td><td>OS に合わせて書いた差し込み口</td><td><span class="tag apps">apps</span></td><td>17, 20, 38</td><td>OS 依存はこれだけに閉じ込めた</td><td>移植作業は 4 関数だけ(実際は netdev 部分が本当の作業)。「カーネル版も 4 関数で移した」(カーネル版はこの差し込み口を使わない)</td></tr>
+  <tr><td>約 10 倍</td><td>50 ms ポーリングで落ちた速度</td><td><span class="tag apps">apps</span></td><td>23</td><td>約 1 桁遅くなった</td><td>正確に 10.0 倍</td></tr>
+  <tr><td>約 260 KiB/s / 7 MB</td><td>トンネル越し TCP の速度 / 連続転送</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>23, 29(Q&amp;A)</td><td>1 つボトルネックを潰した後の数字</td><td>チューニング済みの性能、カーネル版の性能</td></tr>
+  <tr><td>3072 B → 2,896〜2,960 B</td><td>旧既定の <code>wg_rx</code> スタック / ESP32-S3 での実測(94% 使用)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span></td><td>21</td><td>測ると余裕が 176 B しかなかった</td><td>—</td></tr>
+  <tr><td>6 KB / 3 KB</td><td>スタック上の配列 / カーネルのスタック</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>28</td><td>KERNEL ビルドだけであふれた</td><td>—</td></tr>
+  <tr><td>2 行</td><td>nonce の修正</td><td>NuttX <code>crypto/</code></td><td>28, 36</td><td>小さく独立した修正</td><td>もう本家に入った</td></tr>
+  <tr><td>80% / 8%</td><td>PROTECTED のカーネル側 / ユーザー側の <code>.text</code> の使用率(各 256 KB)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>29(Q&amp;A)</td><td>既定の分け方のままで収まった</td><td>どのボードでも収まる(lm3s6965 級では溢れる)</td></tr>
+  <tr><td>4 CPU / 2000 パケット</td><td>SMP の試験</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>29</td><td>1 つの筋書きでの並行実行で異常なし</td><td>競合状態が存在しないことの証明</td></tr>
+  <tr><td>1472 / 6096 B</td><td>SPRESENSE 受信スレッドのスタック最大使用量 / 確保量(24.1%)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>29</td><td>観測した負荷では余裕があった</td><td>最悪条件でも絶対安全、ESP32-S3 でも同じ</td></tr>
+  <tr><td>120 秒 / 40 回 / 375/375</td><td>SPRESENSE の負荷 / down/up / ping の応答</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>29</td><td>その範囲で資源が完全に戻った</td><td>日単位で安定</td></tr>
+  <tr><td>2/8(9/28 は 1/1 PASS)</td><td>PROTECTED の繰り返し試験で例外が起きた回数(分割前の候補でも 1/9)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>29</td><td>原因は <code>wg</code> のスタック不足で、直した後は 20/20(QEMU)</td><td>実機の PROTECTED でも PASS</td></tr>
+  <tr><td>4/4・6/6</td><td>Windows クライアントとの実機トンネルの ping(ESP32 内蔵 Wi-Fi / SPRESENSE usrsock)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>29</td><td>両経路で成立した</td><td>あらゆるボードで動く</td></tr>
+  <tr><td>7 MB・rekey・電源再投入</td><td>同じ 2 ボードの実績</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span></td><td>29</td><td>apps 版の実績</td><td>カーネル版の実績</td></tr>
+  <tr><td>3 回 → 3 つの鍵</td><td>再起動ごとに鍵が違った</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span> SPRESENSE</td><td>30</td><td>乱数の経路が正しく選ばれている</td><td>乱数の品質が認証された</td></tr>
+  <tr><td>32/32 B → 0</td><td>down 後のセッション鍵のゼロ化</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>30</td><td>観測したフィールドはゼロになった</td><td>メモリ全体に鍵の断片が一切ない、実機でも同じ</td></tr>
+  <tr><td>151 / 10 / 100</td><td>強制 rekey / 接続先の変更 / down/up(620 秒)</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>30</td><td>制御した試験でその回数成功</td><td>長期間絶対に失敗しない</td></tr>
+  <tr><td>2.5 KB(2536 B)/ 1.5 KB</td><td>上の試験中の受信スレッドのスタック最大(増えない)/ ボードでの値(1472 B)</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>30</td><td>試験中に増えなかった。64 ビットなので大きめに出る</td><td>ボードでの値</td></tr>
+  <tr><td>約 75 秒(回復)</td><td>uptime を使っていた頃の、再起動後の回復時間(tai64n-reboot.md。今の台本は数字を言わない)</td><td><span class="tag sim">sim</span></td><td>31</td><td>前回のセッションが短かったから</td><td>実機の数字</td></tr>
+  <tr><td>75 秒 / 4.1 秒</td><td>時計未設定で 75 秒見ても不成立 / 時計設定で成立</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span> SPRESENSE</td><td>31</td><td>時計だけを変えた対照実験</td><td>#14 が解決した</td></tr>
+  <tr><td>16 秒</td><td>再起動後に ping するとトンネルが戻るまでの時間(証跡の記録。今の台本は数字を言わない)</td><td><span class="tag hw">実機</span></td><td>31</td><td>この試験は何も証明しない(相手が initiator になる)</td><td>再接続できることの証明</td></tr>
+  <tr><td>10/10 / 30/30</td><td>デモ構成でのコンテナからの ping / 1 秒間隔の Web</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> スタックちゃん</td><td>33, 34</td><td>その構成で通った</td><td>連続アクセスでも安定(連打では 12/30)</td></tr>
+  <tr><td>4 時間 28 分</td><td>最長の連続稼働(止まった原因は Wi-Fi ドライバ側)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>36(Q&amp;A)</td><td>apps 版でそこまで動いた</td><td>カーネル版の連続稼働</td></tr>
+  <tr><td>約 904 B / peer、1〜16</td><td>peer 1 つあたりの RAM / 設定できる数</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>27(Q&amp;A)</td><td>2 peer を sim で確認</td><td>実機で複数 peer を確認</td></tr>
+  <tr><td>約 30 分 / 29 分 / 30 分 36 秒</td><td>目標(スライド 3)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>3</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
 <h2 id="part5">5. まだ残っている注意点(確認メモ)</h2>
-<p>スライド・台本・Q&amp;A・検証の記録の食い違いは、ほぼ直されている。残っているのは次の 3 つ。</p>
+<p>スライド・台本・Q&amp;A・検証の記録の食い違いは、ほぼ直されている。残っているのは次のとおり。</p>
 <div class="tbl"><table>
   <tr><th>どこ</th><th>内容</th><th>話すときの扱い</th></tr>
-  <tr><td>スライド 3 の「about thirty minutes」</td><td>目標の長さとして残してある。目安の合計は 31 分、台本どおりだと約 33 分 06 秒</td><td>本編 27〜28 分を目標に、40 → 39 → 38 の順に削る</td></tr>
-  <tr><td>スライド 38 の 4 つの信号</td><td>ROUTER / LAN / TUN / TCP の監視は outline にある運用の方針で、verification-matrix の試験項目ではない(作業記録にあるのは 1 分ごとの ping + telnet による 4 時間 28 分の連続稼働)</td><td>運用の工夫として話し、試験の結果としては言わない</td></tr>
-  <tr><td>スライド 30 のノート</td><td>画面は「kept as a separate crypto: change」だが、ノート(台本)はまだ "it goes upstream as its own crypto PR" と言い、"Simple test passes, deep test fails." という旧標語の一文も残っている</td><td>"kept as its own crypto change" と言い、旧標語の一文は省く</td></tr>
+  <tr><td>スライド 3 の「about thirty minutes」</td><td>目標の長さ。目安の合計は 29 分、台本どおりだと約 30 分 36 秒</td><td>本編 27〜28 分を目標に、36 → 24 → 23 の順に削る</td></tr>
+  <tr><td>スライド 29 の台本の "Today, October twelfth"</td><td>ESP32-S3 で一式を動かした日(2026-10-12)をそのまま「今日」と言っている</td><td>本番の日には "On October twelfth" と言い換える</td></tr>
+  <tr><td>スライド 22 の見出し「Bug 2 / 6」</td><td>バグ 1 と 4 は独立したスライドがなくなり、表(スライド 21)の 1 行だけになったので、詳しく話すのは 2 番と 3 番の 2 枚</td><td>「表の 2 番」と言えば通じる</td></tr>
 </table></div>
 
 <p style="margin-top:40px;color:var(--ink-3);font-size:14px">出典:スライド本文と発表者ノート(<a href="coc-glasgow-slides.html">coc-glasgow-slides.html</a>)、<a href="talkscript/coc-glasgow-script-en.md">英語台本</a>、<a href="talkscript/coc-glasgow-script-ja.md">日本語台本</a>、<a href="talkscript/coc-glasgow-qa.md">想定 Q&amp;A</a>、<a href="coc-glasgow-beginner-guide-ja.md">初心者ガイド</a>、<a href="../upstream/verification-matrix.md">verification-matrix.md</a>、<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>、<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>、<a href="../upstream/tai64n-decision.md">tai64n-decision.md</a>、<a href="../upstream/tai64n-reboot.md">tai64n-reboot.md</a>、<a href="../development/stackchan-hardware-check-2026-10-08.md">stackchan-hardware-check-2026-10-08.md</a>、<a href="../development/phase3-log.md">phase3-log.md</a>、<a href="../development/phase4-log.md">phase4-log.md</a>、<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>。</p>
