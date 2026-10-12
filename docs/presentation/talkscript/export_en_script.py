@@ -110,11 +110,11 @@ SLIDES = [
          "netif → net_driver_s, pbuf → iob, netif_add() → netdev_register(), "
          "callbacks → devif_poll().", []),
     ('Agenda: ④ Version 1: The App', "divider", None, []),
-    ("Result: A Working Tunnel Is Only the Beginning", "",
-         "Protocol & crypto: crypto byte-identical, protocol core with two "
-         "small fixes (PATCHES.md) / OS hooks: four functions "
-         "/ network glue: the real work. wg genkey / set / setconf at run "
-         "time.", []),
+    ("Version 1: WireGuard as a NuttX Application", "",
+         "Goal: run a standard WireGuard tunnel entirely as a NuttX "
+         "application. Reuse the protocol and crypto; implement the NuttX "
+         "OS hooks and native network glue. Takeaway: the first working "
+         "tunnel proved the approach and exposed the problems still hidden.", []),
     ("Where It Was Hard: Six Bugs", "",
          "One table of all six bugs (bug / showed up in / lesson): 1 the "
          "receive thread stopped with the wg command / 2 ping works, TCP dies "

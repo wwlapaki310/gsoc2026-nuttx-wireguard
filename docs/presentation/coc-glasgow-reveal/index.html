@@ -779,7 +779,6 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">About Me</p>
     <h2>From Japan: I work at Sony, and I build things as a hobby.</h2>
     <div class="body about">
       <div class="about-who">
@@ -1033,7 +1032,6 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">How it started</p>
     <h2>From an idea in February to this talk in October.</h2>
     <div class="body" style="gap:10px">
       <div class="ptl">
@@ -1125,8 +1123,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">History: a long road with NuttX</p>
-    <h2>NuttX at Sony &mdash; from audio to edge sensing.</h2>
+    <h2>History: NuttX at Sony, from audio to edge sensing</h2>
     <div class="body" style="gap:10px">
       <div class="timeline-v">
         <div class="tlv-item">
@@ -1176,8 +1173,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Experience: where I come from</p>
-    <h2>NuttX in SPRESENSE and AITRIOS &mdash; my part.</h2>
+    <h2>Experience: NuttX in SPRESENSE and AITRIOS</h2>
     <div class="body" style="gap:16px">
       <div class="two">
         <div class="photo-card">
@@ -1262,7 +1258,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Problem: Wi-Fi security stops too early</p>
     <h2>Reaching a device from far away is hard.</h2>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 210" role="img" aria-label="Wi-Fi security protects only the last hop to the device; an authenticated path is needed all the way from the engineer to the NuttX device" style="width:100%;height:auto;">
@@ -1311,7 +1306,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Options: MQTT, HTTP, router VPN, ...</p>
     <h2>Other ways to reach a device &mdash; compared.</h2>
     <div class="body" style="gap:12px">
       <table class="options">
@@ -1340,7 +1334,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Solution: a VPN on the device</p>
     <h2>Why WireGuard is a good fit.</h2>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 150" role="img" aria-label="Engineer, Linux and Windows peers connect to the NuttX device through a WireGuard tunnel" style="width:100%;height:auto;">
@@ -1373,7 +1366,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Architecture: where wg0 sits</p>
     <h2>WireGuard on the NuttX network stack.</h2>
     <div class="body" style="gap:16px">
       <svg viewBox="0 0 900 340" role="img" aria-label="Application traffic flows down through TCP/UDP/IP, wg0, WireGuard encryption, a UDP socket, and out over wlan0 or usrsock; replies flow back up the same path" style="width:900px;height:auto;margin:0 auto;display:block;">
@@ -1469,7 +1461,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Porting: four functions to write</p>
     <h2>Reusing wireguard-lwip without lwIP.</h2>
     <div class="body">
       <div class="stack" style="gap:14px">
@@ -1500,7 +1491,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Design: one virtual network card</p>
     <h2>Mapping lwIP onto NuttX netdev.</h2>
     <div class="body">
       <table>
@@ -1576,8 +1566,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Result: the first working tunnel</p>
-    <h2>A working tunnel is only the beginning.</h2>
+    <h2>Version 1: WireGuard as a NuttX application</h2>
     <div class="body">
       <table>
         <tr><th>Layer</th><th>Work needed</th><th>In this port</th></tr>
@@ -1586,23 +1575,22 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
         <tr><td>Network glue</td><td class="old">The real work</td><td class="new">netdev + UDP socket + RX task</td></tr>
       </table>
       <div class="claim ok">
-        <p>It worked: <code>wg genkey / set / setconf</code> at run time. No rebuild to change keys or peers.</p>
-        <small>And this is where the interesting part starts.</small>
+        <p>Goal: make a standard WireGuard tunnel run entirely as a NuttX application.</p>
+        <small>Reuse the protocol and crypto, then implement the NuttX OS hooks and native network glue.</small>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Getting a tunnel up was the easy step. Almost everything interesting came after it already &ldquo;worked.&rdquo;</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Version 1 proved that WireGuard could run on NuttX. It also exposed the OS and networking problems that the first tunnel did not show.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 1/5</span>20 / 40</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is the result of the first version.</p>
-      <p>More than three thousand lines of protocol and crypto came over. The crypto came over exactly as it was. The protocol core needed two small fixes after a review &mdash; and one of them was a bug in wireguard-lwip itself: its rate limit never worked. The four OS functions are small. The real work was the network glue. And it worked: you can make a key, set peers and load a config, all at run time, with no rebuild. So far, a success story &mdash; but the princess was in another castle. The rest of this talk is about what that success was hiding.</p>
+      <p>Version one put WireGuard into NuttX as an application. The goal was a standard tunnel that could be configured at run time, without rebuilding the firmware.</p>
+      <p>More than three thousand lines of protocol and crypto came over. The crypto came over exactly as it was. The protocol core needed two small fixes after a review &mdash; and one of them was a bug in wireguard-lwip itself: its rate limit never worked. The four OS functions are small. The real work was the network glue. The result was a working tunnel with keys and peers configured at run time. That proved the approach, but it also exposed the OS and networking problems that a first successful ping could not show.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Where it was hard: six bugs</p>
     <h2>The tunnel worked fast. Six bugs took most of the time.</h2>
     <div class="body" style="gap:14px">
       <table class="options" style="font-size:17px">
@@ -1633,8 +1621,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Bug 2 / 6 &middot; my favorite</p>
-    <h2>ping works. TCP dies.</h2>
+    <h2>Bug 2/6: ping works. TCP dies.</h2>
     <div class="body">
       <div class="two">
         <div class="panel">
@@ -1661,8 +1648,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Bug 3 / 6</p>
-    <h2>&ldquo;No real impact&rdquo; was 10&times;.</h2>
+    <h2>Bug 3/6: &ldquo;No real impact&rdquo; was 10&times;.</h2>
     <div class="body">
       <div class="claim">
         <p>Quick fix: check the socket every 50&nbsp;ms.</p>
@@ -1684,7 +1670,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Version 1 demo: the first video</p>
     <h2>Version one works: telnet and a web page through the tunnel.</h2>
     <div class="body">
       <div class="two v1-still">
@@ -1758,7 +1743,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Why the kernel: from app to driver</p>
     <h2>Version 1 proved the protocol. Version 2 makes it a real NuttX device.</h2>
     <div class="body" style="gap:18px">
       <div class="two">
@@ -1788,7 +1772,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">The kernel design: the big picture</p>
     <h2>One kernel device, set up by a small command.</h2>
     <div class="body" style="gap:16px">
       <svg class="route" viewBox="0 0 1136 340" role="img" aria-label="User space has only the wg command; it sends one flat ioctl struct across the user/kernel boundary to the wg0 netdev in the kernel, which owns its UDP socket, receive thread, timers and uses NuttX crypto, between the NuttX network stack and the encrypted UDP to the peer">
@@ -1841,8 +1824,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Bugs 5 &amp; 6 / 6: found in the kernel part</p>
-    <h2>Two more bugs, and one was in NuttX itself.</h2>
+    <h2>Bugs 5 and 6: one was in NuttX itself.</h2>
     <div class="body">
       <div class="two">
         <div class="panel wg" style="min-height:0">
@@ -1872,7 +1854,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Testing: what ran where</p>
     <h2>Real boards in FLAT builds. KERNEL and PROTECTED on QEMU.</h2>
     <div class="body" style="gap:12px">
       <div class="three">
@@ -1899,6 +1880,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
         <img src="../assets/github-qr.png" alt="QR code for the GitHub repository" style="width:62px;height:62px;display:block;flex:none">
         <p>For implementation details, debugging notes, and test results, see the GitHub repository.<br><code>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</code></p>
       </div>
+      <div class="takeaway"><b>Takeaway</b><p>The driver is verified on real boards in FLAT builds and across the kernel boundary on QEMU; real-hardware KERNEL and PROTECTED tests remain open.</p></div>
     </div>
     <div class="num"><span class="part">PART 5 &middot; 4/6</span>29 / 40</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
@@ -1914,7 +1896,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Testing: what ping misses</p>
     <h2>Three problems that ping would never notice.</h2>
     <div class="body" style="gap:20px">
       <div class="three">
@@ -1949,7 +1930,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Design choice: trust the clock?</p>
     <h2>The timestamp problem has no easy answer.</h2>
     <div class="body" style="gap:16px">
       <p class="lead" style="max-width:100%;margin:0">Each handshake needs a newer timestamp than the peer has seen, <span class="hl">even after a reboot</span>.</p>
@@ -2030,7 +2010,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Demo setup: the network</p>
     <h2>One tunnel, on a phone's local network.</h2>
     <div class="body" style="gap:10px">
       <svg class="route" viewBox="0 0 1136 372" role="img" aria-label="Laptop and StackChan on a phone hotspot, joined by a WireGuard tunnel">
@@ -2090,7 +2069,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Demo: live on the StackChan</p>
     <h2>Log in through the tunnel, and talk to the robot.</h2>
     <div class="body">
       <div class="two demo-layout">
@@ -2111,6 +2089,7 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
           <p class="mono" style="font-size:15px;margin-top:12px">Backup video (earlier demo): youtu.be/1kyX2av5WG4</p>
         </div>
       </div>
+      <div class="takeaway"><b>Takeaway</b><p>The StackChan is a normal NuttX device reached and controlled through an encrypted WireGuard tunnel.</p></div>
     </div>
     <div class="num"><span class="part">PART 6 &middot; 2/2</span>34 / 40</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
@@ -2175,7 +2154,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Giving back: where it stands</p>
     <h2>The Apache Way: small steps, in the open.</h2>
     <div class="body">
       <ul class="big">
@@ -2198,7 +2176,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">What I learned</p>
     <h2>Three things this project taught me.</h2>
     <div class="body" style="gap:18px">
       <div class="three">
@@ -2239,7 +2216,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Summary</p>
     <h2>What I built, and three technical lessons.</h2>
     <div class="body">
       <div class="takeaway"><b>Built</b><p><code>wg0</code>: a WireGuard network device in the NuttX kernel. It runs on ESP32-S3 and SPRESENSE (FLAT) and in KERNEL / PROTECTED builds on QEMU, with standard WireGuard peers. Prepared as small PRs; nothing sent yet.</p></div>
@@ -2261,7 +2237,6 @@ Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/p
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Thanks: the people behind this talk</p>
     <h2>Many people helped me get here.</h2>
     <div class="body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start;flex:0 0 auto">
