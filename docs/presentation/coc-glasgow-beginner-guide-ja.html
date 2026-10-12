@@ -480,7 +480,7 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
   <a href="#10-ioctlとabi">10 ioctlとABI</a>、<a href="#11-並行処理をどう安全にしたか">11 並行処理</a>、<a href="#46-nonceとcounter">4.6 nonce</a>、
   <a href="#47-replay-attack">4.7 replay attack</a></li>
 <li><strong>どこで確かめたか:</strong> 行ごとに違います。<a href="#151-主な検証環境">15.1</a>の表で確かめてください。特に、
-  <strong>PROTECTEDビルドの実行は、繰り返すと8回中2回失敗していて未解決</strong> <strong>[未解決]</strong>、
+  <strong>PROTECTEDビルドの実行は、繰り返すと8回中2回失敗していたが、原因(<code>wg</code>のスタック不足)を直して20回中20回成功</strong> <strong>[カーネル・QEMU]</strong>(実機では未確認)、
   <strong>#14(再起動後のtimestamp)は判断としてopen</strong> <strong>[未解決]</strong> です。</li>
 </ul>
 <h3 id="第6部-ライブデモ">第6部 ライブデモ</h3>
@@ -1301,9 +1301,12 @@ GS2200M Wi-Fi moduleとの通信にこの経路を使います。</p>
 <p>最初のapps版は、NuttX内部socket APIを使うためFLAT向けでした。現行版(提出候補として小さく分けてある方)はdriverを
 kernel側へ移し、user側の<code>wg</code> commandとはioctlで通信します(スライド28)。</p>
 <p>現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました <strong>[カーネル・QEMU]</strong>。PROTECTED buildも
-QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていて、原因は
-まだ分かっていません <strong>[未解決]</strong>。だから「PROTECTEDで動く」とだけ言わず、「tunnelは通るが、
-間欠的な失敗が未解決」と言います(<a href="#151-主な検証環境">15.1</a>)。</p>
+QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていました。
+原因は<code>wg</code> commandのstackあふれです。PROTECTEDではsystem callが呼び出し側のuser stackの上で動くので、
+4096バイトの<code>wg</code>のstackに、command、trap frame、driverのioctl(鍵やpeerを設定するときはX25519の計算)、
+その最中の割り込みのframeが同時に乗り、約4.3 KBになっていました。割り込みが一番深いところで入ったときだけ
+あふれるので、間欠的でした。PROTECTEDのときの既定のstackを6144バイトにして、20回中20回成功しました
+<strong>[カーネル・QEMU]</strong>。実機のPROTECTEDでは確かめていません(<a href="#151-主な検証環境">15.1</a>)。</p>
 <hr />
 <h2 id="8-このプロジェクトで作ったもの">8. このプロジェクトで作ったもの</h2>
 <h3 id="81-目的">8.1 目的</h3>
@@ -1354,7 +1357,7 @@ NuttXの通常のnetdevとして見せる:      する
 <tr>
 <td>build</td>
 <td>主にFLAT</td>
-<td>実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDは間欠的な失敗が未解決)</td>
+<td>実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDの間欠的な失敗は<code>wg</code>のstack不足で、修正済み)</td>
 </tr>
 <tr>
 <td>提出候補</td>
@@ -1859,8 +1862,8 @@ IP stackを呼ぶので、TCPの呼び出しの深さ全体と、すぐ返事を
 <tr>
 <td>rv-virt <code>pnsh64</code></td>
 <td>カーネル版、BUILD_PROTECTED</td>
-<td>MPUの分離ありでtunnelが通る。<code>wg</code>はuser側にあり、すべてのioctlが境界を越える。<strong>ただし繰り返すと8回中2回、user spaceで例外(open)</strong></td>
-<td>[カーネル・QEMU] [未解決]</td>
+<td>MPUの分離ありでtunnelが通る。<code>wg</code>はuser側にあり、すべてのioctlが境界を越える。<strong>繰り返すと8回中2回例外が出ていたが、<code>wg</code>のstackが小さすぎたのが原因。修正後は20/20</strong></td>
+<td>[カーネル・QEMU]</td>
 </tr>
 <tr>
 <td>rv-virt <code>knetnsh64_smp</code></td>
@@ -1916,7 +1919,7 @@ KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNEL�
 </tr>
 <tr>
 <td>QEMU PROTECTED</td>
-<td>memory/privilege分離(ただし繰り返しで間欠的な例外が未解決)</td>
+<td>memory/privilege分離(繰り返しで出ていた間欠的な例外は<code>wg</code>のstack不足で、修正後20/20)</td>
 <td>実MPU hardwareの全挙動</td>
 </tr>
 <tr>
@@ -1978,7 +1981,7 @@ KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNEL�
 </tr>
 <tr>
 <td>PROTECTEDでtunnelが通る</td>
-<td>QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗し、原因は未解決</td>
+<td>QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗していたが、<code>wg</code>のstack不足を直して20/20</td>
 <td>PROTECTEDで問題なく動く</td>
 </tr>
 <tr>
@@ -3052,7 +3055,7 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 <li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/tai64n-decision.md">TAI64Nの判断</a></li>
 <li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/wg-operation.md">運用方法</a></li>
 <li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/development/stackchan-hardware-check-2026-10-08.md">スタックちゃん実機確認</a>(ライブデモの構成と既知の問題)</li>
-<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/submission-checklist.md">提出前チェックリスト</a>(PRの分割とPROTECTEDの間欠的な失敗)</li>
+<li><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard/blob/main/docs/upstream/submission-checklist.md">提出前チェックリスト</a>(PRの分割とPROTECTEDの間欠的な失敗の原因と修正)</li>
 </ol>
 <p>全部を覚える必要はありません。「正本のどこに根拠があるか」を知り、断言の範囲を守ることが重要です。</p>
 <hr />
@@ -3061,7 +3064,7 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 <li><strong>NuttXに<code>wg0</code>というvirtual network deviceを追加し、既存アプリのIP packetをWireGuardで運びます。</strong></li>
 <li><strong>暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存部分をNuttXのnetdevとIOBへ置き換えました。</strong></li>
 <li><strong>現行版はkernel driverがsocket、worker、protocol stateを所有し、user側の<code>wg</code>とはioctlで通信します。</strong></li>
-<li><strong>pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。PROTECTEDの間欠的な失敗のように、未解決のものは未解決と言います。</strong></li>
+<li><strong>pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。未解決のものは未解決と言います。PROTECTEDの間欠的な失敗は、原因(<code>wg</code>のstack不足)を見つけて直しました。</strong></li>
 <li><strong>最大の未解決はRTCのないboardの再起動後timestampで、問題は実測済みですが、durableな解決に必要な書き込みの保証を確かめられていません。</strong></li>
 </ol>
 <p>この5文を自分の言葉で説明できれば、発表全体の背骨は理解できています。</p>

@@ -224,9 +224,10 @@ depends-on: apache/nuttx/pull/<PR-C>
     time (documented in wireguard.rst).
   * Impact on compatibility? NO. New ioctl numbers 0x0046..0x004a do not
     overlap existing ones (checked against <upstream SHA>).
-  * Anything else to consider or add? BUILD_PROTECTED: builds; repeated
-    rv-virt QEMU runs fault intermittently in user space while wg configures
-    wg0 (also on the unsplit candidate; cause not yet identified).
+  * Anything else to consider or add? BUILD_PROTECTED: builds and runs on
+    rv-virt:pnsh64 (QEMU). There the configuration ioctls run on the wg
+    task's user stack, so apache/nuttx-apps#<PR-A> sets a larger default
+    wg stack for protected builds.
 
 ## Testing
 
@@ -344,7 +345,15 @@ depends-on: apache/nuttx/pull/<PR-N>
   I confirm that changes are verified on local setup and works as intended:
   * Build Host(s): Linux x86_64 (Ubuntu 24.04 container), GCC 13.3.
   * Target(s): sim:wireguard; rv-virt:knetnsh64 (wg as a separate ELF);
+    rv-virt:pnsh64 (BUILD_PROTECTED, QEMU);
     <ESP32-S3 board:config>; <Spresense board:config>.
+  * BUILD_PROTECTED: a system call runs on the caller's user stack, so the
+    wg stack must also hold the driver's ioctl path (an X25519 scalar
+    multiplication when a private key or a peer is set) and the trap and
+    interrupt frames. CONFIG_SYSTEM_WG_STACKSIZE therefore defaults to 6144
+    when BUILD_PROTECTED (4096 otherwise). With 4096, repeated runs of the
+    rv-virt:pnsh64 test failed 7 to 9 of 10 times (stack overflow); with
+    6144, 20 of 20 runs passed. Not tested on PROTECTED hardware.
 
   Testing logs after change:
 

@@ -219,7 +219,7 @@ handshakeやpingが成功しても、安全で、長く動き、停止でき、�
   [10 ioctlとABI](#10-ioctlとabi)、[11 並行処理](#11-並行処理をどう安全にしたか)、[4.6 nonce](#46-nonceとcounter)、
   [4.7 replay attack](#47-replay-attack)
 - **どこで確かめたか:** 行ごとに違います。[15.1](#151-主な検証環境)の表で確かめてください。特に、
-  **PROTECTEDビルドの実行は、繰り返すと8回中2回失敗していて未解決** **[未解決]**、
+  **PROTECTEDビルドの実行は、繰り返すと8回中2回失敗していたが、原因(`wg`のスタック不足)を直して20回中20回成功** **[カーネル・QEMU]**(実機では未確認)、
   **#14(再起動後のtimestamp)は判断としてopen** **[未解決]** です。
 
 ### 第6部 ライブデモ
@@ -820,9 +820,12 @@ ESP32-S3のnative Wi-Fiとは異なる経路なので、2つのboardで試すこ
 kernel側へ移し、user側の`wg` commandとはioctlで通信します(スライド28)。
 
 現行版は、KERNEL buildではQEMU上で完全なtunnelとして動きました **[カーネル・QEMU]**。PROTECTED buildも
-QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていて、原因は
-まだ分かっていません **[未解決]**。だから「PROTECTEDで動く」とだけ言わず、「tunnelは通るが、
-間欠的な失敗が未解決」と言います([15.1](#151-主な検証環境))。
+QEMU上でtunnelが通りましたが、同じ試験を繰り返すと8回中2回、user space側で例外が起きていました。
+原因は`wg` commandのstackあふれです。PROTECTEDではsystem callが呼び出し側のuser stackの上で動くので、
+4096バイトの`wg`のstackに、command、trap frame、driverのioctl(鍵やpeerを設定するときはX25519の計算)、
+その最中の割り込みのframeが同時に乗り、約4.3 KBになっていました。割り込みが一番深いところで入ったときだけ
+あふれるので、間欠的でした。PROTECTEDのときの既定のstackを6144バイトにして、20回中20回成功しました
+**[カーネル・QEMU]**。実機のPROTECTEDでは確かめていません([15.1](#151-主な検証環境))。
 
 ---
 
@@ -857,7 +860,7 @@ flowchart LR
 | 主目的 | protocol portを早く成立させる | upstreamの形に合う正式driverにする |
 | socket所有 | command/task側に制約 | driverが所有 |
 | 設定 | application内部 | user commandからioctl |
-| build | 主にFLAT | 実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDは間欠的な失敗が未解決) |
+| build | 主にFLAT | 実機とsimはFLAT。PROTECTED/KERNELはQEMUで実行(PROTECTEDの間欠的な失敗は`wg`のstack不足で、修正済み) |
 | 提出候補 | 学習・実績の土台 | 手元で小さな単位に分けてあるのはこちら |
 | 発表での位置 | 第4部(スライド19〜26)と、第6部のライブデモ | 第5部(スライド27〜33) |
 
@@ -1220,7 +1223,7 @@ pingは便利ですが、確認できる範囲は狭いです。
 |---|---|---|---|
 | `sim:wireguard` | カーネル版 | errorなしでbuildできる(この構成はdriverのシリーズに入っている) | [カーネル・sim] |
 | rv-virt `knetnsh64` | カーネル版、BUILD_KERNEL | virtio-net越しにLinuxのWireGuardとtunnel。`wg`は別のprogramとして読み込まれ、system callでdriverに届く | [カーネル・QEMU] |
-| rv-virt `pnsh64` | カーネル版、BUILD_PROTECTED | MPUの分離ありでtunnelが通る。`wg`はuser側にあり、すべてのioctlが境界を越える。**ただし繰り返すと8回中2回、user spaceで例外(open)** | [カーネル・QEMU] [未解決] |
+| rv-virt `pnsh64` | カーネル版、BUILD_PROTECTED | MPUの分離ありでtunnelが通る。`wg`はuser側にあり、すべてのioctlが境界を越える。**繰り返すと8回中2回例外が出ていたが、`wg`のstackが小さすぎたのが原因。修正後は20/20** | [カーネル・QEMU] |
 | rv-virt `knetnsh64_smp` | カーネル版、SMP 4 CPU | 設定変更とdown/upをしながら大量のtraffic。例外なし、tunnelは復帰 | [カーネル・QEMU] |
 | SPRESENSE(実測) | カーネル版、FLAT、Cortex-M4F(最終rebase前) | 負荷と40回のdown/upの前後で、heap・buffer・stackが完全に同じ。受信threadは6096 byte中1472 byte | [カーネル・実機] |
 | ESP32-S3 + SPRESENSE | カーネル版、FLAT、実Wi-Fi(最終rebase前) | Windowsの公式clientとのtunnel。ESP32-S3は内蔵Wi-Fiでping 4/4、SPRESENSEはusrsock経由で6/6 | [カーネル・実機] |
@@ -1239,7 +1242,7 @@ KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNEL�
 |---|---|---|
 | sim | protocol、negative test、自動回帰 | 実機のstack、Wi-Fi、flash |
 | QEMU KERNEL | syscall境界、別ELF、kernel driver | 実silicon固有の挙動 |
-| QEMU PROTECTED | memory/privilege分離(ただし繰り返しで間欠的な例外が未解決) | 実MPU hardwareの全挙動 |
+| QEMU PROTECTED | memory/privilege分離(繰り返しで出ていた間欠的な例外は`wg`のstack不足で、修正後20/20) | 実MPU hardwareの全挙動 |
 | SMP 4 CPU | 複数CPUでの並行性 | 長期的な全raceの不存在 |
 | ESP32-S3 | native Wi-Fi実機 | usrsock経路 |
 | SPRESENSE | GS2200M/usrsock実機、資源実測 | ESP32-S3固有の資源値 |
@@ -1254,7 +1257,7 @@ KERNELとPROTECTEDはQEMUの上でだけ動かし、rebase後の版ではKERNEL�
 | IOB freeが0でも回復 | simの制御条件で枯渇と回復を確認 | 全実機・全backendで同じ |
 | `down`後に指定した鍵fieldがzero | 観測したfieldとscheduleでzero化した | 全memoryに鍵の断片がない |
 | 2 boardで実tunnel | native Wi-Fiとusrsockの両経路で成立 | あらゆるboardにportable |
-| PROTECTEDでtunnelが通る | QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗し、原因は未解決 | PROTECTEDで問題なく動く |
+| PROTECTEDでtunnelが通る | QEMUでMPU分離ありでもtunnelが通った。繰り返すと8回中2回失敗していたが、`wg`のstack不足を直して20/20 | PROTECTEDで問題なく動く |
 | SMP 4 CPUで例外なし | 1つの決まった筋書きの試験で、例外なく復帰した | raceが存在しない |
 | 3回のreset(電源断ではない)で3つの異なる鍵 | 同じ鍵を配る最悪の失敗は起きていない | 乱数の品質が良いと証明した |
 | カーネル版が実機でつながる | 両boardのFLATビルドでWindowsの公式clientとつながった | 実機でLinuxのpeerともつないだ(Linuxとはsim/QEMU)、実機でKERNEL/PROTECTEDを動かした |
@@ -1868,7 +1871,7 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 3. [TAI64Nの判断](../upstream/tai64n-decision.md)
 4. [運用方法](../upstream/wg-operation.md)
 5. [スタックちゃん実機確認](../development/stackchan-hardware-check-2026-10-08.md)(ライブデモの構成と既知の問題)
-6. [提出前チェックリスト](../upstream/submission-checklist.md)(PRの分割とPROTECTEDの間欠的な失敗)
+6. [提出前チェックリスト](../upstream/submission-checklist.md)(PRの分割とPROTECTEDの間欠的な失敗の原因と修正)
 
 全部を覚える必要はありません。「正本のどこに根拠があるか」を知り、断言の範囲を守ることが重要です。
 
@@ -1879,7 +1882,7 @@ repository)、名前と所属、「Questions welcome.」があります。本家
 1. **NuttXに`wg0`というvirtual network deviceを追加し、既存アプリのIP packetをWireGuardで運びます。**
 2. **暗号はそのまま、protocol coreは小さな修正2つで再利用し、lwIP依存部分をNuttXのnetdevとIOBへ置き換えました。**
 3. **現行版はkernel driverがsocket、worker、protocol stateを所有し、user側の`wg`とはioctlで通信します。**
-4. **pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。PROTECTEDの間欠的な失敗のように、未解決のものは未解決と言います。**
+4. **pingだけでは不十分なので、build分離、実機、usrsock stall、資源、鍵、replay、再起動まで試験しました。未解決のものは未解決と言います。PROTECTEDの間欠的な失敗は、原因(`wg`のstack不足)を見つけて直しました。**
 5. **最大の未解決はRTCのないboardの再起動後timestampで、問題は実測済みですが、durableな解決に必要な書き込みの保証を確かめられていません。**
 
 この5文を自分の言葉で説明できれば、発表全体の背骨は理解できています。

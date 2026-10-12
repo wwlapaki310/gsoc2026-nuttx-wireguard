@@ -1908,7 +1908,7 @@
         <tr><th>Where</th><th>Version</th><th>What I checked</th></tr>
         <tr><td>sim:wireguard</td><td class="old">kernel driver</td><td>builds with no errors (the driver series adds this config)</td></tr>
         <tr><td>rv-virt knetnsh64</td><td class="new">kernel driver &middot; BUILD_KERNEL (QEMU)</td><td class="new">virtio-net tunnel to Linux; <code>wg</code> is a separate program that calls in through syscalls</td></tr>
-        <tr><td>rv-virt pnsh64</td><td class="new">kernel driver &middot; BUILD_<b>PROTECTED</b> (QEMU)</td><td class="new">tunnel with the <b>MPU split</b> on: <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary; tunnel works, but <b>2 of 8 repeated runs hit a fault (open)</b></td></tr>
+        <tr><td>rv-virt pnsh64</td><td class="new">kernel driver &middot; BUILD_<b>PROTECTED</b> (QEMU)</td><td class="new">tunnel with the <b>MPU split</b> on: <code>wg</code> in <code>nuttx_user</code>, every ioctl crosses the boundary; tunnel works; <code>wg</code> stack too small in 2 of 8 runs, <b>fixed: 20/20</b></td></tr>
         <tr><td>rv-virt knetnsh64_smp</td><td class="new">kernel driver &middot; <b>SMP, 4 CPUs</b> (QEMU)</td><td class="new">heavy traffic <b>while</b> changing the config and doing <code>down</code>/<code>up</code>; no fault, tunnel came back</td></tr>
         <tr><td>SPRESENSE, measured</td><td class="new">kernel driver &middot; <b>FLAT</b>, Cortex&#8209;M4F (before final rebase)</td><td class="new">under load and 40 <code>down</code>/<code>up</code> cycles: heap, buffers and stacks <b>exactly the same</b>; receive thread uses <b>1472&nbsp;B of 6096</b></td></tr>
         <tr><td>ESP32-S3 + SPRESENSE</td><td class="new">kernel driver &middot; <b>FLAT</b>, real Wi-Fi (before final rebase)</td><td class="new">tunnel to the Windows client: ESP32 native ping 4/4, SPRESENSE via <b>usrsock</b> ping 6/6</td></tr>
@@ -1922,7 +1922,7 @@
     <aside class="notes">
       <p>Let me be exact about which version was checked where.</p>
       <p>The kernel driver builds with no errors in the sim config &mdash; the driver series adds that config. It also runs a full tunnel in a kernel build in QEMU, rv-virt knetnsh64, to WireGuard in the Linux kernel. The wg command is a separate program, and it reaches the driver through system calls.</p>
-      <p>Next, PROTECTED, also in QEMU. The ioctl ABI has no pointers inside, so the kernel only touches the one struct the caller passed. With the memory split on, every ioctl crosses the boundary, and the tunnel reaches Linux. But in repeated runs, two out of eight hit a fault in user space. I have not found the cause yet, so it is an open problem, not a pass.</p>
+      <p>Next, PROTECTED, also in QEMU. The ioctl ABI has no pointers inside, so the kernel only touches the one struct the caller passed. With the memory split on, every ioctl crosses the boundary, and the tunnel reaches Linux. In repeated runs, two out of eight hit a fault. The cause was a stack overflow: here a system call runs on the caller's own stack, and the wg stack was too small for it. With a bigger default, twenty out of twenty passed, in QEMU.</p>
       <p>Then, locking: four CPUs in QEMU, a flood of packets, while another CPU changes the settings and does down and up. No fault, and the tunnel came back. But this is one scripted run, not a full search for race conditions.</p>
       <p>The SPRESENSE row is the one I would show a reviewer first. The simulator's memory numbers do not apply to a board, so I measured the board itself: two minutes of traffic, then forty down-and-up cycles over real Wi-Fi. Heap, buffers and every stack: exactly the same before and after. The receive thread used one thousand four hundred and seventy-two bytes, out of a six-kilobyte default. That default used to be a guess. Now it is a measurement.</p>
       <p>The kernel driver also runs on both boards over real Wi-Fi, with the official Windows client: native Wi-Fi on the ESP32-S3, and usrsock on SPRESENSE. These are normal FLAT builds, from the version before the final rebase. KERNEL and PROTECTED ran only in QEMU, and the KERNEL and SMP tunnels were run again after the rebase. The last row is version one, the app, on both boards.</p>
@@ -2241,14 +2241,14 @@
         <li>Checked so far <span>checkpatch / nxstyle pass, each commit builds on its own, licenses listed.</span></li>
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
-      <div class="sources">Status: prepared locally as small pieces. Not signed off, not re-run on real hardware, nothing sent.</div>
+      <div class="sources">Status: prepared locally as small pieces; the series runs on the ESP32-S3 (FLAT build). Not signed off, nothing sent.</div>
     </div>
     <div class="num"><span class="part">PART 7 &middot; 3/6</span>40 / 43</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>Let me end this part with the values of this community.</p>
-      <p>The work is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the command for user space. Every commit passes the patch checks and builds on its own. Nothing is sent yet. Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me, and the final series has not run on real hardware. Community over code means being honest about where the work really is, and then letting review change it.</p>
+      <p>The work is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the command for user space. Every commit passes the patch checks and builds on its own. Nothing is sent yet. Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me. The final series already runs on the ESP32-S3 here, in a normal FLAT build. Community over code means being honest about where the work really is, and then letting review change it.</p>
     </aside>
   </section>
 

@@ -227,7 +227,7 @@ main talk in 27–28 minutes, and keep the cut list below ready.
 check. Their narration was already trimmed (2026-10-11): process detail
 such as the memory map, the usrsock steps and the hostfs detail moved to
 the Q&A file. Do not cut their claims or their caveats (FLAT / QEMU / sim,
-pre-rebase, PROTECTED 2 of 8 open, one scripted 4-CPU run, the 75 s
+pre-rebase, PROTECTED 2 of 8 fixed (wg stack, QEMU only), one scripted 4-CPU run, the 75 s
 watch) any further. Cut before them or after them. They are one story: the first is where
 it runs, the second is what "it runs" does not prove, and the third is the
 one place where I had to decide instead of test. If you split them, the

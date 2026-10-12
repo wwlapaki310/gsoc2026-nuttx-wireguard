@@ -127,26 +127,34 @@ nuttx `5ba13e4296`(PR-K1 先端。PR-D 先端 `af389024d2` とコードは同じ
 | CMake/Ninja(`build-cmake-wg.sh sim:nsh`) | PASS。`wireguard.c.o` `wg_crypto.c.o` `wg_noise.c.o` `wg_tai64n.c.o` `wg_main.c.o` を確認 |
 | BUILD_KERNEL `rv-virt:knetnsh64`(1 CPU) | ビルド PASS、`verify-knetnsh-wg.sh` PASS(両方向のトンネル、flood と再設定と down/up の後に復旧) |
 | BUILD_KERNEL `rv-virt:knetnsh64_smp`(4 CPU) | 同上 PASS |
-| BUILD_PROTECTED `rv-virt:pnsh64`(`build-pnsh-wg.sh` + `verify-pnsh-wg.sh`) | ビルド PASS。実行は**間欠的に FAIL**(下記) |
+| BUILD_PROTECTED `rv-virt:pnsh64`(`build-pnsh-wg.sh` + `verify-pnsh-wg.sh`) | ビルド PASS。実行はこの時点では**間欠的に FAIL**。原因は `wg` のスタック不足で、PR-A で直した(下記) |
 
 `pr-latest/*` でも、全 12 コミットの `-Werror` コミット別ビルド、sim:wireguard ビルド、sim 一式、
 CMake がすべて PASS(nuttx `bf6cd96143` + apps `304f6255c`)。BUILD_KERNEL/PROTECTED は
 `pr-latest/*` では回していない。
 
-**BUILD_PROTECTED の間欠障害(新しく見つかったもの。分割とは無関係):**
+**BUILD_PROTECTED の間欠障害(分割とは無関係)— 原因が分かり、直した(2026-10-12):**
 同じイメージで `verify-pnsh-wg.sh` を繰り返すと、`pr/*` で 8 回中 2 回、**分割前の候補
-(`33856be818` + `f8f1d453e`)でも 9 回中 1 回**、`wg` の設定中に落ちる
+(`33856be818` + `f8f1d453e`)でも 9 回中 1 回**、`wg` の設定中に落ちていた
 (`FAIL: the guest faulted while configuring wg0 across the MPU boundary`)。最初の例外は
 ユーザー空間の `nxsem_wait`(`libs/libc/semaphore/sem_wait.c:141`、task `wg`)で、読もうとした番地が
-でたらめ(`MTVAL` 0x1a3efe など)。2 つ目はその後のダンプ中のカーネル側(`nxtask_argvstr`)で二次的。
-9/29 の記録は 1 回の PASS だったので見えていなかった。原因は未調査(`wg` プロセスのスタック不足や
-ユーザー側のポインタ破壊が候補だが、推測)。**PR-K1/PR-A の本文で PROTECTED 実行を「PASS」と
-書かないこと。** 書くなら「ビルドは通る。QEMU での実行は間欠的に user 側で fault する(調査中)」。
+でたらめ(`MTVAL` 0x1a3efe など)。
+
+原因は **`wg` コマンドのタスクのスタックあふれ**([evidence/protected-fault-2026-10-12.md](evidence/protected-fault-2026-10-12.md))。
+PROTECTED ビルドではシステムコールが呼び出し側の user スタックの上で動くので、4096 バイトの `wg` のスタックに、
+コマンド自身、システムコールのトラップフレーム、ドライバの ioctl の経路(秘密鍵か peer を設定するときは
+X25519 のスカラー倍算)、その最中に入った割り込みのフレームが同時に乗る。合計は約 4.3 KB で、スタックの
+一番下にある TLS ブロックまであふれる。割り込みがちょうど一番深いところで入ったときだけ起きるので、間欠的だった。
+
+**修正:** `SYSTEM_WG_STACKSIZE` の既定値を `BUILD_PROTECTED` のとき 6144 にした(`system/wg/Kconfig`、
+help を含めて 9 行)。PR-A のコミットに含めた(apps `pr-latest/system-wg` = `0ff6a0984` + `3a6d641d9`、§6.2)。
+`rv-virt:pnsh64`(QEMU)の結果:修正前は 10 回中 9 回・7 回・7 回 FAIL、修正後は **20 回中 20 回 PASS**
+(`verify-pnsh-wg.sh` 全体。`EXCEPTION`/`PANIC`/`_assert` なし)。**実機では未確認**(§2.4)。
 
 ### 2.4 やっていないこと
 
-- **実機(G5)**: ESP32-S3 は 2026-10-12 に `pr-latest/*`(nuttx `237b6e538e` / apps `fc640afc4`)の FLAT ビルドで取得済み([evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得。BUILD_PROTECTED / BUILD_KERNEL は実機で未確認
-- BUILD_PROTECTED の間欠 fault の原因調査(§2.3)
+- **実機(G5)**: ESP32-S3 は 2026-10-12 に `pr-latest/*`(nuttx `237b6e538e` / apps `fc640afc4`)の FLAT ビルドで取得済み([evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得。BUILD_PROTECTED / BUILD_KERNEL は実機で未確認。この ESP32-S3 の実行の apps は `fc640afc4`(§2.3 の Kconfig の修正の前)だが、FLAT ビルドの既定値は 4096 のままなので、結果は変わらない
+- **ESP32-S3 での BUILD_PROTECTED の実機確認(試したが、できなかった)**:ビルドは通る。しかし CoreS3 は bootloader を使う(legacy)形式のイメージを、FLAT でも起動しない。2023 年の prebuilt bootloader でも、木からビルドした bootloader(IDF v5.1-dev。IDF の python requirements と `IDF_COMPONENT_MANAGER=0` が要る)でも同じ。UART0 が外に出ていないので起動ログが読めない。WireGuard とは関係しない。確かめるには UART0 が出ている DevKitC が要る
 - macOS(Darwin)の sim ビルドは CI にあるが試せていない。clang の `-Werror` で新しい警告が出る可能性は残る
 - 署名後の SHA での再検査。署名はメッセージしか変えないので木は同じだが、G4 は「提出する SHA で」なので、
   §3 (a) の後に少なくとも `verify-pr-series.sh --require-signoff` と sim:wireguard ビルドは回し直す
@@ -370,7 +378,7 @@ nuttx の木はそれぞれ自分の `checkpatch.sh` で検査する(nxstyle は
    コミット 3 から外して整形コミットに寄せた)
 3. `wg_x25519.c` の警告対策(§1.4)を PR-A に入れてよいか。入れないと sim:wireguard が CI の
    `-Werror` で落ちる(PR-A の CI と、両方マージ後の nuttx の CI の両方)
-4. BUILD_PROTECTED の間欠 fault(§2.3)を PR 前に追うか、既知の問題として PR に書いて出すか
+4. ~~BUILD_PROTECTED の間欠 fault(§2.3)を PR 前に追うか、既知の問題として PR に書いて出すか~~ → 原因(`wg` のスタックあふれ)が分かり、PR-A で直した(§2.3)
 
 ## 6. 公式ルールとの照合 (2026-10-12)
 
@@ -488,6 +496,10 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
    `CONFIG_NETUTILS_PING=y` と `CONFIG_NSH_LINELEN=256` を削除。CI の `testbuild.sh` は `refresh.sh` で defconfig を
    正規化し、差が出ると「木が汚れた」として FAIL にする。この 2 行は他の選択から決まる値で、`savedefconfig` が落とす
    (§6.6 の 1 回目で FAIL を確認)
+4. **PR-A に PROTECTED のスタック既定値を追加**(2026-10-12、§2.3):`system/wg/Kconfig` の `SYSTEM_WG_STACKSIZE` を
+   `BUILD_PROTECTED` のとき 6144 に(help を含めて 9 行)。`system/wg` のコミットに含めた。前の先端
+   (`373681354` + `fc640afc4`)は `bak/pr-latest-20261012/system-wg` として残した。§6.6 の PR-A `fc640afc4` の結果は
+   この変更の前のもの
 
 | PR | ブランチ | コミット(古い順) |
 |---|---|---|
@@ -495,7 +507,7 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | PR-N | `pr-latest/nxstyle-wg` | `66218ee3e7` tools/nxstyle: Skip the vendored X25519 in system/wg. |
 | PR-K1 | `pr-latest/wireguard-driver` | `73474ea80c` net: Fix nxstyle issues in netdev_upperhalf.c and netdev_register.c.<br>`52be44b168` drivers/net/netdev_upperhalf: Accept IP-only lower halves for WireGuard.<br>`31231d4965` net/netdev: Add the WireGuard control ioctls.<br>`486489718c` drivers/net/wireguard: Add the WireGuard device.<br>`2901802758` boards/sim: Add the sim:wireguard configuration.<br>`0b4ed6ec77` Documentation: Add the WireGuard network device. |
 | PR-D | `pr-latest/doc-system-wg` | `237b6e538e` Documentation: Add the system/wg command. |
-| PR-A | apps `pr-latest/system-wg` | `3736813544` system/wg: Add a WireGuard configuration command.<br>`fc640afc4c` LICENSE: Add the STROBE X25519 used by system/wg. |
+| PR-A | apps `pr-latest/system-wg` | `0ff6a0984` system/wg: Add a WireGuard configuration command.<br>`3a6d641d9` LICENSE: Add the STROBE X25519 used by system/wg. |
 
 `pr/*`(10/07 base)は触っていない。`pr/*` の sim:wireguard defconfig も同じ 2 行を持つので、`pr/*` から出すなら同じ修正が要る。
 
@@ -516,6 +528,7 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | R11 | making-changes.rst は「PR 前は通常 1 コミットに squash」と書く。本シリーズは PR 内を分けている | making-changes.rst L189-191。CONTRIBUTING 1.7.5 L177-179 は複数コミットを認める | 規則(CONTRIBUTING)上は可。レビューで squash を求められたら従う |
 | R12 | `wg_x25519.c` に STROBE 由来の誤記 `x1 = (const uint8_t *)x1;`(本来 `x1i`)。`X25519_MEMCPY_PARAMS 1` の構成では、整列済みの写しを作ったのに整列していない入力を読み続ける。wireguard-lwip が 2026-08-14 に同じ箇所を直した(PR #17、ARMv6-M で unaligned access の例外) | apps `system/wg/wg_x25519.c` L281 | **判断待ち**(§6.5 の 5)。CI の規則違反ではない |
 | R13 | macOS / msys2 / msvc の CI ジョブ、他アーキテクチャのグループは再現していない | build.yml L471-616 | 未実施(§6.6) |
+| R14 | BUILD_PROTECTED で `wg` のスタックがあふれ、QEMU の実行が間欠的に fault する | [evidence/protected-fault-2026-10-12.md](evidence/protected-fault-2026-10-12.md) | **直した**(PR-A、§2.3・§6.2)。QEMU で 20/20 PASS。実機では未確認 |
 
 ### 6.4 署名の手順(直したもの)
 

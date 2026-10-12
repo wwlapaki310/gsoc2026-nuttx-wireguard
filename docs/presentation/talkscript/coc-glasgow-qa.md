@@ -43,12 +43,12 @@ works under every privilege model, not just FLAT."
 apps版ではそれが制約でした(FLATビルド専用)。**カーネル版はもうこれに
 依存していません** — `wg0` はカーネル内の lower-half netdev で、ソケットも
 受信スレッドもドライバ自身が所有し、ユーザー空間とは固定長・ポインタなしの
-ioctl ABI でやり取りします。これが KERNEL ビルドと PROTECTED ビルドの MPU 分割の下で動く理由です(PROTECTED には間欠的な失敗が1つ未解決で残っています)。
+ioctl ABI でやり取りします。これが KERNEL ビルドと PROTECTED ビルドの MPU 分割の下で動く理由です(PROTECTED で見つかった間欠的な失敗は `wg` のスタック不足で、直しました。QEMU のみ)。
 *Say:* "That was true of the apps version. The kernel driver doesn't touch
 internal socket APIs at all — it owns the socket itself and talks to user
 space through a flat, pointer-free ioctl ABI, which is why it runs under
-KERNEL builds and with the MPU split of PROTECTED builds (where one
-intermittent fault is still open)."
+KERNEL builds and with the MPU split of PROTECTED builds (an intermittent
+fault there was a too-small wg stack, and it is fixed, in QEMU)."
 
 **Q. カーネルに BSD-3 のコードを入れるのか? なぜ Apache-2.0 で書き直さないのか?**
 はい、入ります。プロトコル本体の `drivers/net/wireguard/wg_noise.c` / `wg_noise.h` は
@@ -95,22 +95,26 @@ the old path since."
 **Q. 「7つの場所で検証した」というが、実機で足りていないものは何か?**
 ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:knsh`
 (実シリコン上のPROTECTEDビルド)。今回計測できたのは SPRESENSE
-(Cortex-M4F)側で、どちらもボードを接続すればすぐ回せる形にスクリプト化
-してありますが、まだ回せていません。ESP32-S3自体でのトンネル動作
-(ネイティブWi-Fi、4/4成功)は検証済みで、資源実測だけが残っています。
+(Cortex-M4F)側です。資源実測はスクリプト化してありますが、まだ回せていません。
+PROTECTED は試しました: ビルドは通りますが、手元の CoreS3 は bootloader を使う形式の
+イメージを FLAT でも起動せず、UART0 が外に出ていないので起動ログも読めません。
+WireGuard とは関係しない問題で、確かめるには UART0 が出ている DevKitC が要ります。
+ESP32-S3自体でのトンネル動作(ネイティブWi-Fi、4/4成功)は検証済みです。
 *Say:* "ESP32-S3 resource measurement and PROTECTED on that board's real
-silicon — both are scripted and ready, neither has run yet because the
-board wasn't attached this cycle. The tunnel itself on ESP32-S3 is verified;
-it's the stack/heap numbers on that specific chip that are still open."
+silicon. The measurement is scripted but has not run yet. I tried PROTECTED:
+it builds, but my CoreS3 does not boot that kind of image even as FLAT, and it
+has no UART to read the boot log. That is not a WireGuard problem; a DevKitC
+with UART0 is needed. The tunnel itself on ESP32-S3 is verified."
 
 **Q. PROTECTED のメモリ配置は特別に調整したのか?(スライド31)**
 いいえ、rv-virt の protected 構成の既定のままです。カーネル側の `.text` は 209,832 B、
 ユーザー側は 21,576 B で、それぞれ 256 KB のうちカーネルが約8割、ユーザーコマンドが約8%
-を使っています。8回中2回の例外(ユーザー空間の `nxsem_wait`、タスク `wg`)は未解決で、
-分割前の候補でも9回中1回出ています。
+を使っています。8回中2回の例外(ユーザー空間の `nxsem_wait`、タスク `wg`)はメモリ配置では
+なく `wg` のスタック不足が原因で、既定のスタックを大きくして直しました(QEMU で 20/20)。
 *Say:* "No, it is the stock protected config: the kernel uses about eighty percent of
 its part, the user command about eight percent of the other. The two-in-eight fault
-is still open."
+was not the memory layout: the wg stack was too small. It is fixed, twenty out of
+twenty in QEMU."
 
 **Q. usrsock の上で、送信が詰まっている最中に制御コマンドが来たらどうなるのか?(スライド31)**
 SPRESENSE で実際に強制しました: 実際の usrsock 側でパケットが1つ止まっている間に制御
@@ -204,12 +208,20 @@ initiation catches the handshake state non-zero. Both go to zero after
 
 **Q. PROTECTED ビルドは問題なく動くのか?**
 rv-virt の protected 構成で、`wg` をユーザー側に置いたままトンネルが Linux まで届くことは
-確かめました。ただし 10/10 に繰り返し実行したところ、8回中2回ユーザー空間で例外が起きました
-(分割前の候補でも9回中1回)。原因はまだ分かっていないので、「動く、ただし間欠的な失敗が
-未解決」と答えます。PR にも PASS とは書きません。
-*Say:* "The tunnel works with the MPU split on. But in repeated runs, two out of
-eight hit a fault in user space, and I have not found the cause yet. So I call it
-open, not passed."
+確かめました。10/10 に繰り返し実行したところ、8回中2回ユーザー空間で例外が起きました
+(分割前の候補でも9回中1回)。原因は `wg` コマンドのタスクのスタックあふれでした。
+PROTECTED ではシステムコールが呼び出し側のユーザースタックの上で動くので、4096 バイトの
+スタックに、コマンド、トラップフレーム、ドライバの ioctl(鍵や peer を設定するときは
+X25519 の計算)、その最中の割り込みのフレームが同時に乗り、約 4.3 KB でスタックの下の
+TLS ブロックを壊していました。割り込みが一番深いところで入ったときだけなので間欠的でした。
+PROTECTED のときの既定のスタックを 6144 バイトにして、QEMU で 20回中20回成功しました。
+実機の PROTECTED では確かめていません。
+*Say:* "The tunnel works with the MPU split on. In repeated runs, two out of eight
+first hit a fault. It was a stack overflow: in a PROTECTED build a system call runs
+on the caller's own stack, so the small wg stack also had to hold the driver's key
+math and an interrupt frame, and only sometimes it ran out. I made the default
+stack bigger for PROTECTED builds, and then twenty out of twenty runs passed. That
+is in QEMU; I have not run PROTECTED on real hardware."
 
 **Q. 生成 AI の時代に、なぜ NuttX なのか?**
 AI が持っている知識の量では FreeRTOS や Zephyr が上ですが、NuttX は POSIX なので、AI が

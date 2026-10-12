@@ -1890,7 +1890,7 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
     <tr><th>行</th><th>印</th><th>確かめたこと(噛み砕き)</th><th>matrix の ID と限界</th></tr>
     <tr><td>sim:wireguard</td><td><span class="tag kern">カーネル版</span><span class="tag sim">sim</span></td><td>エラーなしでビルドできる。この構成はドライバのシリーズに入っている</td><td>T8(ビルド)。sim の実行試験一式(T1・TF・TV・TR・TN・T3・TZ・T7 など)も別にある</td></tr>
     <tr><td>rv-virt knetnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_KERNEL。virtio-net で Linux カーネルの WireGuard と双方向のトンネル。<code>wg</code> は別のプログラム(ELF)として読み込まれ、システムコールでドライバに届く</td><td>T6 PASS。最初に計画した qemu-armv7a は virtio-net が使えずビルドのみ(T4 は実行していない)</td></tr>
-    <tr><td>rv-virt pnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_PROTECTED。MPU の分割で起動し、<code>wg</code> は <code>nuttx_user</code> 側。設定の ioctl はすべて境界を越え、Linux とトンネル(ping 3/3)、<code>wg show</code> の読み出しも成功。ただし繰り返すと <b>8 回中 2 回</b>、ユーザー空間で例外(未解決)</td><td>TP(2026-09-28 の 1 回は PASS)。2026-10-10 の繰り返しで間欠的な失敗(submission-checklist §2.3)。原因は調査中なので PASS ではなく未解決として扱う。QEMU の MPU のモデルで、本物のチップではない</td></tr>
+    <tr><td>rv-virt pnsh64</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>BUILD_PROTECTED。MPU の分割で起動し、<code>wg</code> は <code>nuttx_user</code> 側。設定の ioctl はすべて境界を越え、Linux とトンネル(ping 3/3)、<code>wg show</code> の読み出しも成功。繰り返すと <b>8 回中 2 回</b>例外が出ていたが、原因は <code>wg</code> のスタック不足で、直した後は <b>20 回中 20 回</b>成功</td><td>TP(2026-09-28 の 1 回は PASS)。2026-10-10 の繰り返しで間欠的な失敗、2026-10-12 に原因が分かり修正(submission-checklist §2.3)。QEMU の MPU のモデルで、本物のチップではない</td></tr>
     <tr><td>rv-virt knetnsh64_smp</td><td><span class="tag kern">カーネル版</span><span class="tag qemu">QEMU</span></td><td>4 CPU。2000 パケットの flood ping と同時に、<code>wg show</code> 5 回・設定変更 5 回・down/up をしても、例外なし、トンネル回復</td><td>TS PASS。1 つの決まった筋書きで、レースの網羅的な探索ではない。実機の SMP はない</td></tr>
     <tr><td>SPRESENSE, measured</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span> FLAT(最終 rebase 前)</td><td>120 秒の負荷(ping 375/375)と 40 回の down/up(毎回 usrsock でソケットを開き直し、実 Wi-Fi で handshake し直す)の前後で、ヒープ使用量 43,760 B・確保数 112・IOB 8/8・全スタックの最高水位が<b>完全に同じ</b>。受信スレッドの最大使用量は 6096 B 中 1472 B(24.1%)</td><td>TH PASS(2026-09-28)。1 ボード、数分。ESP32-S3 は未測定。STACK_COLORATION は「観測した最大」で最悪値ではない</td></tr>
     <tr><td>ESP32-S3 + SPRESENSE</td><td><span class="tag kern">カーネル版</span><span class="tag hw">実機</span> FLAT(最終 rebase 前)</td><td>本物の Wi-Fi で Windows 公式クライアントとトンネル。ESP32-S3 は内蔵 Wi-Fi で ping 4/4、SPRESENSE は usrsock 経由で 6/6</td><td>T5 PASS(2026-09-26)。FLAT の実機なので、PROTECTED / KERNEL の分離を示すものではない</td></tr>
@@ -1915,15 +1915,17 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   </ul>
   <div class="box warn">
     <p><b>まだ確かめていないこと(台本でも言う):</b>実機で IOB を使い切ること、送信の途中で Wi-Fi が切れること、長時間の重い通信。ESP32-S3 での資源の実測と、実チップ上の PROTECTED(<code>esp32s3-devkit:knsh</code>)。日単位の連続稼働。</p>
-    <p><b>PROTECTED の間欠的な失敗(<a href="../upstream/submission-checklist.md">submission-checklist.md</a> §2.3):</b>提出用に分割したブランチで <code>rv-virt:pnsh64</code> の試験を繰り返すと、8 回中 2 回、分割前の候補でも 9 回中 1 回、<code>wg</code> の設定中にユーザー空間側で例外が起きた。最初の例外はユーザー側の <code>nxsem_wait</code> で、読もうとした番地がでたらめ。原因は未特定(<code>wg</code> のスタック不足やユーザー側のポインタ破壊が候補だが推測)。9/28 の記録は 1 回の PASS だったので見えていなかった。スライドも台本もこれを「open」として扱う。</p>
+    <p><b>PROTECTED の間欠的な失敗 — 原因が分かり、直した(<a href="../upstream/submission-checklist.md">submission-checklist.md</a> §2.3):</b>提出用に分割したブランチで <code>rv-virt:pnsh64</code> の試験を繰り返すと、8 回中 2 回、分割前の候補でも 9 回中 1 回、<code>wg</code> の設定中にユーザー空間側で例外が起きていた。原因は <code>wg</code> コマンドのタスクのスタックあふれ。PROTECTED ではシステムコールが呼び出し側のユーザースタックの上で動くので、4096 バイトのスタックに、コマンド、システムコールのトラップフレーム、ドライバの ioctl(鍵や peer を設定するときは X25519 の計算)、その最中の割り込みのフレームが同時に乗り、約 4.3 KB でスタックの一番下の TLS ブロックまであふれた。割り込みが一番深いところで入ったときだけなので間欠的だった。PROTECTED のときの <code>SYSTEM_WG_STACKSIZE</code> の既定値を 6144 にして(PR-A に含めた)、20 回中 20 回成功。QEMU だけで、実機では確かめていない。</p>
   </div>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">Let me be exact about which version was checked where.</blockquote>
   <p class="gloss">どの版をどこで確かめたか、正確に言います。</p>
   <blockquote class="en">Next, PROTECTED, also in QEMU. The ioctl ABI has no pointers inside, so the kernel only touches the one struct the caller passed.</blockquote>
   <p class="gloss">次は PROTECTED で、これも QEMU。ioctl の ABI の中にはポインタがないので、カーネルは呼び出し元が渡した構造体 1 つにしか触れません。</p>
-  <blockquote class="en">But in repeated runs, two out of eight hit a fault in user space. I have not found the cause yet, so it is an open problem, not a pass.</blockquote>
-  <p class="gloss">でも繰り返すと、8 回中 2 回、ユーザー空間で例外が起きました。原因はまだ見つかっていないので、合格ではなく未解決の問題です。</p>
+  <blockquote class="en">In repeated runs, two out of eight hit a fault. The cause was a stack overflow: here a system call runs on the caller's own stack, and the wg stack was too small for it.</blockquote>
+  <p class="gloss">繰り返すと、8 回中 2 回、例外が起きました。原因はスタックあふれでした。このビルドではシステムコールが呼び出し側のスタックの上で動き、<code>wg</code> のスタックはそれには小さすぎました。</p>
+  <blockquote class="en">With a bigger default, twenty out of twenty passed, in QEMU.</blockquote>
+  <p class="gloss">既定のスタックを大きくすると、QEMU で 20 回中 20 回成功しました。</p>
   <blockquote class="en">But this is one scripted run, not a full search for race conditions.</blockquote>
   <p class="gloss">でもこれは台本どおりの 1 回の実行で、レースの網羅的な探索ではありません。</p>
   <span class="pause">間</span>
@@ -1934,9 +1936,9 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>7 つの場所で検証したと言うが、実機で足りていないものは?</dt>
-    <dd>ESP32-S3 での資源の実測と、実チップ上の PROTECTED。どちらもスクリプトは用意してあるが、ボードをつないで回せていない。ESP32-S3 のトンネル自体(内蔵 Wi-Fi、4/4)は確認済み(Q&amp;A)。</dd>
+    <dd>ESP32-S3 での資源の実測と、実チップ上の PROTECTED。資源の実測はスクリプトを用意してあるが、まだ回せていない。PROTECTED は試した:ビルドは通るが、CoreS3 は bootloader を使う形式のイメージを FLAT でも起動せず、UART0 が出ていないので起動ログも読めない(WireGuard とは関係しない。UART0 の出ている DevKitC が要る)。ESP32-S3 のトンネル自体(内蔵 Wi-Fi、4/4)は確認済み(Q&amp;A)。</dd>
     <dt>PROTECTED は本当に問題ないのですか?</dt>
-    <dd>MPU の分割を有効にしたままトンネルは動く。ただし繰り返すと 8 回中 2 回ユーザー空間で例外が起き、原因はまだ分からない。だから合格ではなく未解決と言う。PR にも PASS とは書かない(Q&amp;A、submission-checklist §2.3)。"The tunnel works with the MPU split on. But in repeated runs, two out of eight hit a fault in user space, and I have not found the cause yet. So I call it open, not passed."</dd>
+    <dd>MPU の分割を有効にしたままトンネルは動く。繰り返すと 8 回中 2 回例外が起きていたが、原因は <code>wg</code> のスタックあふれ(システムコールが呼び出し側のスタックで動くので、ドライバの鍵の計算と割り込みのフレームまで乗っていた)。PROTECTED の既定のスタックを大きくして、QEMU で 20 回中 20 回成功。実機の PROTECTED は未確認(Q&amp;A、submission-checklist §2.3)。"The tunnel works with the MPU split on. In repeated runs, two out of eight first hit a fault. It was a stack overflow: in a PROTECTED build a system call runs on the caller's own stack, so the small wg stack also had to hold the driver's key math and an interrupt frame, and only sometimes it ran out. I made the default stack bigger for PROTECTED builds, and then twenty out of twenty runs passed. That is in QEMU; I have not run PROTECTED on real hardware."</dd>
     <dt>長時間の安定性は?</dt>
     <dd>apps 版は ESP32-S3 で最長 4 時間 28 分(止まった原因は Wi-Fi ドライバ側)。カーネル版は sim の 620 秒の試験と、SPRESENSE の 120 秒 + 40 回の down/up。日単位はまだ言えない(Q&amp;A)。</dd>
   </dl>
@@ -2636,7 +2638,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <tr><td>4 CPU / 2000 パケット</td><td>SMP の試験</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31</td><td>1 つの筋書きでの並行実行で異常なし</td><td>競合状態が存在しないことの証明</td></tr>
   <tr><td>1472 / 6096 B</td><td>SPRESENSE 受信スレッドのスタック最大使用量 / 確保量(24.1%)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>観測した負荷では余裕があった</td><td>最悪条件でも絶対安全、ESP32-S3 でも同じ</td></tr>
   <tr><td>120 秒 / 40 回 / 375/375</td><td>SPRESENSE の負荷 / down/up / ping の応答</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>その範囲で資源が完全に戻った</td><td>日単位で安定</td></tr>
-  <tr><td>2/8(9/28 は 1/1 PASS)</td><td>PROTECTED の繰り返し試験で例外が起きた回数(分割前の候補でも 1/9)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31</td><td>トンネルは動くが、間欠的な失敗が未解決</td><td>PROTECTED は PASS</td></tr>
+  <tr><td>2/8(9/28 は 1/1 PASS)</td><td>PROTECTED の繰り返し試験で例外が起きた回数(分割前の候補でも 1/9)</td><td><span class="tag kern">カーネル</span><span class="tag qemu">QEMU</span></td><td>31</td><td>原因は <code>wg</code> のスタック不足で、直した後は 20/20(QEMU)</td><td>実機の PROTECTED でも PASS</td></tr>
   <tr><td>4/4・6/6</td><td>Windows クライアントとの実機トンネルの ping(ESP32 内蔵 Wi-Fi / SPRESENSE usrsock)</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span></td><td>31</td><td>両経路で成立した</td><td>あらゆるボードで動く</td></tr>
   <tr><td>7 MB・rekey・電源再投入</td><td>同じ 2 ボードの実績</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span></td><td>31</td><td>apps 版の実績</td><td>カーネル版の実績</td></tr>
   <tr><td>3 回 → 3 つの鍵</td><td>再起動ごとに鍵が違った</td><td><span class="tag kern">カーネル</span><span class="tag hw">実機</span> SPRESENSE</td><td>32</td><td>乱数の経路が正しく選ばれている</td><td>乱数の品質が認証された</td></tr>
