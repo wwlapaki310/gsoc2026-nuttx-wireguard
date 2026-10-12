@@ -34,18 +34,18 @@ SLIDES = [
         "Wi-Fi · real WireGuard peers (Linux kernel, Windows client) · runs in "
         "a kernel build on QEMU (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
         "master / 12.7.0.", []),
-    ("Agenda", "",
-        "The seven parts, each a short title with a keyword line and its "
-        "time: overview & background (~6 min) / the problem and the idea "
-        "(~4) / the plan (~2) / version 1: the app, four hidden bugs (~5) / version 2: the "
-        "kernel driver (~8) / live demo (~3) / summary & status (~4).",
-        []),
-    ('Agenda: ① Overview and Background', "divider", None, []),
     ("About Me", "",
         "Three bands: photo, name line and the fox icon / five hobby photos "
         "(space, semiconductors, DNA nanotech, robots, Linux) with three "
         "activity chips / a one-row path Robotics → Computer Vision → Edge AI "
         "→ Embedded Systems → NuttX / WireGuard, a picture per step.", []),
+    ("Agenda", "",
+        "The seven parts, each a short title with a keyword line and its "
+        "time: overview & background (~5 min) / the problem and the idea "
+        "(~4) / the plan (~2) / version 1: the app, four hidden bugs (~5) / version 2: the "
+        "kernel driver (~8) / live demo (~3) / summary & status (~4).",
+        []),
+    ('Agenda: ① Overview and Background', "divider", None, []),
     ("Project Overview", "",
         "The wg0 netdev picture: application / NSH, the NuttX network stack, "
         "wg0 next to eth0 / wlan0, a UDP socket underneath, the Internet, "
@@ -233,7 +233,7 @@ it runs, the second is what "it runs" does not prove, and the third is the
 one place where I had to decide instead of test. If you split them, the
 story breaks.
 
-**Do not cut slides 4–{arch} either** (About Me to Architecture). What
+**Do not cut slide 2 or slides 4–{arch} either** (About Me, then Overview to Architecture). What
 NuttX is, where it is used, Sony's history with it, how I met it, and why
 that led to WireGuard: everything after that depends on this.
 
