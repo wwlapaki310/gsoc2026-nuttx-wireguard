@@ -1,6 +1,6 @@
 # 想定Q&A — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
-[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、44枚)用の
+[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、2026-10-12 の簡素化版、40枚)用の
 Q&A。**`presentation-script.md` の想定Q&Aは古い `slides.html`(apps版のみ、
 FLATビルド前提)向けで、この版には合わない** — 特に「PROTECTED/KERNELは
 今後の課題」という回答はもう事実と異なる(検証済み)。このデッキで話す/
@@ -77,46 +77,51 @@ crypto/ and a UDP socket — so there is little outside code to follow."
 トンネルの中も外も IPv4 です。IPv6 には対応していません。
 *Say:* "IPv4 only, inside and outside the tunnel. IPv6 is not supported."
 
-**Q. NuttX の UDP は `SO_RCVTIMEO` を実装しているのでは?(スライド22、バグ 1/6)**
-はい、実装しています(`net/udp/udp_recvfrom.c` が `s_rcvtimeo` で待つ)。発表では、これを
-バグ 1/6(detach された pthread)の「最初の症状」として話しています: `recvfrom()` が戻らない
+**Q. NuttX の UDP は `SO_RCVTIMEO` を実装しているのでは?(スライド21の一覧表、バグ 1/6)**
+はい、実装しています(`net/udp/udp_recvfrom.c` が `s_rcvtimeo` で待つ)。バグ 1/6(detach された pthread)は、今は一覧表の1行とノートだけで話していますが、
+これはその「最初の症状」です: `recvfrom()` が戻らない
 のを見てこのオプションのせいだと判断し、`poll()` に替えましたが、それでも何も送られず、
 本当の原因はスレッドが `wg` コマンドと一緒に消えていたことでした。死んだスレッドも
 「`recvfrom()` が戻らない」ように見えます。`SO_RCVTIMEO` を使う古い経路は、その後
 試し直していません。
-*Say:* "Yes, it does. On the slide it is only the first symptom: I blamed the
+*Say:* "Yes, it does. That was only my first guess for bug one: I blamed the
 option, but the real cause was that the thread was gone. I have not re-tested
 the old path since."
 
 ---
 
-## 検証の範囲(スライド31〜33の深掘り。読み上げから移した細部を含む)
+## 検証の範囲(スライド29〜31の深掘り。読み上げから移した細部を含む)
 
-**Q. 「7つの場所で検証した」というが、実機で足りていないものは何か?**
+**Q. 「どこで何が動いたか」(スライド29)で、実機で足りていないものは何か?**
 ESP32-S3 での資源実測(スタック高水位など)と、`esp32s3-devkit:knsh`
 (実シリコン上のPROTECTEDビルド)。今回計測できたのは SPRESENSE
 (Cortex-M4F)側です。資源実測はスクリプト化してありますが、まだ回せていません。
 PROTECTED は試しました: ビルドは通りますが、手元の CoreS3 は bootloader を使う形式の
 イメージを FLAT でも起動せず、UART0 が外に出ていないので起動ログも読めません。
 WireGuard とは関係しない問題で、確かめるには UART0 が出ている DevKitC が要ります。
-ESP32-S3自体でのトンネル動作(ネイティブWi-Fi、4/4成功)は検証済みです。
+ESP32-S3自体でのトンネル動作(ネイティブWi-Fi、4/4成功)は検証済みで、2026-10-12 には
+提出するシリーズそのものを CoreS3 の FLAT ビルドで動かしました(Linux とハンドシェイク、両方向の
+ping、最大 MTU まで。[記録](../../upstream/evidence/esp32s3-pr-latest-2026-10-12.md))。
 *Say:* "ESP32-S3 resource measurement and PROTECTED on that board's real
 silicon. The measurement is scripted but has not run yet. I tried PROTECTED:
 it builds, but my CoreS3 does not boot that kind of image even as FLAT, and it
 has no UART to read the boot log. That is not a WireGuard problem; a DevKitC
-with UART0 is needed. The tunnel itself on ESP32-S3 is verified."
+with UART0 is needed. The tunnel itself on ESP32-S3 is verified, and on
+October twelfth the exact submitted series ran there in a FLAT build."
 
-**Q. PROTECTED のメモリ配置は特別に調整したのか?(スライド31)**
+**Q. PROTECTED のメモリ配置は特別に調整したのか?(スライド29)**
 いいえ、rv-virt の protected 構成の既定のままです。カーネル側の `.text` は 209,832 B、
 ユーザー側は 21,576 B で、それぞれ 256 KB のうちカーネルが約8割、ユーザーコマンドが約8%
-を使っています。8回中2回の例外(ユーザー空間の `nxsem_wait`、タスク `wg`)はメモリ配置では
-なく `wg` のスタック不足が原因で、既定のスタックを大きくして直しました(QEMU で 20/20)。
+を使っています。繰り返し実行での例外(以前のイメージで8回中2回、2026-10-12 のイメージでは10回中7〜9回。
+ユーザー空間の `nxsem_wait`、タスク `wg`)はメモリ配置ではなく `wg` のスタック不足が原因で
+(システムコールが呼び出し側のスタックで動き、ioctl 経路の X25519 と割り込みフレームで約4.3KB > 4096。
+[記録](../../upstream/evidence/protected-fault-2026-10-12.md))、既定のスタックを大きくして直しました(QEMU で 20/20)。
 *Say:* "No, it is the stock protected config: the kernel uses about eighty percent of
-its part, the user command about eight percent of the other. The two-in-eight fault
+its part, the user command about eight percent of the other. The intermittent fault
 was not the memory layout: the wg stack was too small. It is fixed, twenty out of
 twenty in QEMU."
 
-**Q. usrsock の上で、送信が詰まっている最中に制御コマンドが来たらどうなるのか?(スライド31)**
+**Q. usrsock の上で、送信が詰まっている最中に制御コマンドが来たらどうなるのか?(スライド29)**
 SPRESENSE で実際に強制しました: 実際の usrsock 側でパケットが1つ止まっている間に制御
 コマンドを送ると、問い合わせには答えが返り、ピアの更新は受け付けられ、停止コマンドは
 ハングせずにタイムアウトを報告し、止まっているパケットには手を付けず、2回目の down で
@@ -127,7 +132,7 @@ reported a timeout instead of hanging, and a second down cleaned up the stuck pa
 Not covered yet: running out of IOBs on hardware, Wi-Fi loss mid-send, long heavy
 traffic."
 
-**Q. 鍵のゼロ化は、どうやってメモリを読んだのか?(スライド32、sim)**
+**Q. 鍵のゼロ化は、どうやってメモリを読んだのか?(スライド30、sim)**
 シミュレータで、動いているプロセスの中から、設定した鍵に一致するものを探して
 デバイスを見つけ、ドライバ自身のヘッダーから取ったオフセットで、秘密のフィールドを
 名前で1つずつ確認しました。ハンドシェイクの材料は普通は鍵ができた直後に消えるので、
@@ -156,7 +161,7 @@ there's no wait branch to exercise. That's 'not reachable,' which is a
 better answer than 'untested.'"
 
 **Q. #14(タイムスタンプ/リプレイ)はなぜまだ open なのか、証拠が
-足りないのでは?(スライド33)**
+足りないのでは?(スライド31)**
 証拠が足りないからではなく、判断として open にしています。永続化した
 範囲予約という「本来の」解決策は設計済みですが、実装していません
 — 「この書き込みは電源断を越えて残る」という保証を、手元のファイルシステムで
@@ -176,7 +181,7 @@ hardware with a controlled pair — clock unset, no handshake in 75 seconds;
 clock set, 4.1 seconds."
 
 **Q. 時計が未設定と分かっているのに、なぜタイムスタンプを送るのか?
-シミュレータの「75秒」とは何か?(スライド33)**
+シミュレータの「75秒」とは何か?(スライド31)**
 この鍵に初めて会うピアはそのタイムスタンプを受け入れるので、送るのをやめると、
 まさに時計のないボードで最初のペアリングが壊れます。だから送り続け、警告を1回だけ
 出します。シミュレータで稼働時間ベースの古いタイムスタンプを使ったときは75秒で
@@ -400,5 +405,5 @@ it needs two small changes in the network core, and the series is on master."
   すべてこの資料で答えられるようにしてある。TZ・TIはどちらも
   もう閉じている(前者は測定、後者は「到達不能」の確認) — 古い
   資料や記憶で「まだ狭い」と言わないこと。
-- 逆にスライドに載っている数字を聞かれたら、スライド31・32・33を
+- 逆にスライドに載っている数字を聞かれたら、スライド29・30・31を
   直接指させばよい(URLハッシュ `#18` などで即座に飛べる)。

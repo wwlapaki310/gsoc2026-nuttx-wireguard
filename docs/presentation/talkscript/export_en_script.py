@@ -42,8 +42,9 @@ SLIDES = [
     ("Agenda", "",
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~5 min) / the problem and the idea "
-        "(~4) / the plan (~2) / version 1: the app, four hidden bugs (~5) / version 2: the "
-        "kernel driver (~8) / live demo (~3) / summary & status (~4).",
+        "(~4) / the plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: "
+        "the kernel driver, a bug in NuttX, testing (~7) / live demo (~3) / summary & "
+        "status, what I learned (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("Project Overview", "",
@@ -114,15 +115,20 @@ SLIDES = [
          "small fixes (PATCHES.md) / OS hooks: four functions "
          "/ network glue: the real work. wg genkey / set / setconf at run "
          "time.", []),
-    ("Where It Was Hard", "",
-         "SIMPLE TEST (handshake / ping, PASS) → ASSUMPTION (\"that part "
-         "must be fine\") → DEEPER TEST (TCP / real hardware / kernel / "
-         "security, FAIL).", []),
-    ("Bug 1/6: The Detached pthread (First Symptom: recvfrom Never Returned)", "", None, []),
+    ("Where It Was Hard: Six Bugs", "",
+         "One table of all six bugs (bug / showed up in / lesson): 1 the "
+         "receive thread stopped with the wg command / 2 ping works, TCP dies "
+         "(in detail) / 3 \"no real impact\" was 10× (in detail) / 4 stack 94% "
+         "full, saving the config froze the board, real boards only / 5 "
+         "NuttX's own ChaCha20-Poly1305 (part 5) / 6 a 6 KB array on a 3 KB "
+         "kernel stack (part 5). The GitHub line with a QR code. Takeaway: "
+         "most hid behind a test that passed.",
+         ["**Bugs 1 and 4 have no slide of their own any more.** Their story "
+          "is in the notes above; the full version (and bug 1's "
+          "`SO_RCVTIMEO` detour) is in the Q&A file."]),
     ("Bug 2/6: ping Works, TCP Dies", "my favorite", None, []),
-    ("Bug 3/6: \"No Real Impact\" Was 10×", "", None, []),
-    ("Bug 4/6: sim Passes, Real Hardware Is Different", "", None, []),
-    ("Version 1 Demo: The First Video", "",
+    ("Bug 3/6: \"No Real Impact\" Was 10×", "cut candidate 3", None, []),
+    ("Version 1 Demo: The First Video", "cut candidate 2",
          "Left: a still frame of the video (the Windows WireGuard client "
          "beside a telnet session into NuttX on the ESP32-S3). Right: the "
          "steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / "
@@ -134,26 +140,44 @@ SLIDES = [
           "**It is the apps version.** Do not mix it with the "
           "kernel-version results later in the talk."]),
     ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
-    ("Part 5: Into the Kernel", "", None, []),
-    ("The Kernel Design", "", None, []),
-    ("Bugs 5 & 6/6: Same Shape, One Level Deeper", "locked with the kernel design", None, []),
-    ("Testing: Seven Places It Must Work", "core — do not cut",
-         "Table (where / version / what I checked): sim / rv-virt knetnsh64 (BUILD_KERNEL, QEMU) / rv-virt pnsh64 "
-         "(BUILD_PROTECTED, QEMU) / rv-virt knetnsh64_smp (4 CPUs, QEMU) / SPRESENSE "
-         "measured (FLAT) / ESP32-S3 + SPRESENSE over real Wi-Fi (FLAT; both "
-         "board rows before the final rebase) / Version 1 (app), v0.1.1 on "
-         "both boards.", []),
-    ("Testing: A Working Tunnel Does Not Prove Enough", "core — do not cut",
-         "Three rows (same private key every boot / session keys that "
-         "outlive the tunnel / a leak that shows after hours), each with "
-         '"would ping notice?" → no, and where it was measured '
-         "(SPRESENSE / sim / sim).", []),
+    ("Why the Kernel: From App to Driver", "",
+         "Two panels: Version 1, an app (in apps/, uses kernel internals, "
+         "FLAT only, never an in-tree driver) / Version 2, a kernel driver "
+         "(drivers/net/wireguard, set up by a small wg command through ioctl, "
+         "made for FLAT, PROTECTED and KERNEL). One line on the three build "
+         "modes.", []),
+    ("The Kernel Design: The Big Picture", "",
+         "A picture: user space holds only the wg command; an ioctl (one flat "
+         "struct, no pointers; the private key is write-only) crosses the "
+         "user/kernel boundary to wg0 in the kernel, which owns its UDP socket "
+         "and RX thread, keeps timers / peers / cookies and uses NuttX crypto, "
+         "between the NuttX network stack and the encrypted UDP to the peer.",
+         []),
+    ("Bugs 5 & 6/6: Two More Bugs, One in NuttX Itself", "locked with the kernel design",
+         "Two panels: NuttX's own chacha20poly1305 nonce bug (handshake works, "
+         "data after the first packet fails; two-line crypto: fix) / a "
+         "BUILD_KERNEL-only crash (6 KB array on a 3 KB kernel stack, moved to "
+         "the heap). One line: SPRESENSE did not boot with CONFIG_RTC_HIRES on "
+         "13.0.1 / master; fixed locally, report drafted, not sent.", []),
+    ("Testing: What Ran Where", "core — do not cut",
+         "Three cards. FLAT on real boards: ESP32-S3 2026-10-12 with the exact "
+         "submitted series (handshake with Linux, ping both ways up to the "
+         "full MTU) / an earlier driver build on ESP32-S3 + SPRESENSE to the "
+         "Windows client / SPRESENSE memory after 40 down/up. KERNEL on QEMU: "
+         "tunnel to Linux, 4-CPU stress, one scripted run. PROTECTED on QEMU: "
+         "tunnel works, the wg stack overflow found and fixed (20/20). Then "
+         '"Not shown yet: PROTECTED or KERNEL on real hardware" and the GitHub '
+         "line with a QR code.", []),
+    ("Testing: What Ping Misses", "core — do not cut",
+         "Three cards: same key on every boot? (SPRESENSE, 3 resets, 3 keys) "
+         "/ keys left after down? (sim, all zero) / a leak after hours? (sim, "
+         "151 rekeys, 100 down/up, nothing lost).", []),
     ("A Design Choice: The Timestamp Problem Has No Easy Answer",
          "core — do not cut",
-         "What replay protection obliges, the four options (real-time clock "
-         "+ in-boot high-water mark / persist every time / durable range "
-         "reservation / wait to catch up), and the measured pair: clock "
-         "unset → no handshake in a 75 s watch, clock set → 4.1 s.", []),
+         "The rule (a newer timestamp, even after a reboot), Chosen (real-time "
+         "clock + the highest value this boot, plus a warning) / Not chosen "
+         "(save every time, reserve a range in flash, wait), and the measured "
+         "pair: clock unset → no handshake in 75 s, clock set → 4.1 s.", []),
     ('Agenda: ⑥ Live Demo', "divider", None, []),
     ("Demo Setup: One Tunnel on a Phone's Network", "",
          "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
@@ -186,20 +210,28 @@ SLIDES = [
           "**Fallback:** the recording. Switch at once if the live demo "
           "stalls."]),
     ('Agenda: ⑦ Summary and Status', "divider", None, []),
-    ("Running It for Real", "cut candidate 3", None, []),
-    ("Other CPUs", "cut candidate 2", None, []),
     ("Giving Back: Where It Stands", "cut first", None,
          ['**If asked "is it merged?":** not yet. These are submission '
           "candidates, not a claim that it is mergeable. See the Q&A file.",
           "**If time is short:** skip the whole slide. The talk's argument "
           "(the pattern, the verification) does not rest on it; just keep "
           "the answer above ready for questions."]),
-    ("Summary: What I Built, and Three Things to Remember", "", None, []),
+    ("What I Learned", "",
+         "Three cards: from application user to OS contributor / AI helped me "
+         "code, but understanding was my job (highlighted) / a welcoming "
+         "open-source community (docs and guides, review, Assisted-by and no "
+         "AI Signed-off-by, CI and hackathons). Bottom line: the hope to keep "
+         "contributing.",
+         ["**Say the AI part plainly.** Not as a confession and not as a "
+          "boast: it was faster, and understanding was still hard and still "
+          "mine."]),
+    ("Summary: What I Built, and Three Technical Lessons", "", None, []),
     ("Thanks: The People Behind This Talk", "",
          "Four boxes: Alan / the Apache NuttX community / the Apache "
          "Software Foundation and the CoC organizers and volunteers / "
          "Sony's NuttX developers, past and present.", []),
-    ("Thank You", "", None,
+    ("Thank You", "", "The GitHub repository with a QR code, the demo video "
+         "link, questions welcome.",
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "
           "exhaustion, checkpatch) are answered there and on no slide."]),
@@ -219,30 +251,33 @@ script again, or the two will stop matching. The Japanese
 
 **Total: about {total}, including a 90-second demo.** The times add up
 from the start ("you should be at about this point"), at {wpm} words per
-minute. This is longer than a 30-minute slot, so practice to finish the
-main talk in 27–28 minutes, and keep the cut list below ready.
+minute. This is just over a 30-minute slot, so practice to finish the
+main talk in about 28 minutes, and keep the cut list below ready.
 
 **The most important part is slides {core_range}** (testing). Together they take
 {core} of the talk, and they hold the claims that a reviewer will really
-check. Their narration was already trimmed (2026-10-11): process detail
-such as the memory map, the usrsock steps and the hostfs detail moved to
-the Q&A file. Do not cut their claims or their caveats (FLAT / QEMU / sim,
-pre-rebase, PROTECTED 2 of 8 fixed (wg stack, QEMU only), one scripted 4-CPU run, the 75 s
-watch) any further. Cut before them or after them. They are one story: the first is where
-it runs, the second is what "it runs" does not prove, and the third is the
-one place where I had to decide instead of test. If you split them, the
-story breaks.
+check. Their slides and narration were made shorter on 2026-10-12 (the
+detail is in the Q&A file and on GitHub). Do not cut their claims or their
+caveats (FLAT on boards / KERNEL and PROTECTED on QEMU only / sim, the
+earlier board runs vs. the 2026-10-12 ESP32-S3 run of the exact series,
+the PROTECTED wg stack fault and its fix, one scripted 4-CPU run, nothing
+shown on hardware for PROTECTED, the 75 s watch) any further. Cut before
+them or after them. They are one story: the first is where it runs, the
+second is what "it runs" does not prove, and the third is the one place
+where I had to decide instead of test. If you split them, the story breaks.
 
 **Do not cut slide 2 or slides 4–{arch} either** (About Me, then Overview to Architecture). What
 NuttX is, where it is used, Sony's history with it, how I met it, and why
-that led to WireGuard: everything after that depends on this.
+that led to WireGuard: everything after that depends on this. Keep slide
+{learned} (What I learned) too: it is the speaker's own message.
 
 **If time is short, cut in this order:**
 1. Slide {cut1} (Giving Back). It helps the talk, but the talk does not
    depend on it. If you cut it, answer it in Q&A if someone asks.
-2. Slide {cut2} (Other CPUs, the portability table). It adds support, but it is
-   not the main story.
-3. Slide {cut3} (Running It for Real).
+2. Slide {cut2} (the version 1 video still). The live demo shows the same
+   kind of thing.
+3. Slide {cut3} (Bug 3/6, the 50 ms polling). Its one-line lesson is
+   already in the bug table.
 
 If the live demo stops, switch to the recording right away. **The agenda
 slides ({dividers}) are a ten-second pause each**: point
@@ -308,6 +343,7 @@ def main():
         cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
         cut3=find(lambda sl: sl[1] == "cut candidate 3")[0],
         dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),
+        learned=find(lambda sl: sl[0] == "What I Learned")[0],
         stars=find(lambda sl: sl[0].startswith("Where NuttX Fits"))[0])]
 
     for i, paras in enumerate(all_notes, 1):

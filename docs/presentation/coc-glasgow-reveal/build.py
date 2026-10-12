@@ -63,6 +63,7 @@ CLOSING = """\
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
+  <img src="../assets/github-qr.png" alt="QR code for the GitHub repository" style="position:absolute;right:84px;top:64px;width:170px;height:170px;z-index:2;border-radius:6px">
   <img class="skyline" src="img/front.png" alt="">
 </div>"""
 
