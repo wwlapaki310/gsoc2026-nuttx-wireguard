@@ -121,9 +121,9 @@ them again on the day, or keep the date on the slide.
 
 **Check before the talk:** the star counts move. Re-check them on the day, or leave the date on the slide as it is.
 
-## 9 — History: NuttX at Sony (5:42 → 7:06)
+## 9 — Sony's History with NuttX (5:42 → 7:06)
 
-**On slide:** Timeline: 2015 Sony audio products / 2018–19 SPRESENSE, CXD56xx (OSS + ELC Europe 2019) / 2020 upstream collaboration (NuttX Online Workshop, "A Journey from Fork to Mainline") / 2020s sensing and edge devices.
+**On slide:** Timeline: 2013–15 early adoption in audio products / 2016–17 commercial products / 2018 Xperia Ear Duo and SPRESENSE / 2019–20 upstream collaboration / 2020s expanded edge-sensing capabilities.
 
 **Say:**
 - This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.

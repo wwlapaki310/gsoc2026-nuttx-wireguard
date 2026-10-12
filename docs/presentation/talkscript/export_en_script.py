@@ -70,11 +70,10 @@ SLIDES = [
         "PX4, Xiaomi OpenVela 1000+ SKUs, Japan's 2024 lunar mission.",
         ["**Check before the talk:** the star counts move. Re-check them on "
          "the day, or leave the date on the slide as it is."]),
-    ("History: NuttX at Sony", "",
-        "Timeline: 2015 Sony audio products / 2018–19 SPRESENSE, CXD56xx "
-        "(OSS + ELC Europe 2019) / 2020 upstream collaboration (NuttX Online "
-        'Workshop, "A Journey from Fork to Mainline") / 2020s sensing and '
-        "edge devices.", []),
+    ("Sony's History with NuttX", "",
+        "Timeline: 2013–15 early adoption in audio products / 2016–17 "
+        "commercial products / 2018 Xperia Ear Duo and SPRESENSE / 2019–20 "
+        "upstream collaboration / 2020s expanded edge-sensing capabilities.", []),
     ("Experience: SPRESENSE and AITRIOS", "",
         "Photos of SPRESENSE and the AITRIOS edge AI camera; the flow "
         '"application development → system integration → deployment & '
