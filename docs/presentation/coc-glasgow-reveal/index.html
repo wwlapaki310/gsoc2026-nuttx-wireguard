@@ -22,6 +22,7 @@
     --line: #d5dde2;
     --line-2: #e8edf0;
     --wg: #8d1f24;
+    --heading-rule: #df3b45;
     --wg-soft: #f5e4e5;
     --nx: #176c67;
     --nx-soft: #dff0ee;
@@ -52,7 +53,9 @@
     letter-spacing: .12em;}
   .reveal .frame .num .part { margin-right: 16px; color: var(--wg); font-weight: 600;}
   .reveal .frame .eyebrow {
-    margin: 0 0 10px;
+    position: relative;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
     color: var(--wg);
     font-family: var(--mono);
     font-size: 38px;
@@ -60,6 +63,15 @@
     line-height: 1.05;
     letter-spacing: .015em;
     text-transform: uppercase;}
+  .reveal .frame .slide:not(.title-slide) > .eyebrow::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 112px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--heading-rule);}
   .reveal .frame h1,
   .reveal .frame h2,
   .reveal .frame h3,

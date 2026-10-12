@@ -17,6 +17,7 @@
     --line: #d5dde2;
     --line-2: #e8edf0;
     --wg: #8d1f24;
+    --heading-rule: #df3b45;
     --wg-soft: #f5e4e5;
     --nx: #176c67;
     --nx-soft: #dff0ee;
@@ -103,7 +104,9 @@
   .num .part { margin-right: 16px; color: var(--wg); font-weight: 600; }
 
   .eyebrow {
-    margin: 0 0 10px;
+    position: relative;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
     color: var(--wg);
     font-family: var(--mono);
     font-size: 38px;
@@ -112,8 +115,19 @@
     letter-spacing: .015em;
     text-transform: uppercase;
   }
+  .slide:not(.title-slide) > .eyebrow::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 112px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--heading-rule);
+  }
   .title-slide .eyebrow {
     margin: 0 0 14px;
+    padding-bottom: 0;
     font-size: 13px;
     font-weight: 500;
     letter-spacing: .18em;
