@@ -96,7 +96,7 @@ cd nuttx
 ./tools/configure.sh -a ../apps spresense:wifi >/dev/null
 
 for o in ALLOW_BSD_COMPONENTS DEV_URANDOM CRYPTO CRYPTO_RANDOM_POOL \
-         CRYPTO_CURVE25519 NET_WIREGUARD SYSTEM_WG \
+         CRYPTO_CURVE25519 NET_WIREGUARD SYSTEM_WG SYSTEM_NTPC \
          FS_ROMFS ETC_ROMFS BOARDCTL_ROMDISK; do
   kconfig-tweak --enable "CONFIG_$o"
 done
@@ -110,6 +110,12 @@ kconfig-tweak --enable  CONFIG_WIFI_BOARD_IS110B_HARDWARE_VERSION_10C
 kconfig-tweak --disable CONFIG_WL_GS2200M_DISABLE_DHCPC
 kconfig-tweak --enable  CONFIG_DEBUG_FEATURES
 kconfig-tweak --enable  CONFIG_DEBUG_WIRELESS_ERROR
+# The GS2200M/usrsock path does not reliably provide DNS to NuttX's resolver.
+# Use a numeric public NTP endpoint so CLOCK_REALTIME is valid before wg up;
+# one sample is sufficient to prevent WireGuard TAI64N rollback rejection.
+kconfig-tweak --set-str CONFIG_NETUTILS_NTPCLIENT_SERVER "216.239.35.12"
+kconfig-tweak --set-val CONFIG_NETUTILS_NTPCLIENT_NUM_SAMPLES 1
+kconfig-tweak --set-val CONFIG_NETUTILS_NTPCLIENT_TIMEOUT_MS 3000
 
 if [ "${measure}" = true ]; then
   # ps grows USED/FILLED columns, and /proc/iobinfo and /proc/meminfo appear.
@@ -123,7 +129,9 @@ fi
 
 make olddefconfig >/dev/null
 
-for required in CONFIG_NET_WIREGUARD=y CONFIG_SYSTEM_WG=y CONFIG_ETC_ROMFS=y; do
+for required in CONFIG_NET_WIREGUARD=y CONFIG_SYSTEM_WG=y \
+                CONFIG_SYSTEM_NTPC=y CONFIG_NETUTILS_NTPCLIENT=y \
+                CONFIG_ETC_ROMFS=y; do
   grep -q "^${required}$" .config ||
     { echo "configuration lost ${required}" >&2; exit 1; }
 done

@@ -53,6 +53,19 @@ gs2200m @WIFI_SSID@ @WIFI_PASS@ &
 sleep 10
 #endif
 
+#ifdef CONFIG_SYSTEM_NTPC
+/* WireGuard initiation timestamps come from CLOCK_REALTIME.  Spresense loses
+ * that clock across reset, so synchronize it after Wi-Fi/DHCP is available
+ * and before bringing wg0 up.  ntpcstart runs in the background; allow one
+ * NTP request/response window before the first handshake attempt.
+ */
+
+echo "rcS: starting NTP clock synchronization"
+ntpcstart
+sleep 10
+date
+#endif
+
 #ifdef CONFIG_SYSTEM_WG
 /* Keep this at most two levels deep: NSH stops the whole script with
  * "if: nesting too deep" past CONFIG_NSH_NESTDEPTH (3 by default), which
