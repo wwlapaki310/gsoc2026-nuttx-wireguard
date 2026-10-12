@@ -882,8 +882,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item">
@@ -934,8 +933,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item current">
@@ -985,8 +983,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Overview: the project in one slide</p>
-    <h2>This project adds WireGuard to NuttX as a network device.</h2>
+    <h2>Project Overview</h2>
     <div class="body" style="gap:16px">
       <svg class="route" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
         <defs>
@@ -1061,47 +1058,40 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Background: the OS behind this work</p>
-    <h2>What is Apache NuttX?</h2>
-    <div class="body" style="gap:18px">
-      <svg viewBox="0 0 760 250" role="img" aria-label="NuttX software stack: applications, POSIX and BSD APIs, networking/VFS/drivers, the NuttX kernel, and the MCU or MPU underneath" style="width:640px;height:auto;margin:0 auto;display:block;">
-        <rect x="0" y="0" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
-        <text x="380" y="25" text-anchor="middle" font-size="17" font-weight="700">Applications</text>
-        <rect x="0" y="48" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
-        <text x="380" y="73" text-anchor="middle" font-size="17" font-weight="700">POSIX / ANSI &amp; BSD socket APIs</text>
-        <rect x="0" y="96" width="760" height="40" fill="#fff" stroke="#d5dde2"></rect>
-        <text x="380" y="121" text-anchor="middle" font-size="17" font-weight="700">Networking &middot; VFS &amp; filesystems &middot; device drivers &middot; NSH shell</text>
-        <rect x="0" y="144" width="760" height="46" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
-        <text x="380" y="172" text-anchor="middle" font-size="18" font-weight="800" fill="#8d1f24">NuttX kernel</text>
-        <rect x="0" y="198" width="760" height="40" fill="#f5f7f8" stroke="#d5dde2"></rect>
-        <text x="380" y="223" text-anchor="middle" font-size="16" fill="#5c6c78">MCU / MPU &mdash; 8 to 64 bit</text>
-      </svg>
-      <div class="tags" style="justify-content:center">
-        <span class="tag">RTOS</span>
-        <span class="tag">POSIX APIs</span>
-        <span class="tag">BSD sockets</span>
-        <span class="tag">Filesystem / VFS</span>
-        <span class="tag">NSH shell</span>
-        <span class="tag">Built-in networking</span>
-        <span class="tag">Device drivers</span>
-        <span class="tag">Apache top-level project</span>
+    <h2>Background: What is Apache NuttX?</h2>
+    <div class="body" style="gap:24px;justify-content:center">
+      <div class="two" style="grid-template-columns:360px 1fr;align-items:center;gap:56px">
+        <div style="text-align:center">
+          <img src="../assets/apache-nuttx-logo.png" alt="Apache NuttX" style="width:240px;height:240px;object-fit:contain">
+          <p style="margin:10px 0 0;font-size:30px;font-weight:800">Apache NuttX</p>
+        </div>
+        <ul class="big">
+          <li>Built for microcontrollers
+            <span>A small RTOS that keeps time-critical tasks predictable.</span>
+          </li>
+          <li>Familiar Unix interfaces
+            <span>Applications use POSIX APIs, BSD sockets, files, and the NSH shell.</span>
+          </li>
+          <li>Open source at Apache
+            <span>Developed in the open as an Apache top-level project.</span>
+          </li>
+        </ul>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>NuttX lets you program small embedded devices the Unix way: POSIX APIs, BSD sockets, files, and devices.</p></div>
+      <p class="lead" style="max-width:none;text-align:center;margin:4px 0 0"><strong>Small device. Familiar Unix interfaces.</strong></p>
     </div>
     <div class="num"><span class="part">PART 1 &middot; 3/6</span>7 / 40</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>First, what is NuttX?</p>
-      <p>NuttX is a real-time operating system that puts standards first. It follows the POSIX and ANSI APIs, it uses BSD sockets for networking, and it has a real file system, a shell called NSH (the NuttShell), built-in networking and device drivers. All of this is made small enough to run on microcontrollers, from 8-bit to 64-bit. It is also a top-level project of the Apache Software Foundation, and its community develops it in the open.</p>
-      <p>The one point I want you to remember: NuttX is a small RTOS, but you program it like Unix. That is rare. And that is why almost everything later in this talk &mdash; sockets, network devices, a POSIX-style port &mdash; is possible at all.</p>
+      <p>NuttX is a real-time operating system for small embedded devices. It keeps time-critical tasks predictable, but it feels familiar to a Unix programmer: applications use POSIX APIs, BSD sockets, files, and a shell called NSH. It is also an Apache top-level project, developed in the open.</p>
+      <p>The one point I want you to remember is simple: small device, familiar Unix interfaces. That is why sockets and network devices fit naturally into the rest of this talk.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Background: NuttX and other RTOSes</p>
-    <h2>Where NuttX fits &mdash; and where it is used.</h2>
+    <h2>Background: Comparison with Other RTOSes</h2>
     <div class="body">
       <div class="two">
         <div>
@@ -1140,36 +1130,47 @@
     <div class="body" style="gap:10px">
       <div class="timeline-v">
         <div class="tlv-item">
-          <div class="tlv-year">2015</div>
+          <div class="tlv-year">2013&ndash;15</div>
           <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Sony audio products</h3><p>NuttX inside Sony audio products.</p></div>
+          <div class="tlv-body"><h3>Early adoption</h3><p>Ported NuttX to LC823425 / LC823450; first commercial audio products shipped in 2015.</p></div>
         </div>
         <div class="tlv-item">
-          <div class="tlv-year">2018&ndash;19</div>
+          <div class="tlv-year">2016&ndash;17</div>
           <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>SPRESENSE / CXD56xx</h3><p>Audio, GNSS, camera and multi-core support added to NuttX; shown at Open Source Summit + ELC Europe 2019.</p></div>
+          <div class="tlv-body"><h3>Commercial products</h3><p>Walkman NW-WS620, SMR-10, ICD-TX800 and ICD-PX470 used NuttX.</p></div>
         </div>
         <div class="tlv-item">
-          <div class="tlv-year">2020</div>
+          <div class="tlv-year">2018</div>
           <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Upstream collaboration</h3><p>Sony engineers become major NuttX contributors: &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020.</p></div>
+          <div class="tlv-body"><h3>Xperia Ear Duo &amp; SPRESENSE</h3><p>Xperia Ear Duo shipped with CXD5602 / NuttX; SPRESENSE launched as a multicore development board.</p></div>
+        </div>
+        <div class="tlv-item">
+          <div class="tlv-year">2019&ndash;20</div>
+          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+          <div class="tlv-body"><h3>Upstream collaboration</h3><p>Sony engineers upstreamed CXD56xx platform support and drivers, and shared the work in public NuttX talks.</p></div>
         </div>
         <div class="tlv-item">
           <div class="tlv-year">2020s</div>
           <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Sensing &amp; edge devices</h3><p>More camera, GNSS and sensing products.</p></div>
+          <div class="tlv-body"><h3>Edge sensing</h3><p>Expanded camera, GNSS, connectivity and edge-sensing capabilities.</p></div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Sony used NuttX long before edge AI. Years of audio products and SPRESENSE led to sensing and camera systems.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p></div>
     </div>
-    <div class="sources">Sources: M. Ishikawa (Sony), &ldquo;NuttX for Embedded Linux Developers,&rdquo; OSS+ELC Europe 2019 &middot; A. Jerpelea (Sony), &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020 &middot; nuttx.apache.org/docs (CXD56xx)</div>
+    <div class="sources">Sources: M. Ishikawa, Sony NuttX talks (2018&ndash;19) &middot; Sony, &ldquo;Running NuttX on Spresense&rdquo; (2019) &middot; A. Jerpelea (2020) &middot; Apache NuttX CXD56xx docs</div>
     <div class="num"><span class="part">PART 1 &middot; 5/6</span>9 / 40</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.</p>
-      <p>Sony has sold audio products running NuttX since around 2015. A few years later, SPRESENSE and its CXD56xx chip added audio, GNSS (satellite positioning), camera and multi-core support to NuttX. In 2019, Masayuki Ishikawa from Sony presented this work at Open Source Summit and Embedded Linux Conference Europe. After that, Sony engineers became major upstream contributors. One of them, Alin Jerpelea, later chaired the NuttX project management committee. His 2020 talk was called &ldquo;A Journey from Fork to Mainline.&rdquo;</p>
-      <p>I am not saying that one engineer made Sony choose NuttX. I have no source for that, so I will not say it. What public talks and documents do show is simpler: Sony used NuttX for many years before edge AI, and over time it spread into camera, GNSS and sensing work. My own work builds on that.</p>
+      <p>The public record starts in 2013, when Sony engineers began porting NuttX to the LC823425 audio processor. Bluetooth and LC823450 followed in 2014, and the first commercial audio products shipped in 2015. Public examples include the Walkman NW-WS620, the SMR-10 personal sound amplifier, and the ICD-TX800 and ICD-PX470 voice recorders.</p>
+      <p>In 2018, Xperia Ear Duo shipped with Sony's CXD5602 and NuttX, while SPRESENSE made the same multicore platform available as a development board with GNSS, audio and camera support. In 2019 and 2020, Sony engineers documented the work and moved substantial CXD56xx platform and driver support upstream. In the 2020s, the platform's capabilities continued to expand across camera, GNSS, connectivity and edge sensing. That last point is about technical capability, not a claim that every feature shipped in a named product.</p>
+      <p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p>
+      <p>[Sources]
+M. Ishikawa and K. Okamoto, &ldquo;SMP and Networking support on NuttX / LC823450,&rdquo; 2018: https://events.nuttx.apache.org/wp-content/uploads/2019/11/MIshikawa_nx2019.pdf
+Sony, &ldquo;Running NuttX on Spresense,&rdquo; NuttX Workshop 2019: https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf
+A. Jerpelea, &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020: https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/
+Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html</p>
     </aside>
   </section>
 
@@ -1211,8 +1212,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1419,8 +1419,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1527,8 +1526,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1710,8 +1708,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -1983,8 +1980,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">
@@ -2129,8 +2125,7 @@
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Agenda</p>
-    <h2>Seven parts, about thirty minutes.</h2>
+    <h2>Agenda</h2>
     <div class="body">
       <div class="agenda">
         <div class="agenda-item dim">

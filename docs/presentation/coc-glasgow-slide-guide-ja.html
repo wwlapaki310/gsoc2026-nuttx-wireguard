@@ -245,10 +245,10 @@
   <tr><td><a href="#s2">2</a></td><td><a href="#s2">About Me</a></td><td>—</td></tr>
   <tr class="agenda"><td><a href="#s3">3</a></td><td><a href="#s3">Agenda(全体の目次)</a></td><td>—</td></tr>
   <tr class="agenda"><td><a href="#s4">4</a></td><td><a href="#s4">Agenda — ①</a></td><td>① Overview</td></tr>
-  <tr><td><a href="#s5">5</a></td><td><a href="#s5">Overview: the project in one slide</a></td><td>① Overview</td></tr>
+  <tr><td><a href="#s5">5</a></td><td><a href="#s5">Project Overview</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s6">6</a></td><td><a href="#s6">How it started</a></td><td>① Overview</td></tr>
-  <tr><td><a href="#s7">7</a></td><td><a href="#s7">Background: the OS behind this work</a></td><td>① Overview</td></tr>
-  <tr><td><a href="#s8">8</a></td><td><a href="#s8">Background: NuttX and other RTOSes</a></td><td>① Overview</td></tr>
+  <tr><td><a href="#s7">7</a></td><td><a href="#s7">Background: What is Apache NuttX?</a></td><td>① Overview</td></tr>
+  <tr><td><a href="#s8">8</a></td><td><a href="#s8">Background: Comparison with Other RTOSes</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s9">9</a></td><td><a href="#s9">History: a long road with NuttX</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s10">10</a></td><td><a href="#s10">Experience: where I come from</a></td><td>① Overview</td></tr>
   <tr class="agenda"><td><a href="#s11">11</a></td><td><a href="#s11">Agenda — ②</a></td><td>② Problem / idea</td></tr>
@@ -512,7 +512,7 @@
 </section>
 
 <section class="slide short" id="s3">
-  <div class="head"><span class="no">3</span><h3>3 — Agenda</h3><span class="en">Seven parts, about thirty minutes.</span></div>
+  <div class="head"><span class="no">3</span><h3>3 — Agenda</h3></div>
   <a class="shot" href="renders/glasgow/slide-03.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-03.png" alt="スライド 4 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-03.png</code> · <a href="coc-glasgow-slides.html#3" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>7 部の一覧。各部に短い題名と、キーワードの 1 行と目安時間。自己紹介(スライド 2)はこの目次の前にある。</p>
@@ -541,7 +541,7 @@
 </section>
 
 <section class="slide" id="s5">
-  <div class="head"><span class="no">5</span><h3>5 — Overview: the project in one slide</h3><span class="en">This project adds WireGuard to NuttX as a network device.</span></div>
+  <div class="head"><span class="no">5</span><h3>5 — Project Overview</h3></div>
   <a class="shot" href="renders/glasgow/slide-05.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-05.png" alt="スライド 5 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-05.png</code> · <a href="coc-glasgow-slides.html#5" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
@@ -639,11 +639,11 @@
 </section>
 
 <section class="slide" id="s7">
-  <div class="head"><span class="no">7</span><h3>7 — Background: the OS behind this work</h3><span class="en">What is Apache NuttX?</span></div>
+  <div class="head"><span class="no">7</span><h3>7 — Background: What is Apache NuttX?</h3></div>
   <a class="shot" href="renders/glasgow/slide-07.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-07.png" alt="スライド 7 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-07.png</code> · <a href="coc-glasgow-slides.html#7" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>層の図(Applications → POSIX / ANSI &amp; BSD socket APIs → Networking・VFS &amp; filesystems・device drivers・NSH shell → NuttX kernel → MCU / MPU、8〜64 bit)と、特徴の札(RTOS、POSIX APIs、BSD sockets、Filesystem / VFS、NSH shell、Built-in networking、Device drivers、Apache top-level project)。</p>
+  <p>左に Apache NuttX のロゴ。右に、覚えてほしい特徴を3点だけ示す。Built for microcontrollers、Familiar Unix interfaces、Open source at Apache。下に「Small device. Familiar Unix interfaces.」という結論。</p>
   <h4>② 背景知識</h4>
   <h5>OS は資源の管理者</h5>
   <p>OS は CPU の時間、メモリ、ファイル、ネットワーク、周辺機器を管理し、アプリに「共通の使い方」を提供する。アプリは「Wi-Fi チップのレジスタの何番地に書く」ではなく、「ソケットに送る」と書けばよい。</p>
@@ -673,11 +673,11 @@
   <h4>③ このスライドの主張と根拠</h4>
   <p>主張:NuttX は小さな RTOS だが、Unix のように書ける。だから後半のソケット、ネットワークデバイス、POSIX 流の移植が成り立つ。根拠は NuttX 公式の説明(nuttx.apache.org)。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">NuttX is a small RTOS, but you program it like Unix. That is rare.</blockquote>
-  <p class="gloss">NuttX は小さな RTOS ですが、Unix のように書けます。これは珍しいことです。</p>
+  <blockquote class="en">NuttX is a real-time operating system for small embedded devices. But it feels familiar to a Unix programmer.</blockquote>
+  <p class="gloss">NuttX は小さな組み込み機器向けのリアルタイム OS ですが、Unix のプログラマーには馴染みのある使い方ができます。</p>
   <span class="pause">間</span>
-  <blockquote class="en">And that is why almost everything later in this talk — sockets, network devices, a POSIX-style port — is possible at all.</blockquote>
-  <p class="gloss">この後の話のほとんどが成り立つのは、そのおかげです。</p>
+  <blockquote class="en">Small device. Familiar Unix interfaces. That is the one point to remember.</blockquote>
+  <p class="gloss">小さな機器と、馴染みのある Unix のインターフェース。この1点だけ覚えてください。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>Linux を使えばいいのでは?</dt>
@@ -698,7 +698,7 @@
 </section>
 
 <section class="slide" id="s8">
-  <div class="head"><span class="no">8</span><h3>8 — Background: NuttX and other RTOSes</h3><span class="en">Where NuttX fits — and where it is used.</span></div>
+  <div class="head"><span class="no">8</span><h3>8 — Background: Comparison with Other RTOSes</h3></div>
   <a class="shot" href="renders/glasgow/slide-08.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-08.png" alt="スライド 8 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-08.png</code> · <a href="coc-glasgow-slides.html#8" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
@@ -763,12 +763,12 @@
   <a class="shot" href="renders/glasgow/slide-09.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-09.png" alt="スライド 9 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-09.png</code> · <a href="coc-glasgow-slides.html#9" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>4 つの時期:2015 年 ソニーのオーディオ製品に NuttX / 2018〜19 年 SPRESENSE と CXD56xx(オーディオ・GNSS・カメラ・マルチコアの対応が NuttX に入り、Open Source Summit + ELC Europe 2019 で発表)/ 2020 年 本家との協業(ソニーのエンジニアが主要な貢献者に。「A Journey from Fork to Mainline」、NuttX Online Workshop 2020)/ 2020 年代 カメラ・GNSS・センシングへ。下に出典(石川氏・Jerpelea 氏の講演、NuttX 文書)。</p>
+  <p>5 つの時期:2013〜15 年 初期移植と最初の商用オーディオ製品 / 2016〜17 年 Walkman NW-WS620、SMR-10、ICD-TX800、ICD-PX470 / 2018 年 Xperia Ear Duo と SPRESENSE / 2019〜20 年 CXD56xx の upstream 協業 / 2020 年代 カメラ・GNSS・接続・エッジセンシング機能の拡張。製品採用と開発プラットフォームの機能を区別している。</p>
   <h4>② 背景知識</h4>
   <p><b>fork と mainline</b>:オープンソースを会社で使うとき、まず自社用に分岐(fork)して手を入れることが多い。しかし分岐したままだと、本家(mainline)の改良を取り込むたびに苦労する。そこで自社の変更を本家に戻していく(upstream する)。「fork から mainline へ」はこの道のりのこと。このプロジェクトの今の状況はスライド 36。</p>
   <p><b>GNSS</b>:GPS などの衛星測位の総称。<b>マルチコア</b>:1 つのチップに CPU が複数あること。<b>PMC(Project Management Committee)</b>:Apache のプロジェクトを運営する委員会。台本では Alin Jerpelea 氏が後に NuttX の PMC 議長を務めたと述べている。</p>
   <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:ソニーはエッジ AI よりずっと前から NuttX を使っており、オーディオと SPRESENSE の経験がセンシングとカメラにつながった。根拠はスライド下の公開講演と文書。</p>
+  <p>主張:ソニーの NuttX 利用は2013年のオーディオ向け移植から始まり、商用製品、SPRESENSE、長期的なオープンソース協業へ発展した。根拠はスライド下の公開講演とApache NuttX文書。</p>
   <div class="box warn"><p>台本の重要な一文:「ある 1 人のエンジニアがソニーに NuttX を選ばせた」とは<b>言わない</b>。その出典がないから。公開資料が示すのは「長年使ってきた」ことだけ。</p></div>
   <h4>④ 話すときのポイント</h4>
   <blockquote class="en">This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.</blockquote>
