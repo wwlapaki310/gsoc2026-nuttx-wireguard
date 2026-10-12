@@ -223,7 +223,7 @@
     <li><a href="#part1">全体像 — 5 分でわかるこのプロジェクト</a></li>
     <li><a href="#part2">スライド別解説</a>(下の番号表から各スライドへ飛べる)
       <div class="sub">
-        <a href="#ch1">①Overview &amp; background(3〜10)</a> ·
+        <a href="#ch1">①Overview &amp; background(4〜10)</a> ·
         <a href="#ch2">②The problem and the idea(11〜15)</a> ·
         <a href="#ch3">③The plan(16〜18)</a> ·
         <a href="#ch4">④Version 1: the app(19〜26)</a> ·
@@ -242,9 +242,9 @@
 <div class="tbl"><table class="slidetoc">
   <tr><th>No.</th><th>スライドの見出し(画面のとおり)</th><th>部</th></tr>
   <tr><td><a href="#s1">1</a></td><td><a href="#s1">WireGuard for Apache NuttX(タイトル)</a></td><td>—</td></tr>
-  <tr class="agenda"><td><a href="#s2">2</a></td><td><a href="#s2">Agenda(全体の目次)</a></td><td>—</td></tr>
-  <tr class="agenda"><td><a href="#s3">3</a></td><td><a href="#s3">Agenda — ①</a></td><td>① Overview</td></tr>
-  <tr><td><a href="#s4">4</a></td><td><a href="#s4">About Me</a></td><td>① Overview</td></tr>
+  <tr class="agenda"><td><a href="#s3">2</a></td><td><a href="#s3">Agenda(全体の目次)</a></td><td>—</td></tr>
+  <tr class="agenda"><td><a href="#s4">3</a></td><td><a href="#s4">Agenda — ①</a></td><td>① Overview</td></tr>
+  <tr><td><a href="#s2">4</a></td><td><a href="#s2">About Me</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s5">5</a></td><td><a href="#s5">Overview: the project in one slide</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s6">6</a></td><td><a href="#s6">How it started</a></td><td>① Overview</td></tr>
   <tr><td><a href="#s7">7</a></td><td><a href="#s7">Background: the OS behind this work</a></td><td>① Overview</td></tr>
@@ -261,7 +261,7 @@
   <tr><td><a href="#s18">18</a></td><td><a href="#s18">Design: one virtual network card</a></td><td>③ Plan</td></tr>
   <tr class="agenda"><td><a href="#s19">19</a></td><td><a href="#s19">Agenda — ④</a></td><td>④ Version 1</td></tr>
   <tr><td><a href="#s20">20</a></td><td><a href="#s20">Result: the first working tunnel</a></td><td>④ Version 1</td></tr>
-  <tr><td><a href="#s21">21</a></td><td><a href="#s21">The Testing Pattern</a></td><td>④ Version 1</td></tr>
+  <tr><td><a href="#s21">21</a></td><td><a href="#s21">Where it was hard — The tunnel worked fast. The bugs took the time.</a></td><td>④ Version 1</td></tr>
   <tr><td><a href="#s22">22</a></td><td><a href="#s22">Bug 1 / 6 — Created successfully. Did not survive</a></td><td>④ Version 1</td></tr>
   <tr><td><a href="#s23">23</a></td><td><a href="#s23">Bug 2 / 6 · my favorite — ping works. TCP dies</a></td><td>④ Version 1</td></tr>
   <tr><td><a href="#s24">24</a></td><td><a href="#s24">Bug 3 / 6 — “No real impact” was 10×</a></td><td>④ Version 1</td></tr>
@@ -372,7 +372,7 @@
 </table></div>
 
 <h3>1.5 発表の構成と時間配分</h3>
-<p>スライド 2 の目次は「7 部・約 30 分」。各部の目安(6 / 4 / 2 / 5 / 8 / 3 / 4 分)を足すと 32 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 33 分 15 秒</b>になる。試験の 3 枚(31〜33)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> に移してある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分。</p>
+<p>スライド 1 はタイトル、スライド 2 は自己紹介、スライド 3 が目次「7 部・約 30 分」。各部の目安(5 / 4 / 2 / 5 / 8 / 3 / 4 分)を足すと 31 分、台本の時刻を足すと<b>デモ 90 秒を含めて約 33 分 06 秒</b>になる。試験の 3 枚(31〜33)の読み上げは短くしてあり、細部は <a href="talkscript/coc-glasgow-qa.md">Q&amp;A</a> に移してある。物語は「バージョン 1 = アプリ(④)」と「バージョン 2 = カーネルドライバ(⑤)」の 2 段。下の図は台本の累積時刻から計算した実際の配分(①は区切りのスライド 4 から)。</p>
 <figure>
   <svg viewBox="0 0 960 310" role="img" aria-label="7 部の時間配分。⑤ カーネルドライバと試験が約 8 分で最も長い">
     <g font-size="14">
@@ -387,34 +387,34 @@
       <line class="grid" x1="788" y1="20" x2="788" y2="270"/>
       <text x="788" y="290" text-anchor="middle" class="t3" font-size="12">12 分</text>
       <text x="210" y="40" text-anchor="end">① Overview &amp; background</text>
-      <path class="bar" d="M220 28 h300 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-300 z" data-tip="① Overview &amp; background: 約 6.4 分(スライド 3〜10、1:22→7:47)"/>
-      <text x="536" y="43" class="t2" font-size="13">約 6 分</text>
+      <path class="bar" d="M220 28 h260 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-260 z" data-tip="① Overview &amp; background: 約 5.6 分(スライド 4〜10、2:11→7:46)"/>
+      <text x="496" y="43" class="t2" font-size="13">約 6 分</text>
       <text x="210" y="76" text-anchor="end">② The problem and the idea</text>
-      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:47→11:47)"/>
+      <path class="bar" d="M220 64 h185 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-185 z" data-tip="② The problem and the idea: 約 4.0 分(スライド 11〜15、7:46→11:46)"/>
       <text x="421" y="79" class="t2" font-size="13">約 4 分</text>
       <text x="210" y="112" text-anchor="end">③ The plan</text>
-      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:47→13:20)"/>
+      <path class="bar" d="M220 100 h69 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-69 z" data-tip="③ The plan: 約 1.6 分(スライド 16〜18、11:46→13:19)"/>
       <text x="305" y="115" class="t2" font-size="13">約 1.6 分</text>
       <text x="210" y="148" text-anchor="end">④ Version 1: the app</text>
-      <path class="bar" d="M220 136 h249 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-249 z" data-tip="④ Version 1: the app: 約 5.3 分(スライド 19〜26、13:20→18:41)"/>
-      <text x="485" y="151" class="t2" font-size="13">約 5 分</text>
+      <path class="bar" d="M220 136 h247 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-247 z" data-tip="④ Version 1: the app: 約 5.3 分(スライド 19〜26、13:19→18:37)"/>
+      <text x="483" y="151" class="t2" font-size="13">約 5 分</text>
       <text x="210" y="184" text-anchor="end">⑤ Version 2: kernel driver</text>
-      <path class="bar hi" d="M220 172 h395 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-395 z" data-tip="⑤ Version 2: kernel driver: 約 8.4 分(スライド 27〜33、18:41→27:04)。試験の 3 枚(31〜33)を含む"/>
-      <text x="631" y="187" class="t2" font-size="13">約 8 分 — 核心</text>
+      <path class="bar hi" d="M220 172 h394 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-394 z" data-tip="⑤ Version 2: kernel driver: 約 8.4 分(スライド 27〜33、18:37→27:01)。試験の 3 枚(31〜33)を含む"/>
+      <text x="630" y="187" class="t2" font-size="13">約 8 分 — 核心</text>
       <text x="210" y="220" text-anchor="end">⑥ Live demo</text>
-      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 34〜36、27:04→29:42)"/>
+      <path class="bar" d="M220 208 h120 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-120 z" data-tip="⑥ Live demo: 約 2.6 分(スライド 34〜36、27:01→29:39)"/>
       <text x="356" y="223" class="t2" font-size="13">約 2.6 分</text>
       <text x="210" y="256" text-anchor="end">⑦ Summary &amp; status</text>
-      <path class="bar" d="M220 244 h167 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-167 z" data-tip="⑦ Summary &amp; status: 約 3.6 分(スライド 37〜43、29:42→33:15)"/>
-      <text x="403" y="259" class="t2" font-size="13">約 4 分</text>
+      <path class="bar" d="M220 244 h159 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-159 z" data-tip="⑦ Summary &amp; status: 約 3.5 分(スライド 37〜43、29:39→33:06)"/>
+      <text x="395" y="259" class="t2" font-size="13">約 3 分</text>
     </g>
   </svg>
-  <figcaption>図 1-3 部ごとの時間(英語・日本語の台本の累積時刻より。合計約 33 分 15 秒)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 40 → 39 → 38。31〜33 は削らない。</figcaption>
+  <figcaption>図 1-3 部ごとの時間(英語の台本の累積時刻より。合計約 33 分 06 秒。タイトル・自己紹介・目次の 3 枚で約 2 分)。オレンジは最長の部。時間が足りないときに削る順は、台本によればスライド 40 → 39 → 38。31〜33 は削らない。</figcaption>
 </figure>
 
 <div class="box key">
-  <span class="label">発表の中心メッセージ</span>
-  <p><b>「浅い試験は通る。深い試験で壊れる。」</b>ping や handshake が通ると人はそこを信じてしまうが、深い試験(TCP・実機・本物のカーネルビルド・セキュリティの確認)で初めて見つかるバグがいくつもあった。スライド 21 の「Testing Pattern」が全体を貫く主題で、22〜25(apps 版の 4 つ)と 30(カーネル版の 2 つ)がその実例、31〜33 が「では何をどこまで確かめたか」の答え。</p>
+  <span class="label">どこが難しかったか</span>
+  <p><b>トンネルはすぐ動いた。時間を使ったのは 6 つのバグ。</b>その多くは、通った試験(handshake や ping)の陰に隠れていたので、最初は別の場所を探してしまった。スライド 21「Where it was hard」がその入口で、22〜25(apps 版の 4 つ)と 30(カーネル版の 2 つ)が中身、31〜33 が「では何をどこまで確かめたか」の答え。</p>
 </div>
 
 <h3>1.6 「確かめた」の 4 段階</h3>
@@ -480,39 +480,12 @@
   </table></div>
 </section>
 
-<section class="slide short" id="s2">
-  <div class="head"><span class="no">2</span><h3>2 — Agenda</h3><span class="en">Seven parts, about thirty minutes.</span></div>
-  <a class="shot" href="renders/glasgow/slide-02.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-02.png" alt="スライド 2 の画像"></a>
+<section class="slide" id="s2">
+  <div class="head"><span class="no">2</span><h3>2 — About Me</h3><span class="en">From Japan: I work at Sony, and I build things as a hobby.</span></div>
+  <a class="shot" href="renders/glasgow/slide-02.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-02.png" alt="スライド 3 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-02.png</code> · <a href="coc-glasgow-slides.html#2" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>7 部の一覧。各部に短い題名と、キーワードの 1 行と目安時間。</p>
-  <div class="tbl"><table>
-    <tr><th>部</th><th>題名(キーワード)</th><th>目安</th><th>スライド</th></tr>
-    <tr><td>1</td><td>Overview &amp; background(自己紹介・NuttX とは・始まり)</td><td>約 6 分</td><td>3〜10</td></tr>
-    <tr><td>2</td><td>The problem and the idea(遠くの機器に届く・なぜ WireGuard)</td><td>約 4 分</td><td>11〜15</td></tr>
-    <tr><td>3</td><td>The plan(wireguard-lwip の再利用・NuttX への合わせ込み)</td><td>約 2 分</td><td>16〜18</td></tr>
-    <tr><td>4</td><td>Version 1: the app(最初のトンネル・隠れた 4 つのバグ・最初のデモ)</td><td>約 5 分</td><td>19〜26</td></tr>
-    <tr><td>5</td><td>Version 2: the kernel driver(カーネルの設計・もう 2 つのバグ・試験)</td><td>約 8 分</td><td>27〜33</td></tr>
-    <tr><td>6</td><td>Live demo(トンネル越しのスタックちゃん)</td><td>約 3 分</td><td>34〜36</td></tr>
-    <tr><td>7</td><td>Summary &amp; status(upstream の状況・3 つの教訓・謝辞)</td><td>約 4 分</td><td>37〜43</td></tr>
-  </table></div>
-  <p><b>要点:</b>前半が「バージョン 1 = アプリ」、後半が「バージョン 2 = カーネルドライバ」という 2 段の物語。バグは全部で 6 つ(バージョン 1 で 4 つ、カーネルで 2 つ)。試験の 3 枚(31〜33)はバージョン 2 の部に入っている。目安を足すと 32 分、台本どおりに話すと約 33 分 32 秒(<a href="#part1">図 1-3</a>)。</p>
-  <p><b>話し方:</b>"There are seven parts." と言って各部を 1 行ずつ読み、"About thirty minutes, then questions." で締める。</p>
-</section>
-<div class="divider" id="ch1"><b>① Overview &amp; background</b>(スライド 3〜10、約 6 分)— 自己紹介、NuttX とは何か、どう始まったか</div>
-<section class="slide short" id="s3">
-  <div class="head"><span class="no">3</span><h3>3 — Agenda(① を強調)</h3><span class="en">Let's start with part one: an overview and the background.</span></div>
-  <a class="shot" href="renders/glasgow/slide-03.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-03.png" alt="スライド 3 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-03.png</code> · <a href="coc-glasgow-slides.html#3" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>スライド 2 と同じ目次で、①だけが色付き、他は薄い。</p>
-  <p><b>要点:</b>部の区切り(divider、ディバイダー)。スライド 11・16・19・27・34・37 も同じ役割。読み上げるものではなく、指して一拍置くだけ(各 10 秒)。</p>
-  <p><b>話し方:</b>"Let's start with part one: an overview and the background."</p>
-</section>
-<section class="slide" id="s4">
-  <div class="head"><span class="no">4</span><h3>4 — About Me</h3><span class="en">From Japan: I work at Sony, and I build things as a hobby.</span></div>
-  <a class="shot" href="renders/glasgow/slide-04.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-04.png" alt="スライド 4 の画像"></a>
-  <p class="shotlink">画像:<code>renders/glasgow/slide-04.png</code> · <a href="coc-glasgow-slides.html#4" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>副題「日本から:ソニーで働き、趣味でものを作る」。2 段の構成:①名前と所属(ソニーセミコンダクタソリューションズのエッジ AI エンジニア、NuttX にはアプリ側から関わる)と、SNS のアイコン(キツネ)/ ②左に日本地図(① 名古屋 生まれ → ② 仙台 大学 → ③ 川崎 現在)、右に趣味のエンジニアとしての 5 枚の写真(宇宙、半導体、DNA ナノ技術、ロボット、Linux)と活動(ハッカソン、ソフトウェア系カンファレンスの運営、オープンソースの本の執筆)。経歴の流れは画面には出さず、口頭で話す(分子ロボティクスで BIOMOD 世界一(2015)→ 画像処理と AI → AITRIOS のエッジ AI カメラ → SPRESENSE の組込み開発(組込みアプリコンテストで世界 3 位)→ この発表)。</p>
+  <p>副題「日本から:ソニーで働き、趣味でものを作る」。名前と所属(ソニーセミコンダクタソリューションズのエッジ AI エンジニア、NuttX にはアプリ側から関わる)と SNS のアイコン(キツネ)、名古屋(生まれ)→ 仙台(大学)→ 川崎(現在)の地図、趣味のエンジニアとしての 5 枚の写真(宇宙、半導体、DNA ナノ技術、ロボット、Linux)と活動(ハッカソン、ソフトウェア系カンファレンスの運営、オープンソースの本の執筆)。経歴の流れ(分子ロボティクス → 画像処理と AI → エッジ AI カメラ → SPRESENSE)は画面にはなく、台本で話す。このスライドは目次(スライド 3)より前に来る。</p>
   <h4>② 背景知識</h4>
   <p><b>エッジ AI</b>:AI の計算をクラウドのサーバーではなく、現場に置いた機器(カメラなど)の上で行うこと。通信量が減り、映像を外に出さずに済む。その代わり、機器は小さく、電力もメモリも限られる。この「小さな機器が現場に散らばっている」状況が、スライド 10・12 の課題につながる。</p>
   <p><b>ホビーエンジニア(hobby engineer)</b>:仕事とは別に、趣味でハードウェアやソフトウェアを作る人。ここでは宇宙・半導体・ロボットまわりの工作のこと。<b>組込み(embedded)</b>:家電やセンサーのように、特定の機能のために機器の中に組み込まれたコンピュータとそのソフトウェア。</p>
@@ -543,6 +516,33 @@
   </table></div>
 </section>
 
+<section class="slide short" id="s3">
+  <div class="head"><span class="no">3</span><h3>3 — Agenda</h3><span class="en">Seven parts, about thirty minutes.</span></div>
+  <a class="shot" href="renders/glasgow/slide-03.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-03.png" alt="スライド 4 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-03.png</code> · <a href="coc-glasgow-slides.html#3" target="_blank">スライド本体で開く</a></p>
+  <p><b>画面:</b>7 部の一覧。各部に短い題名と、キーワードの 1 行と目安時間。自己紹介(スライド 2)はこの目次の前にある。</p>
+  <div class="tbl"><table>
+    <tr><th>部</th><th>題名(キーワード)</th><th>目安</th><th>スライド</th></tr>
+    <tr><td>1</td><td>Overview &amp; background(NuttX とは・始まり)</td><td>約 5 分</td><td>4〜10</td></tr>
+    <tr><td>2</td><td>The problem and the idea(遠くの機器に届く・なぜ WireGuard)</td><td>約 4 分</td><td>11〜15</td></tr>
+    <tr><td>3</td><td>The plan(wireguard-lwip の再利用・NuttX への合わせ込み)</td><td>約 2 分</td><td>16〜18</td></tr>
+    <tr><td>4</td><td>Version 1: the app(最初のトンネル・隠れた 4 つのバグ・最初のデモ)</td><td>約 5 分</td><td>19〜26</td></tr>
+    <tr><td>5</td><td>Version 2: the kernel driver(カーネルの設計・もう 2 つのバグ・試験)</td><td>約 8 分</td><td>27〜33</td></tr>
+    <tr><td>6</td><td>Live demo(トンネル越しのスタックちゃん)</td><td>約 3 分</td><td>34〜36</td></tr>
+    <tr><td>7</td><td>Summary &amp; status(upstream の状況・3 つの教訓・謝辞)</td><td>約 4 分</td><td>37〜43</td></tr>
+  </table></div>
+  <p><b>要点:</b>前半が「バージョン 1 = アプリ」、後半が「バージョン 2 = カーネルドライバ」という 2 段の物語。バグは全部で 6 つ(バージョン 1 で 4 つ、カーネルで 2 つ)。試験の 3 枚(31〜33)はバージョン 2 の部に入っている。目安を足すと 31 分、台本どおりに話すと約 33 分 06 秒(<a href="#part1">図 1-3</a>)。</p>
+  <p><b>話し方:</b>"There are seven parts." と言って各部を 1 行ずつ読み、"About thirty minutes, then questions." で締める。</p>
+</section>
+<div class="divider" id="ch1"><b>① Overview &amp; background</b>(スライド 4〜10、約 5 分)— NuttX とは何か、どう始まったか</div>
+<section class="slide short" id="s4">
+  <div class="head"><span class="no">4</span><h3>4 — Agenda(① を強調)</h3><span class="en">Let's start with part one: an overview and the background.</span></div>
+  <a class="shot" href="renders/glasgow/slide-04.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-04.png" alt="スライド 2 の画像"></a>
+  <p class="shotlink">画像:<code>renders/glasgow/slide-04.png</code> · <a href="coc-glasgow-slides.html#4" target="_blank">スライド本体で開く</a></p>
+  <p><b>画面:</b>スライド 3 と同じ目次で、①だけが色付き、他は薄い。</p>
+  <p><b>要点:</b>部の区切り(divider、ディバイダー)。スライド 11・16・19・27・34・37 も同じ役割。読み上げるものではなく、指して一拍置くだけ(各 10 秒)。</p>
+  <p><b>話し方:</b>"Let's start with part one: an overview and the background."</p>
+</section>
 <section class="slide" id="s5">
   <div class="head"><span class="no">5</span><h3>5 — Overview: the project in one slide</h3><span class="en">This project adds WireGuard to NuttX as a network device.</span></div>
   <a class="shot" href="renders/glasgow/slide-05.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-05.png" alt="スライド 5 の画像"></a>
@@ -1194,7 +1194,7 @@
   <a class="shot" href="renders/glasgow/slide-19.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-19.png" alt="スライド 19 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-19.png</code> · <a href="coc-glasgow-slides.html#19" target="_blank">スライド本体で開く</a></p>
   <p><b>画面:</b>目次の④「Version 1: the app」が色付き。</p>
-  <p><b>要点:</b>apps 版(v0.1.1)の部。動いた(20)→ 試験の型(21)→ 4 つのバグ(22〜25)→ 最初のデモの動画(26)。ここが発表の背骨(Testing Pattern)の前半。</p>
+  <p><b>要点:</b>apps 版(v0.1.1)の部。動いた(20)→ どこが難しかったか(21)→ 4 つのバグ(22〜25)→ 最初のデモの動画(26)。</p>
   <p><b>話し方:</b>"Part four: version one, an app. It worked, and then the bugs came."</p>
 </section>
 <section class="slide" id="s20">
@@ -1255,26 +1255,26 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
 </section>
 
 <section class="slide" id="s21">
-  <div class="head"><span class="no">21</span><h3>21 — The Testing Pattern</h3><span class="en">Simple tests pass. Deeper tests fail.</span></div>
+  <div class="head"><span class="no">21</span><h3>21 — Where it was hard</h3><span class="en">The tunnel worked fast. The bugs took the time.</span></div>
   <a class="shot" href="renders/glasgow/slide-21.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-21.png" alt="スライド 21 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-21.png</code> · <a href="coc-glasgow-slides.html#21" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>3 つの箱が矢印でつながる:SIMPLE TEST(handshake / ping)✓ PASS → ASSUMPTION「そこは正しい」→ DEEPER TEST(TCP / 実機 / カーネル / セキュリティ)✗ FAIL。下に「簡単な試験が通る。深い試験が落ちる。簡単な試験が通ったので、そこを信じて、何時間も別の場所を探す。これがこのプロジェクトで何度も起きた — apps 版だけではない」。</p>
+  <p>3 つの箱が矢印でつながる図:SIMPLE TEST(handshake / ping)✓ PASS → ASSUMPTION「そこは正しい」→ DEEPER TEST(TCP / 実機 / カーネル / セキュリティ)✗ FAIL。下に「時間の大半は 6 つのバグに使った。その多くは通った試験の陰に隠れていたので、最初は違う場所を探した。4 つは apps 版で、2 つはカーネルへ移した後」。</p>
   <h4>② 背景知識</h4>
   <h5>ping とは何を確かめるか</h5>
-  <p><code>ping</code> は「相手に小さなパケットを送り、返事が来るか」を見るコマンド。届くこと、往復時間は分かる。しかし分かるのはそれだけで、大きなデータ、長時間、別のタスクからの送信、鍵の扱いなどは何も確かめていない。</p>
-  <h5>確証バイアス</h5>
-  <p>人は一度「ここは正しい」と思うと、そこを疑わなくなる。試験が通った部分は「確認済み」の棚に入り、本当の原因がそこにあっても探さない。この発表の 7 つのバグは全部、この形をしていた。</p>
+  <p><code>ping</code> は「相手に小さなパケットを送り、返事が来るか」を見るコマンド。届くこと、往復時間は分かる。しかし分かるのはそれだけで、大きなデータ、長時間、別のタスクからの送信、鍵の扱いなどは何も確かめていない。handshake も同じで、「最初のやり取りができた」ことしか分からない。</p>
+  <h5>なぜ「違う場所を探す」のか</h5>
+  <p>人は一度「ここは正しい」と思うと、そこを疑わなくなる。試験が通った部分は「確認済み」の棚に入り、本当の原因がそこにあっても探さない。図の 3 つの箱はこの流れを描いている。</p>
   <figure>
-    <svg viewBox="0 0 900 140" role="img" aria-label="浅いテストが通る、思い込む、深いテストが落ちる">
+    <svg viewBox="0 0 900 140" role="img" aria-label="簡単な試験が通る、思い込む、深い試験で落ちる">
       <rect class="box-nx" x="10" y="30" width="230" height="80" rx="8"/>
-      <text x="125" y="62" text-anchor="middle" font-size="16" font-weight="700">浅い試験</text>
+      <text x="125" y="62" text-anchor="middle" font-size="16" font-weight="700">簡単な試験</text>
       <text x="125" y="86" text-anchor="middle" font-size="14">handshake / ping → ✓ 通る</text>
       <rect class="box-2" x="335" y="30" width="230" height="80" rx="8" stroke-dasharray="6 4"/>
       <text x="450" y="62" text-anchor="middle" font-size="16" font-weight="700">思い込み</text>
       <text x="450" y="86" text-anchor="middle" font-size="14">「そこは正しいはず」</text>
       <rect class="box-wg" x="660" y="30" width="230" height="80" rx="8"/>
-      <text x="775" y="62" text-anchor="middle" font-size="16" font-weight="700">深い試験</text>
+      <text x="775" y="62" text-anchor="middle" font-size="16" font-weight="700">もっと深い試験</text>
       <text x="775" y="86" text-anchor="middle" font-size="14">TCP・実機・カーネル → ✗ 落ちる</text>
       <line class="ln" x1="240" y1="70" x2="330" y2="70" stroke-width="2"/><path d="M322 64 L334 70 L322 76 z" fill="var(--ink-3)"/>
       <line class="ln" x1="565" y1="70" x2="655" y2="70" stroke-width="2"/><path d="M647 64 L659 70 L647 76 z" fill="var(--ink-3)"/>
@@ -1291,19 +1291,22 @@ wg show            # 状態を表示する(秘密鍵は出さない)</code></pre
     <tr><td>6</td><td>sim で設定できる</td><td>カーネルビルドではスタック上の 6 KB 配列であふれる</td><td>カーネル</td><td>30</td></tr>
   </table></div>
   <h4>③ このスライドの主張と根拠</h4>
-  <p>主張:このプロジェクトの難しいバグはすべて同じ形をしていた。簡単な試験が通り、深い試験が落ちる。しかも通った試験がその部分を信じさせ、何時間も別の場所を探させる。根拠:次の 7 枚の実例(apps 版の 5 つは <a href="../development/">docs/development/</a> の作業記録、カーネル版の 2 つは <a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found and fixed」)。</p>
+  <p>主張:最初のトンネルはすぐ動き、時間の大半は 6 つのバグに使った。多くは通った試験の陰に隠れていて、最初は違う場所を探した。根拠:次のスライドの実例(apps 版の 4 つは <a href="../development/">docs/development/</a> の作業記録、カーネル版の 2 つは <a href="../upstream/verification-matrix.md">verification-matrix.md</a>「Bugs found and fixed」)。</p>
+  <p>言い方の注意:以前のデッキにあった「Simple tests pass. Deeper tests fail.」という標語は、今のデッキにはない。「全部のバグが同じ形」とも言わず、「ここが難しかった。多くは通った試験の陰にあった」と、起きたことをそのまま話す。</p>
   <h4>④ 話すときのポイント</h4>
-  <blockquote class="en">This is the main point of the talk.</blockquote>
-  <p class="gloss">これがこの発表の一番言いたいことです。</p>
+  <blockquote class="en">Now, where it was hard.</blockquote>
+  <p class="gloss">では、どこが難しかったか。</p>
+  <blockquote class="en">The first tunnel worked quickly. Most of my time went into six bugs: four in the apps version, and two more after I moved it into the kernel.</blockquote>
+  <p class="gloss">最初のトンネルはすぐ動きました。時間の大半は 6 つのバグに使いました。apps 版で 4 つ、カーネルへ移してからさらに 2 つ。</p>
   <span class="pause">間</span>
-  <blockquote class="en">Even worse, the passing test makes you believe that part is fine, so you look everywhere else for hours.</blockquote>
-  <p class="gloss">さらに悪いことに、通った試験が「そこは大丈夫」と信じさせるので、何時間も別の場所を探すことになります。</p>
-  <blockquote class="en">The next slides are examples of this pattern — four in the apps version, and two more after I moved it into the kernel.</blockquote>
-  <p class="gloss">次のスライドはこの型の実例です。apps 版で 4 つ、カーネルへ移してからさらに 2 つ。</p>
+  <blockquote class="en">Most of them hid behind a test that passed, like a handshake or a ping, so I first looked in the wrong place.</blockquote>
+  <p class="gloss">その多くは、handshake や ping のような通った試験の陰に隠れていたので、最初は違う場所を探しました。</p>
+  <blockquote class="en">Here are the four from version one.</blockquote>
+  <p class="gloss">ここからはバージョン 1 の 4 つです。</p>
   <h4>⑤ 聞かれそうな質問</h4>
   <dl class="qa">
     <dt>では最初からどんな試験を書けばよかったのですか?</dt>
-    <dd>「間違った実装なら必ず落ちる」試験。たとえば 2 個目以降のパケット、別タスクからの送信、実機の小さいスタック、本物のカーネルビルド(初心者ガイド §14)。</dd>
+    <dd>handshake の先まで試すもの。たとえば 2 個目以降のパケット、別タスクからの送信、実機の小さいスタック、本物のカーネルビルド(スライド 41 の教訓 1、初心者ガイド §14)。</dd>
   </dl>
   <h4>⑥ 用語</h4>
   <div class="tbl"><table class="terms">
@@ -2333,7 +2336,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <a class="shot" href="renders/glasgow/slide-40.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-40.png" alt="スライド 39 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-40.png</code> · <a href="coc-glasgow-slides.html#40" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>4 つの項目:小さな <code>crypto:</code> の修正(ChaCha20-Poly1305 の nonce の修正 — それだけで役に立つので、ドライバとは分けてある)/ ドライバ(<code>drivers/net/wireguard</code> — カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ)/ コマンド(<code>apps/system/wg</code> — ドライバと話すコマンド)/ ここまで確かめたこと(checkpatch / nxstyle を通過、各コミットが単独でビルドできる、ライセンスを列挙)。Takeaway は「小さく分けた方がレビューしやすく、crypto の修正はドライバがなくても役に立つ」。下に状況:「手元で小さな単位に分けて用意してある。sign-off はしておらず、実機での再試験もしていない。何も送っていない」。</p>
+  <p>4 つの段:小さな <code>crypto:</code> の修正(ChaCha20-Poly1305 の nonce の修正。それだけで役に立つので、ドライバとは分けてある)/ ドライバ(<code>drivers/net/wireguard</code> — カーネルのデバイス、ABI、文書、それにネットワークの中心部分への小さな変更 2 つ)/ コマンド(<code>apps/system/wg</code> — ドライバと話すコマンド)/ ここまでに確かめたこと(checkpatch / nxstyle を通過、どのコミットも単独でビルドできる、ライセンスを一覧にした)。下に「小さく分かれた部品はレビューしやすく、crypto の修正はドライバがなくても役に立つ」と、状況「手元で小さな部品に分けて準備済み。sign-off も、実機での再試験もまだ。何も送っていない」。</p>
   <h4>② 背景知識</h4>
   <h5>PR(Pull Request)と upstream</h5>
   <p>GitHub で「この変更を本家に取り込んでください」と頼む手続きが <b>PR</b>。本家(ここでは apache/nuttx と apache/nuttx-apps)を <b>upstream</b>、自分のアカウントに分岐したものを <b>fork</b> と呼ぶ。PR はメンテナーが読んでレビューし、直す点があればやり取りし、合意できれば取り込まれる(マージ)。</p>
@@ -2391,7 +2394,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <a class="shot" href="renders/glasgow/slide-41.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-41.png" alt="スライド 41 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-41.png</code> · <a href="coc-glasgow-slides.html#41" target="_blank">スライド本体で開く</a></p>
   <h4>① 画面にあるもの</h4>
-  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE で動き、標準の WireGuard の相手と話し、upstream 向けに小さな PR に分けてある」。その下に 3 つの教訓。① 簡単な試験は通り、深い試験は落ちる — 深く試す(長いデータ、本物のハードウェア、本物のカーネルビルド)。「handshake した」だけでなく。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。その修正はそれだけで成り立つ。</p>
+  <p>上に「作ったもの:<code>wg0</code> — NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE で動き、標準の WireGuard の相手と話し、upstream 向けに小さな PR に分けてある」。その下に 3 つの教訓。① handshake の先まで試す — 長いデータ、本物のハードウェア、本物のカーネルビルド。② きれいな OS の境界は報われる — apps 版で、4 種類の CPU、3 つの NuttX のバージョン、コードの変更なし。③ プロジェクトへの移植はプロジェクトを良くできる — 途中で NuttX 自身の ChaCha20-Poly1305 に隠れていたバグを見つけた。その修正はそれだけで成り立つ。</p>
   <h4>② 背景知識</h4>
   <h5>「作ったもの」の言い方</h5>
   <p>台本は「ESP32-S3 と SPRESENSE で Windows 公式クライアントと動き、シミュレータと QEMU で Linux カーネルの WireGuard と話し、小さな PR に分けてレビューの準備ができている。まだ何も本家に送っていない」と言う。どこで何を確かめたか(実機 = FLAT ビルド、KERNEL / PROTECTED = QEMU)の区別は、スライド 31 と同じ。</p>
@@ -2400,7 +2403,7 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <h4>③ このスライドの主張と根拠</h4>
   <ul>
     <li>作ったもの:<span class="tag kern">カーネル版</span> の実績(スライド 31、<a href="../upstream/verification-matrix.md">verification-matrix.md</a>)。実機は FLAT のビルドで、最後の rebase の前の版。</li>
-    <li>① の根拠:スライド 21〜25・30 の 6 つのバグと、31〜33 の試験。</li>
+    <li>① の根拠:スライド 21〜25・30 の 6 つのバグ(多くは handshake や ping が通った後に見つかった)と、31〜33 の試験。</li>
     <li>② の根拠:<span class="tag apps">apps 版</span> の 4 CPU・3 バージョン(スライド 1・39)。カーネル版は 4 関数の差し込み口を使わないので、カーネル版の数字ではない。</li>
     <li>③ の根拠:nonce は verification-matrix「Bugs found」(pre-existing NuttX)。修正はまだ送っていない(スライド 40)。</li>
   </ul>
@@ -2411,8 +2414,8 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <blockquote class="en">Nothing is sent upstream yet.</blockquote>
   <p class="gloss">まだ何も本家に送っていません。</p>
   <span class="pause">間</span>
-  <blockquote class="en">First, simple tests pass and deep tests fail — so design your tests to go deep: long data runs, real hardware, a real kernel build, not just a handshake.</blockquote>
-  <p class="gloss">1 つ目。簡単な試験は通り、深い試験は落ちる。だから深く行く試験を設計してください。長いデータ、本物のハードウェア、本物のカーネルビルド。handshake だけでなく。</p>
+  <blockquote class="en">First, test beyond the handshake: long data runs, real hardware, a real kernel build.</blockquote>
+  <p class="gloss">1 つ目。handshake の先まで試してください。長いデータ、本物のハードウェア、本物のカーネルビルド。</p>
   <blockquote class="en">Second, a clean line between your code and the OS is worth the effort — in the apps version, four CPU types and three NuttX versions, with no code changes.</blockquote>
   <p class="gloss">2 つ目。自分のコードと OS の間のきれいな線は、手間をかける価値があります。apps 版では、4 種類の CPU と 3 つの NuttX の版で、コードの変更なし。</p>
   <blockquote class="en">Third, porting to a project is a chance to make it better. One bug was in NuttX's own crypto, and that fix stands on its own.</blockquote>
@@ -2463,8 +2466,8 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <div class="head"><span class="no">43</span><h3>43 — Thank you</h3><span class="en">Questions welcome.</span></div>
   <a class="shot" href="renders/glasgow/slide-43.png" target="_blank"><img loading="lazy" src="renders/glasgow/slide-43.png" alt="スライド 42 の画像"></a>
   <p class="shotlink">画像:<code>renders/glasgow/slide-43.png</code> · <a href="coc-glasgow-slides.html#43" target="_blank">スライド本体で開く</a></p>
-  <p><b>画面:</b>「Thank you」、デモの動画(youtu.be/1kyX2av5WG4)、「Code &amp; records: github.com/wwlapaki310/gsoc2026-nuttx-wireguard」、名前と所属、「Questions welcome.」</p>
-  <p><b>要点:</b>載せているのはこのリポジトリ(コードと作業の記録)。本家にはまだ何も送っていない(スライド 40)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
+  <p><b>画面:</b>「Thank you」、デモの動画(youtu.be/1kyX2av5WG4)、コードと記録(github.com/wwlapaki310/gsoc2026-nuttx-wireguard)、名前と所属、「Questions welcome.」</p>
+  <p><b>要点:</b>リンク先は、このプロジェクトの設計・試験・記録を集めたリポジトリ。本家にはまだ何も送っていない(スライド 40)。動画は以前の apps 版のデモ(スタックちゃんではない)。</p>
   <p><b>話し方:</b>"Thank you. I am happy to take your questions — about the kernel driver, the bugs, the ioctl ABI, or the hardware." 想定質問と答えは <a href="talkscript/coc-glasgow-qa.md">coc-glasgow-qa.md</a>。数字を答えるときは<a href="#part4">第 4 部</a>の「言ってよい範囲」を守る。</p>
 </section>
 
@@ -2646,16 +2649,17 @@ VPN の中のネットワーク             wg0   = 10.10.0.1(PC側)/ 10.10.0.2(
   <tr><td>10/10 / 30/30</td><td>デモ構成でのコンテナからの ping / 1 秒間隔の Web</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> スタックちゃん</td><td>35, 36</td><td>その構成で通った</td><td>連続アクセスでも安定(連打では 12/30)</td></tr>
   <tr><td>4 時間 28 分</td><td>最長の連続稼働(止まった原因は Wi-Fi ドライバ側)</td><td><span class="tag apps">apps</span><span class="tag hw">実機</span> ESP32-S3</td><td>38(Q&amp;A)</td><td>apps 版でそこまで動いた</td><td>カーネル版の連続稼働</td></tr>
   <tr><td>約 904 B / peer、1〜16</td><td>peer 1 つあたりの RAM / 設定できる数</td><td><span class="tag kern">カーネル</span><span class="tag sim">sim</span></td><td>29(Q&amp;A)</td><td>2 peer を sim で確認</td><td>実機で複数 peer を確認</td></tr>
-  <tr><td>約 30 分 / 32 分 / 33 分 15 秒</td><td>目標(スライド 2)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>2</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
+  <tr><td>約 30 分 / 31 分 / 33 分 06 秒</td><td>目標(スライド 3)/ 目安の合計 / 台本どおりの全体(デモ 90 秒込み)</td><td>—</td><td>3</td><td>本編は 27〜28 分を目標</td><td>—</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
 <h2 id="part5">5. まだ残っている注意点(確認メモ)</h2>
-<p>スライド・台本・Q&amp;A・検証の記録の食い違いは、2026-10-11 のレビューでほぼ直された。残っているのは次の 2 つだけ。</p>
+<p>スライド・台本・Q&amp;A・検証の記録の食い違いは、ほぼ直されている。残っているのは次の 3 つ。</p>
 <div class="tbl"><table>
   <tr><th>どこ</th><th>内容</th><th>話すときの扱い</th></tr>
-  <tr><td>スライド 2 の「about thirty minutes」</td><td>目標の長さとして残してある。目安の合計は 32 分、台本どおりだと約 33 分 15 秒</td><td>本編 27〜28 分を目標に、40 → 39 → 38 の順に削る</td></tr>
+  <tr><td>スライド 3 の「about thirty minutes」</td><td>目標の長さとして残してある。目安の合計は 31 分、台本どおりだと約 33 分 06 秒</td><td>本編 27〜28 分を目標に、40 → 39 → 38 の順に削る</td></tr>
   <tr><td>スライド 38 の 4 つの信号</td><td>ROUTER / LAN / TUN / TCP の監視は outline にある運用の方針で、verification-matrix の試験項目ではない(作業記録にあるのは 1 分ごとの ping + telnet による 4 時間 28 分の連続稼働)</td><td>運用の工夫として話し、試験の結果としては言わない</td></tr>
+  <tr><td>スライド 30 のノート</td><td>画面は「kept as a separate crypto: change」だが、ノート(台本)はまだ "it goes upstream as its own crypto PR" と言い、"Simple test passes, deep test fails." という旧標語の一文も残っている</td><td>"kept as its own crypto change" と言い、旧標語の一文は省く</td></tr>
 </table></div>
 
 <p style="margin-top:40px;color:var(--ink-3);font-size:14px">出典:スライド本文と発表者ノート(<a href="coc-glasgow-slides.html">coc-glasgow-slides.html</a>)、<a href="talkscript/coc-glasgow-script-en.md">英語台本</a>、<a href="talkscript/coc-glasgow-script-ja.md">日本語台本</a>、<a href="talkscript/coc-glasgow-qa.md">想定 Q&amp;A</a>、<a href="coc-glasgow-beginner-guide-ja.md">初心者ガイド</a>、<a href="../upstream/verification-matrix.md">verification-matrix.md</a>、<a href="../upstream/in-kernel-design.md">in-kernel-design.md</a>、<a href="../upstream/merge-strategy.md">merge-strategy.md</a>、<a href="../upstream/submission-checklist.md">submission-checklist.md</a>、<a href="../upstream/tai64n-decision.md">tai64n-decision.md</a>、<a href="../upstream/tai64n-reboot.md">tai64n-reboot.md</a>、<a href="../development/stackchan-hardware-check-2026-10-08.md">stackchan-hardware-check-2026-10-08.md</a>、<a href="../development/phase3-log.md">phase3-log.md</a>、<a href="../development/phase4-log.md">phase4-log.md</a>、<a href="../development/code-review-2026-08.md">code-review-2026-08.md</a>、<a href="../../DEVELOPMENT.md">DEVELOPMENT.md</a>。</p>
