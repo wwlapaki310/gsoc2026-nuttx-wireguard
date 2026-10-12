@@ -818,6 +818,44 @@
   }
   .tlv-body h3 { margin: 0 0 3px; font-size: 18px; }
   .tlv-body p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.42; }
+  .history-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(250px, .8fr);
+    gap: 24px;
+    align-items: stretch;
+    height: 390px;
+  }
+  .history-products {
+    display: grid;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    min-height: 0;
+  }
+  .history-product {
+    margin: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .history-product img {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: contain;
+    display: block;
+  }
+  .history-product figcaption {
+    padding: 4px 8px;
+    border-top: 1px solid var(--line-2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.25;
+    text-align: center;
+  }
 
   .demo {
     display: grid;
@@ -1342,31 +1380,38 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
   <section class="slide">
     <p class="eyebrow">Sony's history with NuttX</p>
     <div class="body" style="gap:10px">
-      <div class="timeline-v">
-        <div class="tlv-item">
-          <div class="tlv-year">2013&ndash;15</div>
-          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Early adoption</h3><p>Ported NuttX to LC823425 / LC823450; first commercial audio products shipped in 2015.</p></div>
+      <div class="history-layout">
+        <div class="timeline-v">
+          <div class="tlv-item">
+            <div class="tlv-year">2013&ndash;15</div>
+            <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+            <div class="tlv-body"><h3>Early adoption</h3><p>Ported NuttX to LC823425 / LC823450; first commercial audio products shipped in 2015.</p></div>
+          </div>
+          <div class="tlv-item">
+            <div class="tlv-year">2016&ndash;17</div>
+            <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+            <div class="tlv-body"><h3>Commercial products</h3><p>Walkman NW-WS620, SMR-10, ICD-TX800 and ICD-PX470 used NuttX.</p></div>
+          </div>
+          <div class="tlv-item">
+            <div class="tlv-year">2018</div>
+            <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+            <div class="tlv-body"><h3>Xperia Ear Duo &amp; SPRESENSE</h3><p>Xperia Ear Duo shipped with CXD5602 / NuttX; SPRESENSE launched as a multicore development board.</p></div>
+          </div>
+          <div class="tlv-item">
+            <div class="tlv-year">2019&ndash;20</div>
+            <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+            <div class="tlv-body"><h3>Upstream collaboration</h3><p>Sony engineers upstreamed CXD56xx platform support and drivers, and shared the work in public NuttX talks.</p></div>
+          </div>
+          <div class="tlv-item">
+            <div class="tlv-year">2020s</div>
+            <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
+            <div class="tlv-body"><h3>Edge sensing</h3><p>Expanded camera, GNSS, connectivity and edge-sensing capabilities.</p></div>
+          </div>
         </div>
-        <div class="tlv-item">
-          <div class="tlv-year">2016&ndash;17</div>
-          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Commercial products</h3><p>Walkman NW-WS620, SMR-10, ICD-TX800 and ICD-PX470 used NuttX.</p></div>
-        </div>
-        <div class="tlv-item">
-          <div class="tlv-year">2018</div>
-          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Xperia Ear Duo &amp; SPRESENSE</h3><p>Xperia Ear Duo shipped with CXD5602 / NuttX; SPRESENSE launched as a multicore development board.</p></div>
-        </div>
-        <div class="tlv-item">
-          <div class="tlv-year">2019&ndash;20</div>
-          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Upstream collaboration</h3><p>Sony engineers upstreamed CXD56xx platform support and drivers, and shared the work in public NuttX talks.</p></div>
-        </div>
-        <div class="tlv-item">
-          <div class="tlv-year">2020s</div>
-          <div class="tlv-dot-col"><div class="tlv-dot"></div></div>
-          <div class="tlv-body"><h3>Edge sensing</h3><p>Expanded camera, GNSS, connectivity and edge-sensing capabilities.</p></div>
+        <div class="history-products" aria-label="Sony products and platform using NuttX">
+          <figure class="history-product"><img src="assets/sony-nw-ws620.jpg" alt="Sony Walkman NW-WS620"><figcaption>Walkman NW-WS620</figcaption></figure>
+          <figure class="history-product"><img src="assets/sony-xperia-ear-duo.jpg" alt="Sony Xperia Ear Duo"><figcaption>Xperia Ear Duo</figcaption></figure>
+          <figure class="history-product"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards"><figcaption>SPRESENSE</figcaption></figure>
         </div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p></div>
@@ -1387,6 +1432,9 @@ M. Ishikawa and K. Okamoto, &ldquo;SMP and Networking support on NuttX / LC82345
 Sony, &ldquo;Running NuttX on Spresense,&rdquo; NuttX Workshop 2019: https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf
 A. Jerpelea, &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020: https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/
 Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html
+Sony, NW-WS620 product image: https://www.sony.jp/products/picture/NW-WS620.jpg
+Sony, Xperia Ear Duo product image: https://www.sony.jp/xperia/product/smartproducts/xea20/img/main01.jpg
+Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/
     </div>
   </section>
 
