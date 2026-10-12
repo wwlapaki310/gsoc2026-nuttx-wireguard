@@ -1542,7 +1542,7 @@ Before I chose WireGuard, I compared the usual ways to reach a device.
 ||
 Opening a port is easy, but then the whole Internet can reach the device. HTTPS and MQTT are what most IoT products use. The device connects out to a server, so NAT is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.
 ||
-A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours &mdash; but the last part of the path, on the LAN, is not protected, and at a customer's site the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.
+A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours. But the last part of the path, on the LAN, is not protected. And at a customer's site, the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.
 ||
 A VPN on the device is the only row that has all three: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.
     </div>
@@ -1694,9 +1694,9 @@ Part three: the plan. How do you reuse an existing WireGuard?
     </div>
     <div class="num"><span class="part">PART 3 &middot; 1/2</span>17 / 40</div>
     <div class="notes-src">
-Why I started from smartalock/wireguard-lwip, and did not write the crypto myself.
+Why I started from wireguard-lwip, an existing open-source WireGuard, and did not write the crypto myself.
 ||
-wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one header, wireguard-platform.h, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.
+wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one small header file, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.
 ||
 I did not have to rewrite the protocol or the crypto, and that was not luck. That is what a clean line between the protocol and the OS gives you. Because of it, this port took weeks, not months.
     </div>
@@ -1722,7 +1722,7 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
     <div class="notes-src">
 This was the most important porting decision.
 ||
-Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. netif becomes net_driver_s, pbuf becomes iob, netif_add becomes netdev_register, and the send callback becomes NuttX's devif_poll. wg0 is registered as a TUN-type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.
+Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lwIP's network interface becomes a NuttX network driver, lwIP's packet buffers become NuttX's I/O buffers, adding an interface becomes registering a NuttX network device, and the send callback becomes NuttX's own poll. wg0 is registered as a TUN-type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.
     </div>
   </section>
 
@@ -1871,7 +1871,7 @@ The reason: in NuttX, a file descriptor belongs to one task group. It is not sha
     <div class="notes-src">
 The third: something I never measured.
 ||
-The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed &mdash; about ten times slower than it should have been. I thought it had no real cost, and it cost ten times. The real fix was a proper wait: a callback on psock_poll and a semaphore.
+The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed &mdash; about ten times slower than it should have been. I thought it had no real cost, and it cost ten times. The real fix was a proper wait: the socket wakes the thread up when data arrives.
     </div>
   </section>
   <section class="slide">
@@ -1967,7 +1967,7 @@ Why did I move it into the kernel?
 ||
 Version one is an app. It lives in apps and reaches into socket internals of the kernel. That works in a FLAT build, where everything shares one memory space. But it can never be a proper in-tree driver, and it cannot work in PROTECTED or KERNEL builds, where apps and the kernel are kept apart.
 ||
-So I moved the device into the kernel, under drivers/net/wireguard, and a small wg command sets it up through ioctl. Version one showed that the protocol works on NuttX. Version two is about fitting NuttX itself: a normal device, in every build mode, in a shape the community can review.
+So I moved the device into the kernel, with the other network drivers, and a small wg command sets it up through ioctl. Version one showed that the protocol works on NuttX. Version two is about fitting NuttX itself: a normal device, in every build mode, in a shape the community can review.
     </div>
   </section>
   <section class="slide">
@@ -2120,7 +2120,7 @@ What I have not shown is PROTECTED or KERNEL on real hardware. I tried PROTECTED
     <div class="notes-src">
 This slide is about what a working tunnel cannot tell you: three problems that ping would never notice.
 ||
-First, keys. NuttX can seed /dev/urandom from build-time settings. Then a board makes the same private key every time it starts, and everything still works. So I reset a SPRESENSE three times and got three different keys. That is a quick check, not a proof of good randomness.
+First, keys. NuttX can seed its random device from build-time settings. Then a board makes the same private key every time it starts, and everything still works. So I reset a SPRESENSE three times and got three different keys. That is a quick check, not a proof of good randomness.
 ||
 Second, I read the device's memory in the simulator. After down, the session keys were all zero. The static key stays on purpose, so that up works again.
 ||
@@ -2426,7 +2426,7 @@ To sum up.
 ||
 I built wg0, a WireGuard network device inside the NuttX kernel. It runs on the ESP32-S3 and SPRESENSE in normal FLAT builds, and in KERNEL and PROTECTED builds on QEMU. It is prepared as small PRs, and nothing is sent upstream yet.
 ||
-Three technical lessons. First, test beyond the handshake: long data runs, real hardware, and every build mode. Second, a clean line between your code and the OS pays off: the apps version ran on four CPU types, x86, Cortex-A7, Xtensa and Cortex-M4F, and on three NuttX versions, with no code change. Third, porting to a project is a chance to make it better: one bug was in NuttX's own crypto.
+Three technical lessons. First, test beyond the handshake: long data runs, real hardware, and every build mode. Second, a clean line between your code and the OS pays off. The apps version ran on four CPU types &mdash; x86, Cortex-A7, Xtensa and Cortex-M4F &mdash; and on three NuttX versions, with no code change. Third, porting to a project is a chance to make it better: one bug was in NuttX's own crypto.
     </div>
   </section>
   <section class="slide">

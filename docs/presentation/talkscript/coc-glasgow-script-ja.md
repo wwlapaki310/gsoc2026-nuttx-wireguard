@@ -252,7 +252,7 @@ WPA2/WPA3 が守る範囲(Wi-Fi の一区間のみ)と、必要な認証済み e
   接続をベンダーのクラウドに委ねる。同じ隙間は、edge AI や産業用 IoT、遠隔
   インフラ全般にも現れます — このプロジェクト固有の話ではありません。
 
-## 13 — 他の手段との比較 (8:53 → 10:10)
+## 13 — 他の手段との比較 (8:53 → 10:09)
 
 **画面:** 7つの手段(インターネットにポートを開ける / クラウド API への HTTPS /
 MQTT ブローカー / リバーストンネル・リレー / ルーターに VPN / キャリアの閉域網 /
@@ -277,7 +277,7 @@ MQTT ブローカー / リバーストンネル・リレー / ルーターに VP
 **Tailscale や ZeroTier について聞かれたら:** これらも機器上の VPN だが、今のところ
 マイコンより大きな OS が要ることが多い(スライドの脚注)。
 
-## 14 — Solution: なぜ WireGuard なのか (10:10 → 11:03)
+## 14 — Solution: なぜ WireGuard なのか (10:09 → 11:02)
 
 **画面:** Engineer/Linux/Windows ⟷ WireGuard トンネル ⟷ NuttX device の図。
 下に3点: modern IP-layer VPN / UDP transport, public-key peers / already
@@ -298,7 +298,7 @@ everywhere。
   ベンダーのクラウドに頼る代わりに、標準プロトコルを採用する」という選択です。
   これが、この特定の課題に WireGuard が合う理由です。
 
-## 15 — Architecture: NuttX ネットワークスタック上の WireGuard (11:03 → 11:51)
+## 15 — Architecture: NuttX ネットワークスタック上の WireGuard (11:02 → 11:50)
 
 **画面:** Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard
 encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、の層状図。
@@ -315,7 +315,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 - ここから先はすべて、この真ん中の部分 — `wg0` と暗号化のステップ — を、
   上下の層に触れずに作る話です。
 
-## 16 — 目次 ③The plan (11:51 → 12:01)
+## 16 — 目次 ③The plan (11:50 → 12:00)
 
 **画面:** 目次と同じリスト。③The plan だけハイライト、他は薄い。
 
@@ -323,7 +323,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 
 **間:** ハイライトされた行を指して一拍。
 
-## 17 — Porting Strategy: wireguard-lwip を lwIP なしで再利用する (12:01 → 13:02)
+## 17 — Porting Strategy: wireguard-lwip を lwIP なしで再利用する (12:00 → 13:03)
 
 **画面:** 3段カード — Protocol & crypto(KEEP、緑)/ Platform hooks(ADAPT、金、
 `wireguard-platform.h` の4関数)/ lwIP network glue(REPLACE、赤)。
@@ -342,7 +342,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   もたらすものです。その境界があったからこそ、最初の移植作業は書き直し
   ではなく差し替えで済み、作業量そのものが桁違いに小さくなりました。
 
-## 18 — Design: lwIP を NuttX netdev へ写像する (13:02 → 13:24)
+## 18 — Design: lwIP を NuttX netdev へ写像する (13:03 → 13:31)
 
 **画面:** lwIP → NuttX の対応表(`netif`→`net_driver_s`、`pbuf`→`iob`、
 `netif_add()`→`netdev_register()`、コールバック→`devif_poll()`)。
@@ -354,7 +354,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   `netdev_register` に、送信コールバックは NuttX の `devif_poll` になります。
   `wg0` は TUN 型の netdev として登録され、その下の「配線」は UDP ソケットです。
 
-## 19 — 目次 ④Version 1: the app (13:24 → 13:34)
+## 19 — 目次 ④Version 1: the app (13:31 → 13:41)
 
 **画面:** 目次と同じリスト。④Version 1: the app だけハイライト、他は薄い。
 
@@ -362,7 +362,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 
 **間:** ハイライトされた行を指して一拍。
 
-## 20 — Result: 動くトンネルは始まりにすぎない (13:34 → 14:19)
+## 20 — Result: 動くトンネルは始まりにすぎない (13:41 → 14:26)
 
 **画面:** 表(Protocol & crypto: 暗号はバイト単位で同一、プロトコル本体は小さな修正2つ(PATCHES.md) / OS hooks: 4関数 / Network glue:
 実際の作業)。`wg genkey / set / setconf` が実行時に可能、という claim。
@@ -379,7 +379,7 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
   — 「動いた」ように見えるところまでが実は一番安く手に入る到達点で、
   この後の話はほとんど、その「動いた」が何を隠していたか、です。
 
-## 21 — Where it was hard: 6つのバグ (14:19 → 15:28)
+## 21 — Where it was hard: 6つのバグ (14:26 → 15:35)
 
 **画面:** 見出し「The tunnel worked fast. Six bugs took most of the time.」。6つのバグの一覧表
 (バグ / 出た場所 / 教訓): 1 `wg` コマンドが終わると受信スレッドが止まる / 2 ping は通るのに TCP が死ぬ
@@ -404,7 +404,7 @@ GitHub への案内(QRコード付き)。Takeaway: 多くは通る試験の陰�
 **バグ1と4には、もう専用のスライドがない。** 話は上のノートにある。詳しい版(バグ1の
 `SO_RCVTIMEO` の回り道を含む)は Q&A 資料にある。
 
-## 22 — 落とし穴 2/6: ping は通るのに TCP が死ぬ (15:28 → 16:20) *(お気に入り)*
+## 22 — 落とし穴 2/6: ping は通るのに TCP が死ぬ (15:35 → 16:27) *(お気に入り)*
 
 **画面:** Takeaway は「If only some tasks fail, look at what each task owns. Here, it was the file descriptor.」
 
@@ -423,7 +423,7 @@ GitHub への案内(QRコード付き)。Takeaway: 多くは通る試験の陰�
   使えます。カーネル版がソケットを `struct socket` として保持しているのは、
   まさにこの理由です。
 
-## 23 — 落とし穴 3/6: 「実害なし」が実は10倍 (16:20 → 17:00) *(削る候補3)*
+## 23 — 落とし穴 3/6: 「実害なし」が実は10倍 (16:27 → 17:08) *(削る候補3)*
 
 **話す:**
 - 3つ目: 測定しなかった前提。
@@ -435,7 +435,7 @@ GitHub への案内(QRコード付き)。Takeaway: 多くは通る試験の陰�
   実は10倍でした。本当の修正は正しいブロッキング待ち — `psock_poll` への
   コールバックとセマフォです。
 
-## 24 — 第1版のデモ: 最初の動画 (17:00 → 17:26) *(削る候補2)*
+## 24 — 第1版のデモ: 最初の動画 (17:08 → 17:34) *(削る候補2)*
 
 **画面:** 左に動画の1コマ(公式 Windows WireGuard クライアントと、ESP32-S3 上の NuttX への
 telnet セッションが並んだ画面)。右に手順 — telnet 10.10.0.2 / uname -a、ifconfig / webserver & /
@@ -451,7 +451,7 @@ telnet セッションが並んだ画面)。右に手順 — telnet 10.10.0.2 / 
 **再生しない:** 静止画で十分。動画はライブデモの予備として取っておく。**これは apps 版。**
 この後のカーネル版の結果と混ぜて話さない。
 
-## 25 — 目次 ⑤Version 2: the kernel driver (17:26 → 17:36)
+## 25 — 目次 ⑤Version 2: the kernel driver (17:34 → 17:44)
 
 **画面:** 目次と同じリスト。⑤Version 2: the kernel driver だけハイライト、他は薄い。
 
@@ -459,7 +459,7 @@ telnet セッションが並んだ画面)。右に手順 — telnet 10.10.0.2 / 
 
 **間:** ハイライトされた行を指して一拍。
 
-## 26 — なぜカーネルへ: アプリからドライバへ (17:36 → 18:21)
+## 26 — なぜカーネルへ: アプリからドライバへ (17:44 → 18:30)
 
 **画面:** 見出し「Version 1 proved the protocol. Version 2 makes it a real NuttX device.」。2枚の枠 —
 Version 1: an app(`apps/` にあり、カーネル内部(`psock_*`)に手を入れる。FLAT ビルドでしか動かず、
@@ -479,7 +479,7 @@ Version 1: an app(`apps/` にあり、カーネル内部(`psock_*`)に手を入�
   第2版は、NuttX そのものに合わせることです: どのビルドモードでも使える普通のデバイスで、
   コミュニティがレビューできる形にすること。
 
-## 27 — カーネル側の設計: 全体像 (18:21 → 19:07)
+## 27 — カーネル側の設計: 全体像 (18:30 → 19:16)
 
 **画面:** 図。ユーザー空間には `wg` コマンドだけ(apps/system/wg、genkey・set・show)。ioctl(ポインタを
 含まない平らな構造体1つ。秘密鍵は書き込み専用)がユーザー/カーネルの境界を越えて、カーネル内の
@@ -498,7 +498,7 @@ UDP(wlan0 / usrsock → ピア)。
   暗号処理は NuttX 自身のものです。プロトコル本体は今も wireguard-lwip 由来の
   BSD-3-Clause のコードで、そのことは LICENSE ファイルに書いてあります。
 
-## 28 — 落とし穴 5・6/6: もう2つのバグ、1つは NuttX 自身 (19:07 → 20:13) *(27と一体)*
+## 28 — 落とし穴 5・6/6: もう2つのバグ、1つは NuttX 自身 (19:16 → 20:22) *(27と一体)*
 
 **画面:** 見出し「Two more bugs, and one was in NuttX itself.」。左: NuttX 自身の暗号
 (`chacha20poly1305` がカウンタをナンスの違うバイトに置く。カウンタ0では一致するので、ハンドシェイクは
@@ -522,7 +522,7 @@ UDP(wlan0 / usrsock → ピア)。
   SPRESENSE が起動しませんでした。原因を見つけて手元で直しました。報告は下書きまでで、
   まだ送っていません。
 
-## 29 — 検証: どこで何が動いたか (20:13 → 21:56) *(核心・削らない)*
+## 29 — 検証: どこで何が動いたか (20:22 → 22:05) *(核心・削らない)*
 
 **画面:** 見出し「Real boards in FLAT builds. KERNEL and PROTECTED on QEMU.」。カード3枚 —
 FLAT・実機(ESP32-S3: 2026-10-12、提出するシリーズそのもの。Linux とハンドシェイク、両方向の ping、
@@ -554,7 +554,7 @@ down/up でメモリは同じ、受信スレッドは 6096 中 1472B)、KERNEL�
   このボードはブートローダ経由のイメージを一切起動せず、これは WireGuard の問題では
   ありません。第1版のアプリも、両方のボードで動きました。記録は GitHub にあります。
 
-## 30 — 検証: ping が見逃すもの (21:56 → 22:53) *(核心・削らない)*
+## 30 — 検証: ping が見逃すもの (22:05 → 23:03) *(核心・削らない)*
 
 **画面:** 見出し「Three problems that ping would never notice.」。カード3枚 — 起動のたびに同じ鍵?
 (SPRESENSE: 3回のリセットで3つの違う鍵。簡単な確認で、乱数の質の証明ではない)/ down の後に鍵が
@@ -574,7 +574,7 @@ down/up でメモリは同じ、受信スレッドは 6096 中 1472B)、KERNEL�
   down/up。バッファは1つも失われず、メモリは起動時とちょうど同じ数に戻りました。
   1週間動いたとか、シミュレータがボードと同じように振る舞う、とは言っていません。
 
-## 31 — 設計判断: タイムスタンプ問題には楽な答えがない (22:53 → 24:16) *(核心・削らない)*
+## 31 — 設計判断: タイムスタンプ問題には楽な答えがない (23:03 → 24:26) *(核心・削らない)*
 
 **画面:** 規則(再起動の後でも、相手が見たものより新しいタイムスタンプが要る)。Chosen(リアルタイム
 クロック + この起動で使った最大値。Linux・wireguard-go と同じ規則 + 時計が未設定なら警告)/ Not chosen
@@ -599,7 +599,7 @@ down/up でメモリは同じ、受信スレッドは 6096 中 1472B)、KERNEL�
   ボードの代わりにハンドシェイクを始めてしまうからです。起動時のままの時計: 75秒
   見ていてもハンドシェイクなし。時計を設定すると: 4.1秒。だからドライバは警告を出します。
 
-## 32 — 目次 ⑥Live demo (24:16 → 24:26)
+## 32 — 目次 ⑥Live demo (24:26 → 24:36)
 
 **画面:** 目次と同じリスト。⑥Live demo だけハイライト、他は薄い。
 
@@ -607,7 +607,7 @@ down/up でメモリは同じ、受信スレッドは 6096 中 1472B)、KERNEL�
 
 **間:** ハイライトされた行を指して一拍。
 
-## 33 — デモ構成: スマホのネットワーク上の1本のトンネル (24:26 → 25:24)
+## 33 — デモ構成: スマホのネットワーク上の1本のトンネル (24:36 → 25:34)
 
 **画面:** 構成図。会場 Wi-Fi(機器どうしの通信を遮断)→ スマホのテザリング
 (独自の小さなローカルネットワーク)→ ラップトップ(Docker 内の WireGuard
@@ -629,7 +629,7 @@ down/up でメモリは同じ、受信スレッドは 6096 中 1472B)、KERNEL�
 - 見てほしいのは2つです。ログインした後のアドレスと、パケットです。
   トンネルの外では、暗号化された UDP しか見えません。
 
-## 34 — デモ (25:24 → 26:54)
+## 34 — デモ (25:34 → 27:04)
 
 **画面:** 7つの手順 — wg show / telnet 10.10.0.2 / ifconfig /
 stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
@@ -669,7 +669,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 
 **フォールバック:** 録画。ライブが止まったらすぐ切り替える。
 
-## 35 — 目次 ⑦Summary & status (26:54 → 27:04)
+## 35 — 目次 ⑦Summary & status (27:04 → 27:14)
 
 **画面:** 目次と同じリスト。⑦Summary & status だけハイライト、他は薄い。
 
@@ -677,7 +677,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 
 **間:** ハイライトされた行を指して一拍。
 
-## 36 — 還元する: 今の状態 (27:04 → 27:46) *(おまけ・最優先で削る)*
+## 36 — 還元する: 今の状態 (27:14 → 27:56) *(おまけ・最優先で削る)*
 
 **画面:** 4項目 — 小さな `crypto:` の修正(ChaCha20-Poly1305 のナンス修正、それだけで役に立つので
 ドライバと分けた)/ ドライバ(`drivers/net/wireguard`: カーネルデバイス、ABI、文書、ネットワーク本体の
@@ -703,7 +703,7 @@ stackchan face happy / stackchan say hello.wav / tcpdump の外と内 /
 (検証・パターン)は背負っていない。飛ばしても質疑で聞かれたら答えられる
 ように、上の2点だけ頭に入れておく。
 
-## 37 — 学んだこと (27:46 → 29:06)
+## 37 — 学んだこと (27:56 → 29:16)
 
 **画面:** 見出し「Three things this project taught me.」。カード3枚 — Lesson 1: From application user
 to OS contributor(何年もアプリ側から NuttX を使ってきた / このプロジェクトでドライバ、カーネル、NuttX
@@ -733,7 +733,7 @@ AI は `Signed-off-by` を付けない / CI やハッカソンが新しい人の
 
 **AI の話は飾らずに。** 告白でも自慢でもなく: 速くなった、それでも理解は大変で、それは自分の仕事だった。
 
-## 38 — Summary: 作ったものと、技術の教訓3つ (29:06 → 29:52)
+## 38 — Summary: 作ったものと、技術の教訓3つ (29:16 → 30:03)
 
 **画面:** Built: `wg0`、NuttX カーネルの中の WireGuard ネットワークデバイス。ESP32-S3 と SPRESENSE(FLAT)、
 QEMU 上の KERNEL / PROTECTED ビルドで、標準の WireGuard ピアと動く。小さな PR として準備済み、まだ何も
@@ -751,7 +751,7 @@ QEMU 上の KERNEL / PROTECTED ビルドで、標準の WireGuard ピアと動�
   コード変更なしで動きました。3つ目、あるプロジェクトへの移植は、そのプロジェクトを
   良くする機会になります: バグの1つは NuttX 自身の暗号処理にありました。
 
-## 39 — 謝辞: この発表を支えてくれた人たち (29:52 → 30:27)
+## 39 — 謝辞: この発表を支えてくれた人たち (30:03 → 30:38)
 
 **画面:** 4つの枠 — Alan / Apache NuttX コミュニティ / Apache Software Foundation と
 CoC の運営・ボランティアの皆さん / Sony の NuttX 開発者(これまでの、そして今の)。
@@ -766,7 +766,7 @@ CoC の運営・ボランティアの皆さん / Sony の NuttX 開発者(これ
   皆さん。NuttX を製品に入れ、プロジェクトに多くを還元してきました。
   この仕事は、その上に立っています。
 
-## 40 — ありがとうございました (30:27 → 30:36)
+## 40 — ありがとうございました (30:38 → 30:47)
 
 **画面:** GitHub リポジトリ `github.com/wwlapaki310/gsoc2026-nuttx-wireguard` と QR コード、デモ動画のリンク、Questions welcome。
 
