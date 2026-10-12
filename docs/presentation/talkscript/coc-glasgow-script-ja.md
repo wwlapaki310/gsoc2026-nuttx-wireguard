@@ -66,7 +66,7 @@ ESP32-S3 での提出シリーズそのものの実行の区別、PROTECTED の 
 **画面:** 見出し「From Japan: I work at Sony, and I build things as a hobby.」。上: 本人写真・
 名前の1行・SNS の狐アイコン。下の左: 日本地図(① 名古屋 生まれ → ② 仙台 大学 → ③ 川崎 現在)。
 下の右: Hobby engineer の写真5枚(Space: モデルロケット / Semiconductors: ウェハ上の試作チップ /
-DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド / Linux: LinuC のペンギン)と、
+DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド / Software Conference: 運営参加時の写真)と、
 活動のチップ3つ。経歴の流れ(分子ロボティクス → … → NuttX)は画面にはなく、口頭だけ。
 
 **話す:**
@@ -74,7 +74,7 @@ DNA nanotech: cryo-TEM 像 / Robots: ハッカソンのヒューマノイド / L
 - Sony Semiconductor Solutions で edge AI エンジニアをしていて、application 側から
   Apache NuttX に関わっています。日本から来ました: 名古屋生まれ、大学は仙台、
   今は川崎に住んでいます。仕事の外ではホビーエンジニアで、宇宙・半導体・
-  ロボットまわりのものを作っています。大学では DNA でナノ構造を作り、Linux も大好きです。SNS では、この写真の狐が私です。
+  ロボットまわりのものを作っています。大学では DNA でナノ構造を作りました。Open Source Summit Japan や KubeCon など、ソフトウェアカンファレンスにも運営として参加しています。SNS では、この写真の狐が私です。
   ここに至る道のりは、分子ロボット工学の世界大会、
   コンピュータビジョンと AI システムの仕事、edge AI カメラ、そして SPRESENSE 上の
   embedded systems を通っています — NuttX と WireGuard は、その最新の到達点であって、

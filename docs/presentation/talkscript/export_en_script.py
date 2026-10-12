@@ -36,7 +36,7 @@ SLIDES = [
         "master / 12.7.0.", []),
     ("About Me", "",
         "Three bands: photo, name line and the fox icon / five hobby photos "
-        "(space, semiconductors, DNA nanotech, robots, Linux) with three "
+        "(space, semiconductors, DNA nanotech, robots, Software Conference) with three "
         "activity chips / a one-row path Robotics → Computer Vision → Edge AI "
         "→ Embedded Systems → NuttX / WireGuard, a picture per step.", []),
     ("Agenda", "",
