@@ -149,7 +149,7 @@ X25519 code is near its deepest frame.
 
 ## Fix
 
-Patch (apps). Folded into the PR-A commit on 2026-10-12: nuttx-apps `pr-latest/system-wg` is now `0ff6a0984` + `3a6d641d9`; the previous tip is `bak/pr-latest-20261012/system-wg`:
+Patch (apps). Folded into the PR-A commit on 2026-10-12: nuttx-apps `pr-latest/system-wg` is now `90a390e0e` + `3a54cc458` (also includes the wg_x25519.c alignment fix); the previous tip is `bak/pr-latest-20261012/system-wg`:
 `0001-system-wg-protected-stack.patch` in the scratchpad `protfault/`
 directory. It makes `CONFIG_SYSTEM_WG_STACKSIZE` default to 6144 when
 `BUILD_PROTECTED`, keeps 4096 otherwise, and says why in the help text.

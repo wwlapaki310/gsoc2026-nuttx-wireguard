@@ -147,7 +147,7 @@ X25519 のスカラー倍算)、その最中に入った割り込みのフレー
 一番下にある TLS ブロックまであふれる。割り込みがちょうど一番深いところで入ったときだけ起きるので、間欠的だった。
 
 **修正:** `SYSTEM_WG_STACKSIZE` の既定値を `BUILD_PROTECTED` のとき 6144 にした(`system/wg/Kconfig`、
-help を含めて 9 行)。PR-A のコミットに含めた(apps `pr-latest/system-wg` = `0ff6a0984` + `3a6d641d9`、§6.2)。
+help を含めて 9 行)。PR-A のコミットに含めた(apps `pr-latest/system-wg` = `90a390e0e` + `3a54cc458`、§6.2)。
 `rv-virt:pnsh64`(QEMU)の結果:修正前は 10 回中 9 回・7 回・7 回 FAIL、修正後は **20 回中 20 回 PASS**
 (`verify-pnsh-wg.sh` 全体。`EXCEPTION`/`PANIC`/`_assert` なし)。**実機では未確認**(§2.4)。
 
@@ -437,8 +437,8 @@ nuttx `4bc1ab2fd7`(2026-10-11)、nuttx-apps `74df79a53`(2026-10-11)。行番号�
 - upstream の実例(2026-06 以降):`Claude Code:claude-opus-5-5` が 131 件、`Claude:claude-opus-5-5` 19 件、
   `Codex:GPT-6` 30 件など。いずれも `Assisted-by:` の次の行が `Signed-off-by:`
 
-**本シリーズで使う文面**(本人の申告:ツールは Claude Code、モデルは「Claude Opus 5.5」。
-本人は「かな」と書いており**未確定**。Claude Opus 5.5 の正式なモデル ID は `claude-opus-5-5`):
+**本シリーズで使う文面**(2026-10-12 本人が確定:ツールは Claude Code、モデルは Claude Opus 5.5。
+書式の例と upstream の実例に合わせ、モデルはハイフンの ID `claude-opus-5-5` で書く):
 
 ```
 Assisted-by: Claude Code:claude-opus-5-5
@@ -507,7 +507,7 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | PR-N | `pr-latest/nxstyle-wg` | `66218ee3e7` tools/nxstyle: Skip the vendored X25519 in system/wg. |
 | PR-K1 | `pr-latest/wireguard-driver` | `73474ea80c` net: Fix nxstyle issues in netdev_upperhalf.c and netdev_register.c.<br>`52be44b168` drivers/net/netdev_upperhalf: Accept IP-only lower halves for WireGuard.<br>`31231d4965` net/netdev: Add the WireGuard control ioctls.<br>`486489718c` drivers/net/wireguard: Add the WireGuard device.<br>`2901802758` boards/sim: Add the sim:wireguard configuration.<br>`0b4ed6ec77` Documentation: Add the WireGuard network device. |
 | PR-D | `pr-latest/doc-system-wg` | `237b6e538e` Documentation: Add the system/wg command. |
-| PR-A | apps `pr-latest/system-wg` | `0ff6a0984` system/wg: Add a WireGuard configuration command.<br>`3a6d641d9` LICENSE: Add the STROBE X25519 used by system/wg. |
+| PR-A | apps `pr-latest/system-wg` | `90a390e0e` system/wg: Add a WireGuard configuration command.<br>`3a54cc458` LICENSE: Add the STROBE X25519 used by system/wg. |
 
 `pr/*`(10/07 base)は触っていない。`pr/*` の sim:wireguard defconfig も同じ 2 行を持つので、`pr/*` から出すなら同じ修正が要る。
 
@@ -524,9 +524,9 @@ Signed-off-by: satoru akita <wwlap24@gmail.com>
 | R7 | PR テンプレートの Self-Check 節・Impact の各項目が下書きに無い | 2.3 L454-502 | pr-drafts.md を直した |
 | R8 | 実機ログ:ESP32-S3 は取得済み([evidence/esp32s3-pr-latest-2026-10-12.md](evidence/esp32s3-pr-latest-2026-10-12.md))。Spresense は未取得。署名後に SHA が変わるので、PR に貼るのは署名後の SHA で取り直したもの | 1.7.2、1.9 | 本人(§3 (b)) |
 | R9 | `wg_noise.c` は**開発が続いている** wireguard-lwip(BSD-3)由来。workflow.rst は活発なプロジェクトのコードは取り込まない、Apache-2.0 以外は望ましくない、としている | workflow.rst L44-57 | **判断待ち**(§6.5 の 3)。wireguard-lwip の最新コミットは 2026-08-14(GitHub API で確認) |
-| R10 | 会社員の場合の著作権・契約、業務用メール | workflow.rst L38-40、1.16 L365-366 | **判断待ち**(§6.5 の 4) |
+| R10 | 会社員の場合の著作権・契約、業務用メール | workflow.rst L38-40、1.16 L365-366 | **決定**:個人の `wwlap24@gmail.com`、勤務先とは無関係(§6.5 の 4) |
 | R11 | making-changes.rst は「PR 前は通常 1 コミットに squash」と書く。本シリーズは PR 内を分けている | making-changes.rst L189-191。CONTRIBUTING 1.7.5 L177-179 は複数コミットを認める | 規則(CONTRIBUTING)上は可。レビューで squash を求められたら従う |
-| R12 | `wg_x25519.c` に STROBE 由来の誤記 `x1 = (const uint8_t *)x1;`(本来 `x1i`)。`X25519_MEMCPY_PARAMS 1` の構成では、整列済みの写しを作ったのに整列していない入力を読み続ける。wireguard-lwip が 2026-08-14 に同じ箇所を直した(PR #17、ARMv6-M で unaligned access の例外) | apps `system/wg/wg_x25519.c` L281 | **判断待ち**(§6.5 の 5)。CI の規則違反ではない |
+| R12 | `wg_x25519.c` に STROBE 由来の誤記 `x1 = (const uint8_t *)x1;`(本来 `x1i`)。`X25519_MEMCPY_PARAMS 1` の構成では、整列済みの写しを作ったのに整列していない入力を読み続ける。wireguard-lwip が 2026-08-14 に同じ箇所を直した(PR #17、ARMv6-M で unaligned access の例外) | apps `system/wg/wg_x25519.c` L281 | **対応済み**:PR-A の system/wg コミットで修正(§6.5 の 5)。CI の規則違反ではない |
 | R13 | macOS / msys2 / msvc の CI ジョブ、他アーキテクチャのグループは再現していない | build.yml L471-616 | 未実施(§6.6) |
 | R14 | BUILD_PROTECTED で `wg` のスタックがあふれ、QEMU の実行が間欠的に fault する | [evidence/protected-fault-2026-10-12.md](evidence/protected-fault-2026-10-12.md) | **直した**(PR-A、§2.3・§6.2)。QEMU で 20/20 PASS。実機では未確認 |
 
@@ -571,7 +571,7 @@ git log --format='%h %(trailers:key=Assisted-by,key=Signed-off-by,separator=%x20
 
 ### 6.5 本人が決めること(merge-strategy §6 と本書 §5 に追加)
 
-1. **`Assisted-by:` の最終的な一覧**:Claude Code の行のモデル(`claude-opus-5-5` でよいか)、Codex を使ったか・そのモデル
+1. ~~`Assisted-by:` の最終的な一覧~~ → **決定(10/12)**:`Assisted-by: Claude Code:claude-opus-5-5`。Codex も使っていた場合だけ、本人が 2 行目に `Assisted-by: Codex:<モデル>` を足す
 2. **R5 の順序問題**。考えられる形(どれも未実施):
    - (i) PR-K1 の sim:wireguard から `CONFIG_SYSTEM_WG*` を外し(driver だけをコンパイルする構成)、PR-A のマージ後に
      PR-D で足す。PR-D は Documentation だけでなくなるので build/check ジョブも走る
@@ -581,8 +581,8 @@ git log --format='%h %(trailers:key=Assisted-by,key=Signed-off-by,separator=%x20
    - (iii) (i) と同じで、wg 付きの構成は PR-A 後の独立した小さな PR にする
 3. **R9**:wireguard-lwip 由来の `wg_noise.c` を BSD-3 のまま入れることの説明(workflow.rst L44-57)。
    dev@ の論点に入れるか、PR-K1 本文にどう書くか
-4. **R10**:作者・署名のメール(`wwlap24@gmail.com` のままか)、所属組織との著作権・契約の確認(workflow.rst L38-40)
-5. **R12**:`wg_x25519.c` L281 の誤記を PR-A で直すか(直すと「STROBE の本体は 1 文字も変えていない」と書けなくなる)
+4. ~~R10~~ → **決定(10/12)**:作者・署名は個人の `wwlap24@gmail.com`。個人としての貢献で、勤務先とは関係しない(本人の判断)
+5. ~~R12~~ → **対応済み(10/12)**:PR-A で直した。`x1` が整列済みの写し `x1i` を指すようにし、ファイル冒頭の改変の説明に「この 1 行だけは upstream から変えた、wireguard-lwip PR #17 と同じ修正」と書いた
 6. 出す系統を `pr-latest/*`(10/12)にするか。`pr/*` は R3・R4 が未修正
 
 ### 6.6 CI の再現(2026-10-12、Docker)
@@ -620,6 +620,8 @@ testbuild が defconfig の正規形と木の汚れを検査):
 | 3 | PR-K1 先端 `0b4ed6ec77` / apps master | sim:wireguard | **FAIL(確認済み)**:refresh で消えるのは `CONFIG_SYSTEM_WG=y` と `CONFIG_SYSTEM_WG_CONFIG_PATH` の 2 行だけ(R5)。R4 の 2 行は消えない |
 | 3 | コミットごとの `-Werror` ビルド(コードを含む 10 コミット:PR-C 2、PR-K1 6、PR-A 2。PR-N と PR-D は対象外) | §2.2 と同じ | **全 10 件 PASS、警告 0**。PR-C の 2 件目は起動時の KAT も PASS。PR-K1 のデバイス追加以降の 3 件は、apps の system/wg なしで `wg0` が登録されることも確認 |
 | 3 | sim 一式・CMake・BUILD_KERNEL(`tip.sh`、nuttx `237b6e538e` / apps `fc640afc4`) | §2.3 と同じ | **すべて PASS**:sim:wireguard ビルド(警告 0)、sim 試験一式 8 本(369 秒)、CMake/Ninja(T8)、rv-virt:knetnsh64 の BUILD_KERNEL ビルドと実行(Linux の WireGuard と双方向、負荷中の再設定と down/up から復帰) |
+
+| 4 | PR-A を直した後(apps `90a390e0e` + `3a54cc458`:PROTECTED のスタック既定値と `wg_x25519.c` の整列の修正)の コミットごとの `-Werror` ビルドと、sim 一式・CMake(nuttx `237b6e538e`) | §2.2・§2.3 と同じ | **すべて PASS**:apps の 2 コミットとも警告 0。sim 一式(369 秒、NuttX が作った鍵で Linux の WireGuard とつながる試験を含む)、CMake/Ninja |
 
 **doc.yml の再現**(`python:3.10`、`pipenv sync`、`pipenv run make html`。`SPHINXOPTS` に `-W`):
 PR-D 先端(修正前 `e84831c5f1`)**PASS**(303 秒、`applications/system/wg/index.html` と
