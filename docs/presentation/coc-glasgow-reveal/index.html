@@ -290,7 +290,6 @@
     border-left: 5px solid var(--wg);
     background: var(--wg-soft);}
   .reveal .frame .claim.ok { border-left-color: var(--nx); background: var(--nx-soft);}
-  .reveal .frame .claim.context { border-left-color: var(--blue); background: var(--blue-soft);}
   .reveal .frame .claim p {
     margin: 0;
     font-size: 25px;
@@ -302,6 +301,13 @@
     color: var(--muted);
     font-size: 17px;
     line-height: 1.5;}
+  .reveal .frame .context-line {
+    margin: 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.45;
+    text-align: center;}
+  .reveal .frame .context-line strong { color: var(--ink);}
   .reveal .frame .route {
     width: 100%;
     height: auto;}
@@ -1231,9 +1237,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
           </div>
         </div>
       </div>
-      <div class="claim context" style="text-align:center;padding:14px 28px">
-        <p style="font-size:19px">Where I work: <span class="hl">application development</span> &rarr; <span class="hl">system integration</span> &rarr; <span class="hl">deployment &amp; operation</span>.</p>
-      </div>
+      <p class="context-line"><strong>Where I work:</strong> <span class="hl">application development</span> &rarr; <span class="hl">system integration</span> &rarr; <span class="hl">deployment &amp; operation</span>.</p>
       <div class="takeaway"><b>Takeaway</b><p>My problem was not making NuttX run. It was reaching NuttX devices after they were installed.</p></div>
     </div>
     <div class="num"><span class="part">PART 1 &middot; 6/6</span>10 / 40</div>
@@ -1540,9 +1544,6 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         <tr><td>Registration</td><td class="old">netif_add()</td><td class="new">netdev_register()</td></tr>
         <tr><td>Start sending</td><td class="old">callback</td><td class="new">devif_poll()</td></tr>
       </table>
-      <div class="claim context">
-        <p><code>wg0</code> is a <code>NET_LL_TUN</code> netdev, and its wire is a UDP socket.</p>
-      </div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
     <div class="num"><span class="part">PART 3 &middot; 2/2</span>18 / 40</div>
@@ -1608,16 +1609,13 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   <div class="frame">
     <p class="eyebrow">Version 1: WireGuard as a NuttX application</p>
     <div class="body">
+      <p class="context-line"><strong>Goal:</strong> run a standard WireGuard tunnel entirely as a NuttX application. Reuse the protocol and crypto; implement the NuttX OS hooks and native network glue.</p>
       <table>
         <tr><th>Layer</th><th>Work needed</th><th>In this port</th></tr>
         <tr><td>Protocol &amp; crypto</td><td class="old">Almost none &mdash; portable C</td><td class="new">crypto byte-identical; protocol core: two small fixes (PATCHES.md)</td></tr>
         <tr><td>OS hooks</td><td class="old">Small &mdash; four functions</td><td class="new">clock, /dev/urandom, TAI64N, load</td></tr>
         <tr><td>Network glue</td><td class="old">The real work</td><td class="new">netdev + UDP socket + RX task</td></tr>
       </table>
-      <div class="claim context">
-        <p>Goal: make a standard WireGuard tunnel run entirely as a NuttX application.</p>
-        <small>Reuse the protocol and crypto, then implement the NuttX OS hooks and native network glue.</small>
-      </div>
       <div class="takeaway"><b>Takeaway</b><p>Version 1 proved that WireGuard could run on NuttX. It also exposed the OS and networking problems that the first tunnel did not show.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 1/5</span>20 / 40</div>
@@ -1694,9 +1692,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         <p>Quick fix: check the socket every 50&nbsp;ms.</p>
         <small>The fix without fds also broke <code>poll()</code>. I thought the only cost was waking an idle CPU. Wrong: each packet waited up to 50&nbsp;ms, and that made it <span class="hl red">about 10&times; slower.</span></small>
       </div>
-      <div class="claim context">
-        <p>Real fix: a callback on <code>psock_poll()</code> and a semaphore, a real blocking wait.</p>
-      </div>
+      <p class="context-line"><strong>Real fix:</strong> a callback on <code>psock_poll()</code> and a semaphore &mdash; a real blocking wait.</p>
       <div class="takeaway"><b>Takeaway</b><p>A quick fix you never measure can look free. Measure it.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 4/5</span>23 / 40</div>
