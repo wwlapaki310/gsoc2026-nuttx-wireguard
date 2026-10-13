@@ -6,8 +6,9 @@ version on the official template, [`coc-glasgow-reveal/`](../coc-glasgow-reveal/
 [`export_en_script.py`](export_en_script.py) from the speaker notes in the
 deck (press `S` in the reveal edition, `N` in the standalone one). Do not edit
 this file by hand. Change the notes in the deck and run the script again, or the
-two will stop matching. The Japanese [practice script](coc-glasgow-script-ja.md)
-has not been updated for the 2026-10-13 rewrite of the English text.
+two will stop matching. The Japanese [practice script](coc-glasgow-script-ja.md) is made
+from the same notes by [`export_ja_script.py`](export_ja_script.py) and follows this
+script one to one (same slides, same Essential / Optional / Presenter Notes, same times).
 
 ## How to read this script
 
@@ -229,7 +230,6 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Presenter Notes:**
 - The line counts come from the WireGuard author's Linux Plumbers 2018 talk (slide 5, https://www.wireguard.com/talks/lpc2018-wireguard-slides.pdf). They are old, for specific implementations, and slide 4 of the same talk gives slightly different OpenVPN numbers.
-- **Check before the talk:** the line counts come from the WireGuard author's Linux Plumbers 2018 talk. They are old, for specific implementations, and the talk's slides give slightly different OpenVPN numbers. Say so if asked.
 
 ## 14 — Architecture: WireGuard on the NuttX Network Stack (8:51 → 9:27)
 
@@ -298,7 +298,6 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Presenter Notes:**
 - Line counts are physical lines from git history. Reused: the vendored wireguard-lwip files (about 3,100 lines). Fixes: about 40 lines changed (2026-09-18). OS hooks: nuttx-platform.c, 118 lines at the first working tunnel (2026-08-13). Glue: nuttx-wireguardif.c and .h, about 1,200 lines at that time. Today's file is about twice as long because of run-time configuration.
-- **Check before the talk:** the line counts are physical lines (comments included) from git history. Glue is the first working tunnel (2026-08-13); today's file is about twice as long because of run-time configuration.
 
 ## 20 — Where It Was Hard: Six Bugs (12:10 → 12:45)
 
@@ -354,7 +353,6 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Presenter Notes:**
 - Do not play the video; the still is enough.
-- **No playback.** The still is enough; the video is the backup for the live demo.
 - **It is the apps version.** Do not mix it with the kernel-version results later in the talk.
 
 ## 24 — Agenda: ⑤ Version 2: The Kernel Driver (14:40 → 14:50)
@@ -473,7 +471,6 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Presenter Notes:**
 - If asked 'is it merged?': not yet, and nothing is submitted. These are submission candidates, not a claim that it is mergeable.
-- **If asked "is it merged?":** not yet, and nothing is submitted. These are submission candidates, not a claim that it is mergeable. See the Q&A file.
 - **State of the submission (2026-10-13):** no pull request about this work exists in apache/nuttx or apache/nuttx-apps. The only related issue is the closed GSoC proposal thread (#18548). The branches exist only on the author's forks. Do not say "submitted".
 
 ## 33 — What I Learned (21:59 → 23:23)
@@ -492,7 +489,6 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Presenter Notes:**
 - Say the AI part plainly: not as a confession and not as a boast. It was faster, and understanding was still hard and still mine.
-- **Say the AI part plainly.** Not as a confession and not as a boast: it was faster, and understanding was still hard and still mine.
 
 ## 34 — Acknowledgements (23:23 → 24:09)
 

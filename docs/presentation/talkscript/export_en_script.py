@@ -116,10 +116,7 @@ SLIDES = [
          "code: IPsec ~420k, OpenVPN ~120k, WireGuard ~3.8k, from 2018) / "
          "modern cryptography (ChaCha20-Poly1305, Curve25519) / UDP-based "
          "tunnel.",
-         ["**Check before the talk:** the line counts come from the "
-          "WireGuard author's Linux Plumbers 2018 talk. They are old, for "
-          "specific implementations, and the talk's slides give "
-          "slightly different OpenVPN numbers. Say so if asked."]),
+         []),
     ("Architecture: WireGuard on the NuttX Network Stack", "",
          "Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard "
          "encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX "
@@ -149,10 +146,7 @@ SLIDES = [
          "UDP socket + RX task; ~1,200 new lines). Takeaway in two lines: "
          "Version 1 proved WireGuard could run on NuttX; it also exposed OS "
          "and networking problems the first tunnel did not reveal.",
-         ["**Check before the talk:** the line counts are physical lines "
-          "(comments included) from git history. Glue is the first working "
-          "tunnel (2026-08-13); today's file is about twice as long "
-          "because of run-time configuration."]),
+         []),
     ("Where It Was Hard: Six Bugs", "",
          "One table of all six bugs (bug / showed up in / lesson): 1 the "
          "receive thread stopped with the wg command / 2 ping works, TCP dies "
@@ -181,9 +175,7 @@ SLIDES = [
          "browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), "
          "USB unplugged; the official Windows client; small text "
          "youtu.be/1kyX2av5WG4.",
-         ["**No playback.** The still is enough; the video is the backup "
-          "for the live demo.",
-          "**It is the apps version.** Do not mix it with the "
+         ["**It is the apps version.** Do not mix it with the "
           "kernel-version results later in the talk."]),
     ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
     ("Version 2: WireGuard as a NuttX Kernel Driver", "",
@@ -255,10 +247,7 @@ SLIDES = [
          "tested on real boards and QEMU) / 3 Toward Upstream Contribution "
          "(preparing the driver and related fixes for review; a small line: "
          "prepared as small, separate changes, nothing is submitted yet).",
-         ['**If asked "is it merged?":** not yet, and nothing is submitted. '
-          "These are submission candidates, not a claim that it is "
-          "mergeable. See the Q&A file.",
-          "**State of the submission (2026-10-13):** no pull request about "
+         ["**State of the submission (2026-10-13):** no pull request about "
           "this work exists in apache/nuttx or apache/nuttx-apps. The only "
           "related issue is the closed GSoC proposal thread (#18548). The "
           "branches exist only on the author's forks. Do not say "
@@ -269,9 +258,7 @@ SLIDES = [
          "open-source community (docs and guides, review, AI-assisted "
          "development with people responsible, CI and hackathons help new "
          "people join). Bottom line: the hope to keep contributing.",
-         ["**Say the AI part plainly.** Not as a confession and not as a "
-          "boast: it was faster, and understanding was still hard and still "
-          "mine."]),
+         []),
     ("Acknowledgements", "",
          "A plain vertical list, a name and one line each: Alan Carvalho de "
          "Assis (encouraged me to submit this talk) / The Apache NuttX "
@@ -310,8 +297,9 @@ version on the official template, [`coc-glasgow-reveal/`](../coc-glasgow-reveal/
 [`export_en_script.py`](export_en_script.py) from the speaker notes in the
 deck (press `S` in the reveal edition, `N` in the standalone one). Do not edit
 this file by hand. Change the notes in the deck and run the script again, or the
-two will stop matching. The Japanese [practice script](coc-glasgow-script-ja.md)
-has not been updated for the 2026-10-13 rewrite of the English text.
+two will stop matching. The Japanese [practice script](coc-glasgow-script-ja.md) is made
+from the same notes by [`export_ja_script.py`](export_ja_script.py) and follows this
+script one to one (same slides, same Essential / Optional / Presenter Notes, same times).
 
 ## How to read this script
 
@@ -403,13 +391,9 @@ def mmss(s):
     return "%d:%02d" % (s // 60, s % 60)
 
 
-def main():
-    sys.stdout.reconfigure(encoding="utf-8")
-    all_notes = parse_notes()
+def analyse(all_notes):
+    """Times and totals, shared with export_ja_script.py."""
     count = len(all_notes)
-    if len(SLIDES) != count:
-        raise SystemExit("SLIDES covers %d slides but the deck has %d"
-                         % (len(SLIDES), count))
 
     def find(pred):
         return [i for i, sl in enumerate(SLIDES, 1) if pred(sl)]
@@ -453,6 +437,30 @@ def main():
         es = sum(per[i - 1][0] for i in range(a, b + 1))
         os_ = sum(per[i - 1][1] for i in range(a, b + 1))
         rows.append("| %s | %d–%d | %s | %s |" % (names[k], a, b, mmss(es), mmss(es + os_)))
+
+    return dict(per=per, spans=spans, e_time=e_time, eo_time=eo_time,
+                e_words=e_words, eo_words=eo_words, demo_words=demo_words,
+                napp=napp, dividers=dividers, names=names, rows=rows,
+                bounds=bounds)
+
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    all_notes = parse_notes()
+    count = len(all_notes)
+    if len(SLIDES) != count:
+        raise SystemExit("SLIDES covers %d slides but the deck has %d"
+                         % (len(SLIDES), count))
+
+    def find(pred):
+        return [i for i, sl in enumerate(SLIDES, 1) if pred(sl)]
+
+    d = analyse(all_notes)
+    per, spans = d["per"], d["spans"]
+    e_time, eo_time = d["e_time"], d["eo_time"]
+    e_words, eo_words = d["e_words"], d["eo_words"]
+    demo_words, napp = d["demo_words"], d["napp"]
+    dividers, rows = d["dividers"], d["rows"]
 
     core = find(lambda sl: sl[1].startswith("core"))
     body = [HEADER.format(
