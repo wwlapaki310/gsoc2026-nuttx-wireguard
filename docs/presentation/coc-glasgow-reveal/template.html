@@ -29,6 +29,7 @@
 <pre id="check-report" hidden></pre>
 <script src="vendor/reveal/reveal.js"></script>
 <script src="vendor/reveal/plugin/notes.js"></script>
+<script src="../assets/backup-video.js"></script>
 <script>
 Reveal.initialize({
   hash: true,
@@ -76,6 +77,17 @@ function checkLayout() {
           (el.getAttribute("class") || "").replace(/ /g, ".") +
           " [" + Math.round(left) + "," + Math.round(top) + " - " +
           Math.round(right) + "," + Math.round(bottom) + "]");
+      }
+    });
+    frame.querySelectorAll("a[href]").forEach(function (a) {
+      var r = a.getBoundingClientRect();
+      if (!r.width || !r.height) { return; }
+      var top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      if (!top || !(a === top || a.contains(top))) {
+        issues.push("link covered: " + (a.getAttribute("href") || "").slice(0, 60));
+      }
+      if (a.getAttribute("target") !== "_blank" || !/noopener/.test(a.rel) || !/noreferrer/.test(a.rel)) {
+        issues.push("link without target/rel: " + (a.getAttribute("href") || "").slice(0, 60));
       }
     });
     frame.querySelectorAll(".body").forEach(function (b) {

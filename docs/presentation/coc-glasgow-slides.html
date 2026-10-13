@@ -925,6 +925,21 @@
   .bye .lnk a { font-family: var(--mono); font-size: 19px; line-height: 1.4; font-weight: 600; color: var(--nx); word-break: break-all; }
   .bye .who { margin: 0; color: var(--muted); font-size: 20px; }
 
+  /* links: quiet, with a hover cue */
+  .sources a, p.mono a { color: inherit; text-decoration: underline; text-decoration-color: rgba(120, 130, 140, .55); text-underline-offset: 2px; transition: color .15s, text-decoration-color .15s; }
+  .sources a:hover, .sources a:focus-visible, p.mono a:hover, p.mono a:focus-visible { color: var(--nx); text-decoration-color: var(--nx); }
+  .repo a:hover, .repo a:focus-visible, .bye .lnk a:hover, .bye .lnk a:focus-visible { color: var(--ink); }
+  a.sc-card:hover, a.sc-card:focus-visible, a.qr-card:hover, a.qr-card:focus-visible { border-color: var(--nx); }
+
+  /* backup video: shown only when assets/demo/backup-demo.mp4 exists (assets/backup-video.js) */
+  .bv[hidden], .bv-overlay[hidden], .bv-open[hidden] { display: none !important; }
+  .bv-open { position: absolute; right: 72px; top: 104px; z-index: 5; padding: 4px 12px; border: 1px solid var(--line); border-radius: 3px; background: #fff; color: var(--muted); font-family: var(--mono); font-size: 14px; letter-spacing: .08em; cursor: pointer; }
+  .bv-open:hover, .bv-open:focus-visible { color: var(--nx); border-color: var(--nx); }
+  .bv-overlay { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 56px 40px 24px; background: #0b0b0b; }
+  .bv-overlay video { display: block; max-width: 100%; max-height: 100%; background: #000; }
+  .bv-close { position: absolute; top: 14px; right: 18px; padding: 5px 14px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 3px; background: transparent; color: #fff; font-family: var(--mono); font-size: 14px; letter-spacing: .08em; cursor: pointer; }
+  .bv-close:hover, .bv-close:focus-visible { background: rgba(255, 255, 255, .16); }
+
   /* options comparison */
   table.options { font-size: 15.5px; line-height: 1.22; }
   table.options th, table.options td { padding: 5px 9px; }
@@ -1224,7 +1239,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener"><img src="assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
+    <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
     <div class="num">1 / 35</div>
     <div class="notes-src">
 Hello everyone. I'm Satoru Akita from Sony Semiconductor Solutions in Japan.
@@ -1542,7 +1557,7 @@ So the work that started with GSoC grew step by step, and it still continues. Ne
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Apache NuttX is a POSIX-like RTOS used in a wide range of real-world embedded devices.</p></div>
     </div>
-    <div class="sources">Sources: nuttx.apache.org/market-share &middot; &ldquo;NuttX at Fitbit&rdquo; (2020) &middot; docs.px4.io &middot; Sony Developer Blog. Images: Sony; Wikimedia Commons (Charge 3: Vemerce, CC BY-SA 4.0; Pixhawk: Pixhawk project, CC BY 4.0; SORA-Q: &#x30C6;&#x30EC;&#x30B9;&#x30C8;&#x30EC;&#x30E9;&#x30C3;&#x30BD;, CC BY-SA 4.0)</div>
+    <div class="sources">Sources: <a href="https://nuttx.apache.org/market-share/" target="_blank" rel="noopener noreferrer">nuttx.apache.org/market-share</a> &middot; &ldquo;<a href="https://events.nuttx.apache.org/wp-content/uploads/2020/08/NuttX_at_Fitbit.pdf" target="_blank" rel="noopener noreferrer">NuttX at Fitbit</a>&rdquo; (2020) &middot; <a href="https://docs.px4.io" target="_blank" rel="noopener noreferrer">docs.px4.io</a> &middot; <a href="https://developer.sony.com/posts/apache-nuttx-powers-worlds-smallest-lunar-robot-in-japans-historic-autonomous-lunar-exploration-mission" target="_blank" rel="noopener noreferrer">Sony Developer Blog</a>. Images: Sony; Wikimedia Commons (<a href="https://commons.wikimedia.org/wiki/File:Charge_3.jpg" target="_blank" rel="noopener noreferrer">Charge 3</a>: Vemerce, CC BY-SA 4.0; <a href="https://commons.wikimedia.org/wiki/File:Pixhawk.png" target="_blank" rel="noopener noreferrer">Pixhawk</a>: Pixhawk project, CC BY 4.0; <a href="https://commons.wikimedia.org/wiki/File:SORAQ-FrontView.jpg" target="_blank" rel="noopener noreferrer">SORA-Q</a>: &#x30C6;&#x30EC;&#x30B9;&#x30C8;&#x30EC;&#x30E9;&#x30C3;&#x30BD;, CC BY-SA 4.0)</div>
     <div class="num"><span class="part">PART 1 &middot; 3/5</span>7 / 35</div>
     <div class="notes-src">
 Now, what is Apache NuttX?
@@ -1594,7 +1609,7 @@ And it is not a toy. Sony uses it in audio products and SPRESENSE. Fitbit used i
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p></div>
     </div>
-    <div class="sources">Sources: M. Ishikawa, Sony NuttX talks (2018&ndash;19) &middot; Sony, &ldquo;Running NuttX on Spresense&rdquo; (2019) &middot; A. Jerpelea (2020) &middot; Apache NuttX CXD56xx docs</div>
+    <div class="sources">Sources: <a href="https://events.nuttx.apache.org/wp-content/uploads/2019/11/MIshikawa_nx2019.pdf" target="_blank" rel="noopener noreferrer">M. Ishikawa, Sony NuttX talks (2018&ndash;19)</a> &middot; Sony, &ldquo;<a href="https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf" target="_blank" rel="noopener noreferrer">Running NuttX on Spresense</a>&rdquo; (2019) &middot; <a href="https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/" target="_blank" rel="noopener noreferrer">A. Jerpelea (2020)</a> &middot; <a href="https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html" target="_blank" rel="noopener noreferrer">Apache NuttX CXD56xx docs</a></div>
     <div class="num"><span class="part">PART 1 &middot; 4/5</span>8 / 35</div>
     <div class="notes-src">
 This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.
@@ -1639,7 +1654,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/
       </div>
       <div class="takeaway"><b>Takeaway</b><p>I wanted a secure way to access and troubleshoot remote embedded devices.</p></div>
     </div>
-    <div class="sources">Images: ARICA project (ARICA CubeSat) &middot; Sony Semiconductor Solutions (AITRIOS). ARICA-2: nanosats.eu/sat/arica-2 &middot; SmallSat 2026 paper (Mabuchi et al.)</div>
+    <div class="sources">Images: ARICA project (ARICA CubeSat) &middot; Sony Semiconductor Solutions (AITRIOS). ARICA-2: <a href="https://www.nanosats.eu/sat/arica-2" target="_blank" rel="noopener noreferrer">nanosats.eu/sat/arica-2</a> &middot; <a href="https://digitalcommons.usu.edu/smallsat/2026/all2026/11" target="_blank" rel="noopener noreferrer">SmallSat 2026 paper (Mabuchi et al.)</a></div>
     <div class="num"><span class="part">PART 1 &middot; 5/5</span>9 / 35</div>
     <div class="notes-src">
 That was Sony's history. Now, my own experience with NuttX.
@@ -1811,7 +1826,7 @@ For this project, I wanted something different: a standard VPN that runs directl
       </div>
       <div class="takeaway" style="margin-top:6px"><b>Takeaway</b><p>Run a lightweight, standard VPN directly on the NuttX device.</p></div>
     </div>
-    <div class="sources">Lines of code (rounded): J. Donenfeld, &ldquo;WireGuard&rdquo;, Linux Plumbers Conference 2018, wireguard.com/talks/lpc2018-wireguard-slides.pdf. Specific implementations, counted in 2018; the talk's own slides differ slightly for OpenVPN.</div>
+    <div class="sources">Lines of code (rounded): J. Donenfeld, &ldquo;WireGuard&rdquo;, Linux Plumbers Conference 2018, <a href="https://www.wireguard.com/talks/lpc2018-wireguard-slides.pdf" target="_blank" rel="noopener noreferrer">wireguard.com/talks/lpc2018-wireguard-slides.pdf</a>. Specific implementations, counted in 2018; the talk's own slides differ slightly for OpenVPN.</div>
     <div class="num"><span class="part">PART 2 &middot; 3/4</span>13 / 35</div>
     <div class="notes-src">
 So, my solution: put a VPN on the device itself.
@@ -1918,7 +1933,7 @@ Part three: the development plan. How do we start from an existing WireGuard?
   <section class="slide">
     <p class="eyebrow">Porting Strategy: Start from wireguard-lwip</p>
     <div class="body" style="gap:12px">
-      <div class="repo"><span class="tag">STARTING POINT</span><a href="https://github.com/smartalock/wireguard-lwip" target="_blank" rel="noopener">github.com/smartalock/wireguard-lwip</a><span class="desc">An existing open-source WireGuard for lwIP</span></div>
+      <div class="repo"><span class="tag">STARTING POINT</span><a href="https://github.com/smartalock/wireguard-lwip" target="_blank" rel="noopener noreferrer">github.com/smartalock/wireguard-lwip</a><span class="desc">An existing open-source WireGuard for lwIP</span></div>
       <div class="stack" style="gap:12px">
         <div class="kar keep">
           <div class="verb">KEEP</div>
@@ -2134,7 +2149,7 @@ The real fix was a proper wait. The socket calls back and a semaphore wakes the 
           <p class="mono" style="font-size:16px;line-height:1.75">1&nbsp; telnet 10.10.0.2<br>2&nbsp; uname -a, ifconfig<br>3&nbsp; webserver &amp;<br>4&nbsp; browser: http://10.10.0.2/</p>
           <p><strong>ESP32-S3 DevKit</strong>, apps version (FLAT). USB unplugged.</p>
           <p>Other end: the official Windows WireGuard client.</p>
-          <p class="mono" style="font-size:14px;margin-top:4px">Video: youtu.be/1kyX2av5WG4</p>
+          <p class="mono" style="font-size:14px;margin-top:4px">Video: <a href="https://youtu.be/1kyX2av5WG4" target="_blank" rel="noopener noreferrer">youtu.be/1kyX2av5WG4</a></p>
         </div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p></div>
@@ -2426,7 +2441,7 @@ That was all engineering. Part six: the live demo, a NuttX device controlled thr
             <tr><td><span class="badge">4</span></td><td>Control Stack-chan</td><td>Change face / Play voice</td></tr>
           </table>
         </div>
-        <a class="sc-card" href="https://github.com/meganetaaan/stack-chan" target="_blank" rel="noopener">
+        <a class="sc-card" href="https://github.com/meganetaaan/stack-chan" target="_blank" rel="noopener noreferrer">
           <img src="assets/stackchan.jpg" alt="Stack-chan, a palm-sized robot with a small face on its screen">
           <b>Stack-chan</b>
           <span>Open-source palm-sized robot</span>
@@ -2434,7 +2449,16 @@ That was all engineering. Part six: the live demo, a NuttX device controlled thr
         </a>
       </div>
     </div>
-    <div class="sources">Photo: Stack-chan project (docs/images, Apache License 2.0).</div>
+    <div class="bv" hidden>
+      <button class="bv-open" type="button">&#9654; Backup video</button>
+      <div class="bv-overlay" hidden>
+        <button class="bv-close" type="button">&times; Close</button>
+        <video controls preload="none" playsinline>
+          <source src="assets/demo/backup-demo.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <div class="sources">Photo: <a href="https://github.com/stack-chan/stack-chan" target="_blank" rel="noopener noreferrer">Stack-chan project</a> (docs/images, <a href="https://github.com/stack-chan/stack-chan/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Apache License 2.0</a>).</div>
     <div class="num"><span class="part">PART 6 &middot; 1/1</span>30 / 35</div>
     <div class="notes-src">
 This is the live demo. I keep this slide on the screen, and the terminal is next to it.
@@ -2595,10 +2619,10 @@ Third, the Sony engineers before me, who contributed to NuttX and built the foun
     <p class="eyebrow">Thank You &mdash; Questions?</p>
     <div class="body" style="justify-content:center">
       <div class="bye">
-        <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener"><img src="assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
+        <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
         <div>
-          <p class="lnk"><small>SLIDES &amp; RESOURCES</small><a href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/</a></p>
-          <p class="lnk"><small>GITHUB</small><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></p>
+          <p class="lnk"><small>SLIDES &amp; RESOURCES</small><a href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/</a></p>
+          <p class="lnk"><small>GITHUB</small><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></p>
           <p class="who">Satoru Akita / Sony Semiconductor Solutions</p>
         </div>
       </div>
@@ -2679,6 +2703,7 @@ Then I measured it on the board. I sent the board nothing at all, because a ping
 
 <div id="notes"><h4>Speaker notes</h4><div id="notes-body"></div></div>
 
+<script src="assets/backup-video.js"></script>
 <script>
 (function () {
   "use strict";

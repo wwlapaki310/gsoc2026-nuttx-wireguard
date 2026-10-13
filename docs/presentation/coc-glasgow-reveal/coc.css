@@ -226,3 +226,7 @@
   color: rgba(255, 255, 255, .78);
   font-size: 21px;
 }
+
+.reveal .frame.coc-dark .facts a:hover,
+.reveal .frame.coc-dark .facts a:focus-visible { color: var(--coc-orange); }
+.reveal .frame .qr-card:hover, .reveal .frame .qr-card:focus-visible { border-color: var(--coc-orange); }

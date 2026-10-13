@@ -44,7 +44,7 @@ TITLE = """\
     </div>
     <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
   </div>
-  <a class="qr-card title-qr" href="{URL}" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
+  <a class="qr-card title-qr" href="{URL}" target="_blank" rel="noopener noreferrer"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>"""
 
@@ -55,12 +55,12 @@ CLOSING = """\
     <h1>Thank You &mdash; Questions?</h1>
     <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, or the hardware.</p>
     <div class="facts">
-      <div><b><a href="{URL}" target="_blank" rel="noopener">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
-      <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
+      <div><b><a href="{URL}" target="_blank" rel="noopener noreferrer">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
+      <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
-  <a class="qr-card closing-qr" href="{URL}" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
+  <a class="qr-card closing-qr" href="{URL}" target="_blank" rel="noopener noreferrer"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>"""
 
