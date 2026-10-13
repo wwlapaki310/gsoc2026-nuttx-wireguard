@@ -268,10 +268,11 @@ SLIDES = [
          "Developers, Past and Present (their contributions and the "
          "foundation they built) / The Apache Software Foundation & Community "
          "Over Code Organizers (bringing the community together).", []),
-    ("Thank You — Questions?", "",
+    ("Thank You", "",
          "A QR code of the slides (\"Scan to view the slides\") with the "
          "slides link and the GitHub repository link, both clickable. The "
-         "same QR code is on the title slide. No video link.",
+         "same QR code is on the title slide. No video link, no call for "
+         "questions.",
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "
           "exhaustion, checkpatch) are answered there and on no slide.",

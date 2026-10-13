@@ -52,8 +52,8 @@ CLOSING = """\
 <div class="frame coc-dark">
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
-    <h1>Thank You &mdash; Questions?</h1>
-    <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, or the hardware.</p>
+    <h1>Thank You</h1>
+    <p class="subtitle">The slides and the code are here.</p>
     <div class="facts">
       <div><b><a href="{URL}" target="_blank" rel="noopener noreferrer">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
       <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
@@ -117,7 +117,7 @@ def convert(cls, inner):
     note = notes(inner)
     if "title-slide" in cls:
         frame = TITLE
-    elif "Questions?</p>" in inner:
+    elif '<p class="eyebrow">Thank You</p>' in inner:
         frame = CLOSING
     else:
         body = re.sub(r'\s*<div class="notes-src">.*?</div>', "", inner,

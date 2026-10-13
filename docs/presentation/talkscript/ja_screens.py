@@ -35,7 +35,7 @@ TITLES = {'1': 'タイトル',
  '32': 'Summary',
  '33': 'What I Learned: 学んだこと',
  '34': 'Acknowledgements: 謝辞',
- '35': 'Thank You — Questions?',
+ '35': 'Thank You',
  'A1': '付録: 検証: ping が見逃すもの',
  'A2': '付録: 設計判断: タイムスタンプ問題には楽な答えがない'}
 
@@ -189,7 +189,7 @@ SCREENS = {'1': '「WireGuard for Apache NuttX」を大きく。その下にサ�
        "(議論、ドキュメント、支援)/ Sony's NuttX Developers, Past and Present(NuttX への貢献と、築いてくれた土台)/\n"
        'The Apache Software Foundation & Community Over Code Organizers(オープンソースのコミュニティをつなげてくれている。\n'
        '運営者もボランティアも)。順番は 個人 → コミュニティ → 関係する組織。',
- '35': '見出し「Thank You — Questions?」。大きな QR コード(「Scan to view the slides」)と、その横にクリックできるリンク2つ:\n'
+ '35': '見出し「Thank You」。大きな QR コード(「Scan to view the slides」)と、その横にクリックできるリンク2つ:\n'
        'スライド(https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html)と\n'
        'GitHub のリポジトリ。表紙にも同じ QR コード(「Slides」)。動画のリンクは置かない。',
  'A1': '見出し「Three problems that ping would never notice.」。カード3枚 — 起動のたびに同じ鍵?\n'

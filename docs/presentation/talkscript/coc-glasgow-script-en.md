@@ -29,22 +29,22 @@ inside these numbers.
 
 | | Words | Time |
 |---|---:|---:|
-| **Essential only** (agenda pauses and live demo included) | 2783 | **24:26** |
-| Essential + Optional | 3474 | 29:58 |
+| **Essential only** (agenda pauses and live demo included) | 2770 | **24:20** |
+| Essential + Optional | 3448 | 29:46 |
 | of which the live demo | 255 | 3:00 |
-| Room left in a 30-minute slot, Essential only | | 5:34 |
-| Room left in a 30-minute slot, Essential + Optional | | 0:02 |
+| Room left in a 30-minute slot, Essential only | | 5:40 |
+| Room left in a 30-minute slot, Essential + Optional | | 0:14 |
 
 | Part | Slides | Essential | + Optional |
 |---|---|---:|---:|
-| Opening: title, about me, agenda | 1–3 | 1:34 | 1:59 |
+| Opening: title, about me, agenda | 1–3 | 1:32 | 1:57 |
 | ① Overview and Background | 4–9 | 4:29 | 5:24 |
 | ② The Problem & Solution | 10–14 | 3:24 | 3:49 |
 | ③ The Development Plan | 15–17 | 1:45 | 2:17 |
 | ④ Version 1: Application-Based Implementation | 18–23 | 3:28 | 4:30 |
 | ⑤ Version 2: The Kernel Driver | 24–28 | 3:17 | 4:52 |
 | ⑥ Live Demo | 29–30 | 3:10 | 3:35 |
-| ⑦ Summary and Reflections | 31–35 | 3:19 | 3:32 |
+| ⑦ Summary and Reflections | 31–35 | 3:15 | 3:22 |
 
 The time of each slide, shown in its heading, is the Essential time, added up
 from the start ("you should be about here").
@@ -98,22 +98,22 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - My road to this project went through molecular robots, computer vision, edge AI cameras, and embedded systems on SPRESENSE.
 - On social media, I am the fox in this picture. I also wrote a book about open source.
 
-## 3 — Agenda (1:10 → 1:34)
+## 3 — Agenda (1:10 → 1:32)
 
 **On slide:** The seven parts, each a short title with a one-line preview and its time: overview & background, project origins, NuttX & Sony, my experience (~5 min) / the problem & solution, the remote access challenge, why WireGuard (~4) / the development plan, reuse wireguard-lwip, adapt to NuttX (~2) / version 1, application-based implementation, the first working tunnel, debugging challenges (~4) / version 2, the kernel driver, why a driver, integration challenges, validation (~5) / live demo, secure remote access, Stack-chan control (~3) / summary & reflections, achievements, personal reflections, community (~4).
 
 **Say — Essential:**
 - Here is the plan. There are seven parts.
 - First, the background: why I started. Then the problem and solution, and the development plan. After that, Version 1 and Version 2. Then a live demo, and a short summary.
-- I will finish in about thirty minutes, and then I will take questions.
+- I will finish in about thirty minutes.
 
-## 4 — Agenda: ① Overview and Background (1:34 → 1:44)
+## 4 — Agenda: ① Overview and Background (1:32 → 1:42)
 
 **Say (one line):** Let's start with the background.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 5 — Project Overview (1:44 → 2:16)
+## 5 — Project Overview (1:42 → 2:14)
 
 **On slide:** The wg0 netdev picture (unchanged): application / NSH, the NuttX network stack, wg0 next to eth0 / wlan0, a UDP socket underneath, the Internet, the peer. Below it three cards: lightweight VPN / virtual interface (wg0) / secure communication over UDP.
 
@@ -122,7 +122,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - I brought WireGuard, a lightweight VPN, to Apache NuttX. It appears as a virtual network interface called wg0, next to the normal network interface. Packets sent to wg0 are encrypted. They travel over a UDP socket to any normal WireGuard peer. So a NuttX microcontroller can exchange IP packets securely.
 - First, let me tell you how this project started.
 
-## 6 — How It Started: February to October (2:16 → 3:16)
+## 6 — How It Started: February to October (2:14 → 3:14)
 
 **On slide:** A month axis Feb → Oct. Above it: mid Feb, read the GSoC idea list / early Mar, proposed the plan / Mar 20, heard about this conference from Alan, submitted a CfP / early Apr, GSoC proposal / early May, CfP accepted, GSoC not selected / Oct, Glasgow. Below it, three arrows: May–Jul study and exploration → Aug Version 1 (application, FLAT, hardware testing) → Sep– Version 2 (kernel driver).
 
@@ -133,7 +133,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - From May to July, I studied NuttX and WireGuard. In August, I focused on hardware testing and finished Version 1. Then I built Version 2, the kernel driver.
 - So this work started with GSoC, and it grew step by step. First, what is NuttX?
 
-## 7 — A Quick Overview of Apache NuttX (3:16 → 4:03)
+## 7 — A Quick Overview of Apache NuttX (3:14 → 4:01)
 
 **On slide:** Left: logo, four points (POSIX-like real-time OS / small footprint / broad hardware support, 15+ architectures, 300+ boards / Apache open-source project) and a small table of standard APIs (FreeRTOS, Zephyr, NuttX). Right: photo tiles of real devices: Sony, Fitbit Charge 3 / 4, PX4 flight controllers, the SORA-Q lunar robot, and Xiaomi OpenVela (1,000+ products).
 
@@ -149,7 +149,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - **Check before the talk:** the Fitbit models come from Fitbit's own 2020 NuttX talk, and the Xiaomi number is a reported figure.
 
-## 8 — Sony's History with NuttX (4:03 → 4:52)
+## 8 — Sony's History with NuttX (4:01 → 4:50)
 
 **On slide:** Timeline: 2013–15 early adoption in audio products / 2016–17 commercial products / 2018 Xperia Ear Duo and SPRESENSE / 2019–20 upstream collaboration / 2020s expanded edge-sensing capabilities.
 
@@ -167,7 +167,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - Sources (not spoken). M. Ishikawa and K. Okamoto, SMP and Networking support on NuttX / LC823450, 2018: https://events.nuttx.apache.org/wp-content/uploads/2019/11/MIshikawa_nx2019.pdf . Sony, Running NuttX on Spresense, NuttX Workshop 2019: https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf . A. Jerpelea, A Journey from Fork to Mainline, NuttX Online Workshop 2020: https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/ . Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html . Product images: Sony NW-WS620 https://www.sony.jp/products/picture/NW-WS620.jpg , Xperia Ear Duo https://www.sony.jp/xperia/product/smartproducts/xea20/img/main01.jpg , SPRESENSE https://developer.spresense.sony-semicon.com/
 
-## 9 — My Experience with NuttX (4:52 → 6:03)
+## 9 — My Experience with NuttX (4:50 → 6:01)
 
 **On slide:** Two photo cards: SPRESENSE, a satellite project (picture of the ARICA CubeSat) and AITRIOS, an edge AI sensing platform (edge AI camera). Bottom line: I wanted a secure way to access and troubleshoot remote embedded devices.
 
@@ -183,13 +183,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - **Check before the talk:** the ARICA picture is a third-party image. Get the project's permission, or replace it.
 
-## 10 — Agenda: ② The Problem & Solution (6:03 → 6:13)
+## 10 — Agenda: ② The Problem & Solution (6:01 → 6:11)
 
 **Say (one line):** Now, the problem and the solution.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 11 — Problem: How Can We Securely Access Remote Devices? (6:13 → 7:01)
+## 11 — Problem: How Can We Securely Access Remote Devices? (6:11 → 6:59)
 
 **On slide:** Engineer → Internet → router → Wi-Fi → NuttX device, with a bracket for the secure path needed all the way, and WPA2/WPA3 covering only the Wi-Fi hop; three cards: devices are far away / remote diagnosis / a secure path.
 
@@ -202,7 +202,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - Wi-Fi security here means WPA2 or WPA3. The same need appears in edge AI, industrial IoT, and many other remote systems.
 
-## 12 — Options: Ways to Reach a Remote Device (7:01 → 7:51)
+## 12 — Options: Ways to Reach a Remote Device (6:59 → 7:49)
 
 **On slide:** A table of six ways (open a port / HTTPS or MQTT via a cloud / reverse tunnel or relay / VPN on the router / carrier closed network / VPN on the device) against: any IP service, no server in the middle, protected up to where.
 
@@ -215,7 +215,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - **If asked about Tailscale or ZeroTier:** they are also a VPN on the device, but they usually need a bigger OS than a microcontroller has today (footnote on the slide).
 
-## 13 — Solution: A VPN on the Device (7:51 → 8:51)
+## 13 — Solution: A VPN on the Device (7:49 → 8:49)
 
 **On slide:** Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device. "Why WireGuard?": small & simple (a small bar chart of lines of code: IPsec ~420k, OpenVPN ~120k, WireGuard ~3.8k, from 2018) / modern cryptography (ChaCha20-Poly1305, Curve25519) / UDP-based tunnel.
 
@@ -231,7 +231,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - The line counts come from the WireGuard author's Linux Plumbers 2018 talk (slide 5, https://www.wireguard.com/talks/lpc2018-wireguard-slides.pdf). They are old, for specific implementations, and slide 4 of the same talk gives slightly different OpenVPN numbers.
 
-## 14 — Architecture: WireGuard on the NuttX Network Stack (8:51 → 9:27)
+## 14 — Architecture: WireGuard on the NuttX Network Stack (8:49 → 9:25)
 
 **On slide:** Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX and RX arrows.
 
@@ -243,13 +243,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - On a board, the packet leaves through wlan0, or through usrsock when the Wi-Fi chip works through sockets.
 
-## 15 — Agenda: ③ The Development Plan (9:27 → 9:37)
+## 15 — Agenda: ③ The Development Plan (9:25 → 9:35)
 
 **Say (one line):** Next, the development plan. How can we reuse an existing WireGuard implementation?
 
 **Pause:** point at the highlighted line, one beat.
 
-## 16 — Porting Strategy: Start from wireguard-lwip (9:37 → 10:33)
+## 16 — Porting Strategy: Start from wireguard-lwip (9:35 → 10:31)
 
 **On slide:** The link github.com/smartalock/wireguard-lwip (clickable), then three rows: KEEP protocol & crypto (with two small fixes) / ADAPT platform hooks / REPLACE lwIP network glue.
 
@@ -265,7 +265,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - **Check before the talk:** the four platform hooks are a monotonic clock, random bytes, TAI64N time and an under-load check (`wireguard-platform.h`). Say them from the notes, not the slide.
 
-## 17 — Mapping lwIP Networking to NuttX (10:33 → 11:12)
+## 17 — Mapping lwIP Networking to NuttX (10:31 → 11:10)
 
 **On slide:** Table: network device (netif → net_driver_s) / packet buffers (pbuf → iob) / registration (netif_add() → netdev_register()) / sending (output callback → d_txavail → devif_poll()) / UDP wire (udp_pcb → UDP socket). A note: matches of ideas, not a one-to-one swap of APIs.
 
@@ -277,13 +277,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - In lwIP, the interface is netif and the buffer is pbuf. In NuttX, the buffer is iob. For sending, lwIP calls an output callback. NuttX calls the driver's txavail function, and the driver polls the stack with devif_poll.
 
-## 18 — Agenda: ④ Version 1: Application-Based Implementation (11:12 → 11:22)
+## 18 — Agenda: ④ Version 1: Application-Based Implementation (11:10 → 11:20)
 
 **Say (one line):** Now, Version 1: the first working tunnel.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 19 — Version 1: WireGuard as a NuttX Application (11:22 → 12:10)
+## 19 — Version 1: WireGuard as a NuttX Application (11:20 → 12:08)
 
 **On slide:** A GOAL box (run a standard WireGuard tunnel as a NuttX application; reuse the existing core and implement the NuttX integration). A table of layer / work needed / in this port: protocol & crypto (almost none; crypto byte-identical, two small fixes; ~3,100 lines reused, ~40 changed) / OS hooks (four functions; ~120 new lines) / network glue (the real work: netdev + UDP socket + RX task; ~1,200 new lines). Takeaway in two lines: Version 1 proved WireGuard could run on NuttX; it also exposed OS and networking problems the first tunnel did not reveal.
 
@@ -299,7 +299,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - Line counts are physical lines from git history. Reused: the vendored wireguard-lwip files (about 3,100 lines). Fixes: about 40 lines changed (2026-09-18). OS hooks: nuttx-platform.c, 118 lines at the first working tunnel (2026-08-13). Glue: nuttx-wireguardif.c and .h, about 1,200 lines at that time. Today's file is about twice as long because of run-time configuration.
 
-## 20 — Where It Was Hard: Six Bugs (12:10 → 12:45)
+## 20 — Where It Was Hard: Six Bugs (12:08 → 12:43)
 
 **On slide:** One table of all six bugs (bug / showed up in / lesson): 1 the receive thread stopped with the wg command / 2 ping works, TCP dies (in detail) / 3 "no real impact" was 10× (in detail) / 4 stack 94% full, saving the config froze the board, real boards only / 5 NuttX's own ChaCha20-Poly1305 (part 5) / 6 a 6 KB array on a 3 KB kernel stack (part 5). Takeaway: most hid behind a test that passed.
 
@@ -316,7 +316,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - The logs and fixes for all six bugs are in the GitHub repository.
 - **Bugs 1 and 4 have no slide of their own any more.** Their story is in the notes above; the full version (and bug 1's `SO_RCVTIMEO` detour) is in the Q&A file.
 
-## 21 — Bug ②: Ping Works. TCP Dies. (12:45 → 13:31) *(my favorite)*
+## 21 — Bug ②: Ping Works. TCP Dies. (12:43 → 13:29) *(my favorite)*
 
 **On slide:** Orange-red title. Left box SYMPTOM: ping 0% loss; the TCP handshake completes, then the connection dies; EBADF, "Bad file descriptor". Right box ROOT CAUSE & FIX: sends from wg_rx worked, sends from the system work queue failed; a file descriptor belongs to one task group; use psock_*() on a struct socket.
 
@@ -330,7 +330,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - That is also why the kernel version keeps its socket as a struct socket.
 
-## 22 — Bug ③: "No Real Impact" Was 10× Slower (13:31 → 14:16) *(cut candidate 3)*
+## 22 — Bug ③: "No Real Impact" Was 10× Slower (13:29 → 14:14) *(cut candidate 3)*
 
 **On slide:** Orange-red title. Two boxes: QUICK FIX, check every 50 ms (measured: about 10× slower) / REAL FIX, event-driven wake-up (psock_poll() callback and a semaphore).
 
@@ -343,7 +343,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - Poll broke because poll works with file descriptors.
 
-## 23 — Version 1 Demo: The First Video (14:16 → 14:40) *(cut candidate 2)*
+## 23 — Version 1 Demo: The First Video (14:14 → 14:38) *(cut candidate 2)*
 
 **On slide:** Left: the video as a still frame (the Windows WireGuard client beside a telnet session into NuttX on the ESP32-S3) with a play button; a click plays the YouTube video in the slide, and leaving the slide stops it. Right: the steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), USB unplugged; the official Windows client; small text youtu.be/1kyX2av5WG4.
 
@@ -355,13 +355,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - Playing the video is not needed: the Essential text works with the still. To play it, click the thumbnail. It needs the Internet and a web page (GitHub Pages or a local server); opened from a file, the click opens YouTube in a new tab. Leaving the slide stops the video.
 - **It is the apps version.** Do not mix it with the kernel-version results later in the talk.
 
-## 24 — Agenda: ⑤ Version 2: The Kernel Driver (14:40 → 14:50)
+## 24 — Agenda: ⑤ Version 2: The Kernel Driver (14:38 → 14:48)
 
 **Say (one line):** Now, Version 2: the kernel driver.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 25 — Version 2: WireGuard as a NuttX Kernel Driver (14:50 → 15:46)
+## 25 — Version 2: WireGuard as a NuttX Kernel Driver (14:48 → 15:44)
 
 **On slide:** Two panels, BEFORE — VERSION 1 (an application: in apps/, uses kernel internals, FLAT only, does not fit as an in-tree driver) / AFTER — VERSION 2 (a kernel driver: drivers/net/wireguard, set up by a small wg command through ioctl, made for FLAT, PROTECTED and KERNEL). A BUILD MODES box with three rows: FLAT (one address space) / PROTECTED (MPU) / KERNEL (MMU). The goal line.
 
@@ -374,7 +374,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - In a PROTECTED build, the MPU separates memory. In a KERNEL build, the MMU gives each side its own address space.
 
-## 26 — The Kernel Design: The Big Picture (15:46 → 16:24)
+## 26 — The Kernel Design: The Big Picture (15:44 → 16:22)
 
 **On slide:** A picture in two bands: USER SPACE holds only the wg command; an ioctl (one flat struct, no pointers; the private key is write-only) crosses the user/kernel boundary into the NUTTX KERNEL band, to wg0, which owns its UDP socket and RX thread, keeps timers / peers / cookies and uses NuttX crypto, between the NuttX network stack and the encrypted UDP to the peer.
 
@@ -386,7 +386,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Say — Optional:**
 - The crypto is NuttX's own crypto. The protocol core is still derived from wireguard-lwip, under the BSD-3-Clause license, and the LICENSE file says so.
 
-## 27 — Two Issues Found During Kernel Integration (16:24 → 17:24)
+## 27 — Two Issues Found During Kernel Integration (16:22 → 17:22)
 
 **On slide:** Two labelled boxes. CRYPTOGRAPHY — ChaCha20-Poly1305 (NuttX crypto/chachapoly.c: the nonce counter sits in different bytes from the RFC 8439 / WireGuard layout; the handshake works, data after the first packet fails; a two-line fix with test vectors) / KERNEL STACK — Stack Overflow (this driver, KERNEL build only: a 6 KB array on a 3 KB kernel stack, moved to the heap). The SPRESENSE RTC_HIRES finding is in the notes only.
 
@@ -404,7 +404,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - Status on 2026-10-13: no pull request exists in apache/nuttx or apache/nuttx-apps; the only related issue is the closed GSoC thread #18548. The nonce check against master was made on 2026-10-13 (crypto/chachapoly.c).
 - **Say it exactly:** the stack overflow was in this driver, not in NuttX. Nothing is filed or sent yet; do not say it is.
 
-## 28 — Testing: What Ran Where (17:24 → 17:57) *(core — do not cut)*
+## 28 — Testing: What Ran Where (17:22 → 17:55) *(core — do not cut)*
 
 **On slide:** A table, build mode / environment / result: FLAT on ESP32-S3 and SPRESENSE (real boards) verified / KERNEL on QEMU rv-virt verified (tunnel to Linux, 4 CPUs under load) / PROTECTED on QEMU rv-virt verified (one fault found and fixed, 20/20) / KERNEL and PROTECTED on real hardware not tested yet. A small note that the check mark means it passed in the conditions noted. The GitHub line and QR code are gone.
 
@@ -422,13 +422,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - Details. SPRESENSE receive thread used 1,472 bytes of a 6 KB default. PROTECTED stack overflow: a system call runs on the caller's stack in this mode. CoreS3 cannot boot bootloader-based images, so PROTECTED on that board is not possible (not a WireGuard problem). Records are in docs/upstream/evidence.
 
-## 29 — Agenda: ⑥ Live Demo (17:57 → 18:07)
+## 29 — Agenda: ⑥ Live Demo (17:55 → 18:05)
 
 **Say (one line):** Time for the live demo.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 30 — Live Demo: Stack-chan over WireGuard (18:07 → 21:07)
+## 30 — Live Demo: Stack-chan over WireGuard (18:05 → 21:05)
 
 **On slide:** One slide, kept on screen with the terminal beside it. Top, NETWORK SETUP: Laptop (WireGuard peer, VPN IP 10.10.0.1) and Stack-chan (Apache NuttX + WireGuard, VPN IP 10.10.0.2), both on a Smartphone (Wi-Fi hotspot, provides the local network) over dashed Wi-Fi links, and one thick red Encrypted WireGuard Tunnel between laptop and Stack-chan. Bottom, LIVE DEMO STEPS: 1 VPN Connection (wg show) / 2 Remote Login (telnet 10.10.0.2) / 3 Network Interface (ifconfig → wg0) / 4 Control Stack-chan (change face, play voice). A small Stack-chan photo that links to its GitHub repository. No Version label, no takeaway box, no video link.
 
@@ -453,13 +453,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - **Never on screen:** `wg showconf` (prints the private key), the key files in `%USERPROFILE%\stackchan-wg`, the hotspot passphrase.
 - **Fallback:** no backup video at the moment. If the live demo stalls, say so and go on to the summary.
 
-## 31 — Agenda: ⑦ Summary and Reflections (21:07 → 21:17)
+## 31 — Agenda: ⑦ Summary and Reflections (21:05 → 21:15)
 
 **Say (one line):** Finally, a summary and some reflections.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 32 — Summary (21:17 → 21:59)
+## 32 — Summary (21:15 → 21:57)
 
 **On slide:** Three rows, each a short heading and one sentence: 1 Secure Communication (brought WireGuard to Apache NuttX, secure IP communication with standard peers) / 2 Application to Kernel Driver (evolved from an application into a kernel network driver, tested on real boards and QEMU) / 3 Toward Upstream Contribution (preparing the driver and related fixes for review; a small line: prepared as small, separate changes, nothing is submitted yet).
 
@@ -473,7 +473,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - If asked 'is it merged?': not yet, and nothing is submitted. These are submission candidates, not a claim that it is mergeable.
 - **State of the submission (2026-10-13):** no pull request about this work exists in apache/nuttx or apache/nuttx-apps. The only related issue is the closed GSoC proposal thread (#18548). The branches exist only on the author's forks. Do not say "submitted".
 
-## 33 — What I Learned (21:59 → 23:23)
+## 33 — What I Learned (21:57 → 23:21)
 
 **On slide:** Three cards: from application user to OS contributor / AI helped me code, but understanding was my job (highlighted) / a welcoming open-source community (docs and guides, review, AI-assisted development with people responsible, CI and hackathons help new people join). Bottom line: the hope to keep contributing.
 
@@ -490,7 +490,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - Say the AI part plainly: not as a confession and not as a boast. It was faster, and understanding was still hard and still mine.
 
-## 34 — Acknowledgements (23:23 → 24:09)
+## 34 — Acknowledgements (23:21 → 24:07)
 
 **On slide:** A plain vertical list, a name and one line each: Alan Carvalho de Assis (encouraged me to submit this talk) / The Apache NuttX Community (discussions, documentation, support) / Sony's NuttX Developers, Past and Present (their contributions and the foundation they built) / The Apache Software Foundation & Community Over Code Organizers (bringing the community together).
 
@@ -501,16 +501,13 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - Third, the Sony engineers before me, who contributed to NuttX and built the foundation for this work.
 - And finally, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the community together.
 
-## 35 — Thank You — Questions? (24:09 → 24:26)
+## 35 — Thank You (24:07 → 24:20)
 
-**On slide:** A QR code of the slides ("Scan to view the slides") with the slides link and the GitHub repository link, both clickable. The same QR code is on the title slide. No video link.
+**On slide:** A QR code of the slides ("Scan to view the slides") with the slides link and the GitHub repository link, both clickable. The same QR code is on the title slide. No video link, no call for questions.
 
 **Say — Essential:**
-- Thank you very much. I am happy to take your questions.
+- Thank you very much.
 - The slides are on the screen. You can scan the QR code, or use the link. The code and the records are on GitHub.
-
-**Say — Optional:**
-- Questions about the kernel driver, the bugs, or the hardware are all welcome.
 
 **Presenter Notes:**
 - **After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, not a slide. The usual questions (rebase status, #14, IOB exhaustion, checkpatch) are answered there and on no slide.
