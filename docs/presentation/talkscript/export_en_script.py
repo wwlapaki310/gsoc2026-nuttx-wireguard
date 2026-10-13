@@ -169,8 +169,10 @@ SLIDES = [
          "(measured: about 10× slower) / REAL FIX, event-driven wake-up "
          "(psock_poll() callback and a semaphore).", []),
     ("Version 1 Demo: The First Video", "cut candidate 2",
-         "Left: a still frame of the video (the Windows WireGuard client "
-         "beside a telnet session into NuttX on the ESP32-S3). Right: the "
+         "Left: the video as a still frame (the Windows WireGuard client "
+         "beside a telnet session into NuttX on the ESP32-S3) with a play "
+         "button; a click plays the YouTube video in the slide, and leaving "
+         "the slide stops it. Right: the "
          "steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / "
          "browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), "
          "USB unplugged; the official Windows client; small text "

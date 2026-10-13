@@ -262,9 +262,14 @@
   .reveal .frame table.tight th,
   .reveal .frame table.tight td { padding: 9px 12px;}
   .reveal .frame .demo-layout { grid-template-columns: 1.35fr .65fr;}
-  .reveal .frame .v1-still { grid-template-columns: 1.3fr .7fr; align-items: center;}
+  .reveal .frame .v1-still { grid-template-columns: 1.5fr .62fr; align-items: center;}
   .reveal .frame .v1-still .still { margin: 0;}
   .reveal .frame .v1-still .still img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px;}
+  .reveal .frame .yt-play { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;}
+  .reveal .frame .yt-btn { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 84px; height: 84px; margin: -42px 0 0 -42px; padding-left: 8px; border-radius: 50%; background: rgba(20, 24, 28, .72); color: #fff; font-size: 34px; line-height: 1; transition: background .15s, transform .15s;}
+  .reveal .frame .yt-play:hover .yt-btn,
+  .reveal .frame .yt-play:focus-visible .yt-btn { background: var(--wg); transform: scale(1.06);}
+  .reveal .frame .yt-frame { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #000;}
   .reveal .frame .demo-layout .photo { height: 330px; padding: 0;}
   .reveal .frame .demo-layout .photo img { width: 100%; height: 100%; object-fit: cover;}
   .reveal .frame th,
@@ -1954,7 +1959,7 @@
     <p class="eyebrow">Version 1 demo: the first video</p>
     <div class="body">
       <div class="two v1-still">
-        <figure class="still"><img src="../assets/demo-thumb.jpg" alt="A frame from the version 1 video: the Windows WireGuard client beside a telnet session into NuttX on an ESP32-S3"></figure>
+        <figure class="still yt" data-yt="1kyX2av5WG4"><button class="yt-play" type="button" aria-label="Play the Version 1 demo video"><img src="../assets/demo-thumb.jpg" alt="A frame from the version 1 video: the Windows WireGuard client beside a telnet session into NuttX on an ESP32-S3"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel">
           <p class="mono" style="font-size:16px;line-height:1.75">1&nbsp; telnet 10.10.0.2<br>2&nbsp; uname -a, ifconfig<br>3&nbsp; webserver &amp;<br>4&nbsp; browser: http://10.10.0.2/</p>
           <p><strong>ESP32-S3 DevKit</strong>, apps version (FLAT). USB unplugged.</p>
@@ -1970,7 +1975,7 @@
     <aside class="notes">
       <p>Here is a frame from the Version 1 video. I logged in with telnet through the tunnel, and opened a small web page on the board. The other end was the official Windows WireGuard client.</p>
       <p>So Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p>
-      <p>NOTE, do not read: Do not play the video; the still is enough.</p>
+      <p>NOTE, do not read: Playing the video is not needed: the Essential text works with the still. To play it, click the thumbnail. It needs the Internet and a web page (GitHub Pages or a local server); opened from a file, the click opens YouTube in a new tab. Leaving the slide stops the video.</p>
     </aside>
   </section>
 
@@ -2553,6 +2558,7 @@
 <script src="vendor/reveal/reveal.js"></script>
 <script src="vendor/reveal/plugin/notes.js"></script>
 <script src="../assets/backup-video.js"></script>
+<script src="../assets/youtube-embed.js"></script>
 <script>
 Reveal.initialize({
   hash: true,

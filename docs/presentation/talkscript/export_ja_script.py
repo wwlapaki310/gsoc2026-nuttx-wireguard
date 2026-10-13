@@ -32,6 +32,11 @@ TAGS = {
 
 # "what is on the slide" texts that changed after ja_screens.py was made
 SCREEN_FIX = {
+    "23": ("左に動画(静止画 + 再生ボタン。クリックするとスライドの中で YouTube の動画が再生され、スライドを離れると止まる。"
+           "公式 Windows WireGuard クライアントと、ESP32-S3 上の NuttX への telnet セッションが並んだ画面)。"
+           "右に手順 — telnet 10.10.0.2 / uname -a、ifconfig / webserver & / ブラウザで http://10.10.0.2/ — と条件(ESP32-S3 DevKit、apps 版 (FLAT)、"
+           "USB は抜いてある、相手は公式 Windows クライアント)、小さく YouTube へのリンク。Takeaway: Version 1 was enough for a demo. "
+           "Next, I made it a real NuttX driver."),
     "8": ("見出し「Sony's history with NuttX」。左に縦のタイムライン — 2013–15 Early adoption(LC823425 / LC823450 に移植、最初の商用の音声製品は2015年)/ "
           "2016–17 Commercial products(Walkman NW-WS620、SMR-10、ICD-TX800、ICD-PX470)/ 2018 Xperia Ear Duo & SPRESENSE / "
           "2019–20 Upstream collaboration / 2020s Edge sensing。右に製品の写真3枚(Walkman NW-WS620、Xperia Ear Duo、SPRESENSE)。"

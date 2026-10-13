@@ -345,14 +345,14 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 ## 23 — Version 1 Demo: The First Video (14:16 → 14:40) *(cut candidate 2)*
 
-**On slide:** Left: a still frame of the video (the Windows WireGuard client beside a telnet session into NuttX on the ESP32-S3). Right: the steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), USB unplugged; the official Windows client; small text youtu.be/1kyX2av5WG4.
+**On slide:** Left: the video as a still frame (the Windows WireGuard client beside a telnet session into NuttX on the ESP32-S3) with a play button; a click plays the YouTube video in the slide, and leaving the slide stops it. Right: the steps telnet 10.10.0.2 / uname -a, ifconfig / webserver & / browser http://10.10.0.2/; ESP32-S3 DevKit, apps version (FLAT), USB unplugged; the official Windows client; small text youtu.be/1kyX2av5WG4.
 
 **Say — Essential:**
 - Here is a frame from the Version 1 video. I logged in with telnet through the tunnel, and opened a small web page on the board. The other end was the official Windows WireGuard client.
 - So Version 1 was enough for a demo. Next, I made it a real NuttX driver.
 
 **Presenter Notes:**
-- Do not play the video; the still is enough.
+- Playing the video is not needed: the Essential text works with the still. To play it, click the thumbnail. It needs the Internet and a web page (GitHub Pages or a local server); opened from a file, the click opens YouTube in a new tab. Leaving the slide stops the video.
 - **It is the apps version.** Do not mix it with the kernel-version results later in the talk.
 
 ## 24 — Agenda: ⑤ Version 2: The Kernel Driver (14:40 → 14:50)

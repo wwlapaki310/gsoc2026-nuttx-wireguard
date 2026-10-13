@@ -403,18 +403,14 @@ QUICK FIX — Check every 50 ms(測定: 約10倍遅い)/ REAL FIX — Event-driv
 
 ## 23 — Version 1 のデモ: 最初の動画 (14:16 → 14:40) *(削る候補2)*
 
-**画面:** 左に動画の1コマ(公式 Windows WireGuard クライアントと、ESP32-S3 上の NuttX への
-telnet セッションが並んだ画面)。右に手順 — telnet 10.10.0.2 / uname -a、ifconfig / webserver & /
-ブラウザで http://10.10.0.2/ — と条件(ESP32-S3 DevKit、apps 版 (FLAT)、USB は抜いてある、相手は
-公式 Windows クライアント)、小さく youtu.be/1kyX2av5WG4。Takeaway: Version 1 was enough for a demo.
-Next, I made it a real NuttX driver.
+**画面:** 左に動画(静止画 + 再生ボタン。クリックするとスライドの中で YouTube の動画が再生され、スライドを離れると止まる。公式 Windows WireGuard クライアントと、ESP32-S3 上の NuttX への telnet セッションが並んだ画面)。右に手順 — telnet 10.10.0.2 / uname -a、ifconfig / webserver & / ブラウザで http://10.10.0.2/ — と条件(ESP32-S3 DevKit、apps 版 (FLAT)、USB は抜いてある、相手は公式 Windows クライアント)、小さく YouTube へのリンク。Takeaway: Version 1 was enough for a demo. Next, I made it a real NuttX driver.
 
 **話す — Essential(必ず話す):**
 - Version 1 の動画の1コマです。トンネル越しに telnet でログインし、ボード上の小さな Web ページを開きました。相手は公式の Windows 版 WireGuard です。
 - Version 1 でもデモには十分でした。次に、これを本物の NuttX のドライバにしました。
 
 **Presenter Notes(読み上げない):**
-- 動画は再生しない。静止画で十分。
+- 動画の再生は必須ではない: Essential の話は静止画のままで成り立つ。再生するにはサムネイルをクリック。インターネットと、Web ページ(GitHub Pages かローカルサーバー)が要る。ファイルとして開いた場合は、クリックで YouTube が新しいタブで開く。スライドを離れると動画は止まる。
 - **これは apps 版。** この後のカーネル版の結果と混ぜて話さない。
 
 ## 24 — 目次 ⑤Version 2: The Kernel Driver (14:40 → 14:50)
