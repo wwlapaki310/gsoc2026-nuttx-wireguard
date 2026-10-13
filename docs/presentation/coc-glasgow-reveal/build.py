@@ -48,6 +48,7 @@ TITLE = """\
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
+  <a class="qr-card title-qr" href="{URL}" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>"""
 
@@ -55,17 +56,22 @@ CLOSING = """\
 <div class="frame coc-dark">
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
-    <h1>Thank you</h1>
-    <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
+    <h1>Thank You &mdash; Questions?</h1>
+    <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, or the hardware.</p>
     <div class="facts">
-      <div><b>youtu.be/1kyX2av5WG4</b><span>DEMO</span></div>
-      <div><b>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</b><span>CODE &amp; RECORDS</span></div>
+      <div><b><a href="{URL}" target="_blank" rel="noopener">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
+      <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
-  <img src="../assets/github-qr.png" alt="QR code for the GitHub repository" style="position:absolute;right:84px;top:64px;width:170px;height:170px;z-index:2;border-radius:6px">
+  <a class="qr-card closing-qr" href="{URL}" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>"""
+
+# One address for both QR codes: keep it in sync with make_qr.py.
+URL = "https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html"
+TITLE = TITLE.replace("{URL}", URL)
+CLOSING = CLOSING.replace("{URL}", URL)
 
 
 def lift_css(css):
@@ -105,7 +111,7 @@ def convert(cls, inner):
     note = notes(inner)
     if "title-slide" in cls:
         frame = TITLE
-    elif '<p class="eyebrow">Thank you</p>' in inner:
+    elif "Questions?</p>" in inner:
         frame = CLOSING
     else:
         body = re.sub(r'\s*<div class="notes-src">.*?</div>', "", inner,

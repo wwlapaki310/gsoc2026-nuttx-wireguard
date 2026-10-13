@@ -731,6 +731,31 @@
   .reveal .frame a.sc-card b { display: block; font-size: 17px; line-height: 1.2;}
   .reveal .frame a.sc-card span { display: block; font-size: 13.5px; line-height: 1.3; color: var(--muted);}
   .reveal .frame a.sc-card small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 10.5px; color: var(--nx); text-decoration: underline;}
+  .reveal .frame .qr-card { display: block; padding: 8px 8px 7px; background: #fff; border: 1px solid var(--line); border-radius: 6px; text-align: center; color: var(--ink); text-decoration: none;}
+  .reveal .frame .qr-card img { display: block; width: 100%; height: auto;}
+  .reveal .frame .qr-card b { display: block; margin-top: 2px; font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: .14em;}
+  .reveal .frame .sum { display: grid; gap: 18px;}
+  .reveal .frame .sum-row { display: grid; grid-template-columns: 60px 1fr; gap: 24px; align-items: center; padding: 20px 28px; border: 1px solid var(--line); border-left: 6px solid var(--nx); background: #fff;}
+  .reveal .frame .sum-row.b { border-left-color: var(--blue);}
+  .reveal .frame .sum-row.c { border-left-color: var(--gold);}
+  .reveal .frame .sum-n { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; background: var(--nx); color: #fff; font-size: 27px; font-weight: 800;}
+  .reveal .frame .sum-row.b .sum-n { background: var(--blue);}
+  .reveal .frame .sum-row.c .sum-n { background: var(--gold);}
+  .reveal .frame .sum-row h3 { margin: 0 0 4px; font-size: 27px; line-height: 1.2;}
+  .reveal .frame .sum-row p { margin: 0; font-size: 20.5px; line-height: 1.42; color: var(--muted);}
+  .reveal .frame .sum-row small { display: block; margin-top: 6px; font-family: var(--mono); font-size: 14px; color: var(--quiet);}
+  .reveal .frame .ack { display: grid;}
+  .reveal .frame .ack-row { padding: 16px 6px; border-bottom: 1px solid var(--line);}
+  .reveal .frame .ack-row:last-child { border-bottom: 0;}
+  .reveal .frame .ack-row b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; color: var(--ink);}
+  .reveal .frame .ack-row span { display: block; margin-top: 3px; font-size: 20px; line-height: 1.4; color: var(--muted);}
+  .reveal .frame .bye { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: center;}
+  .reveal .frame .bye .qr-card { padding: 12px 12px 10px;}
+  .reveal .frame .bye .qr-card b { font-size: 16px;}
+  .reveal .frame .bye .lnk { margin: 0 0 22px;}
+  .reveal .frame .bye .lnk small { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .14em; color: var(--quiet);}
+  .reveal .frame .bye .lnk a { font-family: var(--mono); font-size: 19px; line-height: 1.4; font-weight: 600; color: var(--nx); word-break: break-all;}
+  .reveal .frame .bye .who { margin: 0; color: var(--muted); font-size: 20px;}
   .reveal .frame table.options { font-size: 15.5px; line-height: 1.22;}
   .reveal .frame table.options th,
   .reveal .frame table.options td { padding: 5px 9px;}
@@ -954,6 +979,7 @@
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
+  <a class="qr-card title-qr" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
@@ -1051,7 +1077,7 @@
         </div>
       </div>
     </div>
-    <div class="num">2 / 36</div>
+    <div class="num">2 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1099,17 +1125,17 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num">3 / 36</div>
+    <div class="num">3 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>Here is the plan for this talk.</p>
-      <p>There are seven parts. First, an overview and the background: what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, Version 1, the application-based implementation: the first tunnel, the bugs it hid, and the first demo. Fifth, version two, the kernel driver: why I moved it, a bug in NuttX itself, and how I tested it. Sixth, a live demo with the StackChan. And last, where the work stands, what I learned, and a summary. About thirty minutes, then questions.</p>
+      <p>There are seven parts. First, an overview and the background: what NuttX is, and how this started. Second, the problem and the solution I chose. Third, the development plan. Fourth, Version 1, the application-based implementation: the first tunnel, the bugs it hid, and the first demo. Fifth, Version 2, the kernel driver: why I moved it, how it is built, the issues I found, and how I tested it. Sixth, a live demo with the Stack-chan. And last, a summary, what I learned, and my thanks. About thirty minutes, then questions.</p>
     </aside>
   </section>
 
@@ -1150,12 +1176,12 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 1</span>4 / 36</div>
+    <div class="num"><span class="part">PART 1</span>4 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1207,7 +1233,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>NuttX devices can now talk IP securely, like any other WireGuard peer.</p></div>
     </div>
-    <div class="num"><span class="part">PART 1 &middot; 1/5</span>5 / 36</div>
+    <div class="num"><span class="part">PART 1 &middot; 1/5</span>5 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1232,7 +1258,7 @@
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on.</p></div>
     </div>
-    <div class="num"><span class="part">PART 1 &middot; 2/5</span>6 / 36</div>
+    <div class="num"><span class="part">PART 1 &middot; 2/5</span>6 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1277,7 +1303,7 @@
       <div class="takeaway"><b>Takeaway</b><p>Apache NuttX is a POSIX-like RTOS used in a wide range of real-world embedded devices.</p></div>
     </div>
     <div class="sources">Sources: nuttx.apache.org/market-share &middot; &ldquo;NuttX at Fitbit&rdquo; (2020) &middot; docs.px4.io &middot; Sony Developer Blog. Images: Sony; Wikimedia Commons (Charge 3: Vemerce, CC BY-SA 4.0; Pixhawk: Pixhawk project, CC BY 4.0; SORA-Q: &#x30C6;&#x30EC;&#x30B9;&#x30C8;&#x30EC;&#x30E9;&#x30C3;&#x30BD;, CC BY-SA 4.0)</div>
-    <div class="num"><span class="part">PART 1 &middot; 3/5</span>7 / 36</div>
+    <div class="num"><span class="part">PART 1 &middot; 3/5</span>7 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1329,7 +1355,7 @@
       <div class="takeaway"><b>Takeaway</b><p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p></div>
     </div>
     <div class="sources">Sources: M. Ishikawa, Sony NuttX talks (2018&ndash;19) &middot; Sony, &ldquo;Running NuttX on Spresense&rdquo; (2019) &middot; A. Jerpelea (2020) &middot; Apache NuttX CXD56xx docs</div>
-    <div class="num"><span class="part">PART 1 &middot; 4/5</span>8 / 36</div>
+    <div class="num"><span class="part">PART 1 &middot; 4/5</span>8 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1373,7 +1399,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <div class="takeaway"><b>Takeaway</b><p>I wanted a secure way to access and troubleshoot remote embedded devices.</p></div>
     </div>
     <div class="sources">Images: ARICA project (ARICA CubeSat) &middot; Sony Semiconductor Solutions (AITRIOS). ARICA-2: nanosats.eu/sat/arica-2 &middot; SmallSat 2026 paper (Mabuchi et al.)</div>
-    <div class="num"><span class="part">PART 1 &middot; 5/5</span>9 / 36</div>
+    <div class="num"><span class="part">PART 1 &middot; 5/5</span>9 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1421,12 +1447,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 2</span>10 / 36</div>
+    <div class="num"><span class="part">PART 2</span>10 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1472,7 +1498,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>We needed a secure way to access and troubleshoot remote NuttX devices.</p></div>
     </div>
-    <div class="num"><span class="part">PART 2 &middot; 1/4</span>11 / 36</div>
+    <div class="num"><span class="part">PART 2 &middot; 1/4</span>11 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1499,7 +1525,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <div class="takeaway"><b>Takeaway</b><p>Every option has trade-offs. I chose a VPN on the device, so the device itself is the end of the tunnel.</p></div>
     </div>
     <div class="sources">Each option can be made secure. The last column shows where its protection ends. Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS.</div>
-    <div class="num"><span class="part">PART 2 &middot; 2/4</span>12 / 36</div>
+    <div class="num"><span class="part">PART 2 &middot; 2/4</span>12 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1550,7 +1576,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <div class="takeaway" style="margin-top:6px"><b>Takeaway</b><p>Run a lightweight, standard VPN directly on the NuttX device.</p></div>
     </div>
     <div class="sources">Lines of code (rounded): J. Donenfeld, &ldquo;WireGuard&rdquo;, Linux Plumbers Conference 2018, wireguard.com/talks/lpc2018-wireguard-slides.pdf. Specific implementations, counted in 2018; the talk's own slides differ slightly for OpenVPN.</div>
-    <div class="num"><span class="part">PART 2 &middot; 3/4</span>13 / 36</div>
+    <div class="num"><span class="part">PART 2 &middot; 3/4</span>13 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1596,7 +1622,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is a normal network device. Under it, WireGuard turns its packets into encrypted UDP.</p></div>
     </div>
-    <div class="num"><span class="part">PART 2 &middot; 4/4</span>14 / 36</div>
+    <div class="num"><span class="part">PART 2 &middot; 4/4</span>14 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1643,12 +1669,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 3</span>15 / 36</div>
+    <div class="num"><span class="part">PART 3</span>15 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1677,7 +1703,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway" style="margin-top:4px"><b>Takeaway</b><p>We ported wireguard-lwip to NuttX by reusing the core, adapting platform hooks, and replacing the lwIP integration.</p></div>
     </div>
-    <div class="num"><span class="part">PART 3 &middot; 1/2</span>16 / 36</div>
+    <div class="num"><span class="part">PART 3 &middot; 1/2</span>16 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1703,7 +1729,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <div class="aside"><p>These are matches of ideas, not a one-to-one swap of APIs.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
-    <div class="num"><span class="part">PART 3 &middot; 2/2</span>17 / 36</div>
+    <div class="num"><span class="part">PART 3 &middot; 2/2</span>17 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1750,12 +1776,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 4</span>18 / 36</div>
+    <div class="num"><span class="part">PART 4</span>18 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1781,7 +1807,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <div class="takeaway"><b>Takeaway</b><p><span class="l">Version 1 proved that WireGuard could run on NuttX.</span><span class="l">It also exposed OS and networking problems that the first tunnel did not reveal.</span></p></div>
     </div>
     <div class="sources">Lines include comments, from git history. Reused: the vendored wireguard-lwip files. New: the first working tunnel, 2026-08-13. Fixes: 2026-09-18.</div>
-    <div class="num"><span class="part">PART 4 &middot; 1/5</span>19 / 36</div>
+    <div class="num"><span class="part">PART 4 &middot; 1/5</span>19 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1806,7 +1832,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </table>
       <div class="takeaway"><b>Takeaway</b><p>Most of them hid behind a test that passed, so I first looked in the wrong place.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 2/5</span>20 / 36</div>
+    <div class="num"><span class="part">PART 4 &middot; 2/5</span>20 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1837,7 +1863,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>If only some tasks fail, look at what each task owns. Here, it was the file descriptor.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 3/5</span>21 / 36</div>
+    <div class="num"><span class="part">PART 4 &middot; 3/5</span>21 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1866,7 +1892,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A quick fix you never measure can look free. Measure it.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 4/5</span>22 / 36</div>
+    <div class="num"><span class="part">PART 4 &middot; 4/5</span>22 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1891,7 +1917,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 5/5</span>23 / 36</div>
+    <div class="num"><span class="part">PART 4 &middot; 5/5</span>23 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1936,12 +1962,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 5</span>24 / 36</div>
+    <div class="num"><span class="part">PART 5</span>24 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -1977,7 +2003,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway" style="margin-top:2px"><b>Takeaway</b><p>The goal: a proper kernel driver for every NuttX build mode, in a form that is easier to review upstream.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 1/4</span>25 / 36</div>
+    <div class="num"><span class="part">PART 5 &middot; 1/4</span>25 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2029,7 +2055,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The driver owns everything that must keep running. The command only sends settings, and then it can exit.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 2/4</span>26 / 36</div>
+    <div class="num"><span class="part">PART 5 &middot; 2/4</span>26 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2065,7 +2091,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Porting WireGuard also surfaced findings worth sharing with the NuttX community.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 3/4</span>27 / 36</div>
+    <div class="num"><span class="part">PART 5 &middot; 3/4</span>27 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2091,7 +2117,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       <p class="fine">&#10003; means it passed in the conditions noted here. It is not a guarantee for other hardware.</p>
       <div class="takeaway"><b>Takeaway</b><p><span class="l">Verified on real boards in FLAT builds and on QEMU in KERNEL / PROTECTED builds.</span><span class="l">Real-hardware testing for those modes remains open.</span></p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 4/4</span>28 / 36</div>
+    <div class="num"><span class="part">PART 5 &middot; 4/4</span>28 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2140,12 +2166,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 6</span>29 / 36</div>
+    <div class="num"><span class="part">PART 6</span>29 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2201,7 +2227,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
       </div>
     </div>
     <div class="sources">Photo: Stack-chan project (docs/images, Apache License 2.0).</div>
-    <div class="num"><span class="part">PART 6 &middot; 1/1</span>30 / 36</div>
+    <div class="num"><span class="part">PART 6 &middot; 1/1</span>30 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
@@ -2253,38 +2279,45 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">7</div>
-          <div><h3>Summary &amp; status</h3><p>Where it stands &middot; what I learned &middot; thanks</p></div>
+          <div><h3>Summary &amp; Reflections</h3><p>What we built &middot; what I learned &middot; thanks</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 7</span>31 / 36</div>
+    <div class="num"><span class="part">PART 7</span>31 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Last part: where the work stands, what I learned, and what to take home.</p>
+      <p>Last part: a summary, what I learned, and my thanks.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Giving back: where it stands</p>
-    <div class="body">
-      <ul class="big">
-        <li>A small <code>crypto:</code> fix <span>the ChaCha20-Poly1305 nonce fix, kept apart from the driver because it is useful on its own.</span></li>
-        <li>The driver <span><code>drivers/net/wireguard</code>: the kernel device, ABI, and docs, plus two small network-core changes.</span></li>
-        <li>The command <span><code>apps/system/wg</code>: talks to the driver. Its stack default now covers PROTECTED builds.</span></li>
-        <li>Checked so far <span>checkpatch / nxstyle pass, each commit builds on its own, licenses listed. The series runs on the ESP32-S3 (FLAT, 2026-10-12).</span></li>
-      </ul>
-      <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
-      <div class="sources">Status: prepared as small PRs. Not signed off yet; nothing sent upstream.</div>
+    <p class="eyebrow">Summary</p>
+    <div class="body" style="justify-content:center">
+      <div class="sum">
+        <div class="sum-row">
+          <div class="sum-n">1</div>
+          <div><h3>Secure Communication</h3><p>Brought WireGuard to Apache NuttX, enabling secure IP communication with standard WireGuard peers.</p></div>
+        </div>
+        <div class="sum-row b">
+          <div class="sum-n">2</div>
+          <div><h3>Application to Kernel Driver</h3><p>Evolved the implementation from a NuttX application into a kernel network driver, tested on real boards and QEMU.</p></div>
+        </div>
+        <div class="sum-row c">
+          <div class="sum-n">3</div>
+          <div><h3>Toward Upstream Contribution</h3><p>Preparing the driver and related fixes for review by the Apache NuttX community.</p><small>Prepared as small, separate changes. Nothing is submitted yet.</small></div>
+        </div>
+      </div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 1/5</span>32 / 36</div>
+    <div class="num"><span class="part">PART 7 &middot; 1/4</span>32 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is where the work stands.</p>
-      <p>It is split into small pieces: a small crypto fix that is useful on its own, the driver for the kernel device, and the wg command for user space. The PROTECTED stack fix is in the command's default settings. Every commit passes the patch checks and builds on its own, and the exact series runs on the ESP32-S3 in a normal FLAT build. Nothing is sent yet. Each commit still needs my sign-off and an Assisted-by line, because AI tools helped me. Community over code means being honest about where the work really is, and then letting review change it.</p>
+      <p>To sum up. We brought WireGuard to Apache NuttX. A NuttX device can now talk to standard WireGuard peers over an encrypted IP tunnel.</p>
+      <p>We developed it from an application into a kernel network driver. We tested it on real boards, and on QEMU in the kernel build modes.</p>
+      <p>Next, I am preparing the driver and the related fixes for review by the NuttX community. They are small, separate pieces, and nothing is submitted yet. That is the technical story. Now, a few things I learned.</p>
     </aside>
   </section>
 
@@ -2297,7 +2330,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
           <b>Lesson 1</b>
           <h3 style="font-size:20px;margin-bottom:10px">From application user to OS contributor</h3>
           <p>For years I used NuttX from the application side.</p>
-          <p style="margin-top:8px">This project took me into drivers, the kernel, and bugs in NuttX itself.</p>
+          <p style="margin-top:8px">This time I worked inside the OS: drivers and the kernel.</p>
         </div>
         <div class="fact wg" style="background:var(--wg-soft)">
           <b>Lesson 2</b>
@@ -2310,62 +2343,42 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
           <b>Lesson 3</b>
           <h3 style="font-size:20px;margin-bottom:10px">A welcoming open-source community</h3>
           <p>Good docs and contributing guides. Active discussion and review.</p>
-          <p style="margin-top:8px">Open to AI tools, with people responsible: <code>Assisted-by</code>, and AI never adds <code>Signed-off-by</code>.</p>
-          <p style="margin-top:8px">CI and hackathons help new people join.</p>
+          <p style="margin-top:8px">Open to AI-assisted development, with people staying responsible.</p>
+          <p style="margin-top:8px">CI, hackathons and events help new people join.</p>
         </div>
       </div>
       <div class="takeaway"><b>Hope</b><p>I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.</p></div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 2/5</span>33 / 36</div>
+    <div class="num"><span class="part">PART 7 &middot; 2/4</span>33 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Before the summary, three things I learned.</p>
-      <p>First, I came to NuttX as an application user. This project took me into drivers, the kernel, and even bugs in NuttX itself.</p>
+      <p>That was the technical part. Now, three things I learned.</p>
+      <p>First, I came to NuttX as an application developer. This time I worked inside the OS: drivers and the kernel.</p>
       <p>Second, and I want to say this one clearly. I used AI, Claude, a lot in this project. It made research and writing code much faster. But embedded OS internals were new to me, and really understanding the design and the behavior was hard. I could not just take the code the AI wrote. I had to ask questions, read the NuttX source, test the behavior, and keep going until I could explain it myself. AI helped me code, but understanding was my job.</p>
-      <p>Third, the community. NuttX has good documentation and contributing guides, and active technical discussion and review. It is open to AI tools, but people stay responsible: a commit says Assisted-by, and AI never adds a Signed-off-by. And CI and hackathons help new people join. Open source is not only code that is public. It grows when new people can join, learn, and contribute.</p>
+      <p>Third, the community. NuttX has good documentation and contributing guides, and active technical discussion and review. It is open to AI-assisted development, but people stay responsible: a commit says Assisted-by, and AI never adds a Signed-off-by. And CI and hackathons help new people join. Open source is not only code that is public. It grows when new people can join, learn, and contribute.</p>
       <p>I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Summary</p>
-    <div class="body">
-      <div class="takeaway"><b>Built</b><p><code>wg0</code>: a WireGuard network device in the NuttX kernel. It runs on ESP32-S3 and SPRESENSE (FLAT) and in KERNEL / PROTECTED builds on QEMU, with standard WireGuard peers. Prepared as small PRs; nothing sent yet.</p></div>
-      <ul class="big">
-        <li>Test beyond the handshake <span>long data runs, real hardware, every build mode.</span></li>
-        <li>A clean OS boundary pays off <span>the apps version: four CPU types, three NuttX versions, no code changes.</span></li>
-        <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
-      </ul>
-    </div>
-    <div class="num"><span class="part">PART 7 &middot; 3/5</span>34 / 36</div>
-    <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
-  </div>
-    <aside class="notes">
-      <p>To sum up.</p>
-      <p>I built wg0, a WireGuard network device inside the NuttX kernel. It runs on the ESP32-S3 and SPRESENSE in normal FLAT builds, and in KERNEL and PROTECTED builds on QEMU. It is prepared as small PRs, and nothing is sent upstream yet.</p>
-      <p>Three technical lessons. First, test beyond the handshake: long data runs, real hardware, and every build mode. Second, a clean line between your code and the OS pays off. The apps version ran on four CPU types &mdash; x86, Cortex-A7, Xtensa and Cortex-M4F &mdash; and on three NuttX versions, with no code change. Third, porting to a project is a chance to make it better: one bug was in NuttX's own crypto.</p>
-    </aside>
-  </section>
-
-  <section>
-  <div class="frame">
-    <p class="eyebrow">Thanks: the people behind this talk</p>
-    <div class="body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start;flex:0 0 auto">
-        <div class="panel nx" style="min-height:0"><p><strong>Alan</strong></p><p>for telling me about this conference and encouraging me to submit a talk.</p></div>
-        <div class="panel nx" style="min-height:0"><p><strong>The Apache NuttX community</strong></p><p>for talking with me about my GSoC proposal, and for encouraging me to keep going.</p></div>
-        <div class="panel" style="min-height:0"><p><strong>The Apache Software Foundation</strong></p><p>and the Community Over Code organizers and volunteers, for making this event happen.</p></div>
-        <div class="panel" style="min-height:0"><p><strong>Sony's NuttX developers, past and present</strong></p><p>who brought NuttX into our products and gave so much back to the project.</p></div>
+    <p class="eyebrow">Acknowledgements</p>
+    <div class="body" style="justify-content:center">
+      <div class="ack">
+        <div class="ack-row"><b>Alan Carvalho de Assis</b><span>For encouraging me to submit this talk to Community Over Code.</span></div>
+        <div class="ack-row"><b>The Apache NuttX Community</b><span>For the discussions, documentation, and support throughout this project.</span></div>
+        <div class="ack-row"><b>Sony's NuttX Developers, Past and Present</b><span>For their contributions to NuttX and the foundation they built.</span></div>
+        <div class="ack-row"><b>The Apache Software Foundation &amp; Community Over Code Organizers</b><span>For bringing the open-source community together, organizers and volunteers alike.</span></div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 4/5</span>35 / 36</div>
+    <div class="num"><span class="part">PART 7 &middot; 3/4</span>34 / 35</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
       <p>Before I finish, some thanks.</p>
-      <p>First, Alan, who told me about this conference and encouraged me to submit a talk. Second, the Apache NuttX community: when I wrote my GSoC proposal, people talked with me and encouraged me, and that is why I kept going after it was not selected. Third, the Apache Software Foundation and everyone who organizes Community Over Code. And last, the Sony engineers before me, who brought NuttX into our products and gave so much back to the project. This work stands on theirs.</p>
+      <p>First, Alan Carvalho de Assis, who encouraged me to submit this talk to Community Over Code. Second, the Apache NuttX community, for the discussions, the documentation and the support. When I wrote my GSoC proposal, people talked with me and encouraged me, and that is why I kept going after it was not selected.</p>
+      <p>Third, the Sony engineers before me, who contributed to NuttX and built the foundation this work stands on. And last, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the open-source community together.</p>
     </aside>
   </section>
 
@@ -2374,19 +2387,20 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   <div class="frame coc-dark">
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
-    <h1>Thank you</h1>
-    <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, the ioctl ABI, or the hardware.</p>
+    <h1>Thank You &mdash; Questions?</h1>
+    <p class="subtitle">Questions welcome &mdash; the kernel driver, the bugs, or the hardware.</p>
     <div class="facts">
-      <div><b>youtu.be/1kyX2av5WG4</b><span>DEMO</span></div>
-      <div><b>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</b><span>CODE &amp; RECORDS</span></div>
+      <div><b><a href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
+      <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
     </div>
     <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
   </div>
-  <img src="../assets/github-qr.png" alt="QR code for the GitHub repository" style="position:absolute;right:84px;top:64px;width:170px;height:170px;z-index:2;border-radius:6px">
+  <a class="qr-card closing-qr" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI (binary interface), or the hardware.</p>
+      <p>Thank you very much. I am happy to take your questions, about the kernel driver, the bugs, or the hardware.</p>
+      <p>The slides are on the screen: scan the QR code, or use the link. The code and the records are on GitHub.</p>
     </aside>
   </section>
 

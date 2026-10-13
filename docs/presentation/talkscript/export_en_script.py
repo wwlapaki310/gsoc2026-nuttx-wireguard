@@ -33,7 +33,7 @@ SLIDES = [
         '"WireGuard for Apache NuttX." ESP32-S3 & SPRESENSE tunnel over real '
         "Wi-Fi · real WireGuard peers (Linux kernel, Windows client) · runs in "
         "a kernel build on QEMU (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
-        "master / 12.7.0.", []),
+        "master / 12.7.0. A small QR code of the slides (\"Slides\") at the bottom right.", []),
     ("About Me", "",
         "Three bands: photo, name line and the fox icon / a map of Japan "
         "(Nagoya, Sendai, Kawasaki) labelled Japan / five large photos under "
@@ -43,9 +43,9 @@ SLIDES = [
     ("Agenda", "",
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~5 min) / the problem & solution "
-        "(~4) / the development plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: "
+        "(~4) / the development plan (~2) / version 1: application-based implementation, six bugs, two in detail (~4) / version 2: "
         "the kernel driver, design, issues found, testing (~5) / live demo (~3) / summary & "
-        "status, what I learned (~4).",
+        "reflections: what we built, what I learned, thanks (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("Project Overview", "",
@@ -241,32 +241,50 @@ SLIDES = [
           "**Fallback:** no backup video at the moment. "
           "If the live demo stalls, say so and go on to the "
           "summary."]),
-    ('Agenda: ⑦ Summary and Status', "divider", None, []),
-    ("Giving Back: Where It Stands", "cut first", None,
-         ['**If asked "is it merged?":** not yet. These are submission '
-          "candidates, not a claim that it is mergeable. See the Q&A file.",
-          "**If time is short:** skip the whole slide. The talk's argument "
-          "(the pattern, the verification) does not rest on it; just keep "
-          "the answer above ready for questions."]),
+    ('Agenda: ⑦ Summary and Reflections', "divider", None, []),
+    ("Summary", "",
+         "Three rows, each a short heading and one sentence: 1 Secure "
+         "Communication (brought WireGuard to Apache NuttX, secure IP "
+         "communication with standard peers) / 2 Application to Kernel "
+         "Driver (evolved from an application into a kernel network driver, "
+         "tested on real boards and QEMU) / 3 Toward Upstream Contribution "
+         "(preparing the driver and related fixes for review; a small line: "
+         "prepared as small, separate changes, nothing is submitted yet).",
+         ['**If asked "is it merged?":** not yet, and nothing is submitted. '
+          "These are submission candidates, not a claim that it is "
+          "mergeable. See the Q&A file.",
+          "**State of the submission (2026-10-13):** no pull request about "
+          "this work exists in apache/nuttx or apache/nuttx-apps. The only "
+          "related issue is the closed GSoC proposal thread (#18548). The "
+          "branches exist only on the author's forks. Do not say "
+          "\"submitted\"."]),
     ("What I Learned", "",
          "Three cards: from application user to OS contributor / AI helped me "
          "code, but understanding was my job (highlighted) / a welcoming "
-         "open-source community (docs and guides, review, Assisted-by and no "
-         "AI Signed-off-by, CI and hackathons). Bottom line: the hope to keep "
-         "contributing.",
+         "open-source community (docs and guides, review, AI-assisted "
+         "development with people responsible, CI and hackathons help new "
+         "people join). Bottom line: the hope to keep contributing.",
          ["**Say the AI part plainly.** Not as a confession and not as a "
           "boast: it was faster, and understanding was still hard and still "
           "mine."]),
-    ("Summary: What I Built, and Three Technical Lessons", "", None, []),
-    ("Thanks: The People Behind This Talk", "",
-         "Four boxes: Alan / the Apache NuttX community / the Apache "
-         "Software Foundation and the CoC organizers and volunteers / "
-         "Sony's NuttX developers, past and present.", []),
-    ("Thank You", "", "The GitHub repository with a QR code, the demo video "
-         "link, questions welcome.",
+    ("Acknowledgements", "",
+         "A plain vertical list, a name and one line each: Alan Carvalho de "
+         "Assis (encouraged me to submit this talk) / The Apache NuttX "
+         "Community (discussions, documentation, support) / Sony's NuttX "
+         "Developers, Past and Present (their contributions and the "
+         "foundation they built) / The Apache Software Foundation & Community "
+         "Over Code Organizers (bringing the community together).", []),
+    ("Thank You — Questions?", "",
+         "A QR code of the slides (\"Scan to view the slides\") with the "
+         "slides link and the GitHub repository link, both clickable. The "
+         "same QR code is on the title slide. No video link.",
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "
-          "exhaustion, checkpatch) are answered there and on no slide."]),
+          "exhaustion, checkpatch) are answered there and on no slide.",
+          "**Check before the talk:** the QR code and both links open "
+          "https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/"
+          "presentation/coc-glasgow-reveal/index.html (GitHub Pages must "
+          "be up to date with the last push)."]),
     ("Testing: What Ping Misses", "appendix",
          "Three cards: same key on every boot? (SPRESENSE, 3 resets, 3 "
          "keys) / keys left after down? (sim, all zero) / a leak after "
@@ -312,18 +330,17 @@ that led to WireGuard: everything after that depends on this. Keep slide
 {learned} (What I learned) too: it is the speaker's own message.
 
 **If time is short, cut in this order:**
-1. Slide {cut1} (Giving Back). It helps the talk, but the talk does not
-   depend on it. If you cut it, answer it in Q&A if someone asks.
-2. Slide {cut2} (the version 1 video still). The live demo shows the same
+1. Slide {cut2} (the Version 1 video still). The live demo shows the same
    kind of thing.
-3. Slide {cut3} (Bug ③, the 50 ms polling). Its one-line lesson is
+2. Slide {cut3} (Bug ③, the 50 ms polling). Its one-line lesson is
    already in the bug table.
 
-If the live demo stops, switch to the recording right away. **The agenda
+If the live demo stops, say so and go on to the summary (there is no
+backup video at the moment). **The agenda
 slides ({dividers}) are a ten-second pause each**: point
 at the highlighted line and pause. Do not read the list. If you have no
 time at all, skip them without a word. They save almost no time, so cut the
-three slides above instead.
+two slides above instead.
 
 ---
 """
@@ -381,7 +398,6 @@ def main():
         core_range=("%d" % core[0] if len(core) == 1
                     else "%d–%d" % (core[0], core[-1])),
         arch=find(lambda sl: sl[0].startswith("Architecture"))[0],
-        cut1=find(lambda sl: sl[1] == "cut first")[0],
         cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
         cut3=find(lambda sl: sl[1] == "cut candidate 3")[0],
         dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),

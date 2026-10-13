@@ -175,3 +175,25 @@
   height: auto;
   z-index: 0;
 }
+
+/* ---- QR code of the slides: title and closing --------------------------- */
+.reveal .frame .qr-card.title-qr {
+  position: absolute;
+  right: 84px;
+  bottom: 74px;
+  width: 188px;
+  z-index: 2;
+}
+.reveal .frame .qr-card.closing-qr {
+  position: absolute;
+  right: 84px;
+  top: 56px;
+  width: 260px;
+  z-index: 2;
+}
+.reveal .frame.coc-dark .facts a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.reveal .frame.coc-dark .facts b { font-size: 18px; }
