@@ -99,8 +99,18 @@ def notes(inner):
     if not m:
         return ""
     paras = [p.strip() for p in m.group(1).split("||") if p.strip()]
+    # Essential text is read as it is. "[opt]" paragraphs are read only if
+    # there is time, "[note]" paragraphs are never read (sources, steps).
+    labels = {"[opt]": "OPTIONAL: ", "[note]": "NOTE, do not read: "}
+    shown = []
+    for p in paras:
+        for tag, label in labels.items():
+            if p.startswith(tag):
+                p = label + p[len(tag):].strip()
+                break
+        shown.append(p)
     return ('    <aside class="notes">\n%s\n    </aside>\n'
-            % "\n".join("      <p>%s</p>" % p for p in paras))
+            % "\n".join("      <p>%s</p>" % p for p in shown))
 
 
 def convert(cls, inner):

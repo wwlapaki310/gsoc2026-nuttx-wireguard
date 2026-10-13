@@ -1109,9 +1109,12 @@
   </div>
     <aside class="notes">
       <p>First, a little about me.</p>
-      <p>I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, studied in Sendai, and now I live in Kawasaki.</p>
-      <p>My background is wide. At university I studied mechanical and aerospace engineering, including rockets. My undergraduate research was DNA nanorobotics, and my master's research was on semiconductors. I also build robots at hackathons, and I help run open-source conferences such as Open Source Summit Japan and KubeCon as a volunteer. On social media, I am the fox in this picture, and I wrote a book about open source.</p>
-      <p>My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road. Next, the overview of the project.</p>
+      <p>I am an edge AI engineer at Sony Semiconductor Solutions. I use Apache NuttX from the application side. I was born in Nagoya, I studied in Sendai, and now I live in Kawasaki.</p>
+      <p>My background is wide. At university, I studied mechanical and aerospace engineering, including rockets. My undergraduate research was DNA nanorobotics, and my master's research was on semiconductors. I also build robots, and I volunteer at open-source conferences.</p>
+      <p>This project is the latest stop on that road. Let me show you the project.</p>
+      <p>OPTIONAL: The conferences are Open Source Summit Japan and KubeCon. I also build robots at hackathons.</p>
+      <p>OPTIONAL: My road to this project went through molecular robots, computer vision, edge AI cameras, and embedded systems on SPRESENSE.</p>
+      <p>OPTIONAL: On social media, I am the fox in this picture. I also wrote a book about open source.</p>
     </aside>
   </section>
 
@@ -1161,8 +1164,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is the plan for this talk.</p>
-      <p>There are seven parts. First, the background: how this project started, NuttX and Sony, and my own experience. Second, the problem, secure remote access to embedded devices, and why I chose WireGuard. Third, the development plan: reuse wireguard-lwip, and adapt it to NuttX. Fourth, Version 1, the application-based implementation: the first working tunnel, and the debugging challenges. Fifth, Version 2, the kernel driver: why a driver, the integration challenges, and the validation. Sixth, a live demo of secure remote access, controlling a Stack-chan. And last, a summary: the achievements, my reflections, and the community. About thirty minutes, then questions.</p>
+      <p>Here is the plan. There are seven parts.</p>
+      <p>First, the background: why I started. Then the problem and solution, and the development plan. After that, Version 1 and Version 2. Then a live demo, and a short summary.</p>
+      <p>I will finish in about thirty minutes, and then I will take questions.</p>
     </aside>
   </section>
 
@@ -1212,7 +1216,7 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Let's start with part one: an overview and the background.</p>
+      <p>Let's start with the background.</p>
     </aside>
   </section>
 
@@ -1265,8 +1269,8 @@
   </div>
     <aside class="notes">
       <p>Here is the whole project in one picture.</p>
-      <p>I brought WireGuard, a lightweight VPN, to Apache NuttX. It appears as a virtual network interface called wg0, next to the normal network interface. Packets sent to wg0 are encrypted and travel over a UDP socket, and the other side can be any normal WireGuard peer. So a NuttX microcontroller can exchange IP packets securely.</p>
-      <p>I will keep the technical details for the second half. First, how this project started.</p>
+      <p>I brought WireGuard, a lightweight VPN, to Apache NuttX. It appears as a virtual network interface called wg0, next to the normal network interface. Packets sent to wg0 are encrypted. They travel over a UDP socket to any normal WireGuard peer. So a NuttX microcontroller can exchange IP packets securely.</p>
+      <p>First, let me tell you how this project started.</p>
     </aside>
   </section>
 
@@ -1289,10 +1293,11 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is how this project went, month by month.</p>
-      <p>In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alan told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These are two separate applications.</p>
-      <p>In early May, I got two answers. The CfP was accepted, and the GSoC proposal was not selected. I decided to keep going anyway. From May to July, I studied NuttX internals, learned how WireGuard works, and explored ways to build it. In August, I focused on hardware testing and finished Version 1, the application in a FLAT build. Then Version 2, the kernel driver, came after that.</p>
-      <p>So the work that started with GSoC grew step by step, and it still continues. Next, what NuttX is.</p>
+      <p>Here is the timeline.</p>
+      <p>In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alan, from the NuttX community, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.</p>
+      <p>In early May, I got two answers. The CfP was accepted, but my GSoC proposal was not selected. I decided to keep going anyway.</p>
+      <p>From May to July, I studied NuttX and WireGuard. In August, I focused on hardware testing and finished Version 1. Then I built Version 2, the kernel driver.</p>
+      <p>So this work started with GSoC, and it grew step by step. First, what is NuttX?</p>
     </aside>
   </section>
 
@@ -1334,10 +1339,11 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Now, what is Apache NuttX?</p>
-      <p>NuttX is a POSIX-like real-time operating system for small devices. It has a small footprint, and it supports a very wide range of hardware: more than fifteen CPU architectures and more than three hundred boards. It is also an Apache top-level project, developed in the open.</p>
-      <p>FreeRTOS and Zephyr are good RTOSes too. The difference I care about is the API. NuttX is POSIX-like by design, with pthreads, sockets, files and a shell. That is why a VPN can become a normal network device here.</p>
-      <p>And it is not a toy. Sony uses it in audio products and SPRESENSE. Fitbit used it in fitness trackers, such as the Charge 3 and Charge 4. PX4 drone flight controllers run on it. Xiaomi's OpenVela is reported to run on more than a thousand products. And a small lunar robot, SORA-Q, used it on Japan's 2024 Moon mission. Next, Sony's own history with NuttX.</p>
+      <p>NuttX is a real-time operating system for small devices. It follows POSIX, so it feels familiar to Unix programmers. It supports many CPU architectures and boards, and it is an Apache open-source project.</p>
+      <p>FreeRTOS and Zephyr are good RTOSes too. For this project, the POSIX-like API matters. With pthreads, sockets and files, a VPN can become a normal network device.</p>
+      <p>NuttX is also used in real commercial products. You can see some examples on the screen: audio products, fitness trackers, drone controllers, and even a lunar robot.</p>
+      <p>OPTIONAL: Sony uses NuttX in audio products and SPRESENSE. Fitbit used it in fitness trackers, such as the Charge 3 and Charge 4. PX4 drone flight controllers run on it. Xiaomi's OpenVela is reported to run on more than a thousand products. And a small lunar robot, SORA-Q, used it on Japan's 2024 Moon mission.</p>
+      <p>Sony has a long history with NuttX. Let me show it.</p>
     </aside>
   </section>
 
@@ -1386,18 +1392,14 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.</p>
-      <p>The public record starts in 2013, when Sony engineers began porting NuttX to the LC823425 audio processor. Bluetooth and LC823450 followed in 2014, and the first commercial audio products shipped in 2015. Public examples include the Walkman NW-WS620, the SMR-10 personal sound amplifier, and the ICD-TX800 and ICD-PX470 voice recorders.</p>
-      <p>In 2018, Xperia Ear Duo shipped with Sony's CXD5602 and NuttX, while SPRESENSE made the same multicore platform available as a development board with GNSS, audio and camera support. In 2019 and 2020, Sony engineers documented the work and moved substantial CXD56xx platform and driver support upstream. In the 2020s, the platform's capabilities continued to expand across camera, GNSS, connectivity and edge sensing. That last point is about technical capability, not a claim that every feature shipped in a named product.</p>
-      <p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p>
-      <p>[Sources]
-M. Ishikawa and K. Okamoto, &ldquo;SMP and Networking support on NuttX / LC823450,&rdquo; 2018: https://events.nuttx.apache.org/wp-content/uploads/2019/11/MIshikawa_nx2019.pdf
-Sony, &ldquo;Running NuttX on Spresense,&rdquo; NuttX Workshop 2019: https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf
-A. Jerpelea, &ldquo;A Journey from Fork to Mainline,&rdquo; NuttX Online Workshop 2020: https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/
-Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html
-Sony, NW-WS620 product image: https://www.sony.jp/products/picture/NW-WS620.jpg
-Sony, Xperia Ear Duo product image: https://www.sony.jp/xperia/product/smartproducts/xea20/img/main01.jpg
-Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
+      <p>Sony has used NuttX for more than ten years. The public record starts in 2013, when Sony engineers began porting NuttX to an audio processor. The first commercial audio products shipped in 2015.</p>
+      <p>In 2018, the Xperia Ear Duo shipped with a Sony chip and NuttX. SPRESENSE also launched, as a development board with GNSS, audio and camera support.</p>
+      <p>Later, Sony engineers moved much of their platform and driver work upstream, and shared it in public NuttX talks.</p>
+      <p>So Sony's NuttX story began with audio products. It grew through SPRESENSE, and it became long-term open-source collaboration.</p>
+      <p>That is Sony's history. Now, my own.</p>
+      <p>OPTIONAL: Public product examples include the Walkman NW-WS620, the SMR-10 sound amplifier, and two voice recorders, the ICD-TX800 and the ICD-PX470.</p>
+      <p>OPTIONAL: In the 2020s, the platform's abilities kept growing in camera, GNSS, connectivity and edge sensing. That is about technical capability. It is not a claim that every feature shipped in a named product.</p>
+      <p>NOTE, do not read: Sources (not spoken). M. Ishikawa and K. Okamoto, SMP and Networking support on NuttX / LC823450, 2018: https://events.nuttx.apache.org/wp-content/uploads/2019/11/MIshikawa_nx2019.pdf . Sony, Running NuttX on Spresense, NuttX Workshop 2019: https://events.nuttx.apache.org/wp-content/uploads/2019/11/TKoizumi_nx2019.pdf . A. Jerpelea, A Journey from Fork to Mainline, NuttX Online Workshop 2020: https://events.nuttx.apache.org/index.php/past-events/nuttx-online-workshop-2020/ . Apache NuttX, Sony CXD56xx documentation: https://nuttx.apache.org/docs/latest/platforms/arm/cxd56xx/index.html . Product images: Sony NW-WS620 https://www.sony.jp/products/picture/NW-WS620.jpg , Xperia Ear Duo https://www.sony.jp/xperia/product/smartproducts/xea20/img/main01.jpg , SPRESENSE https://developer.spresense.sony-semicon.com/</p>
     </aside>
   </section>
 
@@ -1430,10 +1432,11 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That was Sony's history. Now, my own experience with NuttX.</p>
-      <p>First, SPRESENSE. It is Sony's low-power microcontroller board, and it runs NuttX. Aoyama Gakuin University's ARICA-2 CubeSat, a small satellite that sends rapid alerts for gamma-ray bursts, uses SPRESENSE as its on-board computer. It was launched in April 2026. I took part in this project through an internal, grassroots engineering initiative.</p>
-      <p>Second, AITRIOS, Sony's edge AI sensing platform. It is used to manage edge AI cameras and run inference at the edge. I worked on setting up and operating edge AI camera systems. In the systems I worked with, the board was an ESP32 running Apache NuttX. Not every AITRIOS camera is built this way.</p>
-      <p>A satellite and a camera on site are both far from my desk. These experiences made me want a secure way to access and troubleshoot remote embedded devices. That is the problem I want to talk about next.</p>
+      <p>Now, my own experience with NuttX. I have two stories.</p>
+      <p>First, SPRESENSE. It is Sony's low-power microcontroller board, and it runs NuttX. The ARICA-2 CubeSat, from Aoyama Gakuin University, uses SPRESENSE as its on-board computer. It sends rapid alerts for gamma-ray bursts, and it was launched in April 2026. I took part in this project through an internal, grassroots engineering initiative.</p>
+      <p>Second, AITRIOS, Sony's edge AI sensing platform. It is used to manage edge AI cameras and run inference at the edge. I worked on setting up and operating edge AI camera systems. In the systems I worked with, the board was an ESP32 running Apache NuttX.</p>
+      <p>A satellite in orbit and a camera on site are both far from my desk. These experiences made me want a secure way to access and troubleshoot remote embedded devices. That is the problem I want to talk about next.</p>
+      <p>OPTIONAL: Not every AITRIOS camera is built this way.</p>
     </aside>
   </section>
 
@@ -1483,7 +1486,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That is the background. Part two: the problem, and the solution I chose.</p>
+      <p>Now, the problem and the solution.</p>
     </aside>
   </section>
 
@@ -1530,9 +1533,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>Now, the problem I wanted to solve.</p>
-      <p>Embedded devices are often installed far away: at a customer's site, in a factory, or on another network. When something goes wrong, an engineer wants to log in, check the device, and fix it, without traveling there.</p>
-      <p>Wi-Fi security, WPA2 or WPA3, protects the radio link between the device and the access point. That is important, but it is only one hop. It does not give an engineer a way to reach the device across the Internet. For that, we need a secure path of its own, all the way from the engineer to the device. The same need appears in edge AI, industrial IoT, and many other remote systems.</p>
-      <p>So the question is: how can we securely access remote devices? Let's look at the options.</p>
+      <p>Embedded devices are often installed far away: at a customer's site, in a factory, or on another network. When something goes wrong, an engineer wants to log in, check the device, and fix it. Nobody wants to travel there.</p>
+      <p>Wi-Fi security protects the radio link to the access point. That is important, but it is only one hop. It does not give an engineer a way to reach the device across the Internet. For that, we need a secure path of its own.</p>
+      <p>So the question is: how can we securely access remote devices?</p>
+      <p>OPTIONAL: Wi-Fi security here means WPA2 or WPA3. The same need appears in edge AI, industrial IoT, and many other remote systems.</p>
     </aside>
   </section>
 
@@ -1556,9 +1560,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>There are several ways to access a remote device: open a port, use a cloud API or an MQTT broker, set up a reverse tunnel, or use a VPN on the router.</p>
-      <p>Each approach has its own trade-offs. HTTPS and MQTT are great for sending data, but they do not give you a shell or a web page on the device. A router VPN works well when the router is yours, but the protection ends at the router. None of them is bad, and all of them can be made secure. They just protect different parts of the path.</p>
-      <p>For this project, I wanted something different: a standard VPN that runs directly on the NuttX device, so the device itself is the end of the tunnel. That is the solution.</p>
+      <p>There are several ways to do this: open a port, use a cloud API or an MQTT broker, set up a reverse tunnel, or use a VPN on the router.</p>
+      <p>Each way has trade-offs. HTTPS and MQTT are great for data, but they do not give you a shell or a web page on the device. A router VPN works well, but its protection ends at the router.</p>
+      <p>All of these can be made secure. They just protect different parts of the path.</p>
+      <p>For this project, I wanted a standard VPN on the device itself. Then the device is the end of the tunnel.</p>
     </aside>
   </section>
 
@@ -1607,10 +1612,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>So, my solution: put a VPN on the device itself.</p>
-      <p>Why WireGuard? First, it is small and simple. In a talk in 2018, its author compared lines of code: about four thousand for WireGuard, about a hundred and twenty thousand for OpenVPN, and over four hundred thousand for IPsec with strongSwan. These are old numbers for specific implementations, but the gap is large, and it matters on a microcontroller.</p>
-      <p>Second, modern cryptography: ChaCha20-Poly1305 and Curve25519. I will not go into the details here. Third, it is a tunnel over plain UDP. Each peer is known by its public key, and the packets are normal UDP, so the device can talk to existing WireGuard peers, such as Linux or Windows. The microcontroller itself becomes the end of the tunnel.</p>
-      <p>So the idea is simple: run a lightweight, standard VPN directly on the NuttX device. Next, where wg0 sits inside NuttX.</p>
+      <p>So my solution is a VPN on the device itself. Why WireGuard?</p>
+      <p>First, it is small and simple. In a 2018 talk, its author compared the size of the code: about four thousand lines for WireGuard, about one hundred and twenty thousand for OpenVPN, and over four hundred thousand for IPsec. These are old numbers for specific implementations, but the gap is large. That matters on a microcontroller.</p>
+      <p>Second, it uses modern cryptography. Third, it is a tunnel over plain UDP. It works with existing WireGuard peers, such as Linux or Windows. And the microcontroller itself becomes the end of the tunnel.</p>
+      <p>So the idea is simple: run a lightweight, standard VPN directly on the NuttX device. Now, let me show where it fits in NuttX.</p>
+      <p>OPTIONAL: The cryptography is ChaCha20-Poly1305 and Curve25519. I will not go into the details.</p>
+      <p>NOTE, do not read: The line counts come from the WireGuard author's Linux Plumbers 2018 talk (slide 5, https://www.wireguard.com/talks/lpc2018-wireguard-slides.pdf). They are old, for specific implementations, and slide 4 of the same talk gives slightly different OpenVPN numbers.</p>
     </aside>
   </section>
 
@@ -1653,9 +1660,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is one step more technical than the overview. This is where the implementation starts.</p>
-      <p>Going out, a packet comes down from the application through TCP or UDP and IP, and reaches wg0 like any other network device. WireGuard encrypts it, and it leaves as a UDP packet &mdash; through wlan0 on a board, or through usrsock when the Wi-Fi chip itself works through sockets. Coming in is the same path the other way: a UDP packet arrives, WireGuard decrypts it, and it is passed up to wg0 as if it came in on a normal interface.</p>
-      <p>From here on, the work is building this middle part &mdash; wg0 and the encryption &mdash; without changing the layers above or below it.</p>
+      <p>Here is where wg0 sits. When an application sends data, it goes down through TCP, UDP and IP, and reaches wg0 like any other network device. WireGuard encrypts it, and it leaves as a UDP packet. Incoming packets take the same path in the other direction.</p>
+      <p>From here, my work is building this middle part, without changing the layers above and below it.</p>
+      <p>So, how did I bring it to NuttX? That is the development plan.</p>
+      <p>OPTIONAL: On a board, the packet leaves through wlan0, or through usrsock when the Wi-Fi chip works through sockets.</p>
     </aside>
   </section>
 
@@ -1705,7 +1713,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Part three: the development plan. How do we start from an existing WireGuard?</p>
+      <p>Next, the development plan. How can we reuse an existing WireGuard implementation?</p>
     </aside>
   </section>
 
@@ -1734,10 +1742,11 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Now the plan. I did not write WireGuard from scratch.</p>
-      <p>I started from wireguard-lwip, an open-source WireGuard implementation for the lwIP network stack. The link is on the slide. It already has the protocol and the cryptography, so I could focus on the porting work.</p>
-      <p>I sorted the code into three parts. First, the protocol and crypto: the handshake, the data transport, and the crypto primitives. I kept them. The crypto is used as it is, and the protocol core needed two small fixes, which I found later in a review. Second, the platform hooks. Everything that depends on the OS sits behind one small header, as four functions: a monotonic clock, random bytes, the current time in TAI64N format, and a check for whether the system is under load. I adapted these to NuttX. Third, the lwIP glue. NuttX does not have lwIP, so I replaced this layer. That is the real porting work.</p>
-      <p>Next: how the lwIP ideas map to NuttX.</p>
+      <p>I did not write WireGuard from scratch.</p>
+      <p>I started from wireguard-lwip, an open-source WireGuard implementation for the lwIP network stack. The link is on the slide. It already has the protocol and the cryptography, so I could focus on the porting.</p>
+      <p>I sorted the code into three parts. First, KEEP: the protocol and the crypto. I reused them. The crypto is unchanged, and the protocol core needed two small fixes. Second, ADAPT: the platform hooks, a few functions that depend on the operating system, such as the clock and random numbers. Third, REPLACE: the lwIP network glue. NuttX does not have lwIP, so this layer is the real porting work.</p>
+      <p>So, how does lwIP map to NuttX?</p>
+      <p>OPTIONAL: The four hooks are a monotonic clock, random bytes, the current time in TAI64N format, and a check for system load. I found the two protocol fixes in a review.</p>
     </aside>
   </section>
 
@@ -1760,9 +1769,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This was the most important porting decision.</p>
-      <p>Instead of bringing lwIP into NuttX, I matched each lwIP idea to a NuttX building block. lwIP's network interface becomes a NuttX net_driver_s. lwIP's packet buffer, pbuf, corresponds to NuttX's I/O buffer, iob. Adding an interface becomes registering a device, and I register wg0 as a tunnel-type device. Where lwIP calls an output callback to send a packet, NuttX calls the driver's txavail function, and the driver polls the stack with devif_poll. The wire under wg0 is a plain UDP socket.</p>
-      <p>These are matches of ideas, not a one-to-one swap of APIs. The point is simple: use NuttX's own parts. Next, Version 1, the first working tunnel.</p>
+      <p>This was the most important porting decision. I did not bring lwIP into NuttX. I used NuttX's own building blocks.</p>
+      <p>lwIP's network interface becomes a NuttX net_driver_s. lwIP's packet buffer is similar to NuttX's I/O buffer. Adding an interface becomes registering a device, and I register wg0 as a tunnel-type device. The wire under wg0 is a plain UDP socket.</p>
+      <p>These APIs are not exactly the same, but they serve similar purposes. With this design, I could build the first version.</p>
+      <p>OPTIONAL: In lwIP, the interface is netif and the buffer is pbuf. In NuttX, the buffer is iob. For sending, lwIP calls an output callback. NuttX calls the driver's txavail function, and the driver polls the stack with devif_poll.</p>
     </aside>
   </section>
 
@@ -1812,7 +1822,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Part four: Version 1, the application-based implementation. It worked, and then the bugs came.</p>
+      <p>Now, Version 1: the first working tunnel.</p>
     </aside>
   </section>
 
@@ -1838,9 +1848,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Version 1 put WireGuard into NuttX as an application, in a FLAT build. The goal was a standard tunnel that could be configured at run time, without rebuilding the firmware.</p>
-      <p>This table shows how much work each layer needed. About three thousand lines of protocol and crypto came over from wireguard-lwip. The crypto came over exactly as it was. The protocol core needed two small fixes after a review, and one of them was a bug in wireguard-lwip itself: its rate limit never worked. The four OS functions are small, about a hundred and twenty lines. The real work was the network glue: the netdev, the UDP socket, and the receive task. In the first working tunnel, that was about twelve hundred new lines.</p>
-      <p>The result was a working tunnel. That proved the approach, but it also exposed OS and networking problems that a first successful ping could not show. Let me show you where it was hard.</p>
+      <p>Version 1 is WireGuard as a NuttX application, in a FLAT build. The goal was a standard tunnel that I can configure at run time, without rebuilding the firmware.</p>
+      <p>This table shows the work in each layer. The protocol and crypto came from wireguard-lwip, with only two small fixes. The OS hooks are small. The real work was the network glue: the netdev, the UDP socket, and a receive task. That was about twelve hundred new lines.</p>
+      <p>It worked, but it also showed problems that a first successful ping could not show. Let me show where it was hard.</p>
+      <p>OPTIONAL: About three thousand lines came over from wireguard-lwip. The OS hooks are about one hundred and twenty lines.</p>
+      <p>OPTIONAL: One of the two small fixes was a bug in wireguard-lwip itself: its rate limit never worked.</p>
+      <p>NOTE, do not read: Line counts are physical lines from git history. Reused: the vendored wireguard-lwip files (about 3,100 lines). Fixes: about 40 lines changed (2026-09-18). OS hooks: nuttx-platform.c, 118 lines at the first working tunnel (2026-08-13). Glue: nuttx-wireguardif.c and .h, about 1,200 lines at that time. Today's file is about twice as long because of run-time configuration.</p>
     </aside>
   </section>
 
@@ -1863,10 +1876,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Now, where it was hard.</p>
-      <p>The first tunnel worked quickly. Most of my time went into six bugs: four in the apps version, and two more after I moved it into the kernel. Most of them hid behind a test that passed, like a handshake or a ping, so I first looked in the wrong place.</p>
-      <p>Bug one: the receive thread was created as detached, and it stopped when the wg command that started it exited. Detach only decides when the memory is freed, not how long the thread lives. That is why, in the kernel version, the driver owns its thread. Bug four: only real hardware showed it. On the board, the receive task's stack was ninety-four percent full, with only 176 bytes left. Sim has big stacks, so it never saw it. Please remember this one.</p>
-      <p>I will tell two of them in detail, because their lessons are useful for anyone. Bugs five and six come in part five. The logs and fixes for all six are in the GitHub repository.</p>
+      <p>The first tunnel worked quickly. Most of my time went into six bugs: four in the application version, and two more in the kernel version.</p>
+      <p>Most of them hid behind a test that passed, like a handshake or a ping. So at first, I looked in the wrong place.</p>
+      <p>I will explain two of them, because their lessons are useful for anyone. Bugs five and six come later, in the kernel part.</p>
+      <p>OPTIONAL: Bug one: the receive thread stopped when the wg command that started it exited. Detach only decides when memory is freed. It does not decide how long the thread lives. That is why the kernel driver owns its thread.</p>
+      <p>OPTIONAL: Bug four: only real hardware showed it. On the board, the receive task's stack was ninety-four percent full. The simulator has big stacks, so it never showed. Measure on real hardware.</p>
+      <p>NOTE, do not read: The logs and fixes for all six bugs are in the GitHub repository.</p>
     </aside>
   </section>
 
@@ -1894,9 +1909,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is my favorite bug in the project.</p>
-      <p>On the same tunnel, ping was perfect, and even a TCP handshake finished, and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself: handshake replies, keepalives, ping replies, the SYN-ACK, which is the second step of a TCP connection. The sends that failed came from the system work queue, which sends the TCP application data later.</p>
-      <p>The reason: in NuttX, a file descriptor belongs to the task group that opened it. The file descriptor was not broken. It was just not visible from another task group. The fix was to stop using file descriptors and use NuttX's internal socket API. It works on a struct socket, which is just memory, so any task can use it. That is exactly why the kernel version keeps the socket as a struct socket.</p>
+      <p>This is my favorite bug.</p>
+      <p>On the same tunnel, ping worked perfectly, and even the TCP handshake finished. But then the TCP connection died. The log showed E-B-A-D-F: bad file descriptor.</p>
+      <p>Sending worked from the receive task, but failed from another task group, the system work queue.</p>
+      <p>In NuttX, a file descriptor belongs to the task group that opened it. It was not broken. It was just not visible from another task group.</p>
+      <p>The fix: I used NuttX's internal socket API, on a struct socket. It is just memory, so any task can use it.</p>
+      <p>OPTIONAL: That is also why the kernel version keeps its socket as a struct socket.</p>
     </aside>
   </section>
 
@@ -1923,9 +1941,11 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>The third: something I never measured.</p>
-      <p>The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed: about ten times slower than it should have been. I thought it had no real cost, and it cost ten times.</p>
-      <p>The real fix was a proper wait. The socket calls back and a semaphore wakes the thread up when data arrives.</p>
+      <p>The next bug is about something I never measured.</p>
+      <p>The fix without file descriptors also broke poll. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU. I was wrong. Every packet could wait up to fifty milliseconds, and that made it about ten times slower.</p>
+      <p>The real fix was a proper wait: the socket calls back, and a semaphore wakes the thread when data arrives.</p>
+      <p>The lesson: a quick fix that you never measure can look free. So, measure it.</p>
+      <p>OPTIONAL: Poll broke because poll works with file descriptors.</p>
     </aside>
   </section>
 
@@ -1948,7 +1968,9 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is a frame from the Version 1 video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board. The board runs on a power adapter only, and the other end is the official Windows WireGuard client. So Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p>
+      <p>Here is a frame from the Version 1 video. I logged in with telnet through the tunnel, and opened a small web page on the board. The other end was the official Windows WireGuard client.</p>
+      <p>So Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p>
+      <p>NOTE, do not read: Do not play the video; the still is enough.</p>
     </aside>
   </section>
 
@@ -1998,7 +2020,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That was Version 1. Part five, the harder half: a real kernel driver, and how I checked it.</p>
+      <p>Now, Version 2: the kernel driver.</p>
     </aside>
   </section>
 
@@ -2035,8 +2057,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>Why did I move it into the kernel?</p>
-      <p>Version 1 is an application. It lives in apps and reaches into socket internals of the kernel. That works in a FLAT build, where applications and the kernel share one address space. But it does not fit as an in-tree driver, and it cannot work in PROTECTED or KERNEL builds, where applications and the kernel are kept apart. In PROTECTED builds, the MPU separates their memory. In KERNEL builds, the MMU gives each side its own address space.</p>
-      <p>So I moved the device into the kernel, next to the other network drivers, and a small wg command sets it up through ioctl, which stands for input/output control. Version 1 showed that the protocol works on NuttX. Version 2 is about fitting NuttX itself: a normal driver for every build mode, in a form that is easier for the community to review. That does not mean it will be accepted. It means it follows how NuttX is built.</p>
+      <p>Version 1 is an application. It reaches into kernel internals. That works in a FLAT build, where applications and the kernel share one address space. But it does not fit as an in-tree driver, and it cannot work in PROTECTED or KERNEL builds, where they are separated.</p>
+      <p>So I moved the device into the kernel, next to the other network drivers. A small wg command sets it up through ioctl.</p>
+      <p>The goal is a proper kernel driver for every build mode, in a form that better fits the NuttX architecture and upstream review. That does not mean it will be accepted. It means it follows how NuttX is built.</p>
+      <p>OPTIONAL: In a PROTECTED build, the MPU separates memory. In a KERNEL build, the MMU gives each side its own address space.</p>
     </aside>
   </section>
 
@@ -2086,9 +2110,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is the shape of the real driver. The top is user space, the bottom is the NuttX kernel.</p>
-      <p>In user space, there is only a small wg command. It sends settings to the kernel through ioctl. Each ioctl carries one flat struct with no pointers inside, so in PROTECTED and KERNEL builds the kernel never has to follow a pointer into user memory. The private key is write-only: no ioctl ever gives it back.</p>
-      <p>In the kernel, wg0 is a normal network device. It owns its UDP socket and its receive thread, so the thread and socket bugs from Version 1 cannot happen, by design. The crypto is NuttX's own. The protocol core is still derived from wireguard-lwip under BSD-3-Clause, and the LICENSE file says so.</p>
+      <p>This is the shape of the driver. The top is user space. The bottom is the NuttX kernel.</p>
+      <p>In user space, there is only a small wg command. It sends settings to the kernel through ioctl, as one flat structure with no pointers. The private key is write-only.</p>
+      <p>In the kernel, wg0 is a normal network device. It owns its UDP socket and its receive thread. So the thread and socket bugs from Version 1 cannot happen by design.</p>
+      <p>OPTIONAL: The crypto is NuttX's own crypto. The protocol core is still derived from wireguard-lwip, under the BSD-3-Clause license, and the LICENSE file says so.</p>
     </aside>
   </section>
 
@@ -2123,10 +2148,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>On the way into the kernel, I found two separate problems.</p>
-      <p>The first is in NuttX's ChaCha20-Poly1305 code. The 64-bit counter goes into different bytes of the nonce from the layout in RFC 8439, which WireGuard uses. When the counter is zero, both layouts give the same bytes. So the handshake works, and then the data packets after the first one fail to decrypt. The fix is two lines. I prepared it as a separate crypto change with test vectors, and as far as I can see, current master still has the same layout.</p>
-      <p>The second is a bug in my own driver, not in NuttX. Setting the peers put a six-kilobyte array on a three-kilobyte kernel stack, and that caused a panic, only in a KERNEL build. The simulator has big stacks, so it never showed. I moved the array to the heap. It is the same stack lesson as Bug 4, one level deeper.</p>
-      <p>One more finding from the board side, which I left off the slide: on NuttX 13.0.1 and master, SPRESENSE did not boot with the high-resolution RTC option, CONFIG_RTC_HIRES. I found the cause and fixed it locally. The report is drafted, but not filed yet.</p>
-      <p>I prepared these as small, separate pieces, so they are easy for the community to review. Nothing is submitted yet.</p>
+      <p>The first is in NuttX's ChaCha20-Poly1305 code. It places the nonce counter in different bytes from the layout in RFC 8439, which WireGuard uses. When the counter is zero, the bytes are the same. So the handshake works, but the data packets after the first one fail. The fix is two lines. I prepared it as a separate change, with test vectors.</p>
+      <p>The second is a bug in my own driver, not in NuttX. Setting the peers put a six-kilobyte array on a three-kilobyte kernel stack. That caused a panic, only in a KERNEL build. I moved the array to the heap.</p>
+      <p>I prepared these as small, separate pieces. Nothing is submitted yet.</p>
+      <p>OPTIONAL: As far as I can see, current NuttX master still has the same nonce layout.</p>
+      <p>OPTIONAL: One more finding from the board side: SPRESENSE did not boot with the high-resolution RTC option, CONFIG_RTC_HIRES, on NuttX 13.0.1 and master. I found the cause and fixed it locally. The report is drafted, but not filed.</p>
+      <p>NOTE, do not read: Status on 2026-10-13: no pull request exists in apache/nuttx or apache/nuttx-apps; the only related issue is the closed GSoC thread #18548. The nonce check against master was made on 2026-10-13 (crypto/chachapoly.c).</p>
     </aside>
   </section>
 
@@ -2148,11 +2175,14 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Let me be exact about which build mode ran where. There are three, and I keep them apart.</p>
-      <p>FLAT, on real boards. On October 12, I ran the exact series I prepared for upstream on the ESP32-S3 inside the StackChan: a handshake with Linux WireGuard, and ping both ways, up to the full packet size. An earlier build of the driver ran on both boards over real Wi-Fi with the Windows client. On SPRESENSE I measured memory: after forty down-and-up cycles, it was exactly the same. The receive thread used 1,472 bytes of a six-kilobyte default. That default used to be a guess. Now it is a measurement.</p>
-      <p>KERNEL, in QEMU. The wg command is a separate program that reaches the driver through system calls, and the tunnel reaches Linux. With four CPUs, I flooded it while changing the settings. No fault, but that is one scripted run, not a full search for race conditions.</p>
-      <p>PROTECTED, also in QEMU. The tunnel works, and every ioctl crosses the memory boundary. Repeated runs sometimes faulted. The cause was a stack overflow in the wg command, because in this mode a system call runs on the caller's own stack. A bigger default fixed it: twenty out of twenty.</p>
-      <p>What I have not shown is KERNEL or PROTECTED on real hardware. I tried PROTECTED on the CoreS3, but that board does not boot any bootloader-based image, and that is not a WireGuard problem. So the check marks mean: it passed in these conditions. They are not a promise for every board. The records are on GitHub.</p>
+      <p>Let me be exact about what I tested, and where.</p>
+      <p>In a FLAT build, I tested on real boards: the ESP32-S3 and SPRESENSE. In a KERNEL build, I tested on QEMU. In a PROTECTED build, I also tested on QEMU. I have not yet tested KERNEL or PROTECTED on real hardware.</p>
+      <p>So a check mark means: it passed under these conditions. It is not a promise for every board.</p>
+      <p>OPTIONAL: On October 12, I ran the exact series I prepared for upstream on the ESP32-S3: a handshake with Linux WireGuard, and ping both ways, up to the full packet size.</p>
+      <p>OPTIONAL: On SPRESENSE, I measured memory. After forty down-and-up cycles, it was exactly the same.</p>
+      <p>OPTIONAL: On QEMU with four CPUs, I ran heavy traffic while changing settings. There was no fault. But that was one scripted run, not a full search for race conditions.</p>
+      <p>OPTIONAL: In PROTECTED, repeated runs sometimes faulted. The cause was a stack overflow in the wg command. A bigger default fixed it: twenty out of twenty runs.</p>
+      <p>NOTE, do not read: Details. SPRESENSE receive thread used 1,472 bytes of a 6 KB default. PROTECTED stack overflow: a system call runs on the caller's stack in this mode. CoreS3 cannot boot bootloader-based images, so PROTECTED on that board is not possible (not a WireGuard problem). Records are in docs/upstream/evidence.</p>
     </aside>
   </section>
 
@@ -2202,7 +2232,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That was all engineering. Part six: the live demo, a NuttX device controlled through WireGuard.</p>
+      <p>Time for the live demo.</p>
     </aside>
   </section>
 
@@ -2267,14 +2297,18 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>This is the live demo. I keep this slide on the screen, and the terminal is next to it.</p>
-      <p>First the setup. My laptop and the Stack-chan are both on my smartphone's Wi-Fi hotspot. The phone only provides the local network. Between the laptop and the Stack-chan there is one WireGuard tunnel: the laptop is 10.10.0.1, and the Stack-chan, running Apache NuttX, is 10.10.0.2. The phone is not a WireGuard peer. It only carries encrypted UDP.</p>
-      <p>Step 1, the VPN connection. On the laptop I run wg show. You should see the peer, a latest handshake, an endpoint on the phone's network, and the transfer counters.</p>
-      <p>Step 2, remote login. I run telnet to 10.10.0.2, the address inside the tunnel. You should see the NuttX shell prompt.</p>
-      <p>Step 3, the network interface. I run ifconfig. You should see wlan0 on the phone's network, and wg0 with 10.10.0.2. So I am really logged in through the tunnel.</p>
-      <p>Step 4, control. I run stackchan face happy, and the face changes. The other expressions are neutral, sad, angry, sleepy and surprised. Then I run stackchan say with the address of a voice clip on the laptop, http://10.10.0.1:8000/hello.wav. The clip comes through the same tunnel, and the Stack-chan speaks and moves its mouth. I made the clips on the laptop in advance, so there is no cloud API.</p>
-      <p>If there is time, the packets. In another terminal, the packet capture on the phone's network shows only encrypted UDP on port 51820. The capture inside the tunnel shows the telnet text in plain text. Then wg show again: the byte counts went up.</p>
-      <p>This robot runs the application build in a FLAT build. The kernel driver ran on the same ESP32-S3 in the testing part, but this robot demo is built on the application. What I want you to take away: a NuttX device, controlled remotely through WireGuard. Now, the summary.</p>
+      <p>I keep this slide on the screen, and the terminal is next to it.</p>
+      <p>My laptop and the Stack-chan are both on my smartphone's Wi-Fi hotspot. The phone only provides the local network. Between the laptop and the Stack-chan, there is one WireGuard tunnel. The laptop is ten dot ten dot zero dot one, and the Stack-chan is ten dot ten dot zero dot two. The phone is not a WireGuard peer. It only carries encrypted packets.</p>
+      <p>Step one: the VPN connection. I run wg show on the laptop. The handshake is done, so the tunnel is up.</p>
+      <p>Step two: remote login. I use telnet to connect to the Stack-chan through the tunnel. Now we are inside the NuttX shell.</p>
+      <p>Step three: the network interface. I run ifconfig. You can see wlan0 on the phone's network, and wg0 with the VPN address.</p>
+      <p>Step four: control. First, I change the face. Now I make it speak.</p>
+      <p>So the Stack-chan is a NuttX device, and I am controlling it remotely through WireGuard. One note: this robot runs the application version, in a FLAT build. The kernel driver ran on the same chip in a separate test.</p>
+      <p>That is the demo. Now, let me summarize.</p>
+      <p>OPTIONAL: If there is time, I can show the packets. Outside the tunnel, the phone's network sees only encrypted UDP. Inside the tunnel, you can see the telnet text. Then wg show again: the byte counts went up.</p>
+      <p>OPTIONAL: The voice clips were made on the laptop in advance, so there is no cloud API.</p>
+      <p>NOTE, do not read: Operation, in order. 1) scripts/stackchan/demo.sh show (wg show): expect the peer, a latest handshake, an endpoint on the phone's network, and transfer counters. 2) demo.sh login (telnet 10.10.0.2): expect the NuttShell prompt. 3) ifconfig inside the session: expect wlan0 and wg0 with 10.10.0.2. 4) stackchan face happy (also neutral, sad, angry, sleepy, surprised), then stackchan say http://10.10.0.1:8000/hello.wav: the clip comes through the same tunnel, the face changes and the mouth moves. Optional: demo.sh outside (tcpdump on eth0, UDP 51820) and demo.sh inside (tcpdump on wg0, TCP 23), then show again. Wait for the board's reaction after each step.</p>
+      <p>NOTE, do not read: Which version runs: the robot firmware is the application build (Version 1, FLAT), built by the esp32s3-stackchan stage of the Dockerfile. The kernel driver (Version 2) was run on the same ESP32-S3 in a separate build on 2026-10-12, without the Stack-chan app. Do not say the demo is Version 2.</p>
     </aside>
   </section>
 
@@ -2324,7 +2358,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Last part: a summary, what I learned, and my thanks.</p>
+      <p>Finally, a summary and some reflections.</p>
     </aside>
   </section>
 
@@ -2353,7 +2387,9 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <aside class="notes">
       <p>To sum up. We brought WireGuard to Apache NuttX. A NuttX device can now talk to standard WireGuard peers over an encrypted IP tunnel.</p>
       <p>We developed it from an application into a kernel network driver. We tested it on real boards, and on QEMU in the kernel build modes.</p>
-      <p>Next, I am preparing the driver and the related fixes for review by the NuttX community. They are small, separate pieces, and nothing is submitted yet. That is the technical story. Now, a few things I learned.</p>
+      <p>Next, I am preparing the driver and the related fixes for review by the NuttX community. They are small, separate pieces, and nothing is submitted yet.</p>
+      <p>That is the technical story. Now, I'd like to share what I learned.</p>
+      <p>NOTE, do not read: If asked 'is it merged?': not yet, and nothing is submitted. These are submission candidates, not a claim that it is mergeable.</p>
     </aside>
   </section>
 
@@ -2389,11 +2425,13 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That was the technical part. Now, three things I learned.</p>
-      <p>First, I came to NuttX as an application developer. This time I worked inside the OS: drivers and the kernel.</p>
-      <p>Second, and I want to say this one clearly. I used AI, Claude, a lot in this project. It made research and writing code much faster. But embedded OS internals were new to me, and really understanding the design and the behavior was hard. I could not just take the code the AI wrote. I had to ask questions, read the NuttX source, test the behavior, and keep going until I could explain it myself. AI helped me code, but understanding was my job.</p>
-      <p>Third, the community. NuttX has good documentation and contributing guides, and active technical discussion and review. It is open to AI-assisted development, but people stay responsible: a commit says Assisted-by, and AI never adds a Signed-off-by. And CI and hackathons help new people join. Open source is not only code that is public. It grows when new people can join, learn, and contribute.</p>
+      <p>Finally, I'd like to share three things I learned.</p>
+      <p>First, I came to NuttX as an application developer. This time, I worked inside the OS: drivers and the kernel.</p>
+      <p>Second, and I want to say this clearly: I used AI, Claude, a lot in this project. It made research and coding much faster. But embedded OS internals were new to me. I could not just take the code the AI wrote. I asked questions, I read the NuttX source, and I tested the behavior, until I could explain it myself. AI helped me code, but understanding was my job.</p>
+      <p>Third, the community. NuttX has good documentation and contributing guides, and active discussion and review. It is open to AI-assisted development, and people stay responsible for their work. CI and hackathons also help new people join. Open source is not only public code. It grows when new people can join, learn, and contribute.</p>
       <p>I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.</p>
+      <p>OPTIONAL: In NuttX, a commit says Assisted-by when AI helped, and AI never adds a Signed-off-by.</p>
+      <p>NOTE, do not read: Say the AI part plainly: not as a confession and not as a boast. It was faster, and understanding was still hard and still mine.</p>
     </aside>
   </section>
 
@@ -2412,9 +2450,11 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Before I finish, some thanks.</p>
-      <p>First, Alan Carvalho de Assis, who encouraged me to submit this talk to Community Over Code. Second, the Apache NuttX community, for the discussions, the documentation and the support. When I wrote my GSoC proposal, people talked with me and encouraged me, and that is why I kept going after it was not selected.</p>
-      <p>Third, the Sony engineers before me, who contributed to NuttX and built the foundation this work stands on. And last, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the open-source community together.</p>
+      <p>Before I finish, I'd like to say thank you.</p>
+      <p>First, Alan Carvalho de Assis, who encouraged me to submit this talk to Community Over Code.</p>
+      <p>Second, the Apache NuttX community, for the discussions, the documentation, and the support. When I wrote my GSoC proposal, people encouraged me. That is why I kept going after it was not selected.</p>
+      <p>Third, the Sony engineers before me, who contributed to NuttX and built the foundation for this work.</p>
+      <p>And finally, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the community together.</p>
     </aside>
   </section>
 
@@ -2435,8 +2475,9 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Thank you very much. I am happy to take your questions, about the kernel driver, the bugs, or the hardware.</p>
-      <p>The slides are on the screen: scan the QR code, or use the link. The code and the records are on GitHub.</p>
+      <p>Thank you very much. I am happy to take your questions.</p>
+      <p>The slides are on the screen. You can scan the QR code, or use the link. The code and the records are on GitHub.</p>
+      <p>OPTIONAL: Questions about the kernel driver, the bugs, or the hardware are all welcome.</p>
     </aside>
   </section>
 
@@ -2467,10 +2508,10 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Appendix, for questions. This slide is about what a working tunnel cannot tell you: three problems that ping would never notice.</p>
-      <p>First, keys. NuttX can seed its random device from build-time settings. Then a board makes the same private key every time it starts, and everything still works. So I reset a SPRESENSE three times and got three different keys. That is a quick check, not a proof of good randomness.</p>
+      <p>This slide is about what a working tunnel cannot tell you: three problems that ping would never notice.</p>
+      <p>First, keys. NuttX can seed its random device from build-time settings. Then a board makes the same private key every time it starts, and everything still works. So I reset a SPRESENSE three times, and I got three different keys. That is a quick check, not a proof of good randomness.</p>
       <p>Second, I read the device's memory in the simulator. After down, the session keys were all zero. The static key stays on purpose, so that up works again.</p>
-      <p>Third, a long test, also in the simulator: a hundred and fifty-one forced rekeys and a hundred down-and-up cycles. No buffer was lost, and memory went back to exactly the start-up number. I am not saying it ran for a week, or that the simulator acts like the board.</p>
+      <p>Third, a long test, also in the simulator: one hundred and fifty-one forced rekeys and one hundred down-and-up cycles. No buffer was lost, and memory went back to exactly the start-up number. I am not saying it ran for a week, or that the simulator behaves like the board.</p>
     </aside>
   </section>
 
@@ -2496,11 +2537,11 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Appendix, for questions. This is the one place where I had to decide, not test. And then I measured my decision.</p>
-      <p>WireGuard's replay protection has a rule: every handshake needs a newer timestamp than the peer has seen, even after a reboot. The device is usually the side that starts the handshake, and it is also the side least likely to have a clock with a battery.</p>
-      <p>Saving every timestamp wears out the flash. Reserving a range in flash is the right long-term answer, but it needs a write guarantee I could not verify on these file systems. And just waiting means a device that ran for a month cannot reconnect for a month. Here, the easy choice and the right choice were not the same.</p>
-      <p>So I chose the real-time clock plus the highest value used in this boot, exactly what Linux and wireguard-go do. And the driver warns once if the clock was never set.</p>
-      <p>Then I measured it on the board. I sent the board nothing at all, because a ping from the peer would start the handshake for it. With the clock as it boots: no handshake in a seventy-five-second watch. With the clock set: four point one seconds. That is why the driver prints a warning.</p>
+      <p>This is the one place where I had to decide, not test. And then I measured my decision.</p>
+      <p>WireGuard's replay protection has a rule: every handshake needs a newer timestamp than the peer has seen, even after a reboot. The device is usually the side that starts the handshake. It is also the side least likely to have a clock with a battery.</p>
+      <p>Saving every timestamp wears out the flash. Reserving a range in flash is the right long-term answer, but it needs a write guarantee that I could not verify. And just waiting means a device that ran for a month cannot reconnect for a month.</p>
+      <p>So I chose the real-time clock plus the highest value used in this boot. Linux and wireguard-go do the same. And the driver warns once if the clock was never set.</p>
+      <p>Then I measured it on the board. I sent the board nothing at all, because a ping from the peer would start the handshake for it. With the clock as it boots, there was no handshake in a seventy-five-second watch. With the clock set, it took four point one seconds. That is why the driver prints a warning.</p>
     </aside>
   </section>
   </section>

@@ -1,5 +1,8 @@
 # 読み上げ台本(日本語) — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
+**【2026-10-13 の注意】英語版は読み上げ用に作り直した(Essential / Optional / Presenter Notes の3区分、話速 125 語/分、
+短い文、アプリ版とデモの扱いの整理)。この日本語版はまだその書き直しに合わせていない。内容の対応が必要なときは英語版を正とする。**
+
 本番は英語で話す前提(デッキは英語、[coc-glasgow-outline.md](../coc-glasgow-outline.md)
 より "English, ~20-30 min")。この日本語版は[英語版](coc-glasgow-script-en.md)と
 1対1で対応する**リハーサル・理解確認用**の台本 — 内容を体に入れる、または国内で
