@@ -78,18 +78,19 @@ Robots: ハッカソンのヒューマノイド / Open-Source Conference Volunte
 
 ## 3 — 目次 (1:48 → 2:27)
 
-**画面:** 7つの部。見出しは短い名詞句、その下に中身のキーワードを1行、右に所要時間 —
-Overview & background(~5分)/ The Problem & Solution(~4分)/ The Development Plan(~2分)/
-Version 1: Application-Based Implementation — 6つのバグ、うち2つを詳しく(~4分)/ Version 2: The Kernel Driver — なぜドライバか、設計、見つかった問題、試験(~5分)/ Live Demo(~3分)/ Summary & Reflections — 作ったもの、学んだこと、謝辞(~4分)。
+**画面:** 7つの部。見出しは短い名詞句、その下に「これから何を話すか」を予告する短い1行、右に所要時間 —
+Overview & background: Project origins · NuttX & Sony · my experience(~5分)/ The Problem & Solution: Remote access challenge · why WireGuard(~4分)/
+The Development Plan: Reuse wireguard-lwip · adapt to NuttX(~2分)/ Version 1: Application-Based Implementation: First working tunnel · debugging challenges(~4分)/
+Version 2: The Kernel Driver: Why a driver · integration challenges · validation(~5分)/ Live Demo: Secure remote access · Stack-chan control(~3分)/
+Summary & Reflections: Achievements · personal reflections · community(~4分)。
 
 **話す:**
 - 今日の話の地図です。
-- 7つの部があります。まず概要と背景: NuttX とは何か、そして
-  この取り組みの始まり。次に、解きたかった課題と、そのアイデア。3つ目が計画。
-  4つ目は第1版、アプリとしての実装: 最初のトンネル、それが隠していたバグ、
-  そして最初のデモ。5つ目は第2版、カーネルドライバ: なぜ移したか、NuttX 自身の
-  バグ、そして試験。6つ目はスタックちゃんでのライブデモ。最後に、作業が今どこに
-  あるか、学んだこと、そしてまとめです。
+- 7つの部があります。まず背景: このプロジェクトの始まり、NuttX と Sony、そして私自身の経験。次に、課題 —
+  組み込み機器への安全な遠隔アクセス — と、WireGuard を選んだ理由。3つ目が開発計画: wireguard-lwip を再利用して、
+  NuttX に合わせる。4つ目は Version 1、アプリケーションとしての実装: 最初に動いたトンネルと、デバッグの難しさ。
+  5つ目は Version 2、カーネルドライバ: なぜドライバか、統合の難しさ、そして検証。6つ目は、安全な遠隔アクセスのライブデモで、
+  Stack-chan を操作します。最後に、まとめ: 成果、私の振り返り、そしてコミュニティ。
 - 全部で約30分、その後質疑応答です。
 - この後、部が変わるたびにこの目次に戻ってきて、今どこにいるかを示します。
 

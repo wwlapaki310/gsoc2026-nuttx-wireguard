@@ -42,11 +42,16 @@ SLIDES = [
         "Nanorobotics, Semiconductor Research, Robots, Open-Source "
         "Conference Volunteer.", []),
     ("Agenda", "",
-        "The seven parts, each a short title with a keyword line and its "
-        "time: overview & background (~5 min) / the problem & solution "
-        "(~4) / the development plan (~2) / version 1: application-based implementation, six bugs, two in detail (~4) / version 2: "
-        "the kernel driver, design, issues found, testing (~5) / live demo (~3) / summary & "
-        "reflections: what we built, what I learned, thanks (~4).",
+        "The seven parts, each a short title with a one-line preview and "
+        "its time: overview & background, project origins, NuttX & Sony, my "
+        "experience (~5 min) / the problem & solution, the remote access "
+        "challenge, why WireGuard (~4) / the development plan, reuse "
+        "wireguard-lwip, adapt to NuttX (~2) / version 1, "
+        "application-based implementation, the first working tunnel, "
+        "debugging challenges (~4) / version 2, the kernel driver, why a "
+        "driver, integration challenges, validation (~5) / live demo, "
+        "secure remote access, Stack-chan control (~3) / summary & "
+        "reflections, achievements, personal reflections, community (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("Project Overview", "",
