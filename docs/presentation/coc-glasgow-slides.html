@@ -648,13 +648,14 @@
   .about-fox .intro-avatar { width: 76px; height: 76px; border-color: var(--gold); display: block; margin: 0 auto; }
   .about-fox figcaption { margin-top: 5px; font-family: var(--mono); font-size: 14px; color: var(--quiet); }
   .about-mid { display: flex; align-items: stretch; gap: 24px; }
-  .about-map { flex: none; padding: 10px 16px; display: flex; align-items: center; }
-  .about-right { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
-  .about-right .about-chips { flex-direction: row; flex-wrap: wrap; }
-  .about-label { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--quiet); margin: 0 0 9px; }
+  .about-map { flex: none; padding: 10px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .map-cap { margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .about-right { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+  .about-label { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--quiet); margin: 0 0 4px; }
   .about .hobby-row { gap: 14px; }
-  .about .hobby-row img { width: 132px; height: 132px; }
-  .about .hobby-row figcaption { font-size: 15px; margin-top: 6px; }
+  .about .hobby-row figure { flex: 1; min-width: 0; }
+  .about .hobby-row img { width: 100%; height: auto; aspect-ratio: 1; }
+  .about .hobby-row figcaption { font-size: 15px; line-height: 1.3; margin-top: 8px; min-height: 58px; }
   .about-chips { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
   .about-chips .chip { font-size: 17px; padding: 9px 18px; }
   .about-path { display: flex; align-items: flex-start; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; }
@@ -708,11 +709,11 @@
   }
 
   /* project timeline */
-  .ptl { position: relative; height: 400px; margin-top: 0; }
+  .ptl { position: relative; height: 440px; margin-top: 0; }
   .ptl-axis { position: absolute; left: 0; right: 0; top: 268px; height: 3px; background: var(--ink); }
   .ptl-month { position: absolute; top: 276px; width: 11.111%; text-align: center; font-family: var(--mono);
                font-size: 12px; letter-spacing: .1em; color: var(--quiet); border-left: 1px solid var(--line); }
-  .ptl-ev { position: absolute; bottom: 132px; width: 172px; border-left: 2px solid var(--wg);
+  .ptl-ev { position: absolute; bottom: 172px; width: 172px; border-left: 2px solid var(--wg);
             padding: 0 0 0 9px; display: flex; flex-direction: column; justify-content: flex-start; }
   .ptl-ev.l1 { padding-bottom: 6px; }
   .ptl-ev.l2 { padding-bottom: 62px; }
@@ -728,11 +729,58 @@
   .ptl-bar { position: absolute; top: 304px; height: 60px; padding: 6px 9px; border-radius: 4px;
              font-size: 13.5px; line-height: 1.25; color: var(--ink); overflow: hidden; }
   .ptl-bar b { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--muted); }
+  .ptl-bar { height: 50px; top: 300px; padding-top: 5px; padding-bottom: 4px; }
+  .ptl-bar.chev { border: 0; border-radius: 0; padding-right: 24px;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%); }
+  .ptl-bar.chev.notch { padding-left: 24px;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%, 18px 50%); }
   .ptl-bar.light { background: var(--gold-soft); border: 1px solid #e0d1a6; }
   .ptl-bar.main { background: var(--wg-soft); border: 1px solid #ddb9bc; }
   .ptl-bar.kernel { background: var(--nx-soft); border: 1px solid #b6d7d3; }
-  .ptl-lane { position: absolute; top: 326px; left: 0; font-family: var(--mono); font-size: 11px;
+  .ptl-ver { position: absolute; top: 372px; height: 58px; padding: 8px 14px; border-radius: 4px; color: var(--ink); }
+  .ptl-ver b { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; }
+  .ptl-ver span { display: block; margin-top: 2px; font-size: 14.5px; line-height: 1.25; }
+  .ptl-ver.v1 { background: var(--wg-soft); border: 1px solid #ddb9bc; border-left: 4px solid var(--wg); }
+  .ptl-ver.v1 b { color: var(--wg); }
+  .ptl-ver.v2 { background: var(--nx-soft); border: 1px solid #b6d7d3; border-left: 4px solid var(--nx); }
+  .ptl-ver.v2 b { color: var(--nx); }
+  .ptl-vlink { position: absolute; top: 350px; height: 22px; width: 2px; background: var(--quiet); }
+  .ptl-varrow { position: absolute; top: 388px; font-size: 26px; line-height: 26px; color: var(--ink); font-weight: 700; }
+  .ptl-lane { position: absolute; top: 316px; left: 0; font-family: var(--mono); font-size: 11px;
               letter-spacing: .12em; color: var(--quiet); }
+
+  /* P7-8: NuttX overview + adopters */
+  .nx2 { display: grid; grid-template-columns: 390px 1fr; gap: 32px; align-items: start; }
+  .nx2-head { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .nx2-head img { width: 84px; height: 84px; object-fit: contain; }
+  .nx2-head b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
+  .nx2-head span { display: block; margin-top: 3px; color: var(--muted); font-size: 15px; }
+  ul.nx2-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+  ul.nx2-list li { position: relative; padding-left: 26px; font-size: 20px; font-weight: 800; line-height: 1.3; }
+  ul.nx2-list li::before { content: ""; position: absolute; left: 0; top: .66em; width: 14px; height: 3px; background: var(--nx); }
+  ul.nx2-list small { display: block; margin-top: 1px; color: var(--muted); font-size: 14.5px; font-weight: 400; }
+  table.nx2-cmp { font-size: 15px; line-height: 1.25; width: 100%; }
+  table.nx2-cmp th, table.nx2-cmp td { padding: 7px 10px; }
+  .nx2-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-top: 9px; }
+  .nx2-tile { grid-column: span 2; margin: 0; border: 1px solid var(--line); background: #fff; overflow: hidden; }
+  .nx2-tile.w { grid-column: span 3; }
+  .nx2-tile img { display: block; width: 100%; height: 124px; object-fit: cover; }
+  .nx2-tile.logo img { object-fit: contain; padding: 8px; background: #fff; }
+  .nx2-tile figcaption { padding: 8px 12px 10px; border-top: 1px solid var(--line-2); }
+  .nx2-tile figcaption b { display: block; font-size: 16px; font-weight: 800; line-height: 1.2; }
+  .nx2-tile figcaption span { display: block; margin-top: 2px; color: var(--muted); font-size: 13.5px; line-height: 1.3; }
+  .nx2-tile.text { display: flex; flex-direction: column; justify-content: center; background: var(--nx-soft); }
+  .nx2-tile.text .big-n { padding: 0 14px; font-size: 44px; font-weight: 900; line-height: 1.1; color: var(--nx); }
+  .nx2-tile.text figcaption { border-top: 0; }
+
+  /* P10: two experiences */
+  .xp .photo.wide { height: 274px; }
+  .xp .photo img { width: 100%; height: 100%; object-fit: cover; max-width: none; max-height: none; }
+  .xp .copy { min-height: 0; padding: 10px 20px 11px; }
+  .xp .takeaway { margin-top: 4px; }
+  .xp h3 { font-size: 20px; margin-bottom: 6px; }
+  .xp .copy p { font-size: 16px; line-height: 1.42; }
+  .xp .copy p + p { margin-top: 6px; }
 
   /* options comparison */
   table.options { font-size: 15.5px; line-height: 1.22; }
@@ -1037,7 +1085,7 @@
         <span class="caption">SPRESENSE</span>
       </div>
     </div>
-    <div class="num">1 / 40</div>
+    <div class="num">1 / 39</div>
     <div class="notes-src">
 Today I will talk about adding WireGuard to Apache NuttX.
 ||
@@ -1057,7 +1105,7 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
       </div>
       <div class="about-mid">
         <div class="photo-card about-map">
-          <svg viewBox="150 280 750 650" role="img" aria-label="Map of Japan marking Nagoya (born), Sendai (university), and Kawasaki (now)" style="width:260px;height:auto;display:block;margin:0 auto">
+          <svg viewBox="150 280 750 650" role="img" aria-label="Map of Japan marking Nagoya (born), Sendai (university), and Kawasaki (now)" style="width:215px;height:auto;display:block;margin:0 auto">
             <g fill="#e4e9ec" stroke="#c3ccd2" stroke-width="1.2" stroke-linejoin="round">
               <path d="M591 250l-1 6h-3v-9l6 -2zM620 271l-1 -11 -4 -7 -5 -1 -2 -5 -4 -1 -2 -5 4 -8 -1 -11 2 -3 8 -2 6 -9 3 4 2 -1 4 -9 6 -5 -9 -13v-7l7 -3 14 11 10 -3v3l7 2 6 -2 5 -10 -5 -24 2 -5 8 -4 4 -5 -1 -23 4 -8 1 -11 -3 -17 -8 -19 3 -10 -1 -6 2 3h5l6 -8 26 28 8 13 16 17 29 18 28 6 1 4 6 5h19l22 -27 2 5 -11 24v9l4 6 9 3 -2 2 2 -3h-6l4 13 6 6 5 1 6 -8 8 -1 -11 8 -1 7 -17 3 -2 6 -5 5h-5l-2 -2 1 -2 -2 -1 -4 6 3 2 -15 1 -8 -3 -15 8 -14 16 -8 14 -3 8v16l-2 8 -14 -12 -23 -8 -28 -18 -13 -2 4 -2 -16 8 -15 15 -4 -2 4 -1 -5 -1 -2 -6 -8 -7h-10l-6 8 -3 9 1 5 12 8 10 -1 10 12 8 4 2 3 -6 5 -4 1 -9 -4 -3 3v-5h-3l-2 5 -7 4v9l-8 3 -3 6 -8 -3 -2 -7 1 -9zM659 58l2 -2 4 1 2 5 -4 4 -4 -4zM653 45v-1l2 2 -1 9 -4 -10zM957 29l-2 -5h-2l-2 4 2 7 -1 3 -5 1 -2 8 -7 -2 1 7 -10 10 -1 4 -5 -1v3l4 1v4l-4 4 -4 -1 1 5 -3 -4 1 5 -3 7 4 1 4 -9 6 -1 4 -9 10 -9 3 -10 5 2 6 -1 15 -18 13 -9 9 -1 1 -4 -2 -3 2 -4 -5 -2 -6 2 -12 17 -11 3zM878 110l5 -6 8 -2 5 -6 3 1 3 -7 -11 3 -7 -5 -4 2 -3 11 -10 14v3l-13 15 2 7 5 -1v5l1 -14 8 -4 1 -6h3v-7zM910 136l11 -9 -4 -3 -4 3 1 2 -7 1v4l2 -1zM888 154l3 -5 -6 1zM878 157l2 -2h-4z" />
               <path d="M613 358v-7l-4 -4 7 -8h5l7 -4 2 -16 -3 -5 3 -1 1 -7 6 5 4 -3 4 2 2 15 3 7 6 -3 -1 -4 2 -4 11 8 3 -2 4 -16 -4 -7 -6 6 -14 3 6 -26 17 12 9 -5 -3 31 3 14 4 11 4 -1 5 5 -6 7 -5 -1 -4 2 -2 -2 -14 10 -3 -2 1 -11 -5 1v-6l-11 7 -3 -2 -2 2 -7 -5 -3 3 -13 -1 -2 3z" />
@@ -1118,33 +1166,31 @@ This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it in
             <text x="645" y="414" text-anchor="end" font-size="28" font-weight="700" fill="#11181d">&#9313; Sendai &mdash; university</text>
             <text x="593" y="648" text-anchor="end" font-size="28" font-weight="700" fill="#11181d">&#9314; Kawasaki &mdash; now</text>
           </svg>
+          <p class="map-cap">Japan</p>
         </div>
         <div class="about-right">
           <div>
-            <p class="about-label">Hobby engineer</p>
+            <p class="about-label">My background &amp; activities</p>
             <div class="hobby-row">
-              <figure><img src="assets/me-rocket.jpg" alt="A model rocket on its launch pad"><figcaption>Space</figcaption></figure>
-              <figure><img src="assets/me-chip.jpg" alt="Test chips on a silicon wafer"><figcaption>Semiconductors</figcaption></figure>
-              <figure><img src="assets/me-dna.jpg" alt="A DNA nanostructure seen with cryo-TEM"><figcaption>DNA nanotech</figcaption></figure>
+              <figure><img src="assets/me-rocket.jpg" alt="A model rocket on its launch pad"><figcaption>Rocket / Aerospace Engineering</figcaption></figure>
+              <figure><img src="assets/me-dna.jpg" alt="A DNA nanostructure seen with cryo-TEM"><figcaption>DNA Nanorobotics</figcaption></figure>
+              <figure><img src="assets/me-chip.jpg" alt="Test chips on a silicon wafer"><figcaption>Semiconductor Research</figcaption></figure>
               <figure><img src="assets/me-robot.jpg" alt="With a humanoid robot at a hackathon"><figcaption>Robots</figcaption></figure>
-              <figure><img src="assets/me-linux.jpg" alt="Helping run a software conference"><figcaption>Software Conference</figcaption></figure>
+              <figure><img src="assets/me-linux.jpg" alt="Volunteering at an open-source conference"><figcaption>Open-Source Conference Volunteer</figcaption></figure>
             </div>
-          </div>
-          <div class="about-chips">
-            <span class="chip"><span class="e">&#127919;</span> Many hackathons</span>
-            <span class="chip"><span class="e">&#127908;</span> Runs software conferences</span>
-            <span class="chip"><span class="e">&#128214;</span> Wrote a book on open source</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="num">2 / 40</div>
+    <div class="num">2 / 39</div>
     <div class="notes-src">
 First, a little about me.
 ||
-I am an edge AI engineer at Sony Semiconductor Solutions. I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, university in Sendai, and now I live in Kawasaki. Outside work, I am a hobby engineer. I build things around space, semiconductors and robots, I made DNA nanostructures at university. I also help run software conferences, such as Open Source Summit Japan and KubeCon. On social media, I am the fox in this picture. I often join hackathons, and I wrote a book about open source.
+I am an edge AI engineer at Sony Semiconductor Solutions, and I work with Apache NuttX from the application side. I am from Japan: born in Nagoya, studied in Sendai, and now I live in Kawasaki.
 ||
-My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road.
+My background is wide. At university I studied mechanical and aerospace engineering, including rockets. My undergraduate research was DNA nanorobotics, and my master's research was on semiconductors. I also build robots at hackathons, and I help run open-source conferences such as Open Source Summit Japan and KubeCon as a volunteer. On social media, I am the fox in this picture, and I wrote a book about open source.
+||
+My road to this project went through molecular robots, computer vision and AI systems, edge AI cameras, and embedded systems on SPRESENSE. NuttX and WireGuard are the latest stop on that road. Next, the overview of the project.
     </div>
   </section>
 
@@ -1189,7 +1235,7 @@ My road to this project went through molecular robots, computer vision and AI sy
         </div>
       </div>
     </div>
-    <div class="num">3 / 40</div>
+    <div class="num">3 / 39</div>
     <div class="notes-src">
 Here is the plan for this talk.
 ||
@@ -1238,7 +1284,7 @@ There are seven parts. First, an overview and the background: what NuttX is, and
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 1</span>4 / 40</div>
+    <div class="num"><span class="part">PART 1</span>4 / 39</div>
     <div class="notes-src">
 Let's start with part one: an overview and the background.
     </div>
@@ -1280,16 +1326,20 @@ Let's start with part one: an overview and the background.
         <text x="1042" y="232" text-anchor="middle" font-size="18" font-weight="800">WireGuard peer</text>
         <text class="small" x="1042" y="254" text-anchor="middle">Linux, Windows, ...</text>
       </svg>
-      <p class="lead" style="max-width:100%">Packets sent to <code>wg0</code> are encrypted and sent out as UDP. UDP that comes in is decrypted and handed over as if it came in on <code>wg0</code>. The other side can be any normal WireGuard peer.</p>
-      <div class="takeaway"><b>Takeaway</b><p>Apps see wg0 as a normal network interface. Only the "wire" under it is different: a UDP socket, not a cable.</p></div>
+      <div class="three">
+        <div class="fact wg"><b>Lightweight VPN</b><p>Bring WireGuard to NuttX-based microcontrollers.</p></div>
+        <div class="fact nx"><b>Virtual interface</b><p>Use <code>wg0</code> as a network interface for the VPN tunnel.</p></div>
+        <div class="fact blue"><b>Secure communication</b><p>Exchange encrypted packets with WireGuard peers over UDP.</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>NuttX devices can now talk IP securely, like any other WireGuard peer.</p></div>
     </div>
-    <div class="num"><span class="part">PART 1 &middot; 1/6</span>5 / 40</div>
+    <div class="num"><span class="part">PART 1 &middot; 1/5</span>5 / 39</div>
     <div class="notes-src">
-Here is the whole idea in one picture.
+Here is the whole project in one picture.
 ||
-Apache NuttX is an RTOS (real-time operating system) that follows POSIX (the Portable Operating System Interface) and has its own TCP/IP stack. It had no VPN. This project adds wg0 as a virtual network interface. Applications see a normal interface. Under it, the encrypted data travels over a UDP socket. The other side is a real WireGuard peer &mdash; Linux, Windows, or another gateway.
+I brought WireGuard, a lightweight VPN, to Apache NuttX. It appears as a virtual network interface called wg0, next to the normal network interface. Packets sent to wg0 are encrypted and travel over a UDP socket, and the other side can be any normal WireGuard peer. So a NuttX microcontroller can exchange IP packets securely.
 ||
-Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work. FreeRTOS and Zephyr can run a VPN too. But on NuttX, a VPN can become a normal network device very naturally.
+I will keep the technical details for the second half. First, how this project started.
     </div>
   </section>
 
@@ -1297,87 +1347,69 @@ Because NuttX follows POSIX and uses BSD sockets, it is a good fit for this work
     <p class="eyebrow">How it started</p>
     <div class="body" style="gap:10px">
       <div class="ptl">
-        <div class="ptl-ev l4 " style="left:5.19%"><b>MID FEB</b><span>Read the GSoC idea list. Started to study.</span></div><div class="ptl-ev l3 " style="left:12.59%;padding-bottom:137px"><b>EARLY MAR</b><span>Proposed the plan.</span></div><div class="ptl-ev l2 " style="left:18.15%"><b>MAR 20</b><span>Alan told me about this conference. Submitted a talk.</span></div><div class="ptl-ev l1 narrow" style="left:23.70%"><b>EARLY APR</b><span>Sent the GSoC proposal.</span></div><div class="ptl-ev l3 key" style="left:34.81%"><b>EARLY MAY</b><span>Talk accepted. GSoC proposal not selected. Kept going anyway.</span></div><div class="ptl-ev l1 right key" style="left:92.59%"><b>OCT 11&ndash;14</b><span>Glasgow &mdash; this talk.</span></div>
+        <div class="ptl-ev l4 " style="left:5.19%"><b>MID FEB</b><span>Read the GSoC idea list. Started to study.</span></div><div class="ptl-ev l3 " style="left:12.59%;padding-bottom:137px"><b>EARLY MAR</b><span>Proposed the plan.</span></div><div class="ptl-ev l2 " style="left:18.15%"><b>MAR 20</b><span>Alan told me about this conference. Submitted a CfP.</span></div><div class="ptl-ev l1 narrow" style="left:23.70%"><b>EARLY APR</b><span>Sent the GSoC proposal.</span></div><div class="ptl-ev l3 key" style="left:34.81%"><b>EARLY MAY</b><span>CfP accepted. GSoC proposal not selected. Kept going anyway.</span></div><div class="ptl-ev l1 right key" style="left:92.59%"><b>OCT 11&ndash;14</b><span>Glasgow &mdash; this talk.</span></div>
         <div class="ptl-axis"></div>
         <div class="ptl-month" style="left:0.000%">FEB</div><div class="ptl-month" style="left:11.111%">MAR</div><div class="ptl-month" style="left:22.222%">APR</div><div class="ptl-month" style="left:33.333%">MAY</div><div class="ptl-month" style="left:44.444%">JUN</div><div class="ptl-month" style="left:55.556%">JUL</div><div class="ptl-month" style="left:66.667%">AUG</div><div class="ptl-month" style="left:77.778%">SEP</div><div class="ptl-month" style="left:88.889%">OCT</div>
-        <div class="ptl-bar light" style="left:44.44%;width:calc(22.23% - 4px)"><b>JUN &ndash; JUL</b>Building a little at a time</div><div class="ptl-bar main" style="left:66.67%;width:calc(11.11% - 4px)"><b>AUG HOLIDAY</b>Most of the work</div><div class="ptl-bar kernel" style="left:77.78%;width:calc(13.70% - 4px)"><b>SEP &ndash;</b>FLAT app &rarr; kernel driver</div>
+        <div class="ptl-bar light chev" style="left:33.33%;width:calc(33.34% - 4px)"><b>MAY &ndash; JUL</b>Studied NuttX and WireGuard, explored approaches</div><div class="ptl-bar main chev notch" style="left:66.67%;margin-left:-12px;width:calc(11.11% + 8px)"><b>AUG</b>V1</div><div class="ptl-bar kernel chev notch" style="left:77.78%;margin-left:-12px;width:calc(13.70% + 8px)"><b>SEP &ndash;</b>V2</div>
+        <div class="ptl-vlink" style="left:72.2%"></div><div class="ptl-vlink" style="left:84.6%"></div>
+        <div class="ptl-ver v1" style="left:50%;width:28.4%"><b>VERSION 1</b><span>Application (FLAT) &middot; hardware testing</span></div><div class="ptl-varrow" style="left:79.4%">&rarr;</div><div class="ptl-ver v2" style="left:82.6%;width:17.4%"><b>VERSION 2</b><span>Kernel driver</span></div>
         <div class="ptl-lane">DEVELOPMENT</div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on. The kernel driver, the harder half, came last.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>The GSoC proposal was not selected, but the work went on.</p></div>
     </div>
-    <div class="num"><span class="part">PART 1 &middot; 2/6</span>6 / 40</div>
+    <div class="num"><span class="part">PART 1 &middot; 2/5</span>6 / 39</div>
     <div class="notes-src">
 Here is how this project went, month by month.
 ||
-In the middle of February, I read the GSoC idea list and started to look into it. In early March, I wrote my plan as an issue and proposed it. On March 20, Alan told me about this conference, so I sent a talk proposal. In early April, I sent my GSoC proposal.
+In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alan told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These are two separate applications.
 ||
-In early May, I got two answers. The talk was accepted, and the GSoC proposal was not. I decided to build it anyway.
+In early May, I got two answers. The CfP was accepted, and the GSoC proposal was not selected. I decided to keep going anyway. From May to July, I studied NuttX internals, learned how WireGuard works, and explored ways to build it. In August, I focused on hardware testing and finished Version 1, the application in a FLAT build. Then Version 2, the kernel driver, came after that.
 ||
-From June, I worked on it a little at a time. I did most of the work during the summer holiday in August. In September, I moved it from a FLAT app into a kernel driver. That is the second half of this talk.
+So the work that started with GSoC grew step by step, and it still continues. Next, what NuttX is.
     </div>
   </section>
   <section class="slide">
-    <h2>Background: What is Apache NuttX?</h2>
-    <div class="body" style="gap:24px;justify-content:center">
-      <div class="two" style="grid-template-columns:360px 1fr;align-items:center;gap:56px">
-        <div style="text-align:center">
-          <img src="assets/apache-nuttx-logo.png" alt="Apache NuttX" style="width:240px;height:240px;object-fit:contain">
-          <p style="margin:10px 0 0;font-size:30px;font-weight:800">Apache NuttX</p>
-        </div>
-        <ul class="big">
-          <li>Built for microcontrollers
-            <span>A small RTOS that keeps time-critical tasks predictable.</span>
-          </li>
-          <li>Familiar Unix interfaces
-            <span>Applications use POSIX APIs, BSD sockets, files, and the NSH shell.</span>
-          </li>
-          <li>Open source at Apache
-            <span>Developed in the open as an Apache top-level project.</span>
-          </li>
-        </ul>
-      </div>
-      <p class="lead" style="max-width:none;text-align:center;margin:4px 0 0"><strong>Small device. Familiar Unix interfaces.</strong></p>
-    </div>
-    <div class="num"><span class="part">PART 1 &middot; 3/6</span>7 / 40</div>
-    <div class="notes-src">
-First, what is NuttX?
-||
-NuttX is a real-time operating system for small embedded devices. It keeps time-critical tasks predictable, but it feels familiar to a Unix programmer: applications use POSIX APIs, BSD sockets, files, and a shell called NSH. It is also an Apache top-level project, developed in the open.
-||
-The one point I want you to remember is simple: small device, familiar Unix interfaces. That is why sockets and network devices fit naturally into the rest of this talk.
-    </div>
-  </section>
-
-  <section class="slide">
-    <h2>Background: Comparison with Other RTOSes</h2>
-    <div class="body">
-      <div class="two">
+    <h2>Background: What Is Apache NuttX?</h2>
+    <div class="body" style="gap:10px">
+      <div class="nx2">
         <div>
-          <table class="tight">
-            <tr><th>RTOS</th><th>Main focus</th><th>Typical use</th></tr>
-            <tr><td>FreeRTOS</td><td>Small real-time kernel</td><td>MCU firmware, control, IoT</td></tr>
-            <tr><td>Zephyr</td><td>All-in-one platform for connected devices</td><td>Wearables, industrial &amp; connected IoT</td></tr>
-            <tr><td class="new">NuttX</td><td class="new">Unix-like embedded OS</td><td class="new">Networking, file systems, drones, sensing</td></tr>
+          <div class="nx2-head"><img src="assets/apache-nuttx-logo.png" alt="Apache NuttX"><div><b>Apache NuttX</b><span>A small RTOS for microcontrollers</span></div></div>
+          <ul class="nx2-list">
+            <li>POSIX-like real-time OS</li>
+            <li>Small footprint</li>
+            <li>Broad hardware support<small>15+ CPU architectures &middot; 300+ boards</small></li>
+            <li>Apache open-source project</li>
+          </ul>
+          <table class="tight nx2-cmp">
+            <tr><th>RTOS</th><th>Standard APIs</th></tr>
+            <tr><td>FreeRTOS</td><td>Its own task API</td></tr>
+            <tr><td>Zephyr</td><td>Own API, optional POSIX layer</td></tr>
+            <tr><td class="new">NuttX</td><td class="new">POSIX-like by design</td></tr>
           </table>
-          <div class="aside" style="margin-top:14px"><p><code>FreeRTOS/FreeRTOS</code> 7.8k&#9733; &middot; <code>zephyrproject-rtos/zephyr</code> 16.5k&#9733; &middot; <code>apache/nuttx</code> 4.1k&#9733;<br>Stars show how many developers notice a project, not how many devices use it.</p></div>
         </div>
-        <div class="four" style="grid-template-columns:1fr 1fr">
-          <div class="fact wg"><b>Architectures</b><p>15+ CPU architectures</p></div>
-          <div class="fact nx"><b>Boards</b><p>300+ supported boards</p></div>
-          <div class="fact blue"><b>Configs</b><p>1,500+ configuration templates</p></div>
-          <div class="fact gold"><b>In production</b><p>Sony &middot; PX4 drones &middot; Xiaomi OpenVela (1,000+ SKUs) &middot; Japan's 2024 Moon mission</p></div>
+        <div>
+          <p class="about-label">Used in real devices</p>
+          <div class="nx2-grid">
+            <figure class="nx2-tile logo"><img src="assets/sony-nw-ws620.jpg" alt="Sony Walkman NW-WS620"><figcaption><b>Sony</b><span>Audio products, SPRESENSE</span></figcaption></figure>
+            <figure class="nx2-tile"><img src="assets/fitbit-charge3.jpg" alt="A Fitbit Charge 3 fitness tracker on a wrist" style="object-position:50% 52%"><figcaption><b>Fitbit</b><span>Fitness trackers (Charge 3 / 4)</span></figcaption></figure>
+            <figure class="nx2-tile logo"><img src="assets/pixhawk.png" alt="A Pixhawk flight controller"><figcaption><b>PX4</b><span>Drone flight controllers</span></figcaption></figure>
+            <figure class="nx2-tile w"><img src="assets/sora-q.jpg" alt="The SORA-Q lunar robot" style="object-position:50% 40%"><figcaption><b>SORA-Q</b><span>Lunar robot on Japan's 2024 Moon mission</span></figcaption></figure>
+            <figure class="nx2-tile w text"><div class="big-n">1,000+</div><figcaption><b>Xiaomi OpenVela</b><span>Reported products: watches, speakers, displays</span></figcaption></figure>
+          </div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>NuttX has fewer stars than FreeRTOS and Zephyr, but it already runs in real products, from drones to the Moon.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Apache NuttX is a POSIX-like RTOS used in a wide range of real-world embedded devices.</p></div>
     </div>
-    <div class="sources">Sources: nuttx.apache.org &middot; nuttx.apache.org/market-share &middot; docs.px4.io &middot; GitHub star counts, October 2026</div>
-    <div class="num"><span class="part">PART 1 &middot; 4/6</span>8 / 40</div>
+    <div class="sources">Sources: nuttx.apache.org/market-share &middot; &ldquo;NuttX at Fitbit&rdquo; (2020) &middot; docs.px4.io &middot; Sony Developer Blog. Images: Sony; Wikimedia Commons (Charge 3: Vemerce, CC BY-SA 4.0; Pixhawk: Pixhawk project, CC BY 4.0; SORA-Q: &#x30C6;&#x30EC;&#x30B9;&#x30C8;&#x30EC;&#x30E9;&#x30C3;&#x30BD;, CC BY-SA 4.0)</div>
+    <div class="num"><span class="part">PART 1 &middot; 3/5</span>7 / 39</div>
     <div class="notes-src">
-Thirty seconds on where NuttX fits, and whether it is a toy.
+Now, what is Apache NuttX?
 ||
-These are three good RTOSes, and each has a different focus. FreeRTOS is a small real-time kernel, on purpose, for MCU (microcontroller) firmware and control. Zephyr is an all-in-one platform for connected devices, wearables and industrial IoT. NuttX is the Unix-like one: networking, file systems and drivers, used in drones and sensing. This is not a ranking. By GitHub stars, NuttX is the smallest of the three, and I want to say that clearly. But stars show how many developers notice a project, not how many devices use it.
+NuttX is a POSIX-like real-time operating system for small devices. It has a small footprint, and it supports a very wide range of hardware: more than fifteen CPU architectures and more than three hundred boards. It is also an Apache top-level project, developed in the open.
 ||
-And it is really used. Upstream, NuttX supports more than fifteen CPU architectures, more than three hundred boards, and more than fifteen hundred configurations. In real products it runs in Sony devices, PX4 flight controllers, and more than a thousand Xiaomi OpenVela products, and it flew on Japan's 2024 Moon mission. It is small next to the big ones, but it is not a toy.
+FreeRTOS and Zephyr are good RTOSes too. The difference I care about is the API. NuttX is POSIX-like by design, with pthreads, sockets, files and a shell. That is why a VPN can become a normal network device here.
+||
+And it is not a toy. Sony uses it in audio products and SPRESENSE. Fitbit used it in fitness trackers, such as the Charge 3 and Charge 4. PX4 drone flight controllers run on it. Xiaomi's OpenVela is reported to run on more than a thousand products. And a small lunar robot, SORA-Q, used it on Japan's 2024 Moon mission. Next, Sony's own history with NuttX.
     </div>
   </section>
 
@@ -1421,7 +1453,7 @@ And it is really used. Upstream, NuttX supports more than fifteen CPU architectu
       <div class="takeaway"><b>Takeaway</b><p>Sony's NuttX journey began with audio products, expanded through SPRESENSE, and evolved into long-term open-source collaboration.</p></div>
     </div>
     <div class="sources">Sources: M. Ishikawa, Sony NuttX talks (2018&ndash;19) &middot; Sony, &ldquo;Running NuttX on Spresense&rdquo; (2019) &middot; A. Jerpelea (2020) &middot; Apache NuttX CXD56xx docs</div>
-    <div class="num"><span class="part">PART 1 &middot; 5/6</span>9 / 40</div>
+    <div class="num"><span class="part">PART 1 &middot; 4/5</span>8 / 39</div>
     <div class="notes-src">
 This is Sony's history with NuttX. It is not my story yet, and it is older than edge AI.
 ||
@@ -1443,34 +1475,38 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/
   </section>
 
   <section class="slide">
-    <p class="eyebrow">Experience: NuttX in SPRESENSE and AITRIOS</p>
-    <div class="body" style="gap:16px">
-      <div class="two">
+    <p class="eyebrow">My Experience with NuttX</p>
+    <div class="body xp" style="gap:12px">
+      <div class="two" style="gap:24px;grid-template-columns:456px 1fr">
         <div class="photo-card">
-          <div class="photo wide" style="height:120px"><img src="assets/spresense-main-lte-hdr-camera.jpg" alt="Sony SPRESENSE boards"></div>
-          <div class="copy" style="min-height:0;padding:14px 18px">
-            <h3 style="font-size:18px;margin-bottom:6px">SPRESENSE</h3>
-            <p style="font-size:15px">NuttX SDK &middot; sensing &amp; camera &middot; GNSS / LTE &middot; prototyping and embedded development.</p>
+          <div class="photo wide"><img src="assets/spresense-satellite.jpg" alt="The ARICA CubeSat" style="object-position:50% 50%"></div>
+          <div class="copy">
+            <h3>SPRESENSE &mdash; Satellite Project</h3>
+            <p>Sony's low-power board, the on-board computer of the ARICA-2 CubeSat (Aoyama Gakuin University, launched April 2026).</p>
+            <p>I took part through an internal, grassroots engineering initiative.</p>
           </div>
         </div>
         <div class="photo-card">
-          <div class="photo wide" style="height:120px"><img src="assets/aitrios-signage.jpg" alt="AITRIOS edge AI camera signage"></div>
-          <div class="copy" style="min-height:0;padding:14px 18px">
-            <h3 style="font-size:18px;margin-bottom:6px">AITRIOS / edge AI camera</h3>
-            <p style="font-size:15px">Edge AI &middot; setting up cameras &middot; ESP32 + NuttX &middot; running them on site, not on a desk.</p>
+          <div class="photo wide"><img src="assets/aitrios-signage.jpg" alt="AITRIOS edge AI camera signage"></div>
+          <div class="copy">
+            <h3>AITRIOS &mdash; Edge AI Sensing Platform</h3>
+            <p>Sony's platform for managing edge AI cameras and running inference on them.</p>
+            <p>I worked on setting up and operating camera systems that use ESP32 and Apache NuttX.</p>
           </div>
         </div>
       </div>
-      <p class="context-line"><strong>Where I work:</strong> <span class="hl">application development</span> &rarr; <span class="hl">system integration</span> &rarr; <span class="hl">deployment &amp; operation</span>.</p>
-      <div class="takeaway"><b>Takeaway</b><p>My problem was not making NuttX run. It was reaching NuttX devices after they were installed.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>I wanted a secure way to access and troubleshoot remote embedded devices.</p></div>
     </div>
-    <div class="num"><span class="part">PART 1 &middot; 6/6</span>10 / 40</div>
+    <div class="sources">Images: ARICA project (ARICA CubeSat) &middot; Sony Semiconductor Solutions (AITRIOS). ARICA-2: nanosats.eu/sat/arica-2 &middot; SmallSat 2026 paper (Mabuchi et al.)</div>
+    <div class="num"><span class="part">PART 1 &middot; 5/5</span>9 / 39</div>
     <div class="notes-src">
-That was Sony's history. This is mine. Same hardware family, but I see it from a different place.
+That was Sony's history. Now, my own experience with NuttX.
 ||
-On SPRESENSE, I use the NuttX SDK for sensing, camera, GNSS and LTE &mdash; prototypes and embedded development, on the application side. On AITRIOS edge AI cameras, which are built with ESP32 and NuttX, my job is to set up cameras and keep them running on site, not on a desk next to a debugger.
+First, SPRESENSE. It is Sony's low-power microcontroller board, and it runs NuttX. Aoyama Gakuin University's ARICA-2 CubeSat, a small satellite that sends rapid alerts for gamma-ray bursts, uses SPRESENSE as its on-board computer. It was launched in April 2026. I took part in this project through an internal, grassroots engineering initiative.
 ||
-In both cases, I come to NuttX from the same direction: first application development, then putting the system together, then setting it up and running it. I never had to write a NuttX driver for any of that &mdash; until this project. And the question that brought me here was not &ldquo;How do I make NuttX run?&rdquo; It was &ldquo;How do I reach a NuttX device after it is installed?&rdquo;
+Second, AITRIOS, Sony's edge AI sensing platform. It is used to manage edge AI cameras and run inference at the edge. I worked on setting up and operating edge AI camera systems. In the systems I worked with, the board was an ESP32 running Apache NuttX. Not every AITRIOS camera is built this way.
+||
+A satellite and a camera on site are both far from my desk. These experiences made me want a secure way to access and troubleshoot remote embedded devices. That is the problem I want to talk about next.
     </div>
   </section>
 
@@ -1515,7 +1551,7 @@ In both cases, I come to NuttX from the same direction: first application develo
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 2</span>11 / 40</div>
+    <div class="num"><span class="part">PART 2</span>10 / 39</div>
     <div class="notes-src">
 That is the background. Part two: the problem I wanted to solve, and the idea.
     </div>
@@ -1558,7 +1594,7 @@ That is the background. Part two: the problem I wanted to solve, and the idea.
       </div>
       <div class="takeaway"><b>Takeaway</b><p>What was missing: a standard, secure path all the way to the NuttX device.</p></div>
     </div>
-    <div class="num"><span class="part">PART 2 &middot; 1/4</span>12 / 40</div>
+    <div class="num"><span class="part">PART 2 &middot; 1/4</span>11 / 39</div>
     <div class="notes-src">
 Now, the problem itself.
 ||
@@ -1584,7 +1620,7 @@ Without that, every choice has a problem. You can give the device a public IP an
       <div class="takeaway"><b>Takeaway</b><p>MQTT and HTTPS are great for data. To log in and fix a device, end to end, with no server in the middle, the VPN has to be on the device.</p></div>
     </div>
     <div class="sources">Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS. NuttX clients: nuttx-apps 13.0.1 <code>netutils/</code> (mqttc, paho_mqtt, webclient, libcurl4nx, libwebsockets, dropbear) and <code>crypto/mbedtls</code>.</div>
-    <div class="num"><span class="part">PART 2 &middot; 2/4</span>13 / 40</div>
+    <div class="num"><span class="part">PART 2 &middot; 2/4</span>12 / 39</div>
     <div class="notes-src">
 Before I chose WireGuard, I compared the usual ways to reach a device.
 ||
@@ -1616,7 +1652,7 @@ A VPN on the device is the only row that has all three: any IP service, no serve
       </ul>
       <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol, not a homemade security layer or a vendor cloud.</p></div>
     </div>
-    <div class="num"><span class="part">PART 2 &middot; 3/4</span>14 / 40</div>
+    <div class="num"><span class="part">PART 2 &middot; 3/4</span>13 / 39</div>
     <div class="notes-src">
 So, why WireGuard?
 ||
@@ -1660,7 +1696,7 @@ So I chose a standard protocol, instead of making my own or depending on a vendo
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>To NuttX, wg0 is a normal network device. Under it, WireGuard turns its packets into encrypted UDP.</p></div>
     </div>
-    <div class="num"><span class="part">PART 2 &middot; 4/4</span>15 / 40</div>
+    <div class="num"><span class="part">PART 2 &middot; 4/4</span>14 / 39</div>
     <div class="notes-src">
 This is one step more technical than the overview. This is where the implementation starts.
 ||
@@ -1711,7 +1747,7 @@ From here on, the work is building this middle part &mdash; wg0 and the encrypti
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 3</span>16 / 40</div>
+    <div class="num"><span class="part">PART 3</span>15 / 39</div>
     <div class="notes-src">
 Part three: the plan. How do you reuse an existing WireGuard?
     </div>
@@ -1736,7 +1772,7 @@ Part three: the plan. How do you reuse an existing WireGuard?
       </div>
       <div class="takeaway"><b>Takeaway</b><p>A clean line between the protocol and the OS let the crypto move unchanged, and the protocol core with only two small fixes. Only the OS and network glue had to change.</p></div>
     </div>
-    <div class="num"><span class="part">PART 3 &middot; 1/2</span>17 / 40</div>
+    <div class="num"><span class="part">PART 3 &middot; 1/2</span>16 / 39</div>
     <div class="notes-src">
 Why I started from wireguard-lwip, an existing open-source WireGuard, and did not write the crypto myself.
 ||
@@ -1758,7 +1794,7 @@ I did not have to rewrite the protocol or the crypto, and that was not luck. Tha
       </table>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
-    <div class="num"><span class="part">PART 3 &middot; 2/2</span>18 / 40</div>
+    <div class="num"><span class="part">PART 3 &middot; 2/2</span>17 / 39</div>
     <div class="notes-src">
 This was the most important porting decision.
 ||
@@ -1807,7 +1843,7 @@ Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lw
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 4</span>19 / 40</div>
+    <div class="num"><span class="part">PART 4</span>18 / 39</div>
     <div class="notes-src">
 Part four: version one, an app. It worked, and then the bugs came.
     </div>
@@ -1825,7 +1861,7 @@ Part four: version one, an app. It worked, and then the bugs came.
       </table>
       <div class="takeaway"><b>Takeaway</b><p>Version 1 proved that WireGuard could run on NuttX. It also exposed the OS and networking problems that the first tunnel did not show.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 1/5</span>20 / 40</div>
+    <div class="num"><span class="part">PART 4 &middot; 1/5</span>19 / 39</div>
     <div class="notes-src">
 Version one put WireGuard into NuttX as an application. The goal was a standard tunnel that could be configured at run time, without rebuilding the firmware.
 ||
@@ -1851,7 +1887,7 @@ More than three thousand lines of protocol and crypto came over. The crypto came
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Most of them hid behind a test that passed, so I first looked in the wrong place.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 2/5</span>21 / 40</div>
+    <div class="num"><span class="part">PART 4 &middot; 2/5</span>20 / 39</div>
     <div class="notes-src">
 Now, where it was hard.
 ||
@@ -1878,7 +1914,7 @@ I will tell two of them in detail, because their lessons are useful for anyone. 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>If only some tasks fail, look at what each task owns. Here, it was the file descriptor.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 3/5</span>22 / 40</div>
+    <div class="num"><span class="part">PART 4 &middot; 3/5</span>21 / 39</div>
     <div class="notes-src">
 This is my favorite bug in the project.
 ||
@@ -1897,7 +1933,7 @@ The reason: in NuttX, a file descriptor belongs to one task group. It is not sha
       <p class="context-line"><strong>Real fix:</strong> a callback on <code>psock_poll()</code> and a semaphore &mdash; a real blocking wait.</p>
       <div class="takeaway"><b>Takeaway</b><p>A quick fix you never measure can look free. Measure it.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 4/5</span>23 / 40</div>
+    <div class="num"><span class="part">PART 4 &middot; 4/5</span>22 / 39</div>
     <div class="notes-src">
 The third: something I never measured.
 ||
@@ -1918,7 +1954,7 @@ The fix without file descriptors also broke poll, because poll works with file d
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Version one was enough for a demo. Next, I made it a real NuttX driver.</p></div>
     </div>
-    <div class="num"><span class="part">PART 4 &middot; 5/5</span>24 / 40</div>
+    <div class="num"><span class="part">PART 4 &middot; 5/5</span>23 / 39</div>
     <div class="notes-src">
 Here is a frame from the version one video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board. The board runs on a power adapter only, and the other end is the official Windows WireGuard client. So version one was enough for a demo; next, I made it a real NuttX driver.
     </div>
@@ -1964,7 +2000,7 @@ Here is a frame from the version one video: I logged in with telnet through the 
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 5</span>25 / 40</div>
+    <div class="num"><span class="part">PART 5</span>24 / 39</div>
     <div class="notes-src">
 That was version one. Part five, the harder half: a real kernel driver, and how I checked it.
     </div>
@@ -1988,7 +2024,7 @@ That was version one. Part five, the harder half: a real kernel driver, and how 
       <div class="aside"><p><strong>Build modes.</strong> FLAT: apps and kernel share one memory space. PROTECTED: the MPU keeps apps out of kernel memory. KERNEL: each program has its own address space (MMU).</p></div>
       <div class="takeaway"><b>Takeaway</b><p>The goal: one device that fits how NuttX is built, in every build mode, in a shape the community can review.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 1/6</span>26 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 1/6</span>25 / 39</div>
     <div class="notes-src">
 Why did I move it into the kernel?
 ||
@@ -2038,7 +2074,7 @@ So I moved the device into the kernel, with the other network drivers, and a sma
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The driver owns everything that must keep running. The command only sends settings, and then it can exit.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 2/6</span>27 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 2/6</span>26 / 39</div>
     <div class="notes-src">
 This is the shape of the real driver.
 ||
@@ -2065,7 +2101,7 @@ In the kernel, wg0 is a normal network device. It owns its UDP socket and its re
       <div class="aside"><p><strong>Also found in NuttX:</strong> SPRESENSE (cxd56) did not boot on NuttX 13.0.1 and master with <code>CONFIG_RTC_HIRES</code>. Fixed locally; the report is drafted, not sent.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>Porting into NuttX also found bugs in NuttX. A port can give something back to the project.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 3/6</span>28 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 3/6</span>27 / 39</div>
     <div class="notes-src">
 On the way into the kernel, two more bugs came, and one of them was in NuttX itself.
 ||
@@ -2105,7 +2141,7 @@ One more from the board side: on NuttX 13.0.1 and master, SPRESENSE did not boot
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The driver is verified on real boards in FLAT builds and across the kernel boundary on QEMU; real-hardware KERNEL and PROTECTED tests remain open.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 4/6</span>29 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 4/6</span>28 / 39</div>
     <div class="notes-src">
 Let me be exact about which version ran where. There are three build modes, and I keep them apart.
 ||
@@ -2140,7 +2176,7 @@ What I have not shown is PROTECTED or KERNEL on real hardware. I tried PROTECTED
       </div>
       <div class="takeaway"><b>Takeaway</b><p>Each risk needs its own test. A passing tunnel is not one of them.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 5/6</span>30 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 5/6</span>29 / 39</div>
     <div class="notes-src">
 This slide is about what a working tunnel cannot tell you: three problems that ping would never notice.
 ||
@@ -2168,7 +2204,7 @@ Third, a long test, also in the simulator: a hundred and fifty-one forced rekeys
       <div class="claim"><p style="font-size:21px">Same board, nothing sent to it: clock unset &rarr; no handshake in 75&nbsp;s. Clock set &rarr; 4.1&nbsp;s.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>Without a clock, a device may not reconnect by itself, and a ping test will not show it.</p></div>
     </div>
-    <div class="num"><span class="part">PART 5 &middot; 6/6</span>31 / 40</div>
+    <div class="num"><span class="part">PART 5 &middot; 6/6</span>30 / 39</div>
     <div class="notes-src">
 This is the one place where I had to decide, not test. And then I measured my decision.
 ||
@@ -2222,7 +2258,7 @@ Then I measured it on the board. I sent the board nothing at all, because a ping
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 6</span>32 / 40</div>
+    <div class="num"><span class="part">PART 6</span>31 / 39</div>
     <div class="notes-src">
 That was all engineering. Part six: what it actually looks like.
     </div>
@@ -2275,7 +2311,7 @@ That was all engineering. Part six: what it actually looks like.
       </svg>
       <div class="takeaway"><b>Takeaway</b><p>The phone and the venue only ever see encrypted UDP, with no server in the middle and no cloud.</p></div>
     </div>
-    <div class="num"><span class="part">PART 6 &middot; 1/2</span>33 / 40</div>
+    <div class="num"><span class="part">PART 6 &middot; 1/2</span>32 / 39</div>
     <div class="notes-src">
 Here is the demo setup.
 ||
@@ -2309,7 +2345,7 @@ Please watch two things: the addresses after I log in, and the packets. Outside 
       </div>
       <div class="takeaway"><b>Takeaway</b><p>The StackChan is a normal NuttX device reached and controlled through an encrypted WireGuard tunnel.</p></div>
     </div>
-    <div class="num"><span class="part">PART 6 &middot; 2/2</span>34 / 40</div>
+    <div class="num"><span class="part">PART 6 &middot; 2/2</span>33 / 39</div>
     <div class="notes-src">
 The point of this demo is that there is nothing special to see. The StackChan is just a normal computer at the far end of an encrypted tunnel. This board runs the apps version &mdash; the same app as in the video. The kernel driver ran on this chip too, as you saw in the testing part, but the robot demo is built on the app.
 ||
@@ -2362,7 +2398,7 @@ Last, the packets. On the left, the phone's network: only encrypted UDP. On the 
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 7</span>35 / 40</div>
+    <div class="num"><span class="part">PART 7</span>34 / 39</div>
     <div class="notes-src">
 Last part: where the work stands, what I learned, and what to take home.
     </div>
@@ -2380,7 +2416,7 @@ Last part: where the work stands, what I learned, and what to take home.
       <div class="takeaway"><b>Takeaway</b><p>Small, separate pieces are easier to review, and the crypto fix is useful even without the driver.</p></div>
       <div class="sources">Status: prepared as small PRs. Not signed off yet; nothing sent upstream.</div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 1/5</span>36 / 40</div>
+    <div class="num"><span class="part">PART 7 &middot; 1/5</span>35 / 39</div>
     <div class="notes-src">
 Here is where the work stands.
 ||
@@ -2414,7 +2450,7 @@ It is split into small pieces: a small crypto fix that is useful on its own, the
       </div>
       <div class="takeaway"><b>Hope</b><p>I hope to keep contributing to Apache NuttX and the open-source community, and I look forward to seeing NuttX continue to grow.</p></div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 2/5</span>37 / 40</div>
+    <div class="num"><span class="part">PART 7 &middot; 2/5</span>36 / 39</div>
     <div class="notes-src">
 Before the summary, three things I learned.
 ||
@@ -2437,7 +2473,7 @@ I hope to keep contributing to Apache NuttX and the open-source community, and I
         <li>Porting to a project can make the project better <span>a hidden bug in NuttX's own ChaCha20-Poly1305 was found on the way, and the fix stands on its own.</span></li>
       </ul>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 3/5</span>38 / 40</div>
+    <div class="num"><span class="part">PART 7 &middot; 3/5</span>37 / 39</div>
     <div class="notes-src">
 To sum up.
 ||
@@ -2456,7 +2492,7 @@ Three technical lessons. First, test beyond the handshake: long data runs, real 
         <div class="panel" style="min-height:0"><p><strong>Sony's NuttX developers, past and present</strong></p><p>who brought NuttX into our products and gave so much back to the project.</p></div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 4/5</span>39 / 40</div>
+    <div class="num"><span class="part">PART 7 &middot; 4/5</span>38 / 39</div>
     <div class="notes-src">
 Before I finish, some thanks.
 ||
@@ -2480,7 +2516,7 @@ First, Alan, who told me about this conference and encouraged me to submit a tal
         </div>
       </div>
     </div>
-    <div class="num"><span class="part">PART 7 &middot; 5/5</span>40 / 40</div>
+    <div class="num"><span class="part">PART 7 &middot; 5/5</span>39 / 39</div>
     <div class="notes-src">
 Thank you. I am happy to take your questions &mdash; about the kernel driver, the bugs, the ioctl ABI (binary interface), or the hardware.
     </div>

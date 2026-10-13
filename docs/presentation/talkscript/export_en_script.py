@@ -35,10 +35,11 @@ SLIDES = [
         "a kernel build on QEMU (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
         "master / 12.7.0.", []),
     ("About Me", "",
-        "Three bands: photo, name line and the fox icon / five hobby photos "
-        "(space, semiconductors, DNA nanotech, robots, Software Conference) with three "
-        "activity chips / a one-row path Robotics → Computer Vision → Edge AI "
-        "→ Embedded Systems → NuttX / WireGuard, a picture per step.", []),
+        "Three bands: photo, name line and the fox icon / a map of Japan "
+        "(Nagoya, Sendai, Kawasaki) labelled Japan / five large photos under "
+        '"My background & activities": Rocket / Aerospace Engineering, DNA '
+        "Nanorobotics, Semiconductor Research, Robots, Open-Source "
+        "Conference Volunteer.", []),
     ("Agenda", "",
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~5 min) / the problem and the idea "
@@ -48,36 +49,38 @@ SLIDES = [
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
     ("Project Overview", "",
-        "The wg0 netdev picture: application / NSH, the NuttX network stack, "
-        "wg0 next to eth0 / wlan0, a UDP socket underneath, the Internet, "
-        "the peer.", []),
+        "The wg0 netdev picture (unchanged): application / NSH, the NuttX "
+        "network stack, wg0 next to eth0 / wlan0, a UDP socket underneath, the "
+        "Internet, the peer. Below it three cards: lightweight VPN / virtual "
+        "interface (wg0) / secure communication over UDP.", []),
     ("How It Started: February to October", "",
         "A month axis Feb → Oct. Above it: mid Feb, read the GSoC idea "
-        "list / early Mar, proposed the plan / Mar 20, heard "
-        "about this conference from Alan, sent a talk / early Apr, GSoC "
-        "proposal / early May, talk accepted, GSoC not selected / Oct, "
-        "Glasgow. Below it: Jun–Jul a little at a time, August holiday "
-        "most of the work, September FLAT app → kernel driver.", []),
-    ("Background: What Is NuttX", "",
-        "Software stack (applications / POSIX, ANSI, BSD socket API / "
-        "networking, VFS, file systems, device drivers, NSH / NuttX kernel / "
-        "MCU, MPU) and tags: RTOS, POSIX-oriented, BSD sockets, VFS, NSH, "
-        "native networking, device drivers, ASF top-level project.", []),
-    ("Where NuttX Fits", "",
-        "FreeRTOS / Zephyr / NuttX table (design centre, typical use), GitHub "
-        "stars with the note that stars are visibility, not deployment; "
-        "number cards: 15+ architectures, 300+ boards, 1500+ configs, Sony, "
-        "PX4, Xiaomi OpenVela 1000+ SKUs, Japan's 2024 lunar mission.",
-        ["**Check before the talk:** the star counts move. Re-check them on "
-         "the day, or leave the date on the slide as it is."]),
+        "list / early Mar, proposed the plan / Mar 20, heard about this "
+        "conference from Alan, submitted a CfP / early Apr, GSoC proposal / "
+        "early May, CfP accepted, GSoC not selected / Oct, Glasgow. Below it, "
+        "three arrows: May–Jul study and exploration → Aug Version 1 "
+        "(application, FLAT, hardware testing) → Sep– Version 2 (kernel "
+        "driver).", []),
+    ("Background: What Is Apache NuttX", "",
+        "Left: logo, four points (POSIX-like real-time OS / small footprint / "
+        "broad hardware support, 15+ architectures, 300+ boards / Apache "
+        "open-source project) and a small table of standard APIs (FreeRTOS, "
+        "Zephyr, NuttX). Right: photo tiles of real devices: Sony, Fitbit "
+        "Charge 3 / 4, PX4 flight controllers, the SORA-Q lunar robot, and "
+        "Xiaomi OpenVela (1,000+ products).",
+        ["**Check before the talk:** the Fitbit models come from Fitbit's own "
+         "2020 NuttX talk, and the Xiaomi number is a reported figure."]),
     ("Sony's History with NuttX", "",
         "Timeline: 2013–15 early adoption in audio products / 2016–17 "
         "commercial products / 2018 Xperia Ear Duo and SPRESENSE / 2019–20 "
         "upstream collaboration / 2020s expanded edge-sensing capabilities.", []),
-    ("Experience: SPRESENSE and AITRIOS", "",
-        "Photos of SPRESENSE and the AITRIOS edge AI camera; the flow "
-        '"application development → system integration → deployment & '
-        'operation".', []),
+    ("My Experience with NuttX", "",
+        "Two photo cards: SPRESENSE, a satellite project (picture of the "
+        "ARICA CubeSat) and AITRIOS, an edge AI sensing platform (edge AI "
+        "camera). Bottom line: I wanted a secure way to access and "
+        "troubleshoot remote embedded devices.",
+        ["**Check before the talk:** the ARICA picture is a third-party "
+         "image. Get the project's permission, or replace it."]),
     ('Agenda: ② The Problem and the Idea', "divider", None, []),
     ("Problem: Reaching a Device From Far Away", "",
          "Engineer → Internet → router → Wi-Fi → NuttX device, showing that "
@@ -284,9 +287,6 @@ at the highlighted line and pause. Do not read the list. If you have no
 time at all, skip them without a word. They save almost no time, so cut the
 three slides above instead.
 
-**Check before the talk:** the GitHub star numbers on slide {stars} change. Check
-them again on the day, or keep the date on the slide.
-
 ---
 """
 
@@ -342,8 +342,7 @@ def main():
         cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
         cut3=find(lambda sl: sl[1] == "cut candidate 3")[0],
         dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),
-        learned=find(lambda sl: sl[0] == "What I Learned")[0],
-        stars=find(lambda sl: sl[0].startswith("Where NuttX Fits"))[0])]
+        learned=find(lambda sl: sl[0] == "What I Learned")[0])]
 
     for i, paras in enumerate(all_notes, 1):
         heading, tag, on_slide, extra = SLIDES[i - 1]

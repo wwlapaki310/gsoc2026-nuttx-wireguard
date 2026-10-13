@@ -1,6 +1,6 @@
 # 想定Q&A — WireGuard for Apache NuttX (Community Over Code, Glasgow)
 
-[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、2026-10-12 の簡素化版、40枚)用の
+[coc-glasgow-slides.html](../coc-glasgow-slides.html)(カーネル移植後、2026-10-12 の簡素化版、39枚)用の
 Q&A。**`presentation-script.md` の想定Q&Aは古い `slides.html`(apps版のみ、
 FLATビルド前提)向けで、この版には合わない** — 特に「PROTECTED/KERNELは
 今後の課題」という回答はもう事実と異なる(検証済み)。このデッキで話す/
