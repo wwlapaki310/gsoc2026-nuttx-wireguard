@@ -123,25 +123,42 @@ SLIDES = [
         "sending (output callback → d_txavail → devif_poll()) / UDP wire "
         "(udp_pcb → UDP socket). A note: matches of ideas, not a one-to-one "
         "swap of APIs.", []),
-    ('Agenda: ④ Version 1: The App', "divider", None, []),
+    ('Agenda: ④ Version 1: Application-Based Implementation', "divider", None, []),
     ("Version 1: WireGuard as a NuttX Application", "",
-         "Goal: run a standard WireGuard tunnel entirely as a NuttX "
-         "application. Reuse the protocol and crypto; implement the NuttX "
-         "OS hooks and native network glue. Takeaway: the first working "
-         "tunnel proved the approach and exposed the problems still hidden.", []),
+         "A GOAL box (run a standard WireGuard tunnel as a NuttX "
+         "application; reuse the existing core and implement the NuttX "
+         "integration). A table of layer / work needed / in this port: "
+         "protocol & crypto (almost none; crypto byte-identical, two small "
+         "fixes; ~3,100 lines reused, ~40 changed) / OS hooks (four "
+         "functions; ~120 new lines) / network glue (the real work: netdev + "
+         "UDP socket + RX task; ~1,200 new lines). Takeaway in two lines: "
+         "Version 1 proved WireGuard could run on NuttX; it also exposed OS "
+         "and networking problems the first tunnel did not reveal.",
+         ["**Check before the talk:** the line counts are physical lines "
+          "(comments included) from git history. Glue is the first working "
+          "tunnel (2026-08-13); today's file is about twice as long "
+          "because of run-time configuration."]),
     ("Where It Was Hard: Six Bugs", "",
          "One table of all six bugs (bug / showed up in / lesson): 1 the "
          "receive thread stopped with the wg command / 2 ping works, TCP dies "
          "(in detail) / 3 \"no real impact\" was 10× (in detail) / 4 stack 94% "
          "full, saving the config froze the board, real boards only / 5 "
          "NuttX's own ChaCha20-Poly1305 (part 5) / 6 a 6 KB array on a 3 KB "
-         "kernel stack (part 5). The GitHub line with a QR code. Takeaway: "
-         "most hid behind a test that passed.",
+         "kernel stack (part 5). Takeaway: most hid behind a test that "
+         "passed.",
          ["**Bugs 1 and 4 have no slide of their own any more.** Their story "
           "is in the notes above; the full version (and bug 1's "
           "`SO_RCVTIMEO` detour) is in the Q&A file."]),
-    ("Bug 2/6: ping Works, TCP Dies", "my favorite", None, []),
-    ("Bug 3/6: \"No Real Impact\" Was 10×", "cut candidate 3", None, []),
+    ("Bug ②: Ping Works. TCP Dies.", "my favorite",
+         "Orange-red title. Left box SYMPTOM: ping 0% loss; the TCP "
+         "handshake completes, then the connection dies; EBADF, \"Bad file "
+         "descriptor\". Right box ROOT CAUSE & FIX: sends from wg_rx worked, "
+         "sends from the system work queue failed; a file descriptor belongs "
+         "to one task group; use psock_*() on a struct socket.", []),
+    ("Bug ③: \"No Real Impact\" Was 10× Slower", "cut candidate 3",
+         "Orange-red title. Two boxes: QUICK FIX, check every 50 ms "
+         "(measured: about 10× slower) / REAL FIX, event-driven wake-up "
+         "(psock_poll() callback and a semaphore).", []),
     ("Version 1 Demo: The First Video", "cut candidate 2",
          "Left: a still frame of the video (the Windows WireGuard client "
          "beside a telnet session into NuttX on the ESP32-S3). Right: the "
@@ -290,7 +307,7 @@ that led to WireGuard: everything after that depends on this. Keep slide
    depend on it. If you cut it, answer it in Q&A if someone asks.
 2. Slide {cut2} (the version 1 video still). The live demo shows the same
    kind of thing.
-3. Slide {cut3} (Bug 3/6, the 50 ms polling). Its one-line lesson is
+3. Slide {cut3} (Bug ③, the 50 ms polling). Its one-line lesson is
    already in the bug table.
 
 If the live demo stops, switch to the recording right away. **The agenda

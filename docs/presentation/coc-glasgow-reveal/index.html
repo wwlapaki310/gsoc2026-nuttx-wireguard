@@ -645,6 +645,44 @@
   .reveal .frame .why .fact b { font-size: 17px; letter-spacing: .02em; text-transform: none; font-family: inherit; font-weight: 800; margin-bottom: 6px;}
   .reveal .frame .why .loc { display: block; width: 100%; height: auto; margin-top: 10px;}
   .reveal .frame .why .loc-note { margin-top: 2px; font-family: var(--mono); font-size: 10.5px; color: var(--quiet);}
+  :root { --bug: #c2410c; --bug-soft: #fdeee3;}
+  .reveal .frame .eyebrow.bug { color: var(--bug) !important;}
+  .reveal .frame .goal { padding: 14px 24px; background: #f4f6f7; border: 1px solid var(--line); border-left: 4px solid var(--nx);}
+  .reveal .frame .goal .tag { margin: 0 0 4px; font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .16em; color: var(--nx);}
+  .reveal .frame .goal .l1 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.3; color: var(--ink);}
+  .reveal .frame .goal .l2 { margin: 2px 0 0; font-size: 18px; line-height: 1.4; color: var(--muted);}
+  .reveal .frame table.v1t { font-size: 19px; line-height: 1.3;}
+  .reveal .frame table.v1t th,
+  .reveal .frame table.v1t td { padding: 11px 16px;}
+  .reveal .frame table.v1t th { font-size: 14px; font-weight: 700; letter-spacing: .12em; color: var(--ink);}
+  .reveal .frame table.v1t th:first-child { font-size: 12px; font-weight: 500; color: var(--quiet);}
+  .reveal .frame table.v1t td:first-child { font-size: 16px; font-weight: 600; color: var(--muted);}
+  .reveal .frame table.v1t b { font-weight: 800; color: var(--ink);}
+  .reveal .frame table.v1t td.need b { color: var(--gold);}
+  .reveal .frame table.v1t td.port b { color: var(--wg);}
+  .reveal .frame table.v1t small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 12.5px; font-weight: 400; color: var(--quiet);}
+  .reveal .frame table.v1t .sub { display: block; font-size: 15.5px; color: var(--muted);}
+  .reveal .frame .takeaway .l { display: block;}
+  .reveal .frame table.options.bugs { font-size: 18.5px; line-height: 1.34;}
+  .reveal .frame table.options.bugs th,
+  .reveal .frame table.options.bugs td { padding: 10px 14px;}
+  .reveal .frame table.options.bugs th { font-size: 13px;}
+  .reveal .frame .plabel { display: inline-block; margin: 0 0 12px; padding: 3px 10px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .14em; border-radius: 2px;}
+  .reveal .frame .panel.bugl { background: var(--bug-soft); border-color: #f0c9ad;}
+  .reveal .frame .panel.bugl .plabel { color: #fff; background: var(--bug);}
+  .reveal .frame .panel.fixr .plabel { color: #fff; background: var(--nx);}
+  .reveal .frame .panel.bugl p,
+  .reveal .frame .panel.fixr p { font-size: 19px; line-height: 1.5;}
+  .reveal .frame .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px;}
+  .reveal .frame .vs .box { padding: 20px 26px; border: 1px solid var(--line); background: #fff;}
+  .reveal .frame .vs .box.q { background: var(--bug-soft); border-color: #f0c9ad; border-left: 5px solid var(--bug);}
+  .reveal .frame .vs .box.r { background: var(--nx-soft); border-color: #b6d7d3; border-left: 5px solid var(--nx);}
+  .reveal .frame .vs .box .plabel { margin-bottom: 8px; color: #fff;}
+  .reveal .frame .vs .box.q .plabel { background: var(--bug);}
+  .reveal .frame .vs .box.r .plabel { background: var(--nx);}
+  .reveal .frame .vs .big { margin: 0 0 10px; font-size: 32px; font-weight: 800; line-height: 1.2; color: var(--ink);}
+  .reveal .frame .vs .small { margin: 0; font-size: 19px; line-height: 1.5; color: var(--muted);}
+  .reveal .frame .vs .meas { margin: 14px 0 0; font-size: 22px; font-weight: 800; color: var(--bug);}
   .reveal .frame table.options { font-size: 15.5px; line-height: 1.22;}
   .reveal .frame table.options th,
   .reveal .frame table.options td { padding: 5px 9px;}
@@ -998,7 +1036,7 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
@@ -1023,7 +1061,7 @@
   </div>
     <aside class="notes">
       <p>Here is the plan for this talk.</p>
-      <p>There are seven parts. First, an overview and the background: what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, version one, an app: the first tunnel, the bugs it hid, and the first demo. Fifth, version two, the kernel driver: why I moved it, a bug in NuttX itself, and how I tested it. Sixth, a live demo with the StackChan. And last, where the work stands, what I learned, and a summary. About thirty minutes, then questions.</p>
+      <p>There are seven parts. First, an overview and the background: what NuttX is, and how this started. Second, the problem I wanted to solve, and the idea. Third, the plan. Fourth, Version 1, the application-based implementation: the first tunnel, the bugs it hid, and the first demo. Fifth, version two, the kernel driver: why I moved it, a bug in NuttX itself, and how I tested it. Sixth, a live demo with the StackChan. And last, where the work stands, what I learned, and a summary. About thirty minutes, then questions.</p>
     </aside>
   </section>
 
@@ -1049,7 +1087,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1320,7 +1358,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1542,7 +1580,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1649,7 +1687,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1673,29 +1711,35 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Part four: version one, an app. It worked, and then the bugs came.</p>
+      <p>Part four: Version 1, the application-based implementation. It worked, and then the bugs came.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
     <p class="eyebrow">Version 1: WireGuard as a NuttX application</p>
-    <div class="body">
-      <p class="context-line"><strong>Goal:</strong> run a standard WireGuard tunnel entirely as a NuttX application. Reuse the protocol and crypto; implement the NuttX OS hooks and native network glue.</p>
-      <table>
+    <div class="body" style="gap:16px">
+      <div class="goal">
+        <p class="tag">GOAL</p>
+        <p class="l1">Run a standard WireGuard tunnel as a NuttX application.</p>
+        <p class="l2">Reuse the existing core and implement the NuttX integration.</p>
+      </div>
+      <table class="v1t">
         <tr><th>Layer</th><th>Work needed</th><th>In this port</th></tr>
-        <tr><td>Protocol &amp; crypto</td><td class="old">Almost none &mdash; portable C</td><td class="new">crypto byte-identical; protocol core: two small fixes (PATCHES.md)</td></tr>
-        <tr><td>OS hooks</td><td class="old">Small &mdash; four functions</td><td class="new">clock, /dev/urandom, TAI64N, load</td></tr>
-        <tr><td>Network glue</td><td class="old">The real work</td><td class="new">netdev + UDP socket + RX task</td></tr>
+        <tr><td>Protocol &amp; crypto</td><td class="need"><b>Almost none</b><span class="sub">portable C</span></td><td class="port">Crypto byte-identical. <b>Two small fixes</b> to the protocol core.<small>~3,100 lines reused &middot; ~40 changed</small></td></tr>
+        <tr><td>OS hooks</td><td class="need"><b>Four functions</b><span class="sub">small</span></td><td class="port">clock, <code>/dev/urandom</code>, TAI64N, load check<small>~120 new lines</small></td></tr>
+        <tr><td>Network glue</td><td class="need"><b>The real work</b></td><td class="port"><b>netdev</b> + <b>UDP socket</b> + <b>RX task</b><small>~1,200 new lines</small></td></tr>
       </table>
-      <div class="takeaway"><b>Takeaway</b><p>Version 1 proved that WireGuard could run on NuttX. It also exposed the OS and networking problems that the first tunnel did not show.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p><span class="l">Version 1 proved that WireGuard could run on NuttX.</span><span class="l">It also exposed OS and networking problems that the first tunnel did not reveal.</span></p></div>
     </div>
+    <div class="sources">Lines include comments, from git history. Reused: the vendored wireguard-lwip files. New: the first working tunnel, 2026-08-13. Fixes: 2026-09-18.</div>
     <div class="num"><span class="part">PART 4 &middot; 1/5</span>19 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Version one put WireGuard into NuttX as an application. The goal was a standard tunnel that could be configured at run time, without rebuilding the firmware.</p>
-      <p>More than three thousand lines of protocol and crypto came over. The crypto came over exactly as it was. The protocol core needed two small fixes after a review &mdash; and one of them was a bug in wireguard-lwip itself: its rate limit never worked. The four OS functions are small. The real work was the network glue. The result was a working tunnel with keys and peers configured at run time. That proved the approach, but it also exposed the OS and networking problems that a first successful ping could not show.</p>
+      <p>Version 1 put WireGuard into NuttX as an application, in a FLAT build. The goal was a standard tunnel that could be configured at run time, without rebuilding the firmware.</p>
+      <p>This table shows how much work each layer needed. About three thousand lines of protocol and crypto came over from wireguard-lwip. The crypto came over exactly as it was. The protocol core needed two small fixes after a review, and one of them was a bug in wireguard-lwip itself: its rate limit never worked. The four OS functions are small, about a hundred and twenty lines. The real work was the network glue: the netdev, the UDP socket, and the receive task. In the first working tunnel, that was about twelve hundred new lines.</p>
+      <p>The result was a working tunnel. That proved the approach, but it also exposed OS and networking problems that a first successful ping could not show. Let me show you where it was hard.</p>
     </aside>
   </section>
 
@@ -1703,7 +1747,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   <div class="frame">
     <p class="eyebrow">Where it was hard: six bugs</p>
     <div class="body" style="gap:14px">
-      <table class="options" style="font-size:17px">
+      <table class="options bugs">
         <tr><th>#</th><th>Bug</th><th>Showed up in</th><th>Lesson</th></tr>
         <tr><td>1</td><td>The receive thread stopped when the <code>wg</code> command exited</td><td>apps version</td><td><code>pthread_detach()</code> frees memory later. It does not keep a thread alive.</td></tr>
         <tr class="this"><td>2</td><td>ping works, TCP dies <span class="tag">in detail</span></td><td>apps version</td><td>A file descriptor belongs to one task group.</td></tr>
@@ -1712,10 +1756,6 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         <tr><td>5</td><td>Handshake OK, data fails: NuttX's own ChaCha20&#8209;Poly1305 <span class="tag">part 5</span></td><td>kernel driver</td><td>A passing handshake does not prove the data path.</td></tr>
         <tr><td>6</td><td>A 6&nbsp;KB array on a 3&nbsp;KB kernel stack <span class="tag">part 5</span></td><td>BUILD_KERNEL (QEMU)</td><td>The same stack lesson, one level deeper.</td></tr>
       </table>
-      <div class="aside" style="display:flex;align-items:center;gap:16px;padding:4px 14px">
-        <img src="../assets/github-qr.png" alt="QR code for the GitHub repository" style="width:62px;height:62px;display:block;flex:none">
-        <p>For implementation details, debugging notes, and test results, see the GitHub repository.<br><code>github.com/wwlapaki310/gsoc2026-nuttx-wireguard</code></p>
-      </div>
       <div class="takeaway"><b>Takeaway</b><p>Most of them hid behind a test that passed, so I first looked in the wrong place.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 2/5</span>20 / 39</div>
@@ -1731,17 +1771,20 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Bug 2/6: ping works. TCP dies.</p>
+    <p class="eyebrow bug">Bug &#9313;: Ping Works. TCP Dies.</p>
     <div class="body">
       <div class="two">
-        <div class="panel">
-          <p>Same tunnel: <code>ping</code> is <strong>0% loss.</strong> A telnet 3-way handshake even <strong>completes</strong>, then the connection dies.</p>
-          <p class="mono" style="font-size:16px;margin-top:14px">wg_encrypt_and_send: psock_sendto<br>ret=-1 errno=9 &nbsp;<span class="hl red">EBADF</span></p>
+        <div class="panel bugl">
+          <span class="plabel">SYMPTOM</span>
+          <p><code>ping</code> works: <strong>0% loss.</strong></p>
+          <p>A TCP handshake even <strong>completes</strong>, then the connection dies.</p>
+          <p class="mono" style="font-size:16px;margin-top:14px">psock_sendto: ret=-1 errno=9<br><span class="hl red">EBADF</span> &mdash; &ldquo;Bad file descriptor&rdquo;</p>
         </div>
-        <div class="panel nx">
-          <p>The sends that <strong>worked</strong> ran inside the <code>wg_rx</code> task. Sends from another task got EBADF.</p>
-          <p><strong>Cause:</strong> an fd belongs to one <span class="hl">task group</span>; it is not global.</p>
-          <p><strong>Fix:</strong> use the internal API without fds: <code>psock_*()</code> on a <code>struct socket</code>, which any task can use.</p>
+        <div class="panel nx fixr">
+          <span class="plabel">ROOT CAUSE &amp; FIX</span>
+          <p>Sends from the <code>wg_rx</code> task worked. Sends from the system work queue, which flushes TCP data, failed.</p>
+          <p><strong>Cause:</strong> a file descriptor belongs to one <span class="hl">task group</span>. It is not valid in another one.</p>
+          <p><strong>Fix:</strong> use <code>psock_*()</code> on a <code>struct socket</code>. No fd, so any task can use it.</p>
         </div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>If only some tasks fail, look at what each task owns. Here, it was the file descriptor.</p></div>
@@ -1751,20 +1794,28 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>This is my favorite bug in the project.</p>
-      <p>On the same tunnel, ping was perfect, and even a TCP handshake finished &mdash; and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself &mdash; handshake replies, keepalives, ping replies, the SYN-ACK (the second step of a TCP connection). Sends from any other task failed.</p>
-      <p>The reason: in NuttX, a file descriptor belongs to one task group. It is not shared by the whole system. The fix was to stop using file descriptors and use NuttX's internal socket API. It works on a struct socket, which is just memory, so any task can use it. That is exactly why the kernel version keeps the socket as a struct socket.</p>
+      <p>On the same tunnel, ping was perfect, and even a TCP handshake finished, and then the connection died. When I added logging to the send path, it showed EBADF: bad file descriptor. All the sends that worked happened inside the receive task itself: handshake replies, keepalives, ping replies, the SYN-ACK, which is the second step of a TCP connection. The sends that failed came from the system work queue, which sends the TCP application data later.</p>
+      <p>The reason: in NuttX, a file descriptor belongs to the task group that opened it. The file descriptor was not broken. It was just not visible from another task group. The fix was to stop using file descriptors and use NuttX's internal socket API. It works on a struct socket, which is just memory, so any task can use it. That is exactly why the kernel version keeps the socket as a struct socket.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Bug 3/6: &ldquo;No real impact&rdquo; was 10&times;.</p>
+    <p class="eyebrow bug">Bug &#9314;: &ldquo;No Real Impact&rdquo; Was 10&times; Slower</p>
     <div class="body">
-      <div class="claim">
-        <p>Quick fix: check the socket every 50&nbsp;ms.</p>
-        <small>The fix without fds also broke <code>poll()</code>. I thought the only cost was waking an idle CPU. Wrong: each packet waited up to 50&nbsp;ms, and that made it <span class="hl red">about 10&times; slower.</span></small>
+      <div class="vs">
+        <div class="box q">
+          <span class="plabel">QUICK FIX</span>
+          <p class="big">Check every 50&nbsp;ms</p>
+          <p class="small">Dropping fds also broke <code>poll()</code>, so I polled the socket. I thought the only cost was waking an idle CPU.</p>
+          <p class="meas">Measured: about 10&times; slower.</p>
+        </div>
+        <div class="box r">
+          <span class="plabel">REAL FIX</span>
+          <p class="big">Event-driven wake-up</p>
+          <p class="small">A callback on <code>psock_poll()</code> and a semaphore: a real blocking wait. Each packet wakes the thread when it arrives.</p>
+        </div>
       </div>
-      <p class="context-line"><strong>Real fix:</strong> a callback on <code>psock_poll()</code> and a semaphore &mdash; a real blocking wait.</p>
       <div class="takeaway"><b>Takeaway</b><p>A quick fix you never measure can look free. Measure it.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 4/5</span>22 / 39</div>
@@ -1772,7 +1823,8 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>The third: something I never measured.</p>
-      <p>The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed &mdash; about ten times slower than it should have been. I thought it had no real cost, and it cost ten times. The real fix was a proper wait: the socket wakes the thread up when data arrives.</p>
+      <p>The fix without file descriptors also broke poll, because poll works with file descriptors. So, as a quick fix, I checked the socket every fifty milliseconds. I thought the only cost was waking up the CPU when it was idle. I was wrong. Every packet that arrived waited up to fifty milliseconds, and that alone limited the speed: about ten times slower than it should have been. I thought it had no real cost, and it cost ten times.</p>
+      <p>The real fix was a proper wait. The socket calls back and a semaphore wakes the thread up when data arrives.</p>
     </aside>
   </section>
 
@@ -1789,13 +1841,13 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
           <p class="mono" style="font-size:14px;margin-top:4px">Video: youtu.be/1kyX2av5WG4</p>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Version one was enough for a demo. Next, I made it a real NuttX driver.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p></div>
     </div>
     <div class="num"><span class="part">PART 4 &middot; 5/5</span>23 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Here is a frame from the version one video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board. The board runs on a power adapter only, and the other end is the official Windows WireGuard client. So version one was enough for a demo; next, I made it a real NuttX driver.</p>
+      <p>Here is a frame from the Version 1 video: I logged in with telnet through the tunnel, ran a few commands, and opened a small web page on the board. The board runs on a power adapter only, and the other end is the official Windows WireGuard client. So Version 1 was enough for a demo. Next, I made it a real NuttX driver.</p>
     </aside>
   </section>
 
@@ -1821,7 +1873,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item current">
@@ -2088,7 +2140,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2232,7 +2284,7 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>Version 1: the app</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
+          <div><h3>Version 1: Application-Based Implementation</h3><p>First tunnel &middot; six bugs, two in detail &middot; first demo</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
