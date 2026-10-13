@@ -67,7 +67,7 @@ SLIDES = [
         "three arrows: May–Jul study and exploration → Aug Version 1 "
         "(application, FLAT, hardware testing) → Sep– Version 2 (kernel "
         "driver).", []),
-    ("Background: What Is Apache NuttX", "",
+    ("A Quick Overview of Apache NuttX", "",
         "Left: logo, four points (POSIX-like real-time OS / small footprint / "
         "broad hardware support, 15+ architectures, 300+ boards / Apache "
         "open-source project) and a small table of standard APIs (FreeRTOS, "

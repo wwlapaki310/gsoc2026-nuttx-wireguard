@@ -98,7 +98,7 @@ two slides above instead.
 - In early May, I got two answers. The CfP was accepted, and the GSoC proposal was not selected. I decided to keep going anyway. From May to July, I studied NuttX internals, learned how WireGuard works, and explored ways to build it. In August, I focused on hardware testing and finished Version 1, the application in a FLAT build. Then Version 2, the kernel driver, came after that.
 - So the work that started with GSoC grew step by step, and it still continues. Next, what NuttX is.
 
-## 7 — Background: What Is Apache NuttX (3:43 → 4:45)
+## 7 — A Quick Overview of Apache NuttX (3:43 → 4:45)
 
 **On slide:** Left: logo, four points (POSIX-like real-time OS / small footprint / broad hardware support, 15+ architectures, 300+ boards / Apache open-source project) and a small table of standard APIs (FreeRTOS, Zephyr, NuttX). Right: photo tiles of real devices: Sony, Fitbit Charge 3 / 4, PX4 flight controllers, the SORA-Q lunar robot, and Xiaomi OpenVela (1,000+ products).
 

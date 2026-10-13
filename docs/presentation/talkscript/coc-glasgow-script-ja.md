@@ -136,7 +136,7 @@ Summary & Reflections: Achievements · personal reflections · community(~4分)�
   その後に Version 2、カーネルドライバが続きます。
 - GSoC をきっかけに始めた開発が、一歩ずつ育ち、今も続いています。次は NuttX とは何か、です。
 
-## 7 — Background: NuttX とは何か、どこで使われているか (4:06 → 5:08)
+## 7 — A Quick Overview of Apache NuttX: NuttX とは何か、どこで使われているか (4:06 → 5:08)
 
 **画面:** 左: NuttX のロゴと4つの要点(POSIX-like な RTOS / 小さい / 幅広いハードウェア対応 —
 15+ アーキテクチャ・300+ ボード / Apache のオープンソース)、標準 API の小さな表
