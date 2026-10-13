@@ -626,6 +626,25 @@
   .reveal .frame .xp h3 { font-size: 20px; margin-bottom: 6px;}
   .reveal .frame .xp .copy p { font-size: 16px; line-height: 1.42;}
   .reveal .frame .xp .copy p + p { margin-top: 6px;}
+  .reveal .frame .repo { display: flex; align-items: center; gap: 18px; padding: 12px 20px; border: 1px solid var(--line); border-left: 5px solid var(--nx); background: #fff;}
+  .reveal .frame .repo .tag { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; color: var(--quiet);}
+  .reveal .frame .repo a { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--nx); text-decoration: underline;}
+  .reveal .frame .repo .desc { margin-left: auto; color: var(--muted); font-size: 16px;}
+  .reveal .frame .kar { display: grid; grid-template-columns: 200px 1fr; align-items: center; gap: 22px; padding: 14px 24px; border: 1px solid var(--line); border-left-width: 7px; background: #fff;}
+  .reveal .frame .kar .verb { font-size: 38px; font-weight: 900; letter-spacing: .02em; line-height: 1;}
+  .reveal .frame .kar h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink);}
+  .reveal .frame .kar p { margin: 0; font-size: 19px; line-height: 1.35; color: var(--muted);}
+  .reveal .frame .kar.keep { border-left-color: var(--nx);}
+  .reveal .frame .kar.keep .verb { color: var(--nx);}
+  .reveal .frame .kar.adapt { border-left-color: var(--gold);}
+  .reveal .frame .kar.adapt .verb { color: #8a650c;}
+  .reveal .frame .kar.replace { border-left-color: var(--wg);}
+  .reveal .frame .kar.replace .verb { color: var(--wg);}
+  .reveal .frame .why-label { margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);}
+  .reveal .frame .why .fact p { font-size: 16px; line-height: 1.42;}
+  .reveal .frame .why .fact b { font-size: 17px; letter-spacing: .02em; text-transform: none; font-family: inherit; font-weight: 800; margin-bottom: 6px;}
+  .reveal .frame .why .loc { display: block; width: 100%; height: auto; margin-top: 10px;}
+  .reveal .frame .why .loc-note { margin-top: 2px; font-family: var(--mono); font-size: 10.5px; color: var(--quiet);}
   .reveal .frame table.options { font-size: 15.5px; line-height: 1.22;}
   .reveal .frame table.options th,
   .reveal .frame table.options td { padding: 5px 9px;}
@@ -969,12 +988,12 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item">
@@ -1020,12 +1039,12 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1291,12 +1310,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1325,13 +1344,13 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>That is the background. Part two: the problem I wanted to solve, and the idea.</p>
+      <p>That is the background. Part two: the problem, and the solution I chose.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Problem: Wi-Fi security stops too early</p>
+    <p class="eyebrow">Problem: How Can We Securely Access Remote Devices?</p>
     <div class="body" style="gap:18px">
       <svg viewBox="0 0 1136 210" role="img" aria-label="Wi-Fi security protects only the last hop to the device; an authenticated path is needed all the way from the engineer to the NuttX device" style="width:100%;height:auto;">
         <text x="568" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#8d1f24">NEEDED &mdash; A SECURE PATH ALL THE WAY TO THE DEVICE</text>
@@ -1361,54 +1380,53 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         <text class="small" x="845" y="172" text-anchor="middle">WPA2 / WPA3 protects only this hop</text>
       </svg>
       <div class="three">
-        <div class="fact wg"><b>Open it to the Internet</b><p>Give the device a public IP and hope.</p></div>
-        <div class="fact gold"><b>Make your own protocol</b><p>Build and maintain your own secure channel.</p></div>
-        <div class="fact blue"><b>Use a vendor's cloud</b><p>Rely on someone else's cloud to reach your own device.</p></div>
+        <div class="fact wg"><b>Devices are far away</b><p>Embedded devices sit at remote sites and on other networks.</p></div>
+        <div class="fact gold"><b>Remote diagnosis</b><p>Engineers need to check and fix them when something goes wrong.</p></div>
+        <div class="fact blue"><b>A secure path</b><p>Wi-Fi security protects the radio link. Remote access needs its own secure path.</p></div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>What was missing: a standard, secure path all the way to the NuttX device.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>We needed a secure way to access and troubleshoot remote NuttX devices.</p></div>
     </div>
     <div class="num"><span class="part">PART 2 &middot; 1/4</span>11 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Now, the problem itself.</p>
-      <p>Wi-Fi security is real, but it protects only one part of the path: the radio link between the device and the access point. Everything before that &mdash; the engineer, the Internet, the router &mdash; is outside what WPA2 or WPA3 (Wi-Fi security) can protect. What I needed was a secure path for the whole way, from the engineer to the device, not just the last few meters.</p>
-      <p>Without that, every choice has a problem. You can give the device a public IP and hope. You can make your own secure protocol and keep it working forever. Or you can hand the connection to a vendor's cloud. The same problem appears in edge AI, industrial IoT, and remote systems in general. It is not limited to this project.</p>
+      <p>Now, the problem I wanted to solve.</p>
+      <p>Embedded devices are often installed far away: at a customer's site, in a factory, or on another network. When something goes wrong, an engineer wants to log in, check the device, and fix it, without traveling there.</p>
+      <p>Wi-Fi security, WPA2 or WPA3, protects the radio link between the device and the access point. That is important, but it is only one hop. It does not give an engineer a way to reach the device across the Internet. For that, we need a secure path of its own, all the way from the engineer to the device. The same need appears in edge AI, industrial IoT, and many other remote systems.</p>
+      <p>So the question is: how can we securely access remote devices? Let's look at the options.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Options: MQTT, HTTP, router VPN, ...</p>
-    <div class="body" style="gap:12px">
+    <p class="eyebrow">Options: Ways to Reach a Remote Device</p>
+    <div class="body" style="gap:14px">
       <table class="options">
-        <tr><th>Way</th><th>Who connects</th><th>Any service (telnet, web&hellip;)?</th><th>Server in the middle?</th><th>Security ends at</th><th>On NuttX today</th></tr>
-        <tr><td>Open a port to the Internet</td><td>engineer &rarr; device</td><td class="yes">yes</td><td class="yes">no</td><td class="no">the app (often nothing)</td><td>easy, but open to everyone</td></tr>
-        <tr><td>HTTPS to a cloud API</td><td>device &rarr; cloud (polling)</td><td class="no">no, only your API</td><td class="no">yes, a web server</td><td>the cloud server</td><td><code>webclient</code>, <code>libcurl4nx</code> + mbedTLS</td></tr>
-        <tr><td>MQTT broker (TLS)</td><td>device &rarr; broker</td><td class="no">no, messages only</td><td class="no">yes, a broker</td><td>the broker</td><td><code>mqttc</code>, <code>paho_mqtt</code> + mbedTLS</td></tr>
-        <tr><td>Reverse tunnel / relay (SSH, WebSocket)</td><td>device &rarr; relay</td><td>one port per tunnel</td><td class="no">yes, a relay host</td><td>the relay host</td><td><code>dropbear</code>, <code>libwebsockets</code></td></tr>
-        <tr><td>VPN on the router</td><td>router &harr; office</td><td class="yes">yes, the whole LAN</td><td class="yes">no</td><td class="no">the router; the LAN hop is open</td><td>no change on the device, but you need that router</td></tr>
-        <tr><td>Carrier closed network (private APN, SIM VPN)</td><td>through the carrier</td><td class="yes">yes</td><td class="no">yes, the carrier</td><td>the carrier gateway</td><td>LTE modem; cellular only</td></tr>
-        <tr class="this"><td>VPN on the device (this talk)</td><td>either side</td><td class="yes">yes, any IP service</td><td class="yes">no, any WireGuard peer</td><td class="yes">the device itself</td><td><code>wg0</code></td></tr>
+        <tr><th>Way</th><th>Any IP service (telnet, web&hellip;)?</th><th>No server in the middle?</th><th>Protected up to</th></tr>
+        <tr><td>Open a port to the Internet</td><td class="yes">yes</td><td class="yes">yes</td><td>the application itself</td></tr>
+        <tr><td>HTTPS / MQTT via a cloud</td><td class="no">no, only your API or messages</td><td class="no">no, a server or broker</td><td>the server or broker</td></tr>
+        <tr><td>Reverse tunnel / relay (SSH, WebSocket)</td><td>one port per tunnel</td><td class="no">no, a relay host</td><td>the relay host</td></tr>
+        <tr><td>VPN on the router</td><td class="yes">yes, the whole LAN</td><td class="yes">yes</td><td>the router, not the LAN behind it</td></tr>
+        <tr><td>Carrier closed network</td><td class="yes">yes</td><td class="no">no, the carrier</td><td>the carrier gateway</td></tr>
+        <tr class="this"><td>VPN on the device (this talk)</td><td class="yes">yes, any IP service</td><td class="yes">yes, any WireGuard peer</td><td class="yes">the device itself</td></tr>
       </table>
-      <div class="takeaway"><b>Takeaway</b><p>MQTT and HTTPS are great for data. To log in and fix a device, end to end, with no server in the middle, the VPN has to be on the device.</p></div>
+      <div class="takeaway"><b>Takeaway</b><p>Every option has trade-offs. I chose a VPN on the device, so the device itself is the end of the tunnel.</p></div>
     </div>
-    <div class="sources">Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS. NuttX clients: nuttx-apps 13.0.1 <code>netutils/</code> (mqttc, paho_mqtt, webclient, libcurl4nx, libwebsockets, dropbear) and <code>crypto/mbedtls</code>.</div>
+    <div class="sources">Each option can be made secure. The last column shows where its protection ends. Mesh VPN agents (Tailscale, ZeroTier) are another &ldquo;VPN on the device&rdquo; option, but they usually need a bigger OS.</div>
     <div class="num"><span class="part">PART 2 &middot; 2/4</span>12 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Before I chose WireGuard, I compared the usual ways to reach a device.</p>
-      <p>Opening a port is easy, but then the whole Internet can reach the device. HTTPS and MQTT (a small messaging protocol) are what most IoT products use. The device connects out to a server, so NAT (network address translation) is not a problem, and NuttX already has clients for both. But you only get the messages you designed &mdash; you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.</p>
-      <p>A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours. But the last part of the path, on the LAN, is not protected. And at a customer's site, the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.</p>
-      <p>A VPN on the device is the only row that has all three: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.</p>
+      <p>There are several ways to access a remote device: open a port, use a cloud API or an MQTT broker, set up a reverse tunnel, or use a VPN on the router.</p>
+      <p>Each approach has its own trade-offs. HTTPS and MQTT are great for sending data, but they do not give you a shell or a web page on the device. A router VPN works well when the router is yours, but the protection ends at the router. None of them is bad, and all of them can be made secure. They just protect different parts of the path.</p>
+      <p>For this project, I wanted something different: a standard VPN that runs directly on the NuttX device, so the device itself is the end of the tunnel. That is the solution.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Solution: a VPN on the device</p>
-    <div class="body" style="gap:18px">
+    <p class="eyebrow">Solution: A VPN on the Device</p>
+    <div class="body why" style="gap:12px">
       <svg viewBox="0 0 1136 150" role="img" aria-label="Engineer, Linux and Windows peers connect to the NuttX device through a WireGuard tunnel" style="width:100%;height:auto;">
         <rect x="40" y="40" width="330" height="70" fill="#fff" stroke="#d5dde2"></rect>
         <text x="205" y="70" text-anchor="middle" font-size="17" font-weight="700">Engineer &middot; Linux &middot; Windows</text>
@@ -1420,20 +1438,40 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         <text x="933" y="70" text-anchor="middle" font-size="17" font-weight="800" fill="#8d1f24">NuttX device</text>
         <text class="small" x="933" y="92" text-anchor="middle" fill="#8d1f24">wg0</text>
       </svg>
-      <ul class="big" style="gap:10px">
-        <li style="font-size:20px">Modern IP-layer VPN <span style="font-size:15px">small and simple: much less code than IPsec or OpenVPN.</span></li>
-        <li style="font-size:20px">UDP transport, public-key peers <span style="font-size:15px">no certificates and no session setup to manage.</span></li>
-        <li style="font-size:20px">Already everywhere <span style="font-size:15px">in the Linux kernel, with an official Windows client. It works with existing peers, not a custom protocol.</span></li>
-      </ul>
-      <div class="takeaway"><b>Takeaway</b><p>WireGuard solves the access problem with a standard protocol, not a homemade security layer or a vendor cloud.</p></div>
+      <p class="why-label">Why WireGuard?</p>
+      <div class="three" style="gap:16px">
+        <div class="fact wg">
+          <b>Small &amp; simple</b>
+          <p>Far less code than IPsec or OpenVPN, so it is easier to review and to port.</p>
+          <svg class="loc" viewBox="0 0 330 92" role="img" aria-label="Lines of code reported in 2018: IPsec about 420 thousand, OpenVPN about 120 thousand, WireGuard about 3.8 thousand">
+            <g font-size="12" font-family="monospace" fill="#52606a">
+              <text x="0" y="16">IPsec</text><rect x="80" y="5" width="190" height="14" fill="#b9c3c9"></rect><text x="276" y="16">~420k</text>
+              <text x="0" y="44">OpenVPN</text><rect x="80" y="33" width="54" height="14" fill="#b9c3c9"></rect><text x="140" y="44">~120k</text>
+              <text x="0" y="72" font-weight="700" fill="#8d1f24">WireGuard</text><rect x="80" y="61" width="3" height="14" fill="#8d1f24"></rect><text x="89" y="72" font-weight="700" fill="#8d1f24">~3.8k</text>
+            </g>
+          </svg>
+          <div class="loc-note">Lines of code, 2018 &mdash; not today's counts</div>
+        </div>
+        <div class="fact nx">
+          <b>Modern cryptography</b>
+          <p>ChaCha20-Poly1305 and Curve25519, in one fixed, well-defined suite.</p>
+        </div>
+        <div class="fact blue">
+          <b>UDP-based tunnel</b>
+          <p>Encrypted IP packets over UDP. It works with existing WireGuard peers such as Linux, and the microcontroller itself is the VPN endpoint.</p>
+        </div>
+      </div>
+      <div class="takeaway" style="margin-top:6px"><b>Takeaway</b><p>Run a lightweight, standard VPN directly on the NuttX device.</p></div>
     </div>
+    <div class="sources">Lines of code (rounded): J. Donenfeld, &ldquo;WireGuard&rdquo;, Linux Plumbers Conference 2018, wireguard.com/talks/lpc2018-wireguard-slides.pdf. Specific implementations, counted in 2018; the talk's own slides differ slightly for OpenVPN.</div>
     <div class="num"><span class="part">PART 2 &middot; 3/4</span>13 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>So, why WireGuard?</p>
-      <p>WireGuard is a modern VPN that works at the IP layer. It is small and simple by design, with much less code than IPsec or OpenVPN, and that matters a lot on a microcontroller. It runs over plain UDP, and each peer is known by its public key, not by certificates or a long setup. If a packet does not carry the right key, WireGuard does not answer at all &mdash; to everyone else, the device is just a brick wall. And most importantly, it is a standard. It has been in the Linux kernel for years, there is an official Windows client, and the other end can be any WireGuard peer.</p>
-      <p>So I chose a standard protocol, instead of making my own or depending on a vendor's cloud.</p>
+      <p>So, my solution: put a VPN on the device itself.</p>
+      <p>Why WireGuard? First, it is small and simple. In a talk in 2018, its author compared lines of code: about four thousand for WireGuard, about a hundred and twenty thousand for OpenVPN, and over four hundred thousand for IPsec with strongSwan. These are old numbers for specific implementations, but the gap is large, and it matters on a microcontroller.</p>
+      <p>Second, modern cryptography: ChaCha20-Poly1305 and Curve25519. I will not go into the details here. Third, it is a tunnel over plain UDP. Each peer is known by its public key, and the packets are normal UDP, so the device can talk to existing WireGuard peers, such as Linux or Windows. The microcontroller itself becomes the end of the tunnel.</p>
+      <p>So the idea is simple: run a lightweight, standard VPN directly on the NuttX device. Next, where wg0 sits inside NuttX.</p>
     </aside>
   </section>
 
@@ -1494,12 +1532,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1528,51 +1566,55 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Part three: the plan. How do you reuse an existing WireGuard?</p>
+      <p>Part three: the development plan. How do we start from an existing WireGuard?</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Porting: four functions to write</p>
-    <div class="body">
-      <div class="stack" style="gap:14px">
-        <div class="fact nx" style="border-top-width:4px">
-          <b>Protocol &amp; crypto &mdash; KEEP</b>
-          <p>Handshake, transport, BLAKE2s, ChaCha20-Poly1305, Curve25519. Portable C, no OS dependency. Crypto used as-is; the protocol core got two small, documented fixes.</p>
+    <p class="eyebrow">Porting Strategy: Start from wireguard-lwip</p>
+    <div class="body" style="gap:12px">
+      <div class="repo"><span class="tag">STARTING POINT</span><a href="https://github.com/smartalock/wireguard-lwip" target="_blank" rel="noopener">github.com/smartalock/wireguard-lwip</a><span class="desc">An existing open-source WireGuard for lwIP</span></div>
+      <div class="stack" style="gap:12px">
+        <div class="kar keep">
+          <div class="verb">KEEP</div>
+          <div><h3>Protocol &amp; crypto</h3><p>Reuse the WireGuard protocol and cryptography, with two small fixes.</p></div>
         </div>
-        <div class="fact gold" style="border-top-width:4px">
-          <b>Platform hooks &mdash; ADAPT</b>
-          <p>Everything OS-specific sits behind <code>wireguard-platform.h</code> &mdash; four functions: clock, random bytes, TAI64N time, load check.</p>
+        <div class="kar adapt">
+          <div class="verb">ADAPT</div>
+          <div><h3>Platform hooks</h3><p>Implement NuttX-specific system functions.</p></div>
         </div>
-        <div class="fact wg" style="border-top-width:4px">
-          <b>lwIP network glue &mdash; REPLACE</b>
-          <p><code>wireguardif.c</code>'s lwIP <code>netif</code> registration and buffers. NuttX has no lwIP, so this layer is the real porting work.</p>
+        <div class="kar replace">
+          <div class="verb">REPLACE</div>
+          <div><h3>lwIP network glue</h3><p>Use NuttX networking APIs instead of lwIP.</p></div>
         </div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>A clean line between the protocol and the OS let the crypto move unchanged, and the protocol core with only two small fixes. Only the OS and network glue had to change.</p></div>
+      <div class="takeaway" style="margin-top:4px"><b>Takeaway</b><p>We ported wireguard-lwip to NuttX by reusing the core, adapting platform hooks, and replacing the lwIP integration.</p></div>
     </div>
     <div class="num"><span class="part">PART 3 &middot; 1/2</span>16 / 39</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>Why I started from wireguard-lwip, an existing open-source WireGuard, and did not write the crypto myself.</p>
-      <p>wireguard-lwip is cleanly split into three layers. The protocol and crypto &mdash; the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 &mdash; are portable C that does not depend on any OS. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one small header file, as four functions. I only had to replace the lwIP network glue &mdash; the part that registers an lwIP netif and handles lwIP buffers &mdash; because NuttX does not have lwIP at all.</p>
-      <p>I did not have to rewrite the protocol or the crypto, and that was not luck. That is what a clean line between the protocol and the OS gives you. Because of it, this port took weeks, not months.</p>
+      <p>Now the plan. I did not write WireGuard from scratch.</p>
+      <p>I started from wireguard-lwip, an open-source WireGuard implementation for the lwIP network stack. The link is on the slide. It already has the protocol and the cryptography, so I could focus on the porting work.</p>
+      <p>I sorted the code into three parts. First, the protocol and crypto: the handshake, the data transport, and the crypto primitives. I kept them. The crypto is used as it is, and the protocol core needed two small fixes, which I found later in a review. Second, the platform hooks. Everything that depends on the OS sits behind one small header, as four functions: a monotonic clock, random bytes, the current time in TAI64N format, and a check for whether the system is under load. I adapted these to NuttX. Third, the lwIP glue. NuttX does not have lwIP, so I replaced this layer. That is the real porting work.</p>
+      <p>Next: how the lwIP ideas map to NuttX.</p>
     </aside>
   </section>
 
   <section>
   <div class="frame">
-    <p class="eyebrow">Design: one virtual network card</p>
+    <p class="eyebrow">Mapping lwIP Networking to NuttX</p>
     <div class="body">
       <table>
         <tr><th>Concept</th><th>lwIP</th><th>NuttX</th></tr>
         <tr><td>Network device</td><td class="old">struct netif</td><td class="new">struct net_driver_s</td></tr>
-        <tr><td>Buffers</td><td class="old">pbuf</td><td class="new">iob</td></tr>
+        <tr><td>Packet buffers</td><td class="old">pbuf</td><td class="new">iob (d_iob)</td></tr>
         <tr><td>Registration</td><td class="old">netif_add()</td><td class="new">netdev_register()</td></tr>
-        <tr><td>Start sending</td><td class="old">callback</td><td class="new">devif_poll()</td></tr>
+        <tr><td>Sending</td><td class="old">output callback</td><td class="new">d_txavail &rarr; devif_poll()</td></tr>
+        <tr><td>UDP &ldquo;wire&rdquo;</td><td class="old">udp_pcb, udp_sendto()</td><td class="new">UDP socket, psock_sendto()</td></tr>
       </table>
+      <div class="aside"><p>These are matches of ideas, not a one-to-one swap of APIs.</p></div>
       <div class="takeaway"><b>Takeaway</b><p>Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.</p></div>
     </div>
     <div class="num"><span class="part">PART 3 &middot; 2/2</span>17 / 39</div>
@@ -1580,7 +1622,8 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
   </div>
     <aside class="notes">
       <p>This was the most important porting decision.</p>
-      <p>Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lwIP's network interface becomes a NuttX network driver, lwIP's packet buffers become NuttX's I/O buffers, adding an interface becomes registering a NuttX network device, and the send callback becomes NuttX's own poll. wg0 is registered as a TUN (tunnel) type network device, and the &ldquo;wire&rdquo; under it is a UDP socket.</p>
+      <p>Instead of bringing lwIP into NuttX, I matched each lwIP idea to a NuttX building block. lwIP's network interface becomes a NuttX net_driver_s. lwIP's packet buffer, pbuf, corresponds to NuttX's I/O buffer, iob. Adding an interface becomes registering a device, and I register wg0 as a tunnel-type device. Where lwIP calls an output callback to send a packet, NuttX calls the driver's txavail function, and the driver polls the stack with devif_poll. The wire under wg0 is a plain UDP socket.</p>
+      <p>These are matches of ideas, not a one-to-one swap of APIs. The point is simple: use NuttX's own parts. Next, Version 1, the first working tunnel.</p>
     </aside>
   </section>
 
@@ -1596,12 +1639,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item current">
@@ -1768,12 +1811,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2035,12 +2078,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2179,12 +2222,12 @@ Sony, SPRESENSE product image: https://developer.spresense.sony-semicon.com/</p>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
-          <div><h3>The problem and the idea</h3><p>Reaching a device far away &middot; why WireGuard</p></div>
+          <div><h3>The Problem &amp; Solution</h3><p>Remote access &middot; options &middot; a VPN on the device</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>The plan</h3><p>Reuse wireguard-lwip &middot; fit it into NuttX</p></div>
+          <div><h3>The Development Plan</h3><p>Start from wireguard-lwip &middot; fit it to NuttX</p></div>
           <div class="agenda-time">~2 MIN</div>
         </div>
         <div class="agenda-item dim">

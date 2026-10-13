@@ -42,8 +42,8 @@ SLIDES = [
         "Conference Volunteer.", []),
     ("Agenda", "",
         "The seven parts, each a short title with a keyword line and its "
-        "time: overview & background (~5 min) / the problem and the idea "
-        "(~4) / the plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: "
+        "time: overview & background (~5 min) / the problem & solution "
+        "(~4) / the development plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: "
         "the kernel driver, a bug in NuttX, testing (~7) / live demo (~3) / summary & "
         "status, what I learned (~4).",
         []),
@@ -81,36 +81,48 @@ SLIDES = [
         "troubleshoot remote embedded devices.",
         ["**Check before the talk:** the ARICA picture is a third-party "
          "image. Get the project's permission, or replace it."]),
-    ('Agenda: ② The Problem and the Idea', "divider", None, []),
-    ("Problem: Reaching a Device From Far Away", "",
-         "Engineer → Internet → router → Wi-Fi → NuttX device, showing that "
-         "WPA2/WPA3 covers only the Wi-Fi hop; cards: open it to the "
-         "Internet / make your own protocol / use a vendor's cloud.", []),
-    ("Options: Other Ways to Reach a Device", "",
-         "A table of seven ways (open a port / HTTPS to a cloud API / MQTT "
-         "broker / reverse tunnel or relay / VPN on the router / carrier "
-         "closed network / VPN on the device) against: who connects, any "
-         "service or not, server in the middle, where security ends, what "
-         "NuttX already has.",
+    ('Agenda: ② The Problem & Solution', "divider", None, []),
+    ("Problem: How Can We Securely Access Remote Devices?", "",
+         "Engineer → Internet → router → Wi-Fi → NuttX device, with a "
+         "bracket for the secure path needed all the way, and WPA2/WPA3 "
+         "covering only the Wi-Fi hop; three cards: devices are far away / "
+         "remote diagnosis / a secure path.", []),
+    ("Options: Ways to Reach a Remote Device", "",
+         "A table of six ways (open a port / HTTPS or MQTT via a cloud / "
+         "reverse tunnel or relay / VPN on the router / carrier closed "
+         "network / VPN on the device) against: any IP service, no server in "
+         "the middle, protected up to where.",
          ["**If asked about Tailscale or ZeroTier:** they are also a VPN on "
           "the device, but they usually need a bigger OS than a "
           "microcontroller has today (footnote on the slide)."]),
-    ("Solution: Why WireGuard", "",
-         "Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device; "
-         "modern IP-layer VPN / UDP transport, public-key peers / already "
-         "everywhere.", []),
+    ("Solution: A VPN on the Device", "",
+         "Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device. "
+         '"Why WireGuard?": small & simple (a small bar chart of lines of '
+         "code: IPsec ~420k, OpenVPN ~120k, WireGuard ~3.8k, from 2018) / "
+         "modern cryptography (ChaCha20-Poly1305, Curve25519) / UDP-based "
+         "tunnel.",
+         ["**Check before the talk:** the line counts come from the "
+          "WireGuard author's Linux Plumbers 2018 talk. They are old, for "
+          "specific implementations, and the talk's slides give "
+          "slightly different OpenVPN numbers. Say so if asked."]),
     ("Architecture: WireGuard on the NuttX Network Stack", "",
          "Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard "
          "encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX "
          "and RX arrows.", []),
-    ('Agenda: ③ The Plan', "divider", None, []),
-    ("Porting Strategy: Reusing wireguard-lwip Without lwIP", "",
-         "Three cards: protocol & crypto (KEEP) / platform hooks (ADAPT, the "
-         "four functions in wireguard-platform.h) / lwIP network glue "
-         "(REPLACE).", []),
-    ("Design: Mapping lwIP onto NuttX netdev", "",
-         "netif → net_driver_s, pbuf → iob, netif_add() → netdev_register(), "
-         "callbacks → devif_poll().", []),
+    ('Agenda: ③ The Development Plan', "divider", None, []),
+    ("Porting Strategy: Start from wireguard-lwip", "",
+        "The link github.com/smartalock/wireguard-lwip (clickable), then "
+        "three rows: KEEP protocol & crypto (with two small fixes) / ADAPT "
+        "platform hooks / REPLACE lwIP network glue.",
+        ["**Check before the talk:** the four platform hooks are a "
+         "monotonic clock, random bytes, TAI64N time and an under-load check "
+         "(`wireguard-platform.h`). Say them from the notes, not the slide."]),
+    ("Mapping lwIP Networking to NuttX", "",
+        "Table: network device (netif → net_driver_s) / packet buffers "
+        "(pbuf → iob) / registration (netif_add() → netdev_register()) / "
+        "sending (output callback → d_txavail → devif_poll()) / UDP wire "
+        "(udp_pcb → UDP socket). A note: matches of ideas, not a one-to-one "
+        "swap of APIs.", []),
     ('Agenda: ④ Version 1: The App', "divider", None, []),
     ("Version 1: WireGuard as a NuttX Application", "",
          "Goal: run a standard WireGuard tunnel entirely as a NuttX "

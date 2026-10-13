@@ -6,13 +6,13 @@
 日本語版として話す場合のベース。英語版が更新されたら、この対応も崩れるので
 両方直すこと。
 
-**39枚・デモ90秒を含めて合計約31分(30:49)。** 2026-10-13、前半(2・5・6・7・9 枚目)を作り直し: 自己紹介は経歴と活動の写真を大きくし、概要は文章を短く、経緯は Version 1 → Version 2 の矢印つきの帯に、NuttX とは何かと比較(旧7・8枚目)は採用事例の写真つきの1枚に統合、経験は SPRESENSE の衛星プロジェクトと AITRIOS の2枚のカードにして、次の課題へつなぐ。 2026-10-12、発表者の改善メモを受けて簡素化:
+**39枚・デモ90秒を含めて合計約31分(30:49)。** 2026-10-13、第2・3部(11〜13・16・17 枚目)も作り直し: 課題 → 手段 → 解決(機器に VPN)→ 開発の方針(wireguard-lwip の KEEP / ADAPT / REPLACE)→ lwIP と NuttX の対応、の流れに。 2026-10-13、前半(2・5・6・7・9 枚目)を作り直し: 自己紹介は経歴と活動の写真を大きくし、概要は文章を短く、経緯は Version 1 → Version 2 の矢印つきの帯に、NuttX とは何かと比較(旧7・8枚目)は採用事例の写真つきの1枚に統合、経験は SPRESENSE の衛星プロジェクトと AITRIOS の2枚のカードにして、次の課題へつなぐ。 2026-10-12、発表者の改善メモを受けて簡素化:
 第4部の落とし穴は「6つのバグの一覧表」1枚 + 詳しく話す2件(ping は通るのに TCP が死ぬ /
 50ms ポーリングで10倍遅い)にし、落とし穴1(detach された pthread)と4(実機のスタック)は
 一覧表とノートへ。第5部は「なぜカーネルへ」の意図を明確にし、設計は図1枚に、検証は
 FLAT(実機)/ KERNEL(QEMU)/ PROTECTED(QEMU)を分けたカード3枚に、「ping が見逃すもの」と
 タイムスタンプは短く。第4・5部に GitHub への案内(QRコード付き)。第7部は運用性と移植性の
-2枚を削り(要点はまとめのノートへ)、「What I learned」を1枚追加。 2026-10-10、目次を7部(概要と背景 / 課題とアイデア / 計画 / 第1版 / 第2版 / ライブデモ / まとめ)に組み直し、第1版の動画と謝辞の2枚を追加。 2026-10-10、ノートに小ネタ4つ(13・19・30・33、斜体で出典を付記)。知らない人には普通の文として聞こえるものだけで、外しても流れは変わらない。 時間は累積で、英語版と同じ値(英語の読み上げ速度で計算)。
+2枚を削り(要点はまとめのノートへ)、「What I learned」を1枚追加。 2026-10-10、目次を7部(概要と背景 / 課題とアイデア / 計画 / 第1版 / 第2版 / ライブデモ / まとめ)に組み直し、第1版の動画と謝辞の2枚を追加。 2026-10-10、ノートに小ネタ3つ(19・30・33、斜体で出典を付記)。知らない人には普通の文として聞こえるものだけで、外しても流れは変わらない。 時間は累積で、英語版と同じ値(英語の読み上げ速度で計算)。
 
 **重心はスライド28〜30(検証)** — 約4分をこの3枚が占める。
 査読者が実際に確認してくる主張はここに集中している。**スライドも読み上げも短くしてある**
@@ -92,7 +92,7 @@ Robots: ハッカソンのヒューマノイド / Open-Source Conference Volunte
 ## 3 — 目次 (1:48 → 2:27)
 
 **画面:** 7つの部。見出しは短い名詞句、その下に中身のキーワードを1行、右に所要時間 —
-Overview & background(~5分)/ The problem and the idea(~4分)/ The plan(~2分)/
+Overview & background(~5分)/ The Problem & Solution(~4分)/ The Development Plan(~2分)/
 Version 1: the app — 6つのバグ、うち2つを詳しく(~4分)/ Version 2: the kernel driver — なぜドライバか、
 NuttX のバグ、試験(~7分)/ Live demo(~3分)/ Summary & status — 今の状態、学んだこと、謝辞(~4分)。
 
@@ -215,79 +215,77 @@ SPRESENSE — Satellite Project(人工衛星 ARICA の写真)/ AITRIOS — Edge 
   遠くの組み込み機器に安全にアクセスして、困ったときに調べられる手段がほしいと思うように
   なりました。それが、次に話す課題です。
 
-## 10 — 目次 ②The problem and the idea (7:40 → 7:50)
+## 10 — 目次 ②The Problem & Solution (7:40 → 7:50)
 
-**画面:** 目次と同じリスト。②The problem and the idea だけハイライト、他は薄い。
+**画面:** 目次と同じリスト。②The Problem & Solution だけハイライト、他は薄い。
 
-**話す(一言):** 背景は以上です。第2部: 解きたかった課題と、そのアイデア。
+**話す(一言):** 背景は以上です。第2部: 課題と、私が選んだ解決方法。
 
 **間:** ハイライトされた行を指して一拍。
 
-## 11 — Problem: 遠隔アクセスの隙間 (7:50 → 8:42)
+## 11 — Problem: 遠隔の機器へ、どう安全にアクセスするか (7:50 → 8:43)
 
-**画面:** Engineer → Internet → Router/network → Wi-Fi → NuttX device の図。
-WPA2/WPA3 が守る範囲(Wi-Fi の一区間のみ)と、必要な認証済み end-to-end パスの
-対比。下に3枚のカード: open it to the Internet / make your own protocol / use a vendor's cloud。
-
-**話す:**
-- ここからは課題そのものを、率直に話します。
-- Wi-Fi のセキュリティは本物ですが、守っているのは一区間だけです: デバイスと
-  アクセスポイントの間の無線リンク。それより手前 — 技術者、インターネット、
-  ルーター — は、WPA2 や WPA3 が約束できる範囲の外です。私が必要としていたのは、
-  経路全体 — 技術者からデバイスまで — の認証と暗号化で、最後の数メートルだけ
-  ではありません。
-- それがないと、実務的な選択肢はどれも今より悪くなります: デバイスにグローバル
-  IP を公開して祈る、独自のセキュアプロトコルを発明して保守し続ける、あるいは
-  接続をベンダーのクラウドに委ねる。同じ隙間は、edge AI や産業用 IoT、遠隔
-  インフラ全般にも現れます — このプロジェクト固有の話ではありません。
-
-## 12 — 他の手段との比較 (8:42 → 10:01)
-
-**画面:** 7つの手段(インターネットにポートを開ける / クラウド API への HTTPS /
-MQTT ブローカー / リバーストンネル・リレー / ルーターに VPN / キャリアの閉域網 /
-機器に VPN)を、誰から接続するか・任意のサービスに届くか・間にサーバーが要るか・
-どこまで守られるか・NuttX に今あるもの、で比べた表。最後の行(機器に VPN)が今回の話。
+**画面:** 見出し「Problem: How Can We Securely Access Remote Devices?」。
+Engineer → Internet → Router/network → Wi-Fi → NuttX device の図(変更なし)。
+経路全体に必要な安全な道と、WPA2/WPA3 が守る範囲(Wi-Fi の一区間のみ)の対比。
+下に3枚のカード: Devices are far away / Remote diagnosis / A secure path。
+最下段: 「We needed a secure way to access and troubleshoot remote NuttX devices.」
 
 **話す:**
-- WireGuard を選ぶ前に、機器に届くための一般的な方法を比べました。
-- ポートを開けるのは簡単ですが、インターネット全体から届いてしまいます。HTTPS と
-  MQTT は多くの IoT 製品が使っている方法です。機器からサーバーへ接続しに行くので
-  NAT は問題にならず、NuttX にも両方のクライアントがすでにあります。ただし届くのは
-  自分で設計したメッセージだけで、機器にログインしたり Web ページを開いたりは
-  できません。暗号化もブローカーやクラウドで終わります。
-- リバーストンネルは、リレーサーバー経由でポートを1つ通します。ルーターの VPN は
-  ルーターが自分のものなら良い方法ですが、LAN の最後の一区間は守られず、顧客の
-  現場ではルーターは普通こちらのものではありません。キャリアの閉域網はセルラー
-  回線だけで、契約が要ります。
-- 機器の上の VPN だけが全部を満たします: 任意の IP サービス、間にサーバーなし、
-  機器までの暗号化。データのやり取りには今でも MQTT や HTTPS が正しい道具で、
-  これは保守のためのアクセスです。
+- ここから、私が解きたかった課題です。
+- 組み込み機器は、遠くに設置されることがよくあります — 顧客の現場、工場、別のネットワーク。
+  何か起きたとき、技術者は現地へ行かずに、ログインして機器を調べ、直したいのです。
+- Wi-Fi のセキュリティ、WPA2 や WPA3 は、機器とアクセスポイントの間の無線リンクを
+  守ります。大事ですが、守るのは一区間だけです。インターネットを越えて機器に届く
+  方法そのものを与えてくれるわけではありません。そのためには、技術者から機器までの
+  全体をつなぐ、安全な経路が別に要ります。同じ必要は、edge AI や産業用 IoT など、
+  遠隔のシステム全般にあります。
+- そこで問いは、「遠隔の機器にどう安全にアクセスするか」です。方法を見てみましょう。
+
+## 12 — Options: 遠隔の機器へ届く方法 (8:43 → 9:35)
+
+**画面:** 見出し「Options: Ways to Reach a Remote Device」。6つの手段(ポートを開ける /
+クラウド経由の HTTPS・MQTT / リバーストンネル・リレー / ルーターの VPN / キャリアの閉域網 /
+機器の VPN)を、任意の IP サービスに届くか・間にサーバーが要らないか・どこまで守られるか、
+で比べた表。最後の行(機器の VPN)が今回の選択。
+最下段: 「Every option has trade-offs. I chose a VPN on the device, so the device itself is the end of the tunnel.」
+
+**話す:**
+- 遠隔の機器へ届く方法はいくつかあります: ポートを開ける、クラウド API や MQTT ブローカーを使う、
+  リバーストンネルを張る、ルーターの VPN を使う。
+- どれにも得失があります。HTTPS と MQTT はデータを送るには優れていますが、機器上のシェルや
+  Web ページは得られません。ルーターの VPN はルーターが自分のものなら良い方法ですが、守りは
+  ルーターで終わります。どれも悪いわけではなく、どれも安全にできます。守る範囲が違うだけです。
+- このプロジェクトでは別のものがほしかった: NuttX の機器の上で直接動く標準の VPN。
+  機器自身がトンネルの終点になります。それが解決方法です。
 
 **Tailscale や ZeroTier について聞かれたら:** これらも機器上の VPN だが、今のところ
 マイコンより大きな OS が要ることが多い(スライドの脚注)。
 
-## 13 — Solution: なぜ WireGuard なのか (10:01 → 10:54)
+## 13 — Solution: 機器に VPN を載せる (9:35 → 10:35)
 
-**画面:** Engineer/Linux/Windows ⟷ WireGuard トンネル ⟷ NuttX device の図。
-下に3点: modern IP-layer VPN / UDP transport, public-key peers / already
-everywhere。
+**画面:** 見出し「Solution: A VPN on the Device」。Engineer/Linux/Windows ⟷ WireGuard トンネル ⟷
+NuttX device の図(変更なし)。その下に小見出し「Why WireGuard?」と3枚のカード:
+Small & simple(コード行数の小さな棒グラフ: IPsec 約42万 / OpenVPN 約12万 / WireGuard 約3,800、2018年)/
+Modern cryptography(ChaCha20-Poly1305、Curve25519)/ UDP-based tunnel。
+最下段: 「Run a lightweight, standard VPN directly on the NuttX device.」
 
 **話す:**
-- その課題に対して、なぜ WireGuard なのか、です。
-- WireGuard はモダンな IP 層の VPN です: 設計上小さくシンプルで、IPsec や
-  OpenVPN に比べてコードサイズがごく一部です — これはマイクロコントローラの
-  上では大きな意味を持ちます。素の UDP の上で動き、ピアは証明書や交渉された
-  セッションではなく公開鍵で識別されます。正しい鍵を持たないパケットには
-  一切返事をしません — 外から見れば、ただのレンガの壁です
-  *(9¾番線へのオマージュ。知らなくても普通の比喩として通じる)*。そして重要なのは、特殊なものでは
-  ないということです: 何年も前から Linux カーネルに mainline で入っていて、
-  公式の Windows クライアントがあり、トンネルの反対側は既存のどんな WireGuard
-  ピアでも構いません。
-- つまり選んだのは「製品」ではなく、「独自プロトコルを発明する、あるいは
-  ベンダーのクラウドに頼る代わりに、標準プロトコルを採用する」という選択です。
-  これが、この特定の課題に WireGuard が合う理由です。
+- では私の解決方法です: 機器自身に VPN を載せる。
+- なぜ WireGuard か。まず、小さくてシンプルです。2018 年の講演で、作者がコード行数を比べました:
+  WireGuard は約 4,000 行、OpenVPN は約 12 万行、strongSwan を使う IPsec は 40 万行超。
+  特定の実装の古い数字ですが、差は大きく、マイクロコントローラでは意味があります。
+- 次に、モダンな暗号: ChaCha20-Poly1305 と Curve25519。詳細はここでは話しません。
+  そして、素の UDP の上のトンネルです。ピアは公開鍵で識別され、パケットは普通の UDP なので、
+  Linux や Windows など既存の WireGuard ピアと話せます。マイクロコントローラ自身が、
+  トンネルの終点になります。
+- 考え方は単純です: 軽量で標準の VPN を、NuttX の機器の上で直接動かす。次は、`wg0` が
+  NuttX のどこに入るかです。
 
-## 14 — Architecture: NuttX ネットワークスタック上の WireGuard (10:54 → 11:42)
+**本番前に確認:** 行数は WireGuard 作者の Linux Plumbers 2018 の講演スライドから。古く、特定の実装の
+数字で、同じ講演の別のスライドは OpenVPN の数字が少し違う。聞かれたらそう答える。
+
+## 14 — Architecture: NuttX ネットワークスタック上の WireGuard (10:35 → 11:23)
 
 **画面:** Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard
 encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、の層状図。
@@ -304,44 +302,51 @@ encrypt/decrypt → UDP socket → wlan0/usrsock・物理ネットワーク、�
 - ここから先はすべて、この真ん中の部分 — `wg0` と暗号化のステップ — を、
   上下の層に触れずに作る話です。
 
-## 15 — 目次 ③The plan (11:42 → 11:52)
+## 15 — 目次 ③The Development Plan (11:23 → 11:33)
 
-**画面:** 目次と同じリスト。③The plan だけハイライト、他は薄い。
+**画面:** 目次と同じリスト。③The Development Plan だけハイライト、他は薄い。
 
-**話す(一言):** 第3部: 計画。既存の WireGuard をどう再利用するか。
+**話す(一言):** 第3部: 開発の方針。既存の WireGuard から、どう始めるか。
 
 **間:** ハイライトされた行を指して一拍。
 
-## 16 — Porting Strategy: wireguard-lwip を lwIP なしで再利用する (11:52 → 12:55)
+## 16 — Porting Strategy: wireguard-lwip から始める (11:33 → 12:38)
 
-**画面:** 3段カード — Protocol & crypto(KEEP、緑)/ Platform hooks(ADAPT、金、
-`wireguard-platform.h` の4関数)/ lwIP network glue(REPLACE、赤)。
-
-**話す:**
-- ゼロから暗号スタックを書くのは間違いです。なので `smartalock/wireguard-lwip`
-  という既存実装から始めました、その理由です。
-- `wireguard-lwip` はきれいに3層に分かれています。プロトコルと暗号 —
-  ハンドシェイク、トランスポート、BLAKE2s、ChaCha20-Poly1305、Curve25519 — は
-  OS 依存のない移植可能な C です。暗号は無変更のまま使いました。プロトコル本体は、後のレビューで小さな修正が2つ必要になり、PATCHES.md に書いてあります。OS 依存の
-  振る舞いはすべて、すでに1つのヘッダー、`wireguard-platform.h` の裏に、
-  4つの関数として隔離されていました。置き換えが必要だったのは lwIP の
-  ネットワークグルーの部分だけです — lwIP の netif を登録し、lwIP のバッファを
-  管理する部分です。NuttX には lwIP がそもそも存在しないからです。
-- 何も書き直さずに済んだのは運ではなく、きれいなプラットフォーム境界が
-  もたらすものです。その境界があったからこそ、最初の移植作業は書き直し
-  ではなく差し替えで済み、作業量そのものが桁違いに小さくなりました。
-
-## 17 — Design: lwIP を NuttX netdev へ写像する (12:55 → 13:24)
-
-**画面:** lwIP → NuttX の対応表(`netif`→`net_driver_s`、`pbuf`→`iob`、
-`netif_add()`→`netdev_register()`、コールバック→`devif_poll()`)。
+**画面:** 見出し「Porting Strategy: Start from wireguard-lwip」。一番上に GitHub のリンク
+(github.com/smartalock/wireguard-lwip、クリックできる)と「An existing open-source WireGuard for lwIP」。
+その下に大きな3段: KEEP — Protocol & crypto(緑、小さな修正2件つき)/ ADAPT — Platform hooks(金)/
+REPLACE — lwIP network glue(赤)。最下段に一文。
 
 **話す:**
-- 移植の中で最も重要な判断です。
-- lwIP を NuttX に引きずり込むのではなく、抽象化を NuttX 自身のものに写像
-  しました。`netif` は `net_driver_s` に、`pbuf` は `iob` に、`netif_add` は
-  `netdev_register` に、送信コールバックは NuttX の `devif_poll` になります。
-  `wg0` は TUN 型の netdev として登録され、その下の「配線」は UDP ソケットです。
+- ここから開発の方針です。WireGuard をゼロから書いたわけではありません。
+- wireguard-lwip から始めました。lwIP ネットワークスタック向けの、オープンソースの WireGuard
+  実装です。リンクはスライドにあります。プロトコルも暗号もすでにあるので、移植の作業に集中できました。
+- コードを3つに分けました。1つ目は、プロトコルと暗号: ハンドシェイク、データ転送、暗号の部品。
+  これは残しました。暗号はそのまま使い、プロトコルの核には、後でレビューをして見つけた小さな修正が
+  2件要りました。2つ目は、プラットフォームフック。OS に依存するものは1つの小さなヘッダの裏に
+  4つの関数としてまとまっています: 単調な時計、乱数、TAI64N 形式の現在時刻、システムが高負荷かの
+  確認。これらを NuttX 向けに合わせました。3つ目は、lwIP の接着部分。NuttX には lwIP がないので、
+  この層は置き換えました。ここが本当の移植作業です。
+- 次は、lwIP の考え方を NuttX にどう対応づけたかです。
+
+## 17 — Mapping lwIP Networking to NuttX (12:38 → 13:24)
+
+**画面:** 見出し「Mapping lwIP Networking to NuttX」。lwIP と NuttX の対応表 —
+ネットワークデバイス(`struct netif` → `struct net_driver_s`)/ パケットバッファ(`pbuf` → `iob`)/
+登録(`netif_add()` → `netdev_register()`)/ 送信(output コールバック → `d_txavail` → `devif_poll()`)/
+UDP の「ワイヤ」(`udp_pcb` → UDP ソケット)。注記「考え方の対応で、API の1対1の置換ではない」。
+最下段: 「Porting meant using NuttX's own building blocks, not bringing lwIP into NuttX.」
+
+**話す:**
+- これが移植で一番大事な判断でした。
+- lwIP を NuttX に持ち込む代わりに、lwIP の考え方を1つずつ NuttX の部品に対応づけました。
+  lwIP のネットワークインターフェースは NuttX の `net_driver_s` になります。lwIP のパケットバッファ
+  `pbuf` は、NuttX の I/O バッファ `iob` に当たります。インターフェースの追加はデバイスの登録になり、
+  `wg0` はトンネル型のデバイスとして登録します。lwIP が出力コールバックでパケットを送るところは、
+  NuttX ではドライバの `txavail` 関数が呼ばれ、ドライバが `devif_poll` でスタックに問い合わせます。
+  `wg0` の下のワイヤは、素の UDP ソケットです。
+- これは考え方の対応で、API の1対1の置き換えではありません。要点は単純です: NuttX 自身の部品を
+  使う。次は、Version 1、最初に動いたトンネルです。
 
 ## 18 — 目次 ④Version 1: the app (13:24 → 13:34)
 

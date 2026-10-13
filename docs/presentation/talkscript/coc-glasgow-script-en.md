@@ -68,7 +68,7 @@ three slides above instead.
 
 ## 3 — Agenda (1:48 → 2:27)
 
-**On slide:** The seven parts, each a short title with a keyword line and its time: overview & background (~5 min) / the problem and the idea (~4) / the plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: the kernel driver, a bug in NuttX, testing (~7) / live demo (~3) / summary & status, what I learned (~4).
+**On slide:** The seven parts, each a short title with a keyword line and its time: overview & background (~5 min) / the problem & solution (~4) / the development plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: the kernel driver, a bug in NuttX, testing (~7) / live demo (~3) / summary & status, what I learned (~4).
 
 **Say:**
 - Here is the plan for this talk.
@@ -134,43 +134,46 @@ three slides above instead.
 
 **Check before the talk:** the ARICA picture is a third-party image. Get the project's permission, or replace it.
 
-## 10 — Agenda: ② The Problem and the Idea (7:40 → 7:50)
+## 10 — Agenda: ② The Problem & Solution (7:40 → 7:50)
 
-**Say (one line):** That is the background. Part two: the problem I wanted to solve, and the idea.
+**Say (one line):** That is the background. Part two: the problem, and the solution I chose.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 11 — Problem: Reaching a Device From Far Away (7:50 → 8:42)
+## 11 — Problem: How Can We Securely Access Remote Devices? (7:50 → 8:43)
 
-**On slide:** Engineer → Internet → router → Wi-Fi → NuttX device, showing that WPA2/WPA3 covers only the Wi-Fi hop; cards: open it to the Internet / make your own protocol / use a vendor's cloud.
-
-**Say:**
-- Now, the problem itself.
-- Wi-Fi security is real, but it protects only one part of the path: the radio link between the device and the access point. Everything before that — the engineer, the Internet, the router — is outside what WPA2 or WPA3 (Wi-Fi security) can protect. What I needed was a secure path for the whole way, from the engineer to the device, not just the last few meters.
-- Without that, every choice has a problem. You can give the device a public IP and hope. You can make your own secure protocol and keep it working forever. Or you can hand the connection to a vendor's cloud. The same problem appears in edge AI, industrial IoT, and remote systems in general. It is not limited to this project.
-
-## 12 — Options: Other Ways to Reach a Device (8:42 → 10:01)
-
-**On slide:** A table of seven ways (open a port / HTTPS to a cloud API / MQTT broker / reverse tunnel or relay / VPN on the router / carrier closed network / VPN on the device) against: who connects, any service or not, server in the middle, where security ends, what NuttX already has.
+**On slide:** Engineer → Internet → router → Wi-Fi → NuttX device, with a bracket for the secure path needed all the way, and WPA2/WPA3 covering only the Wi-Fi hop; three cards: devices are far away / remote diagnosis / a secure path.
 
 **Say:**
-- Before I chose WireGuard, I compared the usual ways to reach a device.
-- Opening a port is easy, but then the whole Internet can reach the device. HTTPS and MQTT (a small messaging protocol) are what most IoT products use. The device connects out to a server, so NAT (network address translation) is not a problem, and NuttX already has clients for both. But you only get the messages you designed — you cannot log in or open a web page on the device. And the security ends at the broker or the cloud.
-- A reverse tunnel gives you one port through a relay server. A VPN on the router is great when the router is yours. But the last part of the path, on the LAN, is not protected. And at a customer's site, the router is usually not yours. A carrier closed network works only over cellular, and you need a contract.
-- A VPN on the device is the only row that has all three: any IP service, no server in the middle, and security all the way to the device. MQTT and HTTPS are still the right tools for data. This is for maintenance access.
+- Now, the problem I wanted to solve.
+- Embedded devices are often installed far away: at a customer's site, in a factory, or on another network. When something goes wrong, an engineer wants to log in, check the device, and fix it, without traveling there.
+- Wi-Fi security, WPA2 or WPA3, protects the radio link between the device and the access point. That is important, but it is only one hop. It does not give an engineer a way to reach the device across the Internet. For that, we need a secure path of its own, all the way from the engineer to the device. The same need appears in edge AI, industrial IoT, and many other remote systems.
+- So the question is: how can we securely access remote devices? Let's look at the options.
+
+## 12 — Options: Ways to Reach a Remote Device (8:43 → 9:35)
+
+**On slide:** A table of six ways (open a port / HTTPS or MQTT via a cloud / reverse tunnel or relay / VPN on the router / carrier closed network / VPN on the device) against: any IP service, no server in the middle, protected up to where.
+
+**Say:**
+- There are several ways to access a remote device: open a port, use a cloud API or an MQTT broker, set up a reverse tunnel, or use a VPN on the router.
+- Each approach has its own trade-offs. HTTPS and MQTT are great for sending data, but they do not give you a shell or a web page on the device. A router VPN works well when the router is yours, but the protection ends at the router. None of them is bad, and all of them can be made secure. They just protect different parts of the path.
+- For this project, I wanted something different: a standard VPN that runs directly on the NuttX device, so the device itself is the end of the tunnel. That is the solution.
 
 **If asked about Tailscale or ZeroTier:** they are also a VPN on the device, but they usually need a bigger OS than a microcontroller has today (footnote on the slide).
 
-## 13 — Solution: Why WireGuard (10:01 → 10:54)
+## 13 — Solution: A VPN on the Device (9:35 → 10:35)
 
-**On slide:** Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device; modern IP-layer VPN / UDP transport, public-key peers / already everywhere.
+**On slide:** Engineer / Linux / Windows ⟷ WireGuard tunnel ⟷ NuttX device. "Why WireGuard?": small & simple (a small bar chart of lines of code: IPsec ~420k, OpenVPN ~120k, WireGuard ~3.8k, from 2018) / modern cryptography (ChaCha20-Poly1305, Curve25519) / UDP-based tunnel.
 
 **Say:**
-- So, why WireGuard?
-- WireGuard is a modern VPN that works at the IP layer. It is small and simple by design, with much less code than IPsec or OpenVPN, and that matters a lot on a microcontroller. It runs over plain UDP, and each peer is known by its public key, not by certificates or a long setup. If a packet does not carry the right key, WireGuard does not answer at all — to everyone else, the device is just a brick wall. And most importantly, it is a standard. It has been in the Linux kernel for years, there is an official Windows client, and the other end can be any WireGuard peer.
-- So I chose a standard protocol, instead of making my own or depending on a vendor's cloud.
+- So, my solution: put a VPN on the device itself.
+- Why WireGuard? First, it is small and simple. In a talk in 2018, its author compared lines of code: about four thousand for WireGuard, about a hundred and twenty thousand for OpenVPN, and over four hundred thousand for IPsec with strongSwan. These are old numbers for specific implementations, but the gap is large, and it matters on a microcontroller.
+- Second, modern cryptography: ChaCha20-Poly1305 and Curve25519. I will not go into the details here. Third, it is a tunnel over plain UDP. Each peer is known by its public key, and the packets are normal UDP, so the device can talk to existing WireGuard peers, such as Linux or Windows. The microcontroller itself becomes the end of the tunnel.
+- So the idea is simple: run a lightweight, standard VPN directly on the NuttX device. Next, where wg0 sits inside NuttX.
 
-## 14 — Architecture: WireGuard on the NuttX Network Stack (10:54 → 11:42)
+**Check before the talk:** the line counts come from the WireGuard author's Linux Plumbers 2018 talk. They are old, for specific implementations, and the talk's slides give slightly different OpenVPN numbers. Say so if asked.
+
+## 14 — Architecture: WireGuard on the NuttX Network Stack (10:35 → 11:23)
 
 **On slide:** Application → TCP/UDP/IP → wg0 (NET_LL_TUN netdev) → WireGuard encrypt/decrypt → UDP socket → wlan0 / usrsock → network, with TX and RX arrows.
 
@@ -179,28 +182,32 @@ three slides above instead.
 - Going out, a packet comes down from the application through TCP or UDP and IP, and reaches wg0 like any other network device. WireGuard encrypts it, and it leaves as a UDP packet — through wlan0 on a board, or through usrsock when the Wi-Fi chip itself works through sockets. Coming in is the same path the other way: a UDP packet arrives, WireGuard decrypts it, and it is passed up to wg0 as if it came in on a normal interface.
 - From here on, the work is building this middle part — wg0 and the encryption — without changing the layers above or below it.
 
-## 15 — Agenda: ③ The Plan (11:42 → 11:52)
+## 15 — Agenda: ③ The Development Plan (11:23 → 11:33)
 
-**Say (one line):** Part three: the plan. How do you reuse an existing WireGuard?
+**Say (one line):** Part three: the development plan. How do we start from an existing WireGuard?
 
 **Pause:** point at the highlighted line, one beat.
 
-## 16 — Porting Strategy: Reusing wireguard-lwip Without lwIP (11:52 → 12:55)
+## 16 — Porting Strategy: Start from wireguard-lwip (11:33 → 12:38)
 
-**On slide:** Three cards: protocol & crypto (KEEP) / platform hooks (ADAPT, the four functions in wireguard-platform.h) / lwIP network glue (REPLACE).
+**On slide:** The link github.com/smartalock/wireguard-lwip (clickable), then three rows: KEEP protocol & crypto (with two small fixes) / ADAPT platform hooks / REPLACE lwIP network glue.
 
 **Say:**
-- Why I started from wireguard-lwip, an existing open-source WireGuard, and did not write the crypto myself.
-- wireguard-lwip is cleanly split into three layers. The protocol and crypto — the handshake, the data transport, BLAKE2s, ChaCha20-Poly1305 and Curve25519 — are portable C that does not depend on any OS. I used the crypto without changes. The protocol core needed two small fixes later, after a review, and they are written down in PATCHES.md. Everything that depends on the OS was already kept behind one small header file, as four functions. I only had to replace the lwIP network glue — the part that registers an lwIP netif and handles lwIP buffers — because NuttX does not have lwIP at all.
-- I did not have to rewrite the protocol or the crypto, and that was not luck. That is what a clean line between the protocol and the OS gives you. Because of it, this port took weeks, not months.
+- Now the plan. I did not write WireGuard from scratch.
+- I started from wireguard-lwip, an open-source WireGuard implementation for the lwIP network stack. The link is on the slide. It already has the protocol and the cryptography, so I could focus on the porting work.
+- I sorted the code into three parts. First, the protocol and crypto: the handshake, the data transport, and the crypto primitives. I kept them. The crypto is used as it is, and the protocol core needed two small fixes, which I found later in a review. Second, the platform hooks. Everything that depends on the OS sits behind one small header, as four functions: a monotonic clock, random bytes, the current time in TAI64N format, and a check for whether the system is under load. I adapted these to NuttX. Third, the lwIP glue. NuttX does not have lwIP, so I replaced this layer. That is the real porting work.
+- Next: how the lwIP ideas map to NuttX.
 
-## 17 — Design: Mapping lwIP onto NuttX netdev (12:55 → 13:24)
+**Check before the talk:** the four platform hooks are a monotonic clock, random bytes, TAI64N time and an under-load check (`wireguard-platform.h`). Say them from the notes, not the slide.
 
-**On slide:** netif → net_driver_s, pbuf → iob, netif_add() → netdev_register(), callbacks → devif_poll().
+## 17 — Mapping lwIP Networking to NuttX (12:38 → 13:24)
+
+**On slide:** Table: network device (netif → net_driver_s) / packet buffers (pbuf → iob) / registration (netif_add() → netdev_register()) / sending (output callback → d_txavail → devif_poll()) / UDP wire (udp_pcb → UDP socket). A note: matches of ideas, not a one-to-one swap of APIs.
 
 **Say:**
 - This was the most important porting decision.
-- Instead of bringing lwIP into NuttX, I matched each lwIP idea to NuttX's own. lwIP's network interface becomes a NuttX network driver, lwIP's packet buffers become NuttX's I/O buffers, adding an interface becomes registering a NuttX network device, and the send callback becomes NuttX's own poll. wg0 is registered as a TUN (tunnel) type network device, and the “wire” under it is a UDP socket.
+- Instead of bringing lwIP into NuttX, I matched each lwIP idea to a NuttX building block. lwIP's network interface becomes a NuttX net_driver_s. lwIP's packet buffer, pbuf, corresponds to NuttX's I/O buffer, iob. Adding an interface becomes registering a device, and I register wg0 as a tunnel-type device. Where lwIP calls an output callback to send a packet, NuttX calls the driver's txavail function, and the driver polls the stack with devif_poll. The wire under wg0 is a plain UDP socket.
+- These are matches of ideas, not a one-to-one swap of APIs. The point is simple: use NuttX's own parts. Next, Version 1, the first working tunnel.
 
 ## 18 — Agenda: ④ Version 1: The App (13:24 → 13:34)
 
