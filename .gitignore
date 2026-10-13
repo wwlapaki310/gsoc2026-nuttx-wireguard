@@ -25,3 +25,4 @@ output/
 
 # Built firmware images may embed Wi-Fi credentials; never commit
 hw-images/
+__pycache__/
