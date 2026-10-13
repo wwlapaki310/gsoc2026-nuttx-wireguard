@@ -237,9 +237,14 @@ SLIDES = [
           "**Never on screen:** `wg showconf` (prints the private key), "
           "the key files in `%USERPROFILE%\\stackchan-wg`, the hotspot "
           "passphrase.",
-          "**Fallback:** no backup video at the moment. "
-          "If the live demo stalls, say so and go on to the "
-          "summary."]),
+          "**Fallback:** if the live demo stalls, say so and open "
+          "the next slide, the backup video (click the thumbnail), or go "
+          "on to the summary."]),
+    ("Live Demo: backup video", "backup",
+         "A video player thumbnail (click to play) of the recorded demo, "
+         "with a small panel: THREE TERMINALS, left control, middle tcpdump "
+         "encrypted, right tcpdump plaintext, and the video link. For the "
+         "case the live demo fails; skipped otherwise.", []),
     ('Agenda: ⑦ Summary and Reflections', "divider", None, []),
     ("Summary", "",
          "Three rows, each a short heading and one sentence: 1 Secure "
@@ -354,8 +359,8 @@ learned) too: it is the speaker's own message.
 2. Slide {cut2} (the Version 1 video still). The live demo shows the same kind of thing.
 3. Slide {cut3} (Bug ③, the 50 ms polling). Its one-line lesson is already in the bug table.
 
-If the live demo stops, say so and go on to the summary (there is no backup video at the
-moment). **The agenda slides ({dividers}) are a ten-second pause each**: point at the
+If the live demo stops, say so and open the next slide, the backup
+video (not timed), or go on to the summary. **The agenda slides ({dividers}) are a ten-second pause each**: point at the
 highlighted line and say the one sentence. If you have no time at all, skip them.
 
 ---
@@ -406,7 +411,7 @@ def analyse(all_notes):
     for i, (ess, opt, note) in enumerate(all_notes, 1):
         tag = SLIDES[i - 1][1]
         ew, ow = words(ess), words(opt)
-        if tag == "appendix":
+        if tag in ("appendix", "backup"):
             per.append((0, 0, 0, 0))
             continue
         if tag == "divider":
@@ -485,7 +490,7 @@ def main():
         heading, tag, on_slide, extra = SLIDES[i - 1]
         a, b = spans[i - 1]
         suffix = (" *(%s)*" % tag
-                  if tag and tag not in ("divider", "demo", "appendix")
+                  if tag and tag not in ("divider", "demo", "appendix", "backup")
                   else "")
         if tag == "appendix":
             k += 1

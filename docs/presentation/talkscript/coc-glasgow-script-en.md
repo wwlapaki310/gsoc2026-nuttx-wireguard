@@ -2,7 +2,7 @@
 
 Deck: [`coc-glasgow-slides.html`](../coc-glasgow-slides.html) (and the
 version on the official template, [`coc-glasgow-reveal/`](../coc-glasgow-reveal/)),
-35 main slides plus 2 appendix slides, English. This file is **made by**
+36 main slides plus 2 appendix slides, English. This file is **made by**
 [`export_en_script.py`](export_en_script.py) from the speaker notes in the
 deck (press `S` in the reveal edition, `N` in the standalone one). Do not edit
 this file by hand. Change the notes in the deck and run the script again, or the
@@ -43,8 +43,8 @@ inside these numbers.
 | ③ The Development Plan | 15–17 | 1:45 | 2:17 |
 | ④ Version 1: Application-Based Implementation | 18–23 | 3:28 | 4:30 |
 | ⑤ Version 2: The Kernel Driver | 24–28 | 3:17 | 4:52 |
-| ⑥ Live Demo | 29–30 | 3:10 | 3:35 |
-| ⑦ Summary and Reflections | 31–35 | 3:15 | 3:22 |
+| ⑥ Live Demo | 29–31 | 3:10 | 3:35 |
+| ⑦ Summary and Reflections | 32–36 | 3:15 | 3:22 |
 
 The time of each slide, shown in its heading, is the Essential time, added up
 from the start ("you should be about here").
@@ -59,7 +59,7 @@ Thank You: not in the times above, opened with the down arrow only if a question
 
 **Keep the story of the first half** (slides 2 and 4–14: About Me, then Overview to
 Architecture): why I started, Sony and NuttX, my own experience, the problem, why a VPN on
-the device, why WireGuard. Everything after depends on it. Keep slide 33 (What I
+the device, why WireGuard. Everything after depends on it. Keep slide 34 (What I
 learned) too: it is the speaker's own message.
 
 **If time is short, cut in this order:**
@@ -67,8 +67,8 @@ learned) too: it is the speaker's own message.
 2. Slide 23 (the Version 1 video still). The live demo shows the same kind of thing.
 3. Slide 22 (Bug ③, the 50 ms polling). Its one-line lesson is already in the bug table.
 
-If the live demo stops, say so and go on to the summary (there is no backup video at the
-moment). **The agenda slides (4, 10, 15, 18, 24, 29, 31) are a ten-second pause each**: point at the
+If the live demo stops, say so and open the next slide, the backup
+video (not timed), or go on to the summary. **The agenda slides (4, 10, 15, 18, 24, 29, 32) are a ten-second pause each**: point at the
 highlighted line and say the one sentence. If you have no time at all, skip them.
 
 ---
@@ -451,15 +451,25 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - Which version runs: the robot firmware is the application build (Version 1, FLAT), built by the esp32s3-stackchan stage of the Dockerfile. The kernel driver (Version 2) was run on the same ESP32-S3 in a separate build on 2026-10-12, without the Stack-chan app. Do not say the demo is Version 2.
 - **Before the talk:** phone hotspot on (2.4 GHz / maximize compatibility), laptop on it, Docker Desktop running, the Stack-chan joined with `nsh_wifi.py` (the passphrase is not saved on the board), `wg_setup.py` run once. Check `stackchan say` once. If the hotspot was turned off and on, its addresses may change: run `nsh_wifi.py` and `wg_setup.py` again. Rarely (about 1 in 20) the board stops during `say`; power it off and on, then repeat the same steps.
 - **Never on screen:** `wg showconf` (prints the private key), the key files in `%USERPROFILE%\stackchan-wg`, the hotspot passphrase.
-- **Fallback:** no backup video at the moment. If the live demo stalls, say so and go on to the summary.
+- **Fallback:** if the live demo stalls, say so and open the next slide, the backup video (click the thumbnail), or go on to the summary.
 
-## 31 — Agenda: ⑦ Summary and Reflections (21:05 → 21:15)
+## 31 — Live Demo: backup video (21:05 → 21:05)
+
+**On slide:** A video player thumbnail (click to play) of the recorded demo, with a small panel: THREE TERMINALS, left control, middle tcpdump encrypted, right tcpdump plaintext, and the video link. For the case the live demo fails; skipped otherwise.
+
+**Say — Essential:**
+- This is a recording of the same demo.
+
+**Presenter Notes:**
+- Backup only: skip it when the live demo worked. Not counted in the time. Left terminal: control (wg show, telnet, ifconfig, face, say). Middle: tcpdump outside the tunnel, only encrypted UDP. Right: tcpdump inside the tunnel, the plaintext. To play, click the thumbnail; it needs the Internet and a web page (GitHub Pages or a local server). Leaving the slide stops the video.
+
+## 32 — Agenda: ⑦ Summary and Reflections (21:05 → 21:15)
 
 **Say (one line):** Finally, a summary and some reflections.
 
 **Pause:** point at the highlighted line, one beat.
 
-## 32 — Summary (21:15 → 21:57)
+## 33 — Summary (21:15 → 21:57)
 
 **On slide:** Three rows, each a short heading and one sentence: 1 Secure Communication (brought WireGuard to Apache NuttX, secure IP communication with standard peers) / 2 Application to Kernel Driver (evolved from an application into a kernel network driver, tested on real boards and QEMU) / 3 Toward Upstream Contribution (preparing the driver and related fixes for review; a small line: prepared as small, separate changes, nothing is submitted yet).
 
@@ -473,7 +483,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - If asked 'is it merged?': not yet, and nothing is submitted. These are submission candidates, not a claim that it is mergeable.
 - **State of the submission (2026-10-13):** no pull request about this work exists in apache/nuttx or apache/nuttx-apps. The only related issue is the closed GSoC proposal thread (#18548). The branches exist only on the author's forks. Do not say "submitted".
 
-## 33 — What I Learned (21:57 → 23:21)
+## 34 — What I Learned (21:57 → 23:21)
 
 **On slide:** Three cards: from application user to OS contributor / AI helped me code, but understanding was my job (highlighted) / a welcoming open-source community (docs and guides, review, AI-assisted development with people responsible, CI and hackathons help new people join). Bottom line: the hope to keep contributing.
 
@@ -490,7 +500,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 **Presenter Notes:**
 - Say the AI part plainly: not as a confession and not as a boast. It was faster, and understanding was still hard and still mine.
 
-## 34 — Acknowledgements (23:21 → 24:07)
+## 35 — Acknowledgements (23:21 → 24:07)
 
 **On slide:** A plain vertical list, a name and one line each: Alan Carvalho de Assis (encouraged me to submit this talk) / The Apache NuttX Community (discussions, documentation, support) / Sony's NuttX Developers, Past and Present (their contributions and the foundation they built) / The Apache Software Foundation & Community Over Code Organizers (bringing the community together).
 
@@ -501,7 +511,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 - Third, the Sony engineers before me, who contributed to NuttX and built the foundation for this work.
 - And finally, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the community together.
 
-## 35 — Thank You (24:07 → 24:20)
+## 36 — Thank You (24:07 → 24:20)
 
 **On slide:** A QR code of the slides ("Scan to view the slides") with the slides link and the GitHub repository link, both clickable. The same QR code is on the title slide. No video link, no call for questions.
 

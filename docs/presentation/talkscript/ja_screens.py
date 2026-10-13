@@ -31,11 +31,12 @@ TITLES = {'1': 'タイトル',
  '28': '検証: どこで何が動いたか',
  '29': '目次 ⑥Live Demo',
  '30': 'ライブデモ: Stack-chan を WireGuard 越しに',
- '31': '目次 ⑦Summary & Reflections',
- '32': 'Summary',
- '33': 'What I Learned: 学んだこと',
- '34': 'Acknowledgements: 謝辞',
- '35': 'Thank You',
+ '31': 'ライブデモ: 予備の動画',
+ '32': '目次 ⑦Summary & Reflections',
+ '33': 'Summary',
+ '34': 'What I Learned: 学んだこと',
+ '35': 'Acknowledgements: 謝辞',
+ '36': 'Thank You',
  'A1': '付録: 検証: ping が見逃すもの',
  'A2': '付録: 設計判断: タイムスタンプ問題には楽な答えがない'}
 
@@ -172,24 +173,25 @@ SCREENS = {'1': '「WireGuard for Apache NuttX」を大きく。その下にサ�
        '下半分 LIVE DEMO STEPS: 1 VPN Connection(`wg show`)/ 2 Remote Login(`telnet 10.10.0.2`)/\n'
        '3 Network Interface(`ifconfig` → `wg0`)/ 4 Control Stack-chan(表情を変える・声を出す)。\n'
        '隅に小さな Stack-chan の写真(GitHub へのリンク)。Version の表記、Takeaway の枠、動画へのリンクは置かない。',
- '31': '目次と同じリスト。⑦Summary & Reflections だけハイライト、他は薄い。',
- '32': '見出し「Summary」。3つの行で、それぞれ短い見出しと1文: ① Secure Communication(WireGuard を Apache NuttX に持ち込み、\n'
+ '31': '見出し「Live Demo: backup video」。左に動画のサムネイル(クリックでスライドの中で YouTube の動画が再生。スライドを離れると止まる)。右に小さな枠「THREE TERMINALS」: 左 control / 中央 tcpdump, encrypted / 右 tcpdump, plaintext、動画へのリンク。ライブデモが止まったときの予備。使わなければ飛ばす。',
+ '32': '目次と同じリスト。⑦Summary & Reflections だけハイライト、他は薄い。',
+ '33': '見出し「Summary」。3つの行で、それぞれ短い見出しと1文: ① Secure Communication(WireGuard を Apache NuttX に持ち込み、\n'
        '標準の WireGuard ピアと安全な IP 通信ができるようにした)/ ② Application to Kernel Driver(アプリケーションからカーネルの\n'
        'ネットワークドライバへ発展させ、実機と QEMU で検証した)/ ③ Toward Upstream Contribution(ドライバと関連する修正を、\n'
        'Apache NuttX コミュニティのレビューに向けて準備している。小さく「小さな別々の変更として用意した。まだ何も提出していない」)。\n'
        '`wg0` などの内部用語や、PR の分け方・ファイルパスは載せない。',
- '33': '見出し「What I learned」。カード3枚: 1 アプリのユーザーから OS のコントリビューターへ / 2 AI はコードを書くのを助けて\n'
+ '34': '見出し「What I learned」。カード3枚: 1 アプリのユーザーから OS のコントリビューターへ / 2 AI はコードを書くのを助けて\n'
        'くれたが、理解するのは私の仕事だった(強調)/ 3 歓迎してくれるオープンソースコミュニティ(良いドキュメントと貢献ガイド、\n'
        '活発な議論とレビュー、人が責任を持つ AI 支援開発への前向きさ、CI・ハッカソン・イベントが新しい人の参加を助ける)。\n'
        '最下段: 「I hope to keep contributing to Apache NuttX and the open-source community, and I look forward '
        'to seeing NuttX\n'
        'continue to grow.」',
- '34': '見出し「Acknowledgements」。カードをやめ、縦のシンプルな一覧。各項目は、名前(太字、少し大きく)と短い1行:\n'
+ '35': '見出し「Acknowledgements」。カードをやめ、縦のシンプルな一覧。各項目は、名前(太字、少し大きく)と短い1行:\n'
        'Alan Carvalho de Assis(この発表を Community Over Code に出すよう勧めてくれた)/ The Apache NuttX Community\n'
        "(議論、ドキュメント、支援)/ Sony's NuttX Developers, Past and Present(NuttX への貢献と、築いてくれた土台)/\n"
        'The Apache Software Foundation & Community Over Code Organizers(オープンソースのコミュニティをつなげてくれている。\n'
        '運営者もボランティアも)。順番は 個人 → コミュニティ → 関係する組織。',
- '35': '見出し「Thank You」。大きな QR コード(「Scan to view the slides」)と、その横にクリックできるリンク2つ:\n'
+ '36': '見出し「Thank You」。大きな QR コード(「Scan to view the slides」)と、その横にクリックできるリンク2つ:\n'
        'スライド(https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html)と\n'
        'GitHub のリポジトリ。表紙にも同じ QR コード(「Slides」)。動画のリンクは置かない。',
  'A1': '見出し「Three problems that ping would never notice.」。カード3枚 — 起動のたびに同じ鍵?\n'
