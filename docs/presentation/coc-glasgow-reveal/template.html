@@ -52,8 +52,12 @@ Reveal.initialize({
 // Used by check.py; measured only after the web fonts have loaded.
 function checkLayout() {
   var FOOTER = 54, report = [];
-  Reveal.getSlides().forEach(function (section, index) {
-    Reveal.slide(index);
+  var leaves = Reveal.getSlides().filter(function (sl) {
+    return !sl.querySelector(":scope > section");
+  });
+  leaves.forEach(function (section, index) {
+    var ix = Reveal.getIndices(section);
+    Reveal.slide(ix.h, ix.v);
     var frame = section.querySelector(".frame");
     var fr = frame.getBoundingClientRect(), s = fr.width / 1280, issues = [];
     var limit = frame.classList.contains("coc-dark") ? 720 : 720 - FOOTER;

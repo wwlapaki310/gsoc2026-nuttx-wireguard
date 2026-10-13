@@ -28,6 +28,13 @@ reveal.js 標準の `index.html?print-pdf` は、ヘッドレス Chrome では�
 白紙になるため使っていない。発表者ノートは PDF に入らない（台本の PDF を使う）。
 同じスクリプトで台本と想定 Q&A も A4 の PDF にする（`python pdf.py scripts`、要 `markdown` パッケージ）。
 
+## 付録(Appendix)
+
+A 版で `<section class="slide appendix">` にしたスライドは、最後のスライド(Thank you)の後ろに置き、
+B 版では Thank you の下に縦に積まれる。発表中に右矢印やスライド送りで先へ進んでも付録には入らず、
+Thank you から**下矢印**で開く。全体の通し番号(`28 / 37`)には数えず、`A1 / A2` と振る
+(`renumber.py` が行う)。`check.py` と `pdf.py` も付録を含めて検査・出力する。
+
 ## 更新の手順
 
 ```bash

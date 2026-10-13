@@ -127,7 +127,17 @@ def build():
     if not slides:
         sys.exit("no slides found in %s" % SRC)
     title = re.search(r"<title>(.*?)</title>", src).group(1)
-    sections = "\n\n".join(convert(c, i) for c, i in slides)
+    # Slides marked "appendix" are not part of the main flow: they become a
+    # vertical stack under the last main slide, reached with the down arrow.
+    groups = []
+    for c, i in slides:
+        if "appendix" in c.split() and groups:
+            groups[-1].append(convert(c, i))
+        else:
+            groups.append([convert(c, i)])
+    sections = "\n\n".join(
+        g[0] if len(g) == 1 else
+        "  <section>\n%s\n  </section>" % "\n\n".join(g) for g in groups)
     template = (HERE / "template.html").read_text(encoding="utf-8")
     return (template.replace("{{TITLE}}", title)
             .replace("{{SOURCE}}", SRC.name)

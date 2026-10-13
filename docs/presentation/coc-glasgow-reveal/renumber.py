@@ -23,13 +23,20 @@ def main():
     crlf = "\r\n" in src
     s = src.replace("\r\n", "\n")
     head, *slides = re.split(r"(?=\n  <section\b)", s)
-    total = len(slides)
+    # Appendix slides ("slide appendix") come after the last slide and are
+    # numbered A1, A2, ... apart from the main talk.
+    appendix = [bool(re.match(r'\s*<section class="slide[^"]*\bappendix\b', sec))
+                for sec in slides]
+    total = appendix.count(False)
+    n_app = appendix.count(True)
 
     # Part of each slide: None before the first divider.
     parts, part = [], None
-    for sec in slides:
+    for sec, is_app in zip(slides, appendix):
         m = re.search(r'agenda-item current">\s*<div class="agenda-num">(\d+)', sec)
-        if m:
+        if is_app:
+            parts.append((None, False))
+        elif m:
             part = int(m.group(1))
             parts.append((part, True))
         else:
@@ -42,7 +49,17 @@ def main():
             sizes[p] = sizes.get(p, 0) + 1
 
     out, seen = [], {}
-    for i, (sec, (p, is_div)) in enumerate(zip(slides, parts), 1):
+    k = 0
+    for i, (sec, (p, is_div), is_app) in enumerate(zip(slides, parts, appendix), 1):
+        if is_app:
+            k += 1
+            num = ('<div class="num"><span class="part">APPENDIX</span>'
+                   'A%d / A%d</div>' % (k, n_app))
+            sec, n = NUM.subn(num, sec, count=1)
+            if n != 1:
+                raise SystemExit("slide %d has no num" % i)
+            out.append(sec)
+            continue
         if p is None:
             label = ""
         elif is_div:
@@ -60,7 +77,7 @@ def main():
     s = head + "".join(out)
     DECK.write_text(s.replace("\n", "\r\n") if crlf else s, encoding="utf-8",
                     newline="")
-    print("renumbered %d slides, parts: %s" % (total, sizes))
+    print("renumbered %d slides + %d appendix, parts: %s" % (total, n_app, sizes))
 
 
 if __name__ == "__main__":

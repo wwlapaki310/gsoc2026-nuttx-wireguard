@@ -44,7 +44,7 @@ SLIDES = [
         "The seven parts, each a short title with a keyword line and its "
         "time: overview & background (~5 min) / the problem & solution "
         "(~4) / the development plan (~2) / version 1: the app, six bugs, two in detail (~4) / version 2: "
-        "the kernel driver, a bug in NuttX, testing (~7) / live demo (~3) / summary & "
+        "the kernel driver, design, issues found, testing (~5) / live demo (~3) / summary & "
         "status, what I learned (~4).",
         []),
     ('Agenda: ① Overview and Background', "divider", None, []),
@@ -172,43 +172,38 @@ SLIDES = [
           "kernel-version results later in the talk."]),
     ('Agenda: ⑤ Version 2: The Kernel Driver', "divider", None, []),
     ("Version 2: WireGuard as a NuttX Kernel Driver", "",
-         "Two panels: Version 1, an app (in apps/, uses kernel internals, "
-         "FLAT only, never an in-tree driver) / Version 2, a kernel driver "
-         "(drivers/net/wireguard, set up by a small wg command through ioctl, "
-         "made for FLAT, PROTECTED and KERNEL). One line on the three build "
-         "modes.", []),
+         "Two panels, BEFORE — VERSION 1 (an application: in apps/, uses "
+         "kernel internals, FLAT only, does not fit as an in-tree driver) / "
+         "AFTER — VERSION 2 (a kernel driver: drivers/net/wireguard, set up "
+         "by a small wg command through ioctl, made for FLAT, PROTECTED and "
+         "KERNEL). A BUILD MODES box with three rows: FLAT (one address "
+         "space) / PROTECTED (MPU) / KERNEL (MMU). The goal line.", []),
     ("The Kernel Design: The Big Picture", "",
-         "A picture: user space holds only the wg command; an ioctl (one flat "
-         "struct, no pointers; the private key is write-only) crosses the "
-         "user/kernel boundary to wg0 in the kernel, which owns its UDP socket "
-         "and RX thread, keeps timers / peers / cookies and uses NuttX crypto, "
-         "between the NuttX network stack and the encrypted UDP to the peer.",
+         "A picture in two bands: USER SPACE holds only the wg command; an "
+         "ioctl (one flat struct, no pointers; the private key is "
+         "write-only) crosses the user/kernel boundary into the NUTTX KERNEL "
+         "band, to wg0, which owns its UDP socket and RX thread, keeps "
+         "timers / peers / cookies and uses NuttX crypto, between the NuttX "
+         "network stack and the encrypted UDP to the peer.",
          []),
-    ("Bugs 5 & 6/6: Two More Bugs, One in NuttX Itself", "locked with the kernel design",
-         "Two panels: NuttX's own chacha20poly1305 nonce bug (handshake works, "
-         "data after the first packet fails; two-line crypto: fix) / a "
-         "BUILD_KERNEL-only crash (6 KB array on a 3 KB kernel stack, moved to "
-         "the heap). One line: SPRESENSE did not boot with CONFIG_RTC_HIRES on "
-         "13.0.1 / master; fixed locally, report drafted, not sent.", []),
+    ("Two Issues Found During Kernel Integration", "",
+         "Two labelled boxes. CRYPTOGRAPHY — ChaCha20-Poly1305 (NuttX "
+         "crypto/chachapoly.c: the nonce counter sits in different bytes "
+         "from the RFC 8439 / WireGuard layout; the handshake works, data "
+         "after the first packet fails; a two-line fix with test vectors) / "
+         "KERNEL STACK — Stack Overflow (this driver, KERNEL build only: a "
+         "6 KB array on a 3 KB kernel stack, moved to the heap). The "
+         "SPRESENSE RTC_HIRES finding is in the notes only.",
+         ["**Say it exactly:** the stack overflow was in this driver, not in "
+          "NuttX. Nothing is filed or sent yet; do not say it is."]),
     ("Testing: What Ran Where", "core — do not cut",
-         "Three cards. FLAT on real boards: ESP32-S3 2026-10-12 with the exact "
-         "submitted series (handshake with Linux, ping both ways up to the "
-         "full MTU) / an earlier driver build on ESP32-S3 + SPRESENSE to the "
-         "Windows client / SPRESENSE memory after 40 down/up. KERNEL on QEMU: "
-         "tunnel to Linux, 4-CPU stress, one scripted run. PROTECTED on QEMU: "
-         "tunnel works, the wg stack overflow found and fixed (20/20). Then "
-         '"Not shown yet: PROTECTED or KERNEL on real hardware" and the GitHub '
-         "line with a QR code.", []),
-    ("Testing: What Ping Misses", "core — do not cut",
-         "Three cards: same key on every boot? (SPRESENSE, 3 resets, 3 keys) "
-         "/ keys left after down? (sim, all zero) / a leak after hours? (sim, "
-         "151 rekeys, 100 down/up, nothing lost).", []),
-    ("A Design Choice: The Timestamp Problem Has No Easy Answer",
-         "core — do not cut",
-         "The rule (a newer timestamp, even after a reboot), Chosen (real-time "
-         "clock + the highest value this boot, plus a warning) / Not chosen "
-         "(save every time, reserve a range in flash, wait), and the measured "
-         "pair: clock unset → no handshake in 75 s, clock set → 4.1 s.", []),
+         "A table, build mode / environment / result: FLAT on ESP32-S3 and "
+         "SPRESENSE (real boards) verified / KERNEL on QEMU rv-virt "
+         "verified (tunnel to Linux, 4 CPUs under load) / PROTECTED on QEMU "
+         "rv-virt verified (one fault found and fixed, 20/20) / KERNEL and "
+         "PROTECTED on real hardware not tested yet. A small note that the "
+         "check mark means it passed in the conditions noted. The GitHub "
+         "line and QR code are gone.", []),
     ('Agenda: ⑥ Live Demo', "divider", None, []),
     ("Demo Setup: One Tunnel on a Phone's Network", "",
          "Diagram: venue Wi-Fi (blocks devices from talking to each other) "
@@ -266,6 +261,15 @@ SLIDES = [
          ["**After:** keep [coc-glasgow-qa.md](coc-glasgow-qa.md) at hand, "
           "not a slide. The usual questions (rebase status, #14, IOB "
           "exhaustion, checkpatch) are answered there and on no slide."]),
+    ("Testing: What Ping Misses", "appendix",
+         "Three cards: same key on every boot? (SPRESENSE, 3 resets, 3 "
+         "keys) / keys left after down? (sim, all zero) / a leak after "
+         "hours? (sim, 151 rekeys, 100 down/up, nothing lost).", []),
+    ("Design Choice: Trust the Clock?", "appendix",
+         "The rule (a newer timestamp, even after a reboot), Chosen (real-time "
+         "clock + the highest value this boot, plus a warning) / Not chosen "
+         "(save every time, reserve a range in flash, wait), and the measured "
+         "pair: clock unset → no handshake in 75 s, clock set → 4.1 s.", []),
 ]
 
 HEADER = """\
@@ -273,7 +277,7 @@ HEADER = """\
 
 Deck: [`coc-glasgow-slides.html`](../coc-glasgow-slides.html) (and the
 version on the official template, [`coc-glasgow-reveal/`](../coc-glasgow-reveal/)),
-{count} slides, English. This file is **made by**
+{count} main slides plus {napp} appendix slides, English. This file is **made by**
 [`export_en_script.py`](export_en_script.py) from the speaker notes in the
 deck (press `N` there to see them). The "Say" text below *is* those notes.
 Do not edit this file by hand. Change the notes in the deck and run the
@@ -282,20 +286,19 @@ script again, or the two will stop matching. The Japanese
 
 **Total: about {total}, including a 90-second demo.** The times add up
 from the start ("you should be at about this point"), at {wpm} words per
-minute. This is just over a 30-minute slot, so practice to finish the
-main talk in about 28 minutes, and keep the cut list below ready.
+minute. This fits a 30-minute slot, but with little room, so practice to
+finish in about 28 minutes, and keep the cut list below ready.
 
-**The most important part is slides {core_range}** (testing). Together they take
-{core} of the talk, and they hold the claims that a reviewer will really
-check. Their slides and narration were made shorter on 2026-10-12 (the
-detail is in the Q&A file and on GitHub). Do not cut their claims or their
-caveats (FLAT on boards / KERNEL and PROTECTED on QEMU only / sim, the
-earlier board runs vs. the 2026-10-12 ESP32-S3 run of the exact series,
-the PROTECTED wg stack fault and its fix, one scripted 4-CPU run, nothing
-shown on hardware for PROTECTED, the 75 s watch) any further. Cut before
-them or after them. They are one story: the first is where it runs, the
-second is what "it runs" does not prove, and the third is the one place
-where I had to decide instead of test. If you split them, the story breaks.
+**The most important slide is {core_range}** (Testing: What Ran Where). It takes
+{core} of the talk, and it holds the claims that a reviewer will really
+check. Do not cut its claims or its caveats (FLAT on boards / KERNEL and
+PROTECTED on QEMU only, the earlier board runs vs. the 2026-10-12 ESP32-S3
+run of the exact series, the PROTECTED wg stack fault and its fix, one
+scripted 4-CPU run, nothing shown on hardware for KERNEL or PROTECTED).
+**The two slides that used to follow it, "What Ping Misses" and "Trust the
+Clock?", are now the appendix (A1, A2) after Thank You.** They are not part of
+the main flow and not in the times above. Open them with the down arrow from
+the last slide, only if a question needs them.
 
 **Do not cut slide 2 or slides 4–{arch} either** (About Me, then Overview to Architecture). What
 NuttX is, where it is used, Sony's history with it, how I met it, and why
@@ -355,17 +358,22 @@ def main():
     for i, paras in enumerate(all_notes, 1):
         words = sum(len(p.split()) for p in paras)
         tag = SLIDES[i - 1][1]
+        if tag == "appendix":
+            spans.append((t, t))
+            continue
         d = (DIVIDER_S if tag == "divider" else
              DEMO_S if tag == "demo" else round(words / WPM * 60))
         spans.append((t, t + d))
         t += d
+    napp = len(find(lambda sl: sl[1] == "appendix"))
 
     core = find(lambda sl: sl[1].startswith("core"))
     core_s = spans[core[-1] - 1][1] - spans[core[0] - 1][0]
     body = [HEADER.format(
-        count=count, total=mmss(t), wpm=WPM,
+        count=count - napp, napp=napp, total=mmss(t), wpm=WPM,
         core="%.1f minutes" % (core_s / 60),
-        core_range="%d–%d" % (core[0], core[-1]),
+        core_range=("%d" % core[0] if len(core) == 1
+                    else "%d–%d" % (core[0], core[-1])),
         arch=find(lambda sl: sl[0].startswith("Architecture"))[0],
         cut1=find(lambda sl: sl[1] == "cut first")[0],
         cut2=find(lambda sl: sl[1] == "cut candidate 2")[0],
@@ -373,13 +381,19 @@ def main():
         dividers=", ".join(map(str, find(lambda sl: sl[1] == "divider"))),
         learned=find(lambda sl: sl[0] == "What I Learned")[0])]
 
+    k = 0
     for i, paras in enumerate(all_notes, 1):
         heading, tag, on_slide, extra = SLIDES[i - 1]
         a, b = spans[i - 1]
-        suffix = (" *(%s)*" % tag if tag and tag not in ("divider", "demo")
+        suffix = (" *(%s)*" % tag
+                  if tag and tag not in ("divider", "demo", "appendix")
                   else "")
-        body.append("## %d — %s (%s → %s)%s\n" % (i, heading, mmss(a),
-                                                  mmss(b), suffix))
+        if tag == "appendix":
+            k += 1
+            body.append("## A%d — %s (appendix, not timed)\n" % (k, heading))
+        else:
+            body.append("## %d — %s (%s → %s)%s\n" % (i, heading, mmss(a),
+                                                      mmss(b), suffix))
         if on_slide:
             body.append("**On slide:** %s\n" % on_slide)
         if tag == "divider":
@@ -395,7 +409,7 @@ def main():
 
     OUT.write_text("\n".join(body).rstrip() + "\n", encoding="utf-8",
                    newline="\n")
-    print("wrote %s (%d slides, %s)" % (OUT.name, count, mmss(t)))
+    print("wrote %s (%d slides + %d appendix, %s)" % (OUT.name, count - napp, napp, mmss(t)))
 
 
 if __name__ == "__main__":

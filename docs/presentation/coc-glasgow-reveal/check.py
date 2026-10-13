@@ -39,6 +39,17 @@ def run(args):
                           encoding="utf-8", errors="replace")
 
 
+def nav(i, total, n_app):
+    """Address of slide i (0-based): appendix slides sit below the last main one."""
+    main = total - n_app
+    return "#/%d" % i if i < main else "#/%d/%d" % (main - 1, i - main + 1)
+
+
+def frame_counts(dom):
+    total = len(re.findall(r'<div class="frame', dom))
+    return total, len(re.findall(r'<div class="frame[^"]*\bappendix\b', dom))
+
+
 def main():
     url = (HERE / "index.html").as_uri()
     dom = run(["--window-size=1280,720", "--dump-dom", url + "?check"]).stdout
@@ -47,7 +58,7 @@ def main():
     if not m:
         sys.exit("no report in rendered DOM (did the deck fail to load?)")
     report = json.loads(m.group(1))
-    count = len(re.findall(r"<section", dom))
+    count, n_app = frame_counts(dom)
     for entry in report:
         print("slide %d:" % entry["slide"])
         for issue in entry["issues"]:
@@ -60,7 +71,7 @@ def main():
         for i in range(count):
             png = out / ("slide-%02d.png" % (i + 1))
             run(["--window-size=1280,720", "--screenshot=%s" % png,
-                 "%s#/%d" % (url, i)])
+                 url + nav(i, count, n_app)])
         print("screenshots in", out)
     sys.exit(1 if report else 0)
 

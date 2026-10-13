@@ -59,10 +59,21 @@ def print_pdf(html_path, pdf_path):
     print("wrote %s (%d KB)" % (pdf_path, pdf_path.stat().st_size // 1024))
 
 
+def nav(i, total, n_app):
+    """Address of slide i (0-based): appendix slides sit below the last main one."""
+    main = total - n_app
+    return "#/%d" % i if i < main else "#/%d/%d" % (main - 1, i - main + 1)
+
+
+def frame_counts(dom):
+    total = len(re.findall(r'<div class="frame', dom))
+    return total, len(re.findall(r'<div class="frame[^"]*\bappendix\b', dom))
+
+
 def slides(tmp):
     url = (HERE / "index.html").as_uri()
     dom = run(["--window-size=1280,720", "--dump-dom", url]).stdout
-    count = len(re.findall(r"<section", dom))
+    count, n_app = frame_counts(dom)
     if count == 0:
         sys.exit("index.html rendered no slides")
 
@@ -70,7 +81,7 @@ def slides(tmp):
     for i in range(count):
         png = tmp / ("slide-%02d.png" % (i + 1))
         run(["--window-size=1280,720", "--force-device-scale-factor=2",
-             "--screenshot=%s" % png, "%s#/%d" % (url, i)])
+             "--screenshot=%s" % png, url + nav(i, count, n_app)])
         if not png.exists():
             sys.exit("screenshot of slide %d failed" % (i + 1))
         data = base64.b64encode(png.read_bytes()).decode()
