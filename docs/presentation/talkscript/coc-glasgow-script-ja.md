@@ -38,20 +38,15 @@ NuttX の講演、Xiaomi の 1,000+ は報告値、ARICA の写真は第三者�
 
 ## 1 — タイトル (0:00 → 0:49)
 
-**画面:** "WireGuard for Apache NuttX"。右下に小さな QR コード(「Slides」、最後のスライドと同じ URL)。ESP32-S3 と SPRESENSE が実 Wi-Fi でトンネル /
-実際の WireGuard ピア(Linux kernel, Windows クライアント) / QEMU 上のカーネルビルドで動作
-(BUILD_KERNEL) / NuttX 13.0.1・master・12.7.0 が同一ソース。
+**画面:** 「WireGuard for Apache NuttX」を大きく。その下にサブタイトル「Bringing Secure Remote Access to Embedded Devices」。
+上に Community Over Code Glasgow 2026、下に Satoru Akita / Sony Semiconductor Solutions。右下に小さな QR コード
+(「Slides」、最後のスライドと同じ URL)。技術的な情報(wg0、QEMU、ビルドモード、検証環境、バージョン)は載せない。
 
 **話す:**
-- 今日は WireGuard を Apache NuttX に持ち込む話をします。
-- これは `wg0` というネットワークデバイスとして実装した WireGuard VPN です。
-  ESP32-S3 と SPRESENSE、両方とも実 Wi-Fi 経由でトンネルが立っています。ピアは
-  常に本物の WireGuard 実装 — Linux カーネルモジュールと公式 Windows クライアント
-  — です。apps版は同じソースで NuttX の3バージョンに対応します。話の後半では、
-  新しいドライバが QEMU 上の KERNEL / PROTECTED ビルドで、そして両ボードの通常の FLAT ビルドで動きます。ここが今日の、より難しく、より
-  面白い半分です。
-- ただ、この話の主眼は「動いた」ことではありません。「動く」が何を隠していたか、
-  そしてカーネルに押し込んだことで何が表に出たか、という話です。
+- 皆さん、こんにちは。日本の Sony Semiconductor Solutions から来ました、Satoru Akita です。
+- 今日は、軽量な VPN の WireGuard を Apache NuttX に持ち込んだ経験を話します。
+- 目的はシンプルでした: 組み込み機器への、安全な遠隔アクセス。
+- なぜこのプロジェクトを始めたか、どう作ったか、直面した難しさ、そして学んだことを話します。
 
 ## 2 — 自己紹介 (0:49 → 1:48)
 

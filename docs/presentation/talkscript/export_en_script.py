@@ -30,10 +30,11 @@ DEMO_S = 150
 # "divider", "demo", "core ...", "cut first", "cut candidate N".
 SLIDES = [
     ("Title", "",
-        '"WireGuard for Apache NuttX." ESP32-S3 & SPRESENSE tunnel over real '
-        "Wi-Fi · real WireGuard peers (Linux kernel, Windows client) · runs in "
-        "a kernel build on QEMU (BUILD_KERNEL) · one source across NuttX 13.0.1 / "
-        "master / 12.7.0. A small QR code of the slides (\"Slides\") at the bottom right.", []),
+        '"WireGuard for Apache NuttX", large, with the subtitle "Bringing '
+        'Secure Remote Access to Embedded Devices". Community Over Code '
+        "Glasgow 2026 on top; Satoru Akita, Sony Semiconductor Solutions "
+        "below. A QR code of the slides (\"Slides\") at the bottom right. "
+        "No technical details on this slide.", []),
     ("About Me", "",
         "Three bands: photo, name line and the fox icon / a map of Japan "
         "(Nagoya, Sendai, Kawasaki) labelled Japan / five large photos under "

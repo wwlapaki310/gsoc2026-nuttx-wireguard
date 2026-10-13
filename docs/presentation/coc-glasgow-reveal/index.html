@@ -121,11 +121,16 @@
     padding: 76px 76px 70px 84px;
     display: flex;
     flex-direction: column;
-    justify-content: center;}
+    justify-content: space-between;}
+  .reveal .frame .title-main h1 { font-size: 76px; line-height: 1.04; margin-bottom: 26px;}
   .reveal .frame .subtitle {
     color: var(--muted);
     font-size: 25px;
     line-height: 1.48;}
+  .reveal .frame .title-core .subtitle { font-size: 29px; line-height: 1.35; font-style: italic;}
+  .reveal .frame .title-main .speaker-block { margin: 0;}
+  .reveal .frame .speaker-block b { display: block; font-size: 25px; font-weight: 800; color: var(--ink);}
+  .reveal .frame .speaker-block span { display: block; margin-top: 3px; font-size: 19px; color: var(--muted);}
   .reveal .frame .t-strip {
     margin-top: 30px;
     padding-top: 20px;
@@ -969,23 +974,20 @@
   <div class="frame coc-dark">
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
-    <h1>WireGuard for Apache NuttX</h1>
-    <p class="subtitle">A WireGuard VPN that works as a normal network device, <code>wg0</code> &mdash; on real boards, and inside a NuttX kernel build (on QEMU).</p>
-    <div class="facts">
-      <div><b>ESP32-S3 &amp; SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
-      <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
-      <div><b>rv-virt knetnsh64</b><span>KERNEL BUILD ON QEMU (BUILD_KERNEL)</span></div>
-      <div><b>NuttX 13.0.1 / master / 12.7.0</b><span>APPS V0.1.1 &middot; ONE SOURCE</span></div>
+    <div class="title-core">
+      <h1>WireGuard for Apache NuttX</h1>
+      <p class="subtitle">Bringing Secure Remote Access to Embedded Devices</p>
     </div>
-    <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
+    <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
   </div>
   <a class="qr-card title-qr" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Today I will talk about adding WireGuard to Apache NuttX.</p>
-      <p>It is a WireGuard VPN (virtual private network) that works as a network device called wg0. The tunnel runs over real Wi-Fi on ESP32-S3 and on SPRESENSE, and the other side is always a real WireGuard program &mdash; the Linux kernel module and the official Windows client. The apps version builds from one source on three NuttX versions. Later in the talk, you will see the new driver running inside KERNEL and PROTECTED builds on QEMU (a machine emulator), and in normal FLAT builds on both boards. That is the harder and more interesting half.</p>
-      <p>This talk is about what &ldquo;it works&rdquo; was hiding, and what moving it into the kernel brought out.</p>
+      <p>Hello everyone. I'm Satoru Akita from Sony Semiconductor Solutions in Japan.</p>
+      <p>Today, I'll share my experience bringing WireGuard, a lightweight VPN, to Apache NuttX.</p>
+      <p>The goal was simple: secure remote access to embedded devices.</p>
+      <p>I'll talk about why I started this project, how I built it, the challenges I faced, and what I learned along the way.</p>
     </aside>
   </section>
 

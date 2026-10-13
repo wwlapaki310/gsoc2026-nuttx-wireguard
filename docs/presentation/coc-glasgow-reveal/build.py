@@ -38,15 +38,11 @@ TITLE = """\
 <div class="frame coc-dark">
   <div class="coc-dark-body">
     <p class="kicker">Community Over Code &middot; Glasgow 2026</p>
-    <h1>WireGuard for Apache NuttX</h1>
-    <p class="subtitle">A WireGuard VPN that works as a normal network device, <code>wg0</code> &mdash; on real boards, and inside a NuttX kernel build (on QEMU).</p>
-    <div class="facts">
-      <div><b>ESP32-S3 &amp; SPRESENSE</b><span>TUNNEL UP OVER REAL WI-FI</span></div>
-      <div><b>Real WireGuard peers</b><span>LINUX KERNEL, WINDOWS CLIENT</span></div>
-      <div><b>rv-virt knetnsh64</b><span>KERNEL BUILD ON QEMU (BUILD_KERNEL)</span></div>
-      <div><b>NuttX 13.0.1 / master / 12.7.0</b><span>APPS V0.1.1 &middot; ONE SOURCE</span></div>
+    <div class="title-core">
+      <h1>WireGuard for Apache NuttX</h1>
+      <p class="subtitle">Bringing Secure Remote Access to Embedded Devices</p>
     </div>
-    <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
+    <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
   </div>
   <a class="qr-card title-qr" href="{URL}" target="_blank" rel="noopener"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
