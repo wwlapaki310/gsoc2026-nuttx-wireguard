@@ -665,6 +665,14 @@
   .about .hobby-row figure { flex: 1; min-width: 0; }
   .about .hobby-row img { width: 100%; height: auto; aspect-ratio: 1; }
   .about .hobby-row figcaption { font-size: 15px; line-height: 1.3; margin-top: 8px; min-height: 58px; }
+  .about-links { margin: 0; display: flex; justify-content: flex-end; gap: 28px; font-family: var(--mono); font-size: 16px; letter-spacing: .04em; }
+  .about-links a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .about-links a span { text-decoration: underline; text-decoration-color: rgba(120, 130, 140, .55); text-underline-offset: 3px; transition: text-decoration-color .15s; }
+  .about-links svg { width: 22px; height: 22px; flex: none; }
+  .about-links .li svg { fill: #0a66c2; }
+  .about-links .xx svg { fill: #000; }
+  .about-links a:hover, .about-links a:focus-visible { color: var(--nx); }
+  .about-links a:hover span, .about-links a:focus-visible span { text-decoration-color: var(--nx); }
   .about-chips { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
   .about-chips .chip { font-size: 17px; padding: 9px 18px; }
   .about-path { display: flex; align-items: flex-start; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; }
@@ -1342,6 +1350,7 @@ I'll talk about why I started this project, how I built it, the challenges I fac
           </div>
         </div>
       </div>
+      <p class="about-links"><a class="li" href="https://www.linkedin.com/in/satoru-akita-6070a4145" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn: Satoru Akita"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>Satoru Akita</span></a><a class="xx" href="https://x.com/fox_aki310ooooo" target="_blank" rel="noopener noreferrer" aria-label="Twitter (X): @fox_aki310ooooo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg><span>@fox_aki310ooooo</span></a></p>
     </div>
     <div class="num">2 / 35</div>
     <div class="notes-src">
