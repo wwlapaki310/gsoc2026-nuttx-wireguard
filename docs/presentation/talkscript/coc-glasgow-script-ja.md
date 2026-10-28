@@ -128,14 +128,14 @@ Summary & Reflections: Achievements · personal reflections · community(~4分)�
 ## 6 — 経緯: 2月の思いつきから10月の本番まで (2:14 → 3:14)
 
 **画面:** 2月〜10月の月の横軸。上に出来事 — 2月中旬 GSoC のテーマ一覧を見て調べ始める /
-3月上旬 計画を提案 / 3月20日 Alan さんからこのカンファレンスを聞き、CfP を提出 /
+3月上旬 計画を提案 / 3月20日 Alin さんからこのカンファレンスを聞き、CfP を提出 /
 4月上旬 GSoC に応募 / 5月上旬 CfP は採択、GSoC は不採択 — それでも続ける / 10月 グラスゴー。
 下に、矢印の形をした3本の帯 — 5〜7月 NuttX と WireGuard を調べ、作り方を探る →
 8月 Version 1(アプリ・FLAT・実機検証)→ 9月〜 Version 2(カーネルドライバ)。
 
 **話す — Essential(必ず話す):**
 - 経緯です。
-- 2月中旬に、GSoC のテーマ一覧を見て、調べ始めました。3月に計画を提案しました。3月20日に、NuttX コミュニティの Alan さんがこのカンファレンスのことを教えてくれたので、CfP、つまり発表の募集に応募しました。4月の初めに GSoC に応募しました。この2つは別々の応募です。
+- 2月中旬に、GSoC のテーマ一覧を見て、調べ始めました。3月に計画を提案しました。3月20日に、NuttX コミュニティの Alin さんがこのカンファレンスのことを教えてくれたので、CfP、つまり発表の募集に応募しました。4月の初めに GSoC に応募しました。この2つは別々の応募です。
 - 5月の初めに、2つの返事が来ました。CfP は採択、でも GSoC は不採択でした。それでも続けることにしました。
 - 5月から7月は、NuttX と WireGuard を調べました。8月は実機での検証を中心に、Version 1 を完成させました。その後、Version 2、カーネルドライバを作りました。
 - つまりこの取り組みは GSoC から始まり、一歩ずつ育ちました。まず、NuttX とは何でしょうか。
@@ -603,14 +603,14 @@ continue to grow.」
 ## 35 — Acknowledgements: 謝辞 (23:21 → 24:07)
 
 **画面:** 見出し「Acknowledgements」。カードをやめ、縦のシンプルな一覧。各項目は、名前(太字、少し大きく)と短い1行:
-Alan Carvalho de Assis(この発表を Community Over Code に出すよう勧めてくれた)/ The Apache NuttX Community
+Alin Jerpelea(この発表を Community Over Code に出すよう勧めてくれた)/ The Apache NuttX Community
 (議論、ドキュメント、支援)/ Sony's NuttX Developers, Past and Present(NuttX への貢献と、築いてくれた土台)/
 The Apache Software Foundation & Community Over Code Organizers(オープンソースのコミュニティをつなげてくれている。
 運営者もボランティアも)。順番は 個人 → コミュニティ → 関係する組織。
 
 **話す — Essential(必ず話す):**
 - 終わる前に、感謝を伝えます。
-- まず、Alan Carvalho de Assis さん。この発表を Community Over Code に出すよう勧めてくれました。
+- まず、Alin Jerpelea さん。この発表を Community Over Code に出すよう勧めてくれました。
 - 次に、Apache NuttX コミュニティ。議論、ドキュメント、支援をありがとうございました。GSoC の提案を書いたとき、皆さんが励ましてくれて、選ばれなかった後も続けられたのは、そのおかげです。
 - 3つ目に、私より前の Sony のエンジニアたち。NuttX に貢献し、この仕事の土台を築いてくれました。
 - そして最後に、Apache Software Foundation と、Community Over Code の運営者とボランティアの皆さん。コミュニティをつなげてくれてありがとうございます。
