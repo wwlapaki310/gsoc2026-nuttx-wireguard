@@ -128,7 +128,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Say — Essential:**
 - Here is the timeline.
-- In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alan, from the NuttX community, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.
+- In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alin Jerpelea, from Sony's NuttX community, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.
 - In early May, I got two answers. The CfP was accepted, but my GSoC proposal was not selected. I decided to keep going anyway.
 - From May to July, I studied NuttX and WireGuard. In August, I focused on hardware testing and finished Version 1. Then I built Version 2, the kernel driver.
 - So this work started with GSoC, and it grew step by step. First, what is NuttX?
@@ -502,11 +502,11 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 ## 35 — Acknowledgements (23:21 → 24:07)
 
-**On slide:** A plain vertical list, a name and one line each: Alan Carvalho de Assis (encouraged me to submit this talk) / The Apache NuttX Community (discussions, documentation, support) / Sony's NuttX Developers, Past and Present (their contributions and the foundation they built) / The Apache Software Foundation & Community Over Code Organizers (bringing the community together).
+**On slide:** A plain vertical list, a name and one line each: Alin Jerpelea (encouraged me to submit this talk) / The Apache NuttX Community (discussions, documentation, support) / Sony's NuttX Developers, Past and Present (their contributions and the foundation they built) / The Apache Software Foundation & Community Over Code Organizers (bringing the community together).
 
 **Say — Essential:**
 - Before I finish, I'd like to say thank you.
-- First, Alan Carvalho de Assis, who encouraged me to submit this talk to Community Over Code.
+- First, Alin Jerpelea, who encouraged me to submit this talk to Community Over Code.
 - Second, the Apache NuttX community, for the discussions, the documentation, and the support. When I wrote my GSoC proposal, people encouraged me. That is why I kept going after it was not selected.
 - Third, the Sony engineers before me, who contributed to NuttX and built the foundation for this work.
 - And finally, the Apache Software Foundation, and the organizers and volunteers of Community Over Code, for bringing the community together.
