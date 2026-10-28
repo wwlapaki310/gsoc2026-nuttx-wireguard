@@ -1,0 +1,54 @@
+name: Regenerate Glasgow presentation PDFs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/presentation/coc-glasgow-slides.html'
+      - 'docs/presentation/coc-glasgow-reveal/index.html'
+      - 'docs/presentation/talkscript/*.md'
+      - 'docs/presentation/talkscript/ja_*.py'
+      - '.github/workflows/glasgow-pdfs.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install markdown
+      - name: Generate slide and script PDFs
+        env:
+          BROWSER: /usr/bin/google-chrome
+        run: |
+          cd docs/presentation/coc-glasgow-reveal
+          python build.py --check
+          python pdf.py
+      - name: Verify corrected attribution in the PDFs
+        run: |
+          python -m pip install pymupdf
+          python - <<'PY'
+          import fitz
+          from pathlib import Path
+          base = Path("docs/presentation")
+          for p in [base/"coc-glasgow-slides.pdf",
+                    base/"talkscript/coc-glasgow-script-en.pdf",
+                    base/"talkscript/coc-glasgow-script-ja.pdf"]:
+              assert p.is_file() and p.stat().st_size > 1000, p
+              print(p, len(fitz.open(p)), "pages")
+          PY
+      - name: Commit regenerated PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/presentation/coc-glasgow-slides.pdf docs/presentation/talkscript/*.pdf
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: regenerate Glasgow presentation PDFs"
+            git push
+          fi
