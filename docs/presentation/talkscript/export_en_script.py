@@ -267,8 +267,7 @@ SLIDES = [
          "people join). Bottom line: the hope to keep contributing.",
          []),
     ("Acknowledgements", "",
-         "A plain vertical list, a name and one line each: Alan Carvalho de "
-         "Assis (encouraged me to submit this talk) / The Apache NuttX "
+         "A plain vertical list, a name and one line each: Alin Jerpelea (encouraged me to submit this talk) / The Apache NuttX "
          "Community (discussions, documentation, support) / Sony's NuttX "
          "Developers, Past and Present (their contributions and the "
          "foundation they built) / The Apache Software Foundation & Community "
