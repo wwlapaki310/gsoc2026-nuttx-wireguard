@@ -63,7 +63,7 @@ SCREENS = {'1': '「WireGuard for Apache NuttX」を大きく。その下にサ�
       '図の下にカード3枚: Lightweight VPN / Virtual interface / Secure communication。\n'
       '最下段に一文。',
  '6': '2月〜10月の月の横軸。上に出来事 — 2月中旬 GSoC のテーマ一覧を見て調べ始める /\n'
-      '3月上旬 計画を提案 / 3月20日 Alan さんからこのカンファレンスを聞き、CfP を提出 /\n'
+      '3月上旬 計画を提案 / 3月20日 Alin さんからこのカンファレンスを聞き、CfP を提出 /\n'
       '4月上旬 GSoC に応募 / 5月上旬 CfP は採択、GSoC は不採択 — それでも続ける / 10月 グラスゴー。\n'
       '下に、矢印の形をした3本の帯 — 5〜7月 NuttX と WireGuard を調べ、作り方を探る →\n'
       '8月 Version 1(アプリ・FLAT・実機検証)→ 9月〜 Version 2(カーネルドライバ)。',
@@ -187,7 +187,7 @@ SCREENS = {'1': '「WireGuard for Apache NuttX」を大きく。その下にサ�
        'to seeing NuttX\n'
        'continue to grow.」',
  '35': '見出し「Acknowledgements」。カードをやめ、縦のシンプルな一覧。各項目は、名前(太字、少し大きく)と短い1行:\n'
-       'Alan Carvalho de Assis(この発表を Community Over Code に出すよう勧めてくれた)/ The Apache NuttX Community\n'
+       'Alin Jerpelea(この発表を Community Over Code に出すよう勧めてくれた)/ The Apache NuttX Community\n'
        "(議論、ドキュメント、支援)/ Sony's NuttX Developers, Past and Present(NuttX への貢献と、築いてくれた土台)/\n"
        'The Apache Software Foundation & Community Over Code Organizers(オープンソースのコミュニティをつなげてくれている。\n'
        '運営者もボランティアも)。順番は 個人 → コミュニティ → 関係する組織。',
