@@ -1,0 +1,1895 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>個人のOSS活動から、世界のコミュニティへ &mdash; Community Over Code Glasgow 2026 体験記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;700;800;900&display=swap">
+<style>
+  :root {
+    --paper: #eef2f3;
+    --surface: #fbfcfd;
+    --ink: #11181d;
+    --muted: #5c6c78;
+    --quiet: #87939b;
+    --line: #d5dde2;
+    --line-2: #e8edf0;
+    --wg: #8d1f24;
+    --slide-heading-color: #7c297d;
+    --heading-rule: #df3b45;
+    --wg-soft: #f5e4e5;
+    --nx: #176c67;
+    --nx-soft: #dff0ee;
+    --blue: #245c9a;
+    --blue-soft: #e3edf7;
+    --gold: #8a650c;
+    --gold-soft: #f5edd8;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  #canvas {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    transform-origin: center center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    overflow: hidden;
+    padding: 58px 72px 62px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .slide.on { display: flex; flex-direction: column; }
+  .slide::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 9px;
+    background: linear-gradient(90deg, var(--wg), var(--nx) 54%, var(--blue));
+  }
+
+  #bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 3px;
+    background: var(--wg);
+    z-index: 4;
+    transition: width .2s ease;
+  }
+  #help {
+    position: fixed;
+    right: 16px;
+    top: 14px;
+    z-index: 10;
+    padding: 5px 9px;
+    background: rgba(238, 242, 243, .92);
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    display: flex;
+    gap: 15px;
+  }
+  #help b { color: var(--muted); font-weight: 600; }
+
+  .num {
+    position: absolute;
+    right: 30px;
+    bottom: 24px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+  }
+
+  .num .part { margin-right: 16px; color: var(--wg); font-weight: 600; }
+
+  .eyebrow,
+  h2 {
+    position: relative;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--heading-rule) !important;
+    color: var(--slide-heading-color) !important;
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: .015em;
+    text-transform: uppercase;
+  }
+  .eyebrow::after,
+  h2::after {
+    content: none !important;
+  }
+  .title-slide .eyebrow {
+    margin: 0 0 14px;
+    padding-bottom: 0;
+    border-bottom: 0 !important;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .18em;
+  }
+
+  h1, h2, h3, p { margin-top: 0; }
+  h1 {
+    margin-bottom: 24px;
+    max-width: 960px;
+    font-size: 66px;
+    line-height: 1.06;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+  h3 {
+    margin-bottom: 12px;
+    font-size: 25px;
+    line-height: 1.25;
+  }
+  .lead {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: 23px;
+    line-height: 1.55;
+  }
+  .mono { font-family: var(--mono); letter-spacing: 0; }
+  code {
+    padding: 1px 6px;
+    background: #e8edf0;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: .88em;
+    white-space: nowrap;
+  }
+  strong { font-weight: 800; }
+  .panel strong, .fact strong, .aside strong, .claim small strong,
+  .photo-card strong { color: var(--ink); }
+  .hl {
+    font-weight: 800;
+    color: var(--nx);
+  }
+  .hl.red { color: var(--wg); }
+  a {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(36, 92, 154, .35);
+  }
+
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .title-slide { padding: 0; }
+  .title-slide.on {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    grid-template-rows: 100%;
+  }
+  .title-main {
+    padding: 76px 76px 70px 84px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .title-main h1 { font-size: 76px; line-height: 1.04; margin-bottom: 26px; }
+  .subtitle {
+    color: var(--muted);
+    font-size: 25px;
+    line-height: 1.48;
+  }
+  .title-core .subtitle { font-size: 29px; line-height: 1.35; font-style: italic; }
+  .title-main .speaker-block { margin: 0; }
+  .speaker-block b { display: block; font-size: 25px; font-weight: 800; color: var(--ink); }
+  .speaker-block span { display: block; margin-top: 3px; font-size: 19px; color: var(--muted); }
+  .t-strip {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .t-strip b {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+  }
+  .t-strip span {
+    display: block;
+    margin-top: 4px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .07em;
+  }
+  .speaker {
+    margin-top: 30px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: .08em;
+  }
+  .hero-media {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-left: 1px solid var(--line);
+    background: #fff;
+    display: grid;
+    grid-template-rows: .88fr 1fr 1fr;
+  }
+  .hero-tile {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-tile:last-child { border-bottom: 0; }
+  .hero-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 26px;
+    display: block;
+  }
+  .hero-tile.logo img { padding: 40px; }
+  .caption {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    padding: 5px 8px;
+    background: rgba(255, 255, 255, .92);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .photo-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .photo {
+    height: 205px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: hidden;
+    background: #fff;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .photo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+  }
+  .photo.fill {
+    padding: 0;
+  }
+  .photo.fill img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+  }
+  .photo-card .copy {
+    min-height: 160px;
+    padding: 20px 22px;
+  }
+  .photo-card p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.52;
+    margin-bottom: 0;
+  }
+
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: stretch;
+  }
+  .panel {
+    min-height: 250px;
+    padding: 28px 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .panel p, .panel li {
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.58;
+  }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel.wg { background: var(--wg-soft); border-color: #ddb9bc; }
+  .panel.nx { background: var(--nx-soft); border-color: #b6d7d3; }
+  .panel.blue { background: var(--blue-soft); border-color: #bfd1e5; }
+  .panel.gold { background: var(--gold-soft); border-color: #e0d1a6; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 21px;
+  }
+  table.compact {
+    font-size: 16.5px;
+    line-height: 1.25;
+  }
+  table.compact th,
+  table.compact td { padding: 7px 9px; }
+  table.tight {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+  table.tight th,
+  table.tight td { padding: 9px 12px; }
+  .demo-layout { grid-template-columns: 1.35fr .65fr; }
+  .v1-still { grid-template-columns: 1.5fr .62fr; align-items: center; }
+  .v1-still .still { margin: 0; }
+  .v1-still .still img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+  .yt-play { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+  .yt-btn { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 84px; height: 84px; margin: -42px 0 0 -42px; padding-left: 8px; border-radius: 50%; background: rgba(20, 24, 28, .72); color: #fff; font-size: 34px; line-height: 1; transition: background .15s, transform .15s; }
+  .yt-play:hover .yt-btn, .yt-play:focus-visible .yt-btn { background: var(--wg); transform: scale(1.06); }
+  .yt-frame { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #000; }
+  .demo-layout .photo { height: 330px; padding: 0; }
+  .demo-layout .photo img { width: 100%; height: 100%; object-fit: cover; }
+  th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-2);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 800; }
+  .old { color: var(--quiet); }
+  .new { color: var(--wg); font-weight: 800; }
+  .sub {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .claim {
+    padding: 20px 28px;
+    border-left: 5px solid var(--wg);
+    background: var(--wg-soft);
+  }
+  .claim.ok { border-left-color: var(--nx); background: var(--nx-soft); }
+  .claim p {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.42;
+    font-weight: 800;
+  }
+  .claim small {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .context-line {
+    margin: 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .context-line strong { color: var(--ink); }
+
+  .route {
+    width: 100%;
+    height: auto;
+  }
+  svg text {
+    font-family: var(--sans);
+    fill: var(--ink);
+  }
+  svg .small {
+    fill: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  svg .label {
+    fill: var(--quiet);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+  }
+
+  ul.big {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+  }
+  ul.big li {
+    position: relative;
+    padding-left: 31px;
+    font-size: 28px;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+  ul.big li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .62em;
+    width: 16px;
+    height: 3px;
+    background: var(--nx);
+  }
+  ul.big span {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.48;
+  }
+
+  .sources {
+    position: absolute;
+    left: 72px;
+    right: 150px;
+    bottom: 22px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .02em;
+  }
+  .where {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+
+  .three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .fact {
+    padding: 19px 21px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--quiet);
+    background: #fff;
+  }
+  .fact.wg { border-top-color: var(--wg); }
+  .fact.nx { border-top-color: var(--nx); }
+  .fact.blue { border-top-color: var(--blue); }
+  .fact.gold { border-top-color: var(--gold); }
+  .four {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .four .fact { padding: 17px 18px; }
+  .four .fact p { font-size: 14.5px; line-height: 1.45; }
+  .four .fact b { font-size: 10px; letter-spacing: .12em; }
+  .fact p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .fact b {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .logo-panel {
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .logo-panel img {
+    width: 100%;
+    max-height: 190px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .panel.dense p {
+    margin-bottom: 9px;
+    font-size: 16px;
+    line-height: 1.48;
+  }
+  .logo-row {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .logo-row img {
+    height: 56px;
+    width: auto;
+    max-width: 100%;
+    display: block;
+  }
+  .aside {
+    padding: 12px 16px;
+    border-left: 3px solid var(--line);
+    color: var(--quiet);
+    font-size: 15px;
+    line-height: 1.52;
+  }
+  .aside p { margin: 0; }
+  .aside strong { color: var(--muted); font-weight: 700; }
+
+  .flow div {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-2);
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .flow div:last-child { border-bottom: 0; }
+  .flow b {
+    display: inline-block;
+    width: 34px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+  }
+  .hooks {
+    display: grid;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .hooks div { color: var(--muted); }
+  .hooks b { color: var(--ink); font-weight: 600; }
+  .hooks i { padding: 0 7px; color: var(--quiet); font-style: normal; }
+
+  .mini {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .shots .photo {
+    height: 96px;
+    padding: 8px;
+    border-right: 1px solid var(--line-2);
+  }
+  .shots .photo:last-child { border-right: 0; }
+  .photo.wide { height: 150px; padding: 0; }
+  .mini .cap { padding: 11px 14px; }
+  .mini b {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+  .mini span {
+    display: block;
+    margin-top: 3px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .stack { display: grid; gap: 18px; }
+
+  .hobby-row { display: flex; gap: 10px; }
+  .hobby-row figure { margin: 0; text-align: center; }
+  .hobby-row img {
+    width: 100px; height: 100px; border-radius: 12px;
+    object-fit: cover; border: 1px solid var(--line); display: block;
+  }
+  .hobby-row figcaption {
+    margin-top: 4px; font-family: var(--mono); font-size: 13px; color: var(--muted);
+  }
+  .about { gap: 16px; }
+  .about-who { display: flex; align-items: center; gap: 24px; }
+  .about-who .lead { flex: 1; margin: 0; font-size: 23px; }
+  .about-who .intro-avatar { width: 100px; height: 100px; }
+  .about-fox { flex: none; margin: 0; text-align: center; }
+  .about-fox .intro-avatar { width: 76px; height: 76px; border-color: var(--gold); display: block; margin: 0 auto; }
+  .about-fox figcaption { margin-top: 5px; font-family: var(--mono); font-size: 14px; color: var(--quiet); }
+  .about-mid { display: flex; align-items: stretch; gap: 24px; }
+  .about-map { flex: none; padding: 10px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .map-cap { margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .about-right { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+  .about-label { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--quiet); margin: 0 0 4px; }
+  .about .hobby-row { gap: 14px; }
+  .about .hobby-row figure { flex: 1; min-width: 0; }
+  .about .hobby-row img { width: 100%; height: auto; aspect-ratio: 1; }
+  .about .hobby-row figcaption { font-size: 15px; line-height: 1.3; margin-top: 8px; min-height: 58px; }
+  .about-links { margin: 0; display: flex; justify-content: flex-end; gap: 28px; font-family: var(--mono); font-size: 16px; letter-spacing: .04em; }
+  .about-links a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .about-links a span { text-decoration: underline; text-decoration-color: rgba(120, 130, 140, .55); text-underline-offset: 3px; transition: text-decoration-color .15s; }
+  .about-links svg { width: 22px; height: 22px; flex: none; }
+  .about-links .li svg { fill: #0a66c2; }
+  .about-links .xx svg { fill: #000; }
+  .about-links a:hover, .about-links a:focus-visible { color: var(--nx); }
+  .about-links a:hover span, .about-links a:focus-visible span { text-decoration-color: var(--nx); }
+  .about-chips { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .about-chips .chip { font-size: 17px; padding: 9px 18px; }
+  .about-path { display: flex; align-items: flex-start; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; }
+  .about-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; min-width: 0; }
+  .about-step .tlh-dot { flex: none; width: 56px; height: 56px; }
+  .about-step b { display: block; font-size: 16px; line-height: 1.2; }
+  .about-step span { display: block; font-size: 14px; line-height: 1.25; color: var(--muted); }
+  .about-arrow { flex: none; color: var(--quiet); font-size: 22px; margin-top: 14px; }
+  .intro-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .intro-avatar {
+    flex: none;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--wg);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .chip .e { font-size: 16px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  /* project timeline */
+  .ptl { position: relative; height: 440px; margin-top: 0; }
+  .ptl-axis { position: absolute; left: 0; right: 0; top: 268px; height: 3px; background: var(--ink); }
+  .ptl-month { position: absolute; top: 276px; width: 11.111%; text-align: center; font-family: var(--mono);
+               font-size: 12px; letter-spacing: .1em; color: var(--quiet); border-left: 1px solid var(--line); }
+  .ptl-ev { position: absolute; bottom: 172px; width: 172px; border-left: 2px solid var(--wg);
+            padding: 0 0 0 9px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .ptl-ev.l1 { padding-bottom: 6px; }
+  .ptl-ev.l2 { padding-bottom: 62px; }
+  .ptl-ev.l3 { padding-bottom: 118px; }
+  .ptl-ev.l4 { padding-bottom: 174px; }
+  .ptl-ev.narrow { width: 118px; }
+  .ptl-ev.right { border-left: 0; border-right: 2px solid var(--wg); padding-left: 0; padding-right: 9px;
+                  text-align: right; transform: translateX(-100%); }
+  .ptl-ev b { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--wg); }
+  .ptl-ev span { font-size: 14px; line-height: 1.3; color: var(--ink); }
+  .ptl-ev.key b { color: var(--nx); }
+  .ptl-ev.key { border-color: var(--nx); }
+  .ptl-bar { position: absolute; top: 304px; height: 60px; padding: 6px 9px; border-radius: 4px;
+             font-size: 13.5px; line-height: 1.25; color: var(--ink); overflow: hidden; }
+  .ptl-bar b { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--muted); }
+  .ptl-bar { height: 50px; top: 300px; padding-top: 5px; padding-bottom: 4px; }
+  .ptl-bar.chev { border: 0; border-radius: 0; padding-right: 24px;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%); }
+  .ptl-bar.chev.notch { padding-left: 24px;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%, 18px 50%); }
+  .ptl-bar.light { background: var(--gold-soft); border: 1px solid #e0d1a6; }
+  .ptl-bar.main { background: var(--wg-soft); border: 1px solid #ddb9bc; }
+  .ptl-bar.kernel { background: var(--nx-soft); border: 1px solid #b6d7d3; }
+  .ptl-ver { position: absolute; top: 372px; height: 58px; padding: 8px 14px; border-radius: 4px; color: var(--ink); }
+  .ptl-ver b { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; }
+  .ptl-ver span { display: block; margin-top: 2px; font-size: 14.5px; line-height: 1.25; }
+  .ptl-ver.v1 { background: var(--wg-soft); border: 1px solid #ddb9bc; border-left: 4px solid var(--wg); }
+  .ptl-ver.v1 b { color: var(--wg); }
+  .ptl-ver.v2 { background: var(--nx-soft); border: 1px solid #b6d7d3; border-left: 4px solid var(--nx); }
+  .ptl-ver.v2 b { color: var(--nx); }
+  .ptl-vlink { position: absolute; top: 350px; height: 22px; width: 2px; background: var(--quiet); }
+  .ptl-varrow { position: absolute; top: 388px; font-size: 26px; line-height: 26px; color: var(--ink); font-weight: 700; }
+  .ptl-lane { position: absolute; top: 316px; left: 0; font-family: var(--mono); font-size: 11px;
+              letter-spacing: .12em; color: var(--quiet); }
+
+  /* P7-8: NuttX overview + adopters */
+  .nx2 { display: grid; grid-template-columns: 390px 1fr; gap: 32px; align-items: start; }
+  .nx2-head { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .nx2-head img { width: 84px; height: 84px; object-fit: contain; }
+  .nx2-head b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
+  .nx2-head span { display: block; margin-top: 3px; color: var(--muted); font-size: 15px; }
+  ul.nx2-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+  ul.nx2-list li { position: relative; padding-left: 26px; font-size: 20px; font-weight: 800; line-height: 1.3; }
+  ul.nx2-list li::before { content: ""; position: absolute; left: 0; top: .66em; width: 14px; height: 3px; background: var(--nx); }
+  ul.nx2-list small { display: block; margin-top: 1px; color: var(--muted); font-size: 14.5px; font-weight: 400; }
+  table.nx2-cmp { font-size: 15px; line-height: 1.25; width: 100%; }
+  table.nx2-cmp th, table.nx2-cmp td { padding: 7px 10px; }
+  .nx2-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-top: 9px; }
+  .nx2-tile { grid-column: span 2; margin: 0; border: 1px solid var(--line); background: #fff; overflow: hidden; }
+  .nx2-tile.w { grid-column: span 3; }
+  .nx2-tile img { display: block; width: 100%; height: 124px; object-fit: cover; }
+  .nx2-tile.logo img { object-fit: contain; padding: 8px; background: #fff; }
+  .nx2-tile figcaption { padding: 8px 12px 10px; border-top: 1px solid var(--line-2); }
+  .nx2-tile figcaption b { display: block; font-size: 16px; font-weight: 800; line-height: 1.2; }
+  .nx2-tile figcaption span { display: block; margin-top: 2px; color: var(--muted); font-size: 13.5px; line-height: 1.3; }
+  .nx2-tile.text { display: flex; flex-direction: column; justify-content: center; background: var(--nx-soft); }
+  .nx2-tile.text .big-n { padding: 0 14px; font-size: 44px; font-weight: 900; line-height: 1.1; color: var(--nx); }
+  .nx2-tile.text figcaption { border-top: 0; }
+
+  /* P10: two experiences */
+  .xp .photo.wide { height: 274px; }
+  .xp .photo img { width: 100%; height: 100%; object-fit: cover; max-width: none; max-height: none; }
+  .xp .copy { min-height: 0; padding: 10px 20px 11px; }
+  .xp .takeaway { margin-top: 4px; }
+  .xp h3 { font-size: 20px; margin-bottom: 6px; }
+  .xp .copy p { font-size: 16px; line-height: 1.42; }
+  .xp .copy p + p { margin-top: 6px; }
+
+  /* ch.2-3 */
+  .repo { display: flex; align-items: center; gap: 18px; padding: 12px 20px; border: 1px solid var(--line); border-left: 5px solid var(--nx); background: #fff; }
+  .repo .tag { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; color: var(--quiet); }
+  .repo a { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--nx); text-decoration: underline; }
+  .repo .desc { margin-left: auto; color: var(--muted); font-size: 16px; }
+  .kar { display: grid; grid-template-columns: 200px 1fr; align-items: center; gap: 22px; padding: 14px 24px; border: 1px solid var(--line); border-left-width: 7px; background: #fff; }
+  .kar .verb { font-size: 38px; font-weight: 900; letter-spacing: .02em; line-height: 1; }
+  .kar h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+  .kar p { margin: 0; font-size: 19px; line-height: 1.35; color: var(--muted); }
+  .kar.keep { border-left-color: var(--nx); }
+  .kar.keep .verb { color: var(--nx); }
+  .kar.adapt { border-left-color: var(--gold); }
+  .kar.adapt .verb { color: #8a650c; }
+  .kar.replace { border-left-color: var(--wg); }
+  .kar.replace .verb { color: var(--wg); }
+  .why-label { margin: 0; font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .why .fact p { font-size: 16px; line-height: 1.42; }
+  .why .fact b { font-size: 17px; letter-spacing: .02em; text-transform: none; font-family: inherit; font-weight: 800; margin-bottom: 6px; }
+  .why .loc { display: block; width: 100%; height: auto; margin-top: 10px; }
+  .why .loc-note { margin-top: 2px; font-family: var(--mono); font-size: 10.5px; color: var(--quiet); }
+
+  /* ch.4 */
+  :root { --bug: #c2410c; --bug-soft: #fdeee3; }
+  .eyebrow.bug { color: var(--bug) !important; }
+  .goal { padding: 14px 24px; background: #f4f6f7; border: 1px solid var(--line); border-left: 4px solid var(--nx); }
+  .goal .tag { margin: 0 0 4px; font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .16em; color: var(--nx); }
+  .goal .l1 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.3; color: var(--ink); }
+  .goal .l2 { margin: 2px 0 0; font-size: 18px; line-height: 1.4; color: var(--muted); }
+  table.v1t { font-size: 19px; line-height: 1.3; }
+  table.v1t th, table.v1t td { padding: 11px 16px; }
+  table.v1t th { font-size: 14px; font-weight: 700; letter-spacing: .12em; color: var(--ink); }
+  table.v1t th:first-child { font-size: 12px; font-weight: 500; color: var(--quiet); }
+  table.v1t td:first-child { font-size: 16px; font-weight: 600; color: var(--muted); }
+  table.v1t b { font-weight: 800; color: var(--ink); }
+  table.v1t td.need b { color: var(--gold); }
+  table.v1t td.port b { color: var(--wg); }
+  table.v1t small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 12.5px; font-weight: 400; color: var(--quiet); }
+  table.v1t .sub { display: block; font-size: 15.5px; color: var(--muted); }
+  .takeaway .l { display: block; }
+  table.options.bugs { font-size: 18.5px; line-height: 1.34; }
+  table.options.bugs th, table.options.bugs td { padding: 10px 14px; }
+  table.options.bugs th { font-size: 13px; }
+  .plabel { display: inline-block; margin: 0 0 12px; padding: 3px 10px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .14em; border-radius: 2px; }
+  .panel.bugl { background: var(--bug-soft); border-color: #f0c9ad; }
+  .panel.bugl .plabel { color: #fff; background: var(--bug); }
+  .panel.fixr .plabel { color: #fff; background: var(--nx); }
+  .panel.bugl p, .panel.fixr p { font-size: 19px; line-height: 1.5; }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .vs .box { padding: 20px 26px; border: 1px solid var(--line); background: #fff; }
+  .vs .box.q { background: var(--bug-soft); border-color: #f0c9ad; border-left: 5px solid var(--bug); }
+  .vs .box.r { background: var(--nx-soft); border-color: #b6d7d3; border-left: 5px solid var(--nx); }
+  .vs .box .plabel { margin-bottom: 8px; color: #fff; }
+  .vs .box.q .plabel { background: var(--bug); }
+  .vs .box.r .plabel { background: var(--nx); }
+  .vs .big { margin: 0 0 10px; font-size: 32px; font-weight: 800; line-height: 1.2; color: var(--ink); }
+  .vs .small { margin: 0; font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .vs .meas { margin: 14px 0 0; font-size: 22px; font-weight: 800; color: var(--bug); }
+
+  /* ch.5 */
+  .ba .panel { min-height: 0; padding: 18px 26px; }
+  .ba .plabel { margin: 0 0 8px; color: #fff; background: var(--quiet); }
+  .ba .panel.nx .plabel { background: var(--nx); }
+  .ba h3 { font-size: 22px; margin-bottom: 6px; }
+  .ba p { font-size: 18px; line-height: 1.45; }
+  .modes { padding: 12px 22px 8px; border: 1px solid var(--line); background: #fff; }
+  .modes .mtitle { margin: 0 0 4px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .16em; color: var(--quiet); }
+  .modes table { font-size: 18px; }
+  .modes td { padding: 6px 12px; border-bottom: 1px solid var(--line-2); }
+  .modes td:first-child { width: 150px; font-family: var(--mono); font-size: 16px; font-weight: 700; letter-spacing: .06em; color: var(--ink); }
+  .modes td:last-child { color: var(--muted); }
+  .modes tr:last-child td { border-bottom: 0; }
+  .modes .flat { color: var(--wg); }
+  .modes .prot { color: var(--gold); }
+  .modes .kern { color: var(--nx); }
+  .issue { padding: 20px 26px; border: 1px solid var(--line); border-left: 6px solid var(--quiet); background: #f6f7f8; }
+  .issue.lead-i { border-left-color: var(--blue); background: #f3f6fa; }
+  .issue .plabel { margin: 0 0 6px; color: #fff; background: #5d6b75; }
+  .issue.lead-i .plabel { background: var(--blue); }
+  .issue .where { margin: 0 0 10px; font-family: var(--mono); font-size: 13px; letter-spacing: .04em; color: var(--quiet); }
+  ul.pts { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+  ul.pts li { position: relative; padding-left: 20px; font-size: 18.5px; line-height: 1.42; color: var(--muted); }
+  ul.pts li::before { content: ""; position: absolute; left: 0; top: .72em; width: 10px; height: 3px; background: var(--quiet); }
+  ul.pts strong { color: var(--ink); }
+  p.fine { margin: 0; font-family: var(--mono); font-size: 13.5px; color: var(--quiet); }
+  table.runs { font-size: 22px; }
+  table.runs th { font-size: 13px; }
+  table.runs td { padding: 16px 20px; }
+  table.runs td small { display: block; margin-top: 2px; font-size: 14px; font-weight: 400; color: var(--quiet); line-height: 1.35; }
+  table.runs td.mode { font-family: var(--mono); font-size: 18px; font-weight: 700; letter-spacing: .04em; }
+  table.runs td.ok { font-weight: 800; color: var(--nx); white-space: nowrap; }
+  table.runs td.nt { font-weight: 800; color: var(--quiet); white-space: nowrap; }
+  table.runs tr.open td { background: #f6f7f8; }
+
+  /* ch.6: one-slide live demo */
+  .dm-label { margin: 0 0 6px; font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .16em; color: var(--quiet); }
+  .dm-lower { display: grid; grid-template-columns: 1fr 236px; gap: 28px; align-items: end; }
+  table.steps { font-size: 25px; line-height: 1.2; }
+  table.steps th { padding: 4px 14px; font-size: 13px; }
+  table.steps td { padding: 5px 14px; vertical-align: middle; border-bottom: 1px solid var(--line-2); }
+  table.steps td:first-child { width: 74px; }
+  table.steps td:nth-child(2) { font-weight: 800; color: var(--ink); }
+  table.steps code { font-size: 23px; font-weight: 600; padding: 3px 10px; background: #eef2f4; color: var(--ink); }
+  table.steps .sub { margin-left: 8px; color: var(--muted); font-size: 21px; font-weight: 400; }
+  .badge { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--wg); color: #fff; font-size: 22px; font-weight: 800; }
+  a.sc-card { display: block; padding: 8px 8px 9px; border: 1px solid var(--line); background: #fff; color: var(--ink); text-decoration: none; }
+  a.sc-card img { display: block; width: 100%; height: auto; margin-bottom: 6px; }
+  a.sc-card b { display: block; font-size: 17px; line-height: 1.2; }
+  a.sc-card span { display: block; font-size: 13.5px; line-height: 1.3; color: var(--muted); }
+  a.sc-card small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 10.5px; color: var(--nx); text-decoration: underline; }
+
+  /* ch.7 and QR codes */
+  .qr-card { display: block; padding: 8px 8px 7px; background: #fff; border: 1px solid var(--line); border-radius: 6px; text-align: center; color: var(--ink); text-decoration: none; }
+  .qr-card img { display: block; width: 100%; height: auto; }
+  .qr-card b { display: block; margin-top: 2px; font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: .14em; }
+  .title-slide .qr-card { position: absolute; right: 26px; bottom: 24px; width: 188px; z-index: 3; box-shadow: 0 2px 12px rgba(0, 0, 0, .2); }
+  .sum { display: grid; gap: 18px; }
+  .sum-row { display: grid; grid-template-columns: 60px 1fr; gap: 24px; align-items: center; padding: 20px 28px; border: 1px solid var(--line); border-left: 6px solid var(--nx); background: #fff; }
+  .sum-row.b { border-left-color: var(--blue); }
+  .sum-row.c { border-left-color: var(--gold); }
+  .sum-n { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; background: var(--nx); color: #fff; font-size: 27px; font-weight: 800; }
+  .sum-row.b .sum-n { background: var(--blue); }
+  .sum-row.c .sum-n { background: var(--gold); }
+  .sum-row h3 { margin: 0 0 4px; font-size: 27px; line-height: 1.2; }
+  .sum-row p { margin: 0; font-size: 20.5px; line-height: 1.42; color: var(--muted); }
+  .sum-row small { display: block; margin-top: 6px; font-family: var(--mono); font-size: 14px; color: var(--quiet); }
+  .ack { display: grid; }
+  .ack-row { padding: 16px 6px; border-bottom: 1px solid var(--line); }
+  .ack-row:last-child { border-bottom: 0; }
+  .ack-row b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; color: var(--ink); }
+  .ack-row span { display: block; margin-top: 3px; font-size: 20px; line-height: 1.4; color: var(--muted); }
+  .bye { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: center; }
+  .bye .qr-card { padding: 12px 12px 10px; }
+  .bye .qr-card b { font-size: 16px; }
+  .bye .lnk { margin: 0 0 22px; }
+  .bye .lnk small { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .14em; color: var(--quiet); }
+  .bye .lnk a { font-family: var(--mono); font-size: 19px; line-height: 1.4; font-weight: 600; color: var(--nx); word-break: break-all; }
+  .bye .who { margin: 0; color: var(--muted); font-size: 20px; }
+
+  /* links: quiet, with a hover cue */
+  .sources a, p.mono a { color: inherit; text-decoration: underline; text-decoration-color: rgba(120, 130, 140, .55); text-underline-offset: 2px; transition: color .15s, text-decoration-color .15s; }
+  .sources a:hover, .sources a:focus-visible, p.mono a:hover, p.mono a:focus-visible { color: var(--nx); text-decoration-color: var(--nx); }
+  .repo a:hover, .repo a:focus-visible, .bye .lnk a:hover, .bye .lnk a:focus-visible { color: var(--ink); }
+  a.sc-card:hover, a.sc-card:focus-visible, a.qr-card:hover, a.qr-card:focus-visible { border-color: var(--nx); }
+
+  /* backup video: shown only when assets/demo/backup-demo.mp4 exists (assets/backup-video.js) */
+  .bv[hidden], .bv-overlay[hidden], .bv-open[hidden] { display: none !important; }
+  .bv-open { position: absolute; right: 72px; top: 104px; z-index: 5; padding: 4px 12px; border: 1px solid var(--line); border-radius: 3px; background: #fff; color: var(--muted); font-family: var(--mono); font-size: 14px; letter-spacing: .08em; cursor: pointer; }
+  .bv-open:hover, .bv-open:focus-visible { color: var(--nx); border-color: var(--nx); }
+  .bv-overlay { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 56px 40px 24px; background: #0b0b0b; }
+  .bv-overlay video { display: block; max-width: 100%; max-height: 100%; background: #000; }
+  .bv-close { position: absolute; top: 14px; right: 18px; padding: 5px 14px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 3px; background: transparent; color: #fff; font-family: var(--mono); font-size: 14px; letter-spacing: .08em; cursor: pointer; }
+  .bv-close:hover, .bv-close:focus-visible { background: rgba(255, 255, 255, .16); }
+
+  /* options comparison */
+  table.options { font-size: 15.5px; line-height: 1.22; }
+  table.options th, table.options td { padding: 5px 9px; }
+  table.options tr.this td { background: var(--nx-soft); font-weight: 600; }
+  table.options td.yes { color: var(--nx); }
+  table.options td.no { color: var(--wg); }
+
+  /* horizontal timeline — About Me */
+  .timeline-h {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    position: relative;
+  }
+  .timeline-h::before {
+    content: "";
+    position: absolute;
+    top: 37px;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+  }
+  .tlh-node {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 9px;
+  }
+  .tlh-dot {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid var(--wg);
+    background: #fff;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+  }
+  .tlh-dot img { width: 100%; height: 100%; object-fit: cover; }
+  .tlh-node b { font-size: 16px; }
+  .tlh-node span {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  /* vertical timeline — History */
+  .timeline-v { display: flex; flex-direction: column; }
+  .tlv-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 96px 24px 1fr;
+    gap: 4px;
+    align-items: start;
+    padding: 13px 0;
+  }
+  .tlv-year {
+    padding-top: 2px;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--wg);
+    font-size: 15px;
+  }
+  .tlv-dot-col { position: relative; display: flex; justify-content: center; }
+  .tlv-dot {
+    position: relative;
+    z-index: 1;
+    width: 13px;
+    height: 13px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--wg);
+  }
+  .tlv-item:not(:last-child) .tlv-dot-col::after {
+    content: "";
+    position: absolute;
+    top: 21px;
+    bottom: -13px;
+    left: 50%;
+    width: 2px;
+    background: var(--line);
+    transform: translateX(-50%);
+  }
+  .tlv-body h3 { margin: 0 0 3px; font-size: 18px; }
+  .tlv-body p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.42; }
+  .history-layout {
+    position: relative;
+  }
+  .history-products {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 230px;
+    height: 376px;
+    display: grid;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    min-height: 0;
+  }
+  .history-product {
+    margin: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .history-product img {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: contain;
+    display: block;
+  }
+  .history-product figcaption {
+    padding: 4px 8px;
+    border-top: 1px solid var(--line-2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .demo {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .thumb {
+    position: relative;
+    border: 1px solid var(--line);
+    background: #000;
+    line-height: 0;
+  }
+  .thumb a { border-bottom: 0; display: block; }
+  .thumb img { width: 100%; height: auto; display: block; }
+  .thumb .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 78px;
+    height: 54px;
+    margin: -27px 0 0 -39px;
+    border-radius: 12px;
+    background: rgba(141, 31, 36, .92);
+  }
+  .thumb .play::after {
+    content: "";
+    position: absolute;
+    left: 30px;
+    top: 15px;
+    border-style: solid;
+    border-width: 12px 0 12px 20px;
+    border-color: transparent transparent transparent #fff;
+  }
+
+  .takeaway {
+    margin-top: 14px;
+    padding: 14px 28px;
+    border: 0 !important;
+    border-left: 5px solid var(--nx) !important;
+    background: var(--nx-soft);
+    display: block;
+    text-align: center;
+  }
+  .takeaway b {
+    display: none;
+  }
+  .takeaway p {
+    margin: 0;
+    color: var(--ink);
+    font-size: 19px;
+    line-height: 1.42;
+    font-weight: 800;
+  }
+
+  .agenda { display: grid; gap: 0; }
+  .agenda-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px 1fr auto;
+    align-items: start;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .agenda-item:last-child { border-bottom: 0; }
+  .agenda-num {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--wg-soft);
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .agenda-item:not(:last-child) .agenda-num::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 28px;
+    width: 2px;
+    height: 18px;
+    background: var(--line);
+    transform: translateX(-50%);
+  }
+  .agenda-item h3 { margin: 0 0 2px; font-size: 18px; }
+  .agenda-item p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+  .agenda-time {
+    padding-top: 5px;
+    color: var(--quiet);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    white-space: nowrap;
+  }
+
+  /* chapter-divider state on the same .agenda-item used by the Agenda slide */
+  .agenda-item.dim { opacity: .38; }
+  .agenda-item.current .agenda-num { background: var(--wg); color: #fff; }
+  .agenda-item.current h3 { color: var(--wg); }
+
+  .notes-src { display: none; }
+  #notes {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: none;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 20px 30px 26px;
+    border-top: 2px solid var(--ink);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  #notes.on { display: block; }
+  #notes h4 {
+    margin: 0 0 10px;
+    color: var(--wg);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+  #notes p { max-width: 106ch; margin: 0 0 10px; }
+
+
+  /* otfsg sharing session additions */
+  .ph { height: 205px; display: grid; place-items: center; border-bottom: 1px solid var(--line-2);
+        background: repeating-linear-gradient(45deg, #f4f6f7, #f4f6f7 10px, #eef2f3 10px, #eef2f3 20px);
+        color: var(--quiet); font-family: var(--mono); font-size: 13px; letter-spacing: .1em; text-align: center; }
+  .jp h2 { text-transform: none; font-size: 34px; letter-spacing: 0; }
+  .fact p.big-num { font-size: 60px; line-height: 1; }
+  .fact p.big-num small { font-size: 22px; }
+  .big-num { font-size: 64px; font-weight: 900; line-height: 1; color: var(--wg); }
+  .big-num small { font-size: 22px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+  .talks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .talks .fact { padding: 14px 18px; }
+  .talks .fact b { font-size: 15px; text-transform: none; letter-spacing: 0; font-family: inherit; font-weight: 800; }
+  .talks .fact p { font-size: 15px; line-height: 1.45; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="help"><span><b>Arrow</b> move</span><span><b>N</b> notes</span><span><b>F</b> fullscreen</span></div>
+<div id="stage"><div id="canvas">
+  <div id="bar"></div>
+
+  <section class="slide title-slide">
+    <div class="title-main">
+      <p class="eyebrow">OTFSG Tokyo &middot; Community Over Code Glasgow 2026</p>
+      <div class="title-core">
+        <h1 style="font-size:38px;line-height:1.25">個人のOSS活動から、<br>世界のコミュニティに<br>飛び込む</h1>
+        <p class="subtitle" style="font-size:21px;line-height:1.5;font-style:normal">渡航支援制度（TAC）を利用して登壇した<br>Community Over Code Glasgow 2026 体験記</p>
+      </div>
+      <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
+    </div>
+    <div class="hero-media">
+      <div class="hero-tile logo"><img src="../presentation/assets/community-over-code-logo.png" alt="Community Over Code logo"><span class="caption">Community Over Code</span></div>
+      <div class="hero-tile logo"><img src="../presentation/assets/apache-nuttx-logo.png" alt="Apache NuttX logo"><span class="caption">Apache NuttX</span></div>
+      <div class="hero-tile"><img src="../presentation/assets/boards-spresense-esp32s3.jpg" alt="Spresense and ESP32-S3 boards"><span class="caption">SPRESENSE / ESP32-S3</span></div>
+    </div>
+    <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../presentation/assets/slides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK</b></a>
+
+    <div class="num">1 / 22</div>
+    <div class="notes-src">
+こんばんは。ソニーセミコンダクタソリューションズの秋田です。
+||
+今日は、今年10月にイギリスのグラスゴーで開かれたCommunity Over Code Glasgow 2026に、渡航支援制度のTACを使って参加し、登壇した体験をお話しします。
+||
+メインは、登壇に至るまでの過程と、TACという支援制度です。発表した内容そのものは、後半に概要だけ紹介します。
+||
+「自分も海外のテックカンファレンスで登壇できそう」と思ってもらえたらうれしいです。
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">About Me</p>
+    <div class="body about" style="gap:22px">
+      <div class="about-who">
+        <img class="intro-avatar" src="../presentation/assets/profile-avatar.jpg" alt="Satoru Akita">
+        <p class="lead" style="max-width:none">秋田 賢（Satoru Akita）。ソニーセミコンダクタソリューションズでエッジAI（カメラなどの機器側でAI処理を行う技術）に関わるエンジニア。仕事ではApache NuttXをアプリケーション側から使っています。</p>
+        <figure class="about-fox"><img class="intro-avatar" src="../presentation/assets/aki310-avatar.png" alt="Fox icon"><figcaption>SNSのアイコン</figcaption></figure>
+      </div>
+      <div>
+        <p class="about-label">これまでの活動</p>
+        <div class="hobby-row">
+          <figure><img src="../presentation/assets/me-rocket.jpg" alt="Model rocket"><figcaption>ロケット・航空宇宙</figcaption></figure>
+          <figure><img src="../presentation/assets/me-dna.jpg" alt="DNA nanostructure"><figcaption>DNAナノロボティクス</figcaption></figure>
+          <figure><img src="../presentation/assets/me-chip.jpg" alt="Test chips on a wafer"><figcaption>半導体研究</figcaption></figure>
+          <figure><img src="../presentation/assets/me-robot.jpg" alt="With a humanoid robot"><figcaption>ロボット</figcaption></figure>
+          <figure><img src="../presentation/assets/me-linux.jpg" alt="Volunteering at an OSS conference"><figcaption>OSSカンファレンスのボランティア</figcaption></figure>
+        </div>
+      </div>
+      <div class="takeaway" style="margin-top:0"><b>Takeaway</b><p>本業とは別に、個人でOSS（Open Source Software）の活動をしています。</p></div>
+    </div>
+
+    <div class="num">2 / 22</div>
+    <div class="notes-src">
+簡単に自己紹介です。
+||
+ソニーセミコンダクタソリューションズで、エッジAIに関わっています。カメラなどの機器の側でAIの処理を行う仕事です。
+||
+大学ではロケットなど航空宇宙を学び、学部ではDNAナノロボティクス、修士では半導体を研究しました。ロボットも作りますし、Open Source Summit JapanやKubeConにはボランティアとして参加してきました。
+||
+今日のテーマは、本業とは別に、個人で続けているOSS活動です。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>Agenda</h2>
+    <div class="body"><div class="agenda">
+        <div class="agenda-item">
+          <div class="agenda-num">1</div>
+          <div><h3>Community Over Codeとは</h3><p>ASFの国際カンファレンス</p></div>
+          <div class="agenda-time">~3 MIN</div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">2</div>
+          <div><h3>登壇までの道のり</h3><p>GSoC不採択から、CfP採択まで</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">3</div>
+          <div><h3>渡航支援制度（TAC）</h3><p>費用の壁・制度の中身・申請後の流れ</p></div>
+          <div class="agenda-time">~9 MIN</div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">4</div>
+          <div><h3>現地での5日間</h3><p>運営協力・聴講・ハッカソン</p></div>
+          <div class="agenda-time">~6 MIN</div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">5</div>
+          <div><h3>発表内容の概要</h3><p>WireGuard for Apache NuttX</p></div>
+          <div class="agenda-time">~4 MIN</div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">6</div>
+          <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
+          <div class="agenda-time">~2 MIN</div>
+        </div>
+    </div></div>
+
+    <div class="num">3 / 22</div>
+    <div class="notes-src">
+今日の流れです。30分で、六つのパートに分けています。
+||
+前半は、カンファレンスの紹介と、登壇までの道のり。中心は三つ目の、渡航支援制度TACです。そのあと、現地での様子、発表の概要、学びの順に進みます。
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Community Over Code</h2>
+    <div class="body" style="gap:22px">
+      <div class="two" style="grid-template-columns:1.25fr .75fr">
+        <div class="panel" style="min-height:0">
+          <table class="tight">
+            <tr><th>項目</th><th>今回の開催概要</th></tr>
+            <tr><td>イベント</td><td>Community Over Code Glasgow 2026</td></tr>
+            <tr><td>会期</td><td>2026年10月11日（日）〜14日（水）</td></tr>
+            <tr><td>開催地</td><td>イギリス・スコットランド、グラスゴー</td></tr>
+            <tr><td>会場</td><td>Hilton Glasgow</td></tr>
+            <tr><td>主催</td><td>Apache Software Foundation（ASF）</td></tr>
+          </table>
+        </div>
+        <div class="logo-panel"><img src="../presentation/assets/community-over-code-logo.png" alt="Community Over Code logo"></div>
+      </div>
+      <div class="three">
+        <div class="fact wg"><b>旧称</b><p>ApacheCon。2023年に現在の名称へ</p></div>
+        <div class="fact nx"><b>対象</b><p>データ処理・検索・クラウド・IoT・組込みなど、幅広いプロジェクト</p></div>
+        <div class="fact blue"><b>形式</b><p>トラック別の講演、ハッカソン、BoF（有志の話し合い）</p></div>
+      </div>
+    </div>
+
+    <div class="num"><span class="part">PART 1 &middot; 1/2</span>4 / 22</div>
+    <div class="notes-src">
+まず、Community Over Codeについてです。
+||
+Apache Software Foundation、略してASFが開くOSSの国際カンファレンスで、以前はApacheConという名前でした。
+||
+Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが、データ処理、検索、クラウド、IoT、組込みまで、さまざまなプロジェクトが集まります。今回は10月11日から14日まで、グラスゴーのHilton Glasgowで開かれました。
+||
+この会場には、ArrowやParquet、Airflowなど、皆さんに身近なプロジェクトの人たちもいました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>ASFは「個人」のコミュニティ</h2>
+    <div class="body" style="gap:20px">
+      <div class="three">
+        <div class="fact wg"><b>会員は個人</b><p>財団の会員は企業ではなく個人。企業のスポンサー支援と、プロジェクトでの個人の役割は分けられている。</p></div>
+        <div class="fact nx"><b>コミッター</b><p>継続的な貢献に基づいて、ソースコードの変更をリポジトリに反映する権限を持つ人。</p></div>
+        <div class="fact blue"><b>PMC</b><p>Project Management Committee。プロジェクトの運営やリリースの承認を担う委員会。</p></div>
+      </div>
+      <div class="claim ok"><p>コントリビューター → コミッター → PMCメンバー</p><small>貢献を積み重ねて、役割が広がっていく道筋がある。</small></div>
+      <p class="aside" style="font-size:16px"><strong>Linux Foundation系との違い：</strong>どちらが企業向け・個人向けと単純に分けられるものではない。何を中心に人が集まり、どう支えているかで見ると分かりやすい。</p>
+    </div>
+
+    <div class="num"><span class="part">PART 1 &middot; 2/2</span>5 / 22</div>
+    <div class="notes-src">
+ASFの特徴の一つは、財団の会員が企業ではなく個人であることです。
+||
+各プロジェクトでは、継続して貢献した人がコミッターになり、コードを反映する権限を持ちます。さらに、運営とリリースの承認を担うPMCのメンバーになる道があります。
+||
+私はこれまでLinux Foundation系のイベントにボランティアで参加してきました。どちらが企業向けで、どちらが個人向けとは単純に言えません。ただ、貢献を積み重ねて役割が広がっていく道筋が、見えやすい場所だと感じました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>登壇までの道のり</h2>
+    <div class="body" style="justify-content:flex-start;padding-top:6px">
+      <div class="timeline-v" style="--w:1">
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">2025</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>GSoCに応募 → 不採択</h3><p>Google Summer of Codeに初めて応募しましたが、採択されませんでした。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">2026 2–3月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>再挑戦：NuttXへのWireGuard移植</h3><p>アイデアを調べ、GitHub上で相談しながら提案をまとめました。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">3月20日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Alinさんから声がかかる</h3><p>Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさん。CfPへの応募を勧められ、応募しました。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">5月上旬</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>CfP採択 / GSoC不採択</h3><p>またGSoCは不採択。でも、登壇の機会が決まったので、個人で開発を続けました。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">6月7日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>TACの採択連絡</h3><p>渡航費用の支援が決まりました。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">8月〜9月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Version 1 → Version 2</h3><p>アプリ版を作り、カーネルドライバ版へ。</p></div></div>
+        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">10月13日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>グラスゴーで登壇</h3><p>初めての海外ソフトウェアカンファレンスでの登壇。</p></div></div>
+      </div>
+    </div>
+
+    <div class="num"><span class="part">PART 2 &middot; 1/2</span>6 / 22</div>
+    <div class="notes-src">
+登壇までの道のりです。
+||
+GSoC、Google Summer of Codeには、2025年にも応募して不採択でした。2026年に再挑戦して選んだのが、NuttXへのWireGuard移植です。
+||
+3月20日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、Community Over CodeのCfP、つまり講演募集への応募を勧めてくれました。応募して、5月上旬に結果が届きました。GSoCは不採択でしたが、CfPは採択でした。
+||
+登壇が決まったので、個人の活動として開発を続けました。6月にはTACの採択連絡も届いて、10月13日に登壇しました。
+||
+[note] 時系列の注意：6月7日のTAC採択と、5月上旬のCfP採択の前後関係は、メールで日付を確認しておく。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>つながったのは、なぜか</h2>
+    <div class="body" style="gap:22px">
+      <div class="three">
+        <div class="fact wg"><b>公開の場で動いていた</b><p>提案の準備や相談を、GitHub上で進めていた。見つけてもらえる状態だった。</p></div>
+        <div class="fact nx"><b>社内のつながり</b><p>同じSonyグループで、仕事でも少し接点があった。会社のチャットで連絡をもらえた。</p></div>
+        <div class="fact blue"><b>「応募してみたら」</b><p>CfPという具体的な入口を、人が教えてくれた。</p></div>
+      </div>
+      <div class="claim"><p>GSoCは不採択。でも、そこで終わらなかった。</p><small>応募し、公開の場で相談し、人に声をかけてもらえたことが重なって、入口に立てた。</small></div>
+      <div class="takeaway"><b>Takeaway</b><p>結果が不採択でも、公開で動いた記録が次のきっかけになる。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 2 &middot; 2/2</span>7 / 22</div>
+    <div class="notes-src">
+振り返ると、いくつかのことが重なっていました。
+||
+一つ目は、提案の準備や相談をGitHubの公開の場で進めていたことです。二つ目は、同じSonyグループで、仕事でも少し接点があったこと。そして三つ目が、人が具体的な入口、CfPを教えてくれたことです。
+||
+GSoCの結果だけを見れば不採択です。でも、応募して、公開の場で相談して、声をかけてもらえたことが、そのあとの活動につながりました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>次の壁：費用</h2>
+    <div class="body" style="gap:22px">
+      <p class="lead" style="max-width:none">登壇は決まった。でも、グラスゴーまでの費用を、個人で払えるか。</p>
+      <div class="three">
+        <div class="fact wg"><b>航空券 + ホテル</b><p class="big-num" style="margin-top:6px">約50<small>万円</small></p><p style="margin-top:8px">当時の見積もり</p></div>
+        <div class="fact gold"><b>宿泊費だけでも</b><p class="big-num" style="margin-top:6px;color:var(--gold)">約20<small>万円</small></p><p style="margin-top:8px">一泊3万円程度として、滞在全体で</p></div>
+        <div class="fact nx"><b>GSoCの報酬</b><p class="big-num" style="margin-top:6px;color:var(--quiet)">なし</p><p style="margin-top:8px">不採択だったので</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>発表の機会があっても、費用で諦める人は多いはず。そこで応募したのがTAC。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 3 &middot; 1/5</span>8 / 22</div>
+    <div class="notes-src">
+ここからが今日の中心です。
+||
+登壇が決まっても、次の課題は費用でした。GSoCに採択されていれば報酬がありましたが、今回は不採択です。航空券とホテルを自費で手配すると、当時の見積もりで合計50万円ほどでした。宿泊費だけでも、一泊3万円なら、滞在全体で20万円近くになります。
+||
+個人の活動として負担するには大きな金額です。そこで応募したのが、TACによる渡航支援でした。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>TACとは</h2>
+    <div class="body" style="gap:18px">
+      <p class="lead" style="max-width:none;font-size:21px"><span class="hl">Travel Assistance Committee</span>。経済的な理由で参加が難しい人に、ASFのイベントへの参加を支援する仕組み。</p>
+      <div class="two">
+        <div class="panel nx" style="min-height:0"><h3>支援の対象</h3><ul style="margin:0;padding-left:22px"><li>交通費</li><li>会期中の宿泊費</li><li>カンファレンスの参加費</li></ul></div>
+        <div class="panel" style="min-height:0"><h3>対象外・注意</h3><ul style="margin:0;padding-left:22px"><li>一般的な生活費は対象外</li><li>原則、本人への振込ではない。ASFや指定業者が交通・宿泊を手配して支払う</li><li>支援枠と予算は限られている</li></ul></div>
+      </div>
+      <p class="fine" style="margin:0">出典：Apache TAC 公式の案内</p>
+    </div>
+
+    <div class="num"><span class="part">PART 3 &middot; 2/5</span>9 / 22</div>
+    <div class="notes-src">
+TACは、Travel Assistance Committeeの略です。経済的な理由で参加が難しい人に、ASFのイベントへの参加を支援する仕組みです。
+||
+公式の案内では、交通費、会期中の宿泊費、カンファレンスの参加費が対象です。生活費は対象外です。また、原則として本人にお金が振り込まれるのではなく、ASFや指定の業者が、交通と宿泊を手配して支払います。
+||
+支援枠と予算は限られているので、応募すれば必ず通るわけではありません。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>応募と審査</h2>
+    <div class="body" style="gap:20px">
+      <div class="three">
+        <div class="fact wg"><b>応募</b><p>オンラインで申請。申請内容に基づいて審査される。</p></div>
+        <div class="fact nx"><b>重視される点</b><p>参加が本人にとってだけでなく、ASFやOSS全体にどんな意味を持つか。</p></div>
+        <div class="fact blue"><b>開催地</b><p>居住地に近いイベントが一般に優先される。遠方でも、参加する理由は考慮される。</p></div>
+      </div>
+      <div class="claim ok"><p>登壇者であることは、強い「参加する理由」になる。</p><small>私の場合は、CfPが採択されていたことが、申請内容の軸になりました。</small></div>
+      <p class="aside" style="font-size:16px"><strong>注意：</strong>採択の基準や結果は回によって変わります。応募前に必ず公式の案内を読んでください。</p>
+    </div>
+
+    <div class="num"><span class="part">PART 3 &middot; 3/5</span>10 / 22</div>
+    <div class="notes-src">
+応募はオンラインで、申請内容をもとに審査されます。
+||
+公式の案内では、参加が本人にとってだけでなく、ASFやOSS全体にどんな意味を持つかが重視されると説明されています。居住地に近い開催地への申請が一般に優先されますが、遠方のイベントへ参加する理由も考慮される、とあります。
+||
+私の場合は、CfPが採択されて登壇することが、申請の軸になりました。ただし、基準や結果は回によって変わるので、応募するときは公式の案内を読んでください。
+||
+[note] 「登壇が採択の決め手だった」とは言わない。公式の審査理由は公開されていないので、あくまで申請内容の軸、と言う。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>採択のあとの流れ</h2>
+    <div class="body" style="gap:16px">
+      <div class="panel" style="min-height:0;padding:14px 30px">
+        <div class="flow">
+          <div><b>6/7</b>採択の連絡がメールで届く</div>
+          <div><b>→</b>受諾の返信、必要書類の確認</div>
+          <div><b>→</b>航空券の希望を伝える（今回はJAL）</div>
+          <div><b>→</b>パスポート・渡航手続き。イギリスの電子渡航認証「UK ETA」を取得</div>
+          <div><b>→</b>宿泊先は会場のHilton Glasgow。手配はお任せ</div>
+        </div>
+      </div>
+      <div class="takeaway" style="margin-top:0"><b>Takeaway</b><p>手続きは基本メール。航空券や宿は、希望を伝えれば手配してもらえる。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 3 &middot; 4/5</span>11 / 22</div>
+    <div class="notes-src">
+採択の連絡が届いたのは6月7日でした。そのあとは、メールでのやり取りが中心です。受諾の返信、必要書類の確認、航空券の希望、パスポートと渡航手続きについて連絡しました。イギリスの電子渡航認証、UK ETAの取得も自分で進めました。
+||
+航空券は希望を伝えられて、今回はJALでした。宿泊先は会場のHilton Glasgowです。相部屋だと思っていたのですが、実際にはベッドが二つある部屋を一人で使えました。
+||
+交通費と宿泊費の支援は本当に大きくて、費用の負担を大きく減らして参加できました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>見返りは、運営協力</h2>
+    <div class="body" style="gap:18px">
+      <div class="two">
+        <div class="panel blue" style="min-height:0"><h3>TACの求めること</h3><p>支援を受ける参加者は、イベントの運営に協力する。例：設営、受付、セッションの補助、撤収。</p></div>
+        <div class="panel nx" style="min-height:0"><h3>私の担当</h3><ul style="margin:0;padding-left:22px;color:var(--muted);font-size:20px;line-height:1.55"><li>会場準備（机、旗、バナーの設置）</li><li>最終日のセッション会場の録画とスピーカー対応</li><li>午後、ほかのスタッフの担当を引き受けた</li></ul></div>
+      </div>
+      <div class="claim ok"><p>録画は、基本的に開始ボタンと停止ボタンを押すだけ。</p><small>日本でカンファレンスのボランティアを経験していたので、仕事の違いは大きくなかった。今回は担当量が比較的少なく、登壇・聴講・交流と両立できた。担当は回や割り当てで変わる。</small></div>
+    </div>
+
+    <div class="num"><span class="part">PART 3 &middot; 5/5</span>12 / 22</div>
+    <div class="notes-src">
+TACでは、支援を受ける人に、運営への協力を求めています。設営や受付、セッションの補助、撤収などです。
+||
+前日の土曜日に、TACの参加者が集まって、Tシャツを受け取り、運営の説明を受けました。私が担当したのは、会場準備で机や旗、バナーを置く作業と、最終日の録画とスピーカーの対応です。録画機器の操作はシンプルで、ボタンを押して始め、終わったら止めるだけでした。
+||
+今回の担当量は比較的少なくて、登壇も聴講も交流もできました。ただ、担当は開催回や割り当てで変わると思います。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>現地での5日間</h2>
+    <div class="body">
+      <table class="compact">
+        <tr><th>日付</th><th>主な行動</th></tr>
+        <tr><td>10/9（金）</td><td>羽田を出発。ロンドン経由でグラスゴーへ</td></tr>
+        <tr><td>10/10（土）</td><td>TACの集合・運営説明、Tシャツ受け取り、会場準備、交流</td></tr>
+        <tr><td>10/11（日）</td><td>カンファレンス初日。Airflow、StreamPipesなどの講演を聴講</td></tr>
+        <tr><td>10/12（月）</td><td>AI時代のOSS教育、Arrow／Parquetのファジングなどの講演を聴講</td></tr>
+        <tr><td style="color:var(--wg)">10/13（火）</td><td><strong>WireGuard移植について登壇</strong>。NuttX関連の講演を聴講</td></tr>
+        <tr><td>10/14（水）</td><td>NuttXハッカソン、講演の録画・スピーカー支援。Tika、Lucene関連の講演</td></tr>
+        <tr><td>10/15–16</td><td>エディンバラから帰国。16日に羽田着</td></tr>
+      </table>
+    </div>
+
+    <div class="num"><span class="part">PART 4 &middot; 1/3</span>13 / 22</div>
+    <div class="notes-src">
+渡航は10月9日から16日まででした。
+||
+登壇は13日の一コマだけですが、そのほかの時間に、講演を聞き、運営を手伝い、ハッカソンに参加し、人と話しました。その全体を通じて、カンファレンスという場を経験できたと思います。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>現地の様子</h2>
+    <div class="body">
+      <div class="photo-grid">
+        <div class="photo-card"><div class="ph">PHOTO<br>会場（Hilton Glasgow）</div><div class="copy" style="min-height:110px"><p>会場の準備。机やバナーの設置を手伝いました。</p></div></div>
+        <div class="photo-card"><div class="ph">PHOTO<br>TACの集合写真</div><div class="copy" style="min-height:110px"><p>TACの参加者と。Tシャツを着て運営を支えました。</p></div></div>
+        <div class="photo-card"><div class="ph">PHOTO<br>登壇</div><div class="copy" style="min-height:110px"><p>10月13日、初めての海外ソフトウェアカンファレンスでの登壇。</p></div></div>
+      </div>
+    </div>
+
+    <div class="num"><span class="part">PART 4 &middot; 2/3</span>14 / 22</div>
+    <div class="notes-src">
+[写真を差し替える] 会場、TACの集合写真、登壇中の写真を入れる。
+||
+土曜日の集まりでは、日本人の参加者3人とも会いました。海外のイベントで、日本からそれぞれの経緯で来ている人に会えたのが印象的でした。
+||
+食事会などで話すと、講演だけでは分からない、その人がどんな経緯でOSSに関わっているかが分かります。NuttXの関係者にも現地で会えて、オンラインで見ていたコミュニティが、同じ場所で話す人たちとして感じられるようになりました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>聴いた講演（一部）</h2>
+    <div class="body">
+      <div class="talks">
+        <div class="fact wg"><b>Apache Airflow + AIエージェント</b><p>処理の流れを管理するAirflowに、AIエージェントを組み込む。実行状況の把握と、人による確認・判断の仕組み。</p></div>
+        <div class="fact nx"><b>Apache StreamPipes</b><p>センサーや機械のデータを取り込み、加工・可視化する産業IoT基盤。</p></div>
+        <div class="fact blue"><b>OSS教育とAI</b><p>AIが使える時代に、OSSへの参加をどう教えるか。「暗黙知」と「すべてのソフトウェアは社会的」。</p></div>
+        <div class="fact gold"><b>Arrow / Parquet C++のファジング</b><p>6年間、多様な入力で不具合を探し続けた取り組み。活動の継続と資金の話も。</p></div>
+        <div class="fact wg"><b>NuttX製のロケット高度計</b><p>飛行データの記録やパラシュート展開をNuttXで実装した事例。</p></div>
+        <div class="fact nx"><b>Tika / Lucene</b><p>ファイルから情報を取り出すTikaと、ベクトル検索を高速化するLucene。</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>同じApacheの中に、これだけ違う分野が並ぶ。どのソフトウェアの裏にも、続けている人たちがいる。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 4 &middot; 3/3</span>15 / 22</div>
+    <div class="notes-src">
+講演は、組込みからデータ処理、検索、AI、教育まで幅広く聞きました。
+||
+今日の皆さんに近いところでは、ArrowとParquetのC++実装を6年間ファジングし続けた講演があります。検証の技術だけでなく、活動を続けるための資金の話も出ました。AirflowにAIエージェントを組み込む講演もありました。
+||
+OSS教育の講演では、「バイブコーディングがうまくいくのは、暗黙知のギャップがないからだ」という趣旨の話がありました。私自身、AIを使って初めてのOS開発をしたので、その実感と重なりました。
+||
+最終日のNuttXハッカソンでは、Sony SpresenseでDOOMを動かす目標を、会場で達成しました。私もハッカソンの成果を共有しました。
+||
+[note] 聴講していない講演は入れない。講演の詳細はブログ参照。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>発表内容：WireGuard for NuttX</h2>
+    <div class="body" style="gap:14px">
+      <svg class="route" style="max-height:230px" viewBox="0 0 1136 275" role="img" aria-label="wg0 registered as a NuttX network device, carried over a UDP socket to a WireGuard peer">
+        <defs>
+          <marker id="arrow-arch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#87939b"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="660" height="292" fill="#f5f7f8" stroke="#d5dde2"></rect>
+        <text class="label" x="22" y="24">NUTTX RTOS</text>
+        <rect x="24" y="34" width="612" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="330" y="62" text-anchor="middle" font-size="19" font-weight="700">Application / NSH</text>
+        <rect x="24" y="88" width="612" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="330" y="116" text-anchor="middle" font-size="19" font-weight="700">NuttX network stack (BSD socket API)</text>
+        <rect x="24" y="142" width="294" height="60" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="171" y="167" text-anchor="middle" font-size="19" font-weight="700">eth0 / wlan0</text>
+        <text class="small" x="171" y="188" text-anchor="middle">physical NIC</text>
+        <rect x="342" y="142" width="294" height="60" fill="#f5e4e5" stroke="#8d1f24" stroke-width="2"></rect>
+        <text x="489" y="167" text-anchor="middle" font-size="19" font-weight="800" fill="#8d1f24">wg0</text>
+        <text class="small" x="489" y="188" text-anchor="middle" fill="#8d1f24">WireGuard netdev &mdash; this project</text>
+        <rect x="342" y="216" width="294" height="44" fill="#fff" stroke="#d5dde2"></rect>
+        <text x="489" y="244" text-anchor="middle" font-size="17" font-weight="700">UDP socket (port 51820)</text>
+        <line x1="330" y1="78" x2="330" y2="86" stroke="#87939b" stroke-width="2"></line>
+        <line x1="171" y1="132" x2="171" y2="140" stroke="#87939b" stroke-width="2"></line>
+        <line x1="489" y1="132" x2="489" y2="140" stroke="#87939b" stroke-width="2"></line>
+        <line x1="489" y1="202" x2="489" y2="214" stroke="#87939b" stroke-width="2"></line>
+        <line x1="640" y1="238" x2="710" y2="238" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-arch)"></line>
+        <rect x="716" y="206" width="186" height="64" fill="#fbfcfd" stroke="#d5dde2" stroke-dasharray="7 5"></rect>
+        <text class="small" x="809" y="232" text-anchor="middle">Internet / LTE /</text>
+        <text class="small" x="809" y="252" text-anchor="middle">satellite link</text>
+        <line x1="906" y1="238" x2="942" y2="238" stroke="#87939b" stroke-width="3" marker-end="url(#arrow-arch)"></line>
+        <rect x="948" y="206" width="188" height="64" fill="#dff0ee" stroke="#176c67"></rect>
+        <text x="1042" y="232" text-anchor="middle" font-size="18" font-weight="800">WireGuard peer</text>
+        <text class="small" x="1042" y="254" text-anchor="middle">Linux, Windows, ...</text>
+      </svg>
+      <div class="three">
+        <div class="fact wg"><b>NuttX</b><p>マイコンなど組込み機器で使われるリアルタイムOS。</p></div>
+        <div class="fact nx"><b>WireGuard</b><p>暗号化された通信経路をつくる軽量なVPN。</p></div>
+        <div class="fact blue"><b>目的</b><p>遠隔の組込み機器へ、安全に接続する。</p></div>
+      </div>
+    </div>
+
+    <div class="num"><span class="part">PART 5 &middot; 1/3</span>16 / 22</div>
+    <div class="notes-src">
+ここから、発表した内容の概要です。タイトルは「Implementing WireGuard for Apache NuttX」です。
+||
+NuttXは組込み機器向けのOS、WireGuardは暗号化された通信経路をつくるVPNです。NuttXの上でwg0という仮想のネットワークインターフェースとして動かし、UDPのソケット経由で、普通のWireGuardの相手と暗号化した通信をします。
+||
+仕事でエッジAIの機器を扱っているので、遠隔の機器へ安全に接続する機能をNuttXに加える、というテーマに関心を持ちました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>開発：2つのバージョン</h2>
+    <div class="body" style="gap:18px">
+      <div class="two">
+        <div class="panel wg" style="min-height:0"><h3>Version 1</h3><p>既存のWireGuard実装（wireguard-lwip）を活用した、<strong>アプリケーション側</strong>の実装。最初のトンネルが動いた。</p></div>
+        <div class="panel nx" style="min-height:0"><h3>Version 2</h3><p>NuttXの<strong>カーネルドライバ</strong>として統合。アプリではなくOSの一部に。</p></div>
+      </div>
+      <div class="claim"><p>ESP32-S3、Spresense、QEMUで動作を確認。</p><small>つまずき：ソケットの扱い（EBADF）、暗号のnonce、カーネルのスタック消費。詳しくはGitHubへ。</small></div>
+      <div class="takeaway"><b>Takeaway</b><p>ライブデモでは、Stack-chan（ロボット）をVPN越しに操作しました。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 5 &middot; 2/3</span>17 / 22</div>
+    <div class="notes-src">
+開発は二段階です。まず、wireguard-lwipという既存の実装を活用して、アプリケーションとして動かしました。次に、NuttXのカーネルドライバとして統合しました。
+||
+途中には、ソケットの扱いに関するエラー、暗号方式のnonceの問題、カーネルのスタック消費など、いくつもつまずきがありました。技術的な詳細は、GitHubのリポジトリと、別の記事にまとめます。
+||
+ESP32-S3、Spresense、QEMUで動作を確認しています。当日はライブデモで、Stack-chanというロボットを、VPN越しに操作しました。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>AIと一緒に作る</h2>
+    <div class="body" style="gap:20px">
+      <div class="claim"><p>Claudeを、かなり使いました。</p><small>調査もコードも速くなった。一方で、組込みOSの中身は初めてで、AIの書いたコードをそのまま信じることはできなかった。</small></div>
+      <div class="three">
+        <div class="fact nx"><b>質問する</b><p>分からないところをAIに聞く。</p></div>
+        <div class="fact blue"><b>ソースを読む</b><p>NuttXのコードを自分で読む。</p></div>
+        <div class="fact wg"><b>動かして確かめる</b><p>挙動をテストして、説明できるまで。</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>AIはコードを書く手伝いをしてくれる。理解は、自分の仕事だった。</p></div>
+    </div>
+
+    <div class="num"><span class="part">PART 5 &middot; 3/3</span>18 / 22</div>
+    <div class="notes-src">
+発表では、AIの使い方も正直に話しました。Claudeをかなり使っています。調べものもコーディングも速くなりました。
+||
+でも、組込みOSの内部は初めてだったので、AIの書いたコードをそのまま取り込むことはできませんでした。質問をして、NuttXのソースを読んで、挙動をテストして、自分で説明できるようになるまで進めました。
+||
+NuttXでは、AIが手伝ったコミットにAssisted-byと書き、AIはSigned-off-byを付けない、というルールがあります。人が責任を持つ、ということです。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>参加して得た学び</h2>
+    <div class="body"><div class="sum">
+      <div class="sum-row"><div class="sum-n">1</div><div><h3>新しい世界に、自分も参加し始められる</h3><p>国を越えたコミュニティと、それを支える役割や制度がある。現地で、その枠組みを少し実感できた。</p></div></div>
+      <div class="sum-row b"><div class="sum-n">2</div><div><h3>入口は、探さないと見つからない</h3><p>目の前の仕事だけでは、なかなか見つからない入口がある。応募して、公開の場で相談して、声をかけてもらえた。</p></div></div>
+      <div class="sum-row c"><div class="sum-n">3</div><div><h3>顔の見える関係が増える</h3><p>オンラインで見ていたコミュニティが、同じ場所で話す人たちとして見えるようになった。</p></div></div>
+    </div></div>
+
+    <div class="num"><span class="part">PART 6 &middot; 1/3</span>19 / 22</div>
+    <div class="notes-src">
+参加して得た一番大きな学びは、新しい世界を見て、自分もそこに参加し始められたことです。
+||
+目の前の仕事や勉強を頑張るだけでは、なかなか見つけられない入口があります。今回は、応募し、公開の場で相談し、人に声をかけてもらえたことが重なって、その入口に立てました。
+||
+そして、オンラインで見ていたコミュニティの人たちと、同じ場所で話せたことが、大きな経験でした。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>最初から大きな実績はいらない</h2>
+    <div class="body" style="justify-content:center"><ul class="big">
+      <li>気になるプロジェクトを調べる<span>ドキュメントやIssueを読む。</span></li>
+      <li>質問する<span>公開の場で。見つけてくれる人がいる。</span></li>
+      <li>小さな改善に取り組む<span>誤字の修正やドキュメントからでも。</span></li>
+      <li>発表に応募してみる<span>不採択でも、そこで終わりではない。TACのような支援もある。</span></li>
+    </ul></div>
+
+    <div class="num"><span class="part">PART 6 &middot; 2/3</span>20 / 22</div>
+    <div class="notes-src">
+最初から大きな実績が必要だとは思いません。気になるプロジェクトを調べる、質問する、小さな改善に取り組む、発表に応募してみる。そうした一歩が、次の機会につながることがあります。
+||
+私の場合も、GSoCは不採択でした。それでも、登壇と開発、そして現地での交流につながりました。
+||
+「自分も海外のテックカンファレンスで登壇できそう」と、少しでも思ってもらえたらうれしいです。
+||
+[opt] 幼い頃からITに触れてきた人だけの世界ではない、と思います。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <h2>これから</h2>
+    <div class="body" style="gap:22px">
+      <div class="claim ok"><p>継続して関わり、貢献を積み重ねたい。</p><small>その先で、コミッターやPMCメンバーの役割も担えるようになれたら。</small></div>
+      <div class="two">
+        <div class="panel" style="min-height:0"><h3>NuttX</h3><p>WireGuardのupstreamへの提出とレビュー。ハッカソンやコミュニティでの活動。</p></div>
+        <div class="panel" style="min-height:0"><h3>日本から</h3><p>日本から世界のコミュニティに参加する人が増えれば、日本の存在感にもつながる。この経験が、次に挑戦する人のきっかけになれば。</p></div>
+      </div>
+    </div>
+
+    <div class="num"><span class="part">PART 6 &middot; 3/3</span>21 / 22</div>
+    <div class="notes-src">
+これからも、NuttXとOSSのコミュニティに継続して関わって、貢献を積み重ねていきたいです。その先で、コミッターやPMCメンバーの役割も担えるようになれたらと思います。
+||
+日本から世界のコミュニティに参加する人が増えれば、日本の存在感を示すことにもつながると思います。この体験が、誰かの最初の一歩のきっかけになればうれしいです。
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Thank You</h2>
+    <div class="body" style="justify-content:center">
+      <div class="bye">
+        <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../presentation/assets/slides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK SLIDES</b></a>
+        <div>
+          <p class="lnk"><small>GITHUB</small><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></p>
+          <p class="lnk"><small>感謝</small><span style="font-size:19px;color:var(--muted);line-height:1.6">Alin Jerpeleaさん／Apache NuttXコミュニティ／TAC／Community Over Codeの運営・スポンサー・現地で交流してくださった皆さん／OTFSG Tokyoの皆さん</span></p>
+          <p class="who">Satoru Akita / Sony Semiconductor Solutions</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="num">22 / 22</div>
+    <div class="notes-src">
+ありがとうございました。
+||
+グラスゴーでの発表のスライドは、QRコードから見られます。コードと記録はGitHubにあります。
+||
+登壇のきっかけをくれたAlinさん、NuttXのコミュニティ、渡航を支援してくれたTAC、そして運営の皆さんに感謝します。
+    </div>
+  </section>
+
+</div></div>
+
+<div id="notes"><h4>Speaker notes</h4><div id="notes-body"></div></div>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById("canvas");
+  var slides = Array.prototype.slice.call(canvas.querySelectorAll(".slide"));
+  var bar = document.getElementById("bar");
+  var notes = document.getElementById("notes");
+  var notesBody = document.getElementById("notes-body");
+  var cur = 0;
+
+  function fit() {
+    var scale = Math.min((window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);
+    canvas.style.transform = "scale(" + scale + ")";
+  }
+
+  function show(index) {
+    cur = Math.max(0, Math.min(slides.length - 1, index));
+    slides.forEach(function (slide, i) {
+      slide.classList.toggle("on", i === cur);
+    });
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    notesBody.textContent = "";
+    var source = slides[cur].querySelector(".notes-src");
+    if (source) {
+      source.textContent.split("||").forEach(function (paragraph) {
+        var text = paragraph.trim();
+        if (!text) { return; }
+        var p = document.createElement("p");
+        p.textContent = text;
+        notesBody.appendChild(p);
+      });
+    }
+    if (location.hash !== "#" + (cur + 1)) {
+      history.replaceState(null, "", "#" + (cur + 1));
+    }
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.metaKey || event.ctrlKey || event.altKey) { return; }
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      show(cur + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      show(cur - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      show(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      show(slides.length - 1);
+    } else if (event.key === "n" || event.key === "N") {
+      event.preventDefault();
+      notes.classList.toggle("on");
+    } else if (event.key === "f" || event.key === "F") {
+      event.preventDefault();
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    }
+  });
+
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.slice(1), 10);
+    if (n && n - 1 !== cur) { show(n - 1); }
+  });
+
+  fit();
+  show(parseInt(location.hash.slice(1), 10) - 1 || 0);
+}());
+</script>
+</body>
+</html>
