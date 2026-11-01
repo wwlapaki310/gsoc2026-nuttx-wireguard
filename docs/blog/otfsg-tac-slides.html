@@ -1228,10 +1228,22 @@
   .fact p.big-num small { font-size: 22px; }
   .big-num { font-size: 64px; font-weight: 900; line-height: 1; color: var(--wg); }
   .big-num small { font-size: 22px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+  .fact p { font-size: 19px; }
+  .stepper { position: absolute; left: 72px; bottom: 19px; display: flex; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; }
+  .stepper span { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--quiet); background: #fff; }
+  .stepper span.done { color: var(--muted); background: var(--line-2); }
+  .stepper span.on { color: #fff; background: var(--wg); border-color: var(--wg); font-weight: 600; }
+  .ptl2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 34px; align-items: start; }
+  .tlv-item.key .tlv-dot { background: var(--nx); width: 17px; height: 17px; margin-top: 4px; }
+  .tlv-item.key .tlv-year, .tlv-item.key h3 { color: var(--nx); }
+  .res { display: grid; gap: 14px; }
+  .res .fact { padding: 16px 20px; }
+  .res .fact p { font-size: 17px; }
+  .res .fact b { font-size: 18px; text-transform: none; letter-spacing: 0; font-family: inherit; font-weight: 800; }
   .talks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .talks .fact { padding: 14px 18px; }
-  .talks .fact b { font-size: 15px; text-transform: none; letter-spacing: 0; font-family: inherit; font-weight: 800; }
-  .talks .fact p { font-size: 15px; line-height: 1.45; }
+  .talks .fact { padding: 16px 20px; }
+  .talks .fact b { font-size: 17px; text-transform: none; letter-spacing: 0; font-family: inherit; font-weight: 800; }
+  .talks .fact p { font-size: 17px; line-height: 1.45; }
 
   @media (prefers-reduced-motion: reduce) {
     #bar { transition: none; }
@@ -1271,8 +1283,8 @@
     </div>
   </section>
 
-  <section class="slide">
-    <p class="eyebrow">About Me</p>
+  <section class="slide jp">
+    <h2>自己紹介</h2>
     <div class="body about" style="gap:22px">
       <div class="about-who">
         <img class="intro-avatar" src="../presentation/assets/profile-avatar.jpg" alt="Satoru Akita">
@@ -1315,39 +1327,39 @@
         <div class="agenda-item">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoC不採択から、CfP採択まで</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC）</h3><p>費用の壁・制度の中身・申請後の流れ</p></div>
-          <div class="agenda-time">~9 MIN</div>
+          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>費用の壁・制度の中身・申請後の流れ・運営協力</p></div>
+          <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">4</div>
-          <div><h3>現地での5日間</h3><p>運営協力・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での5日間</h3><p>日程・聴講・ハッカソン</p></div>
+          <div class="agenda-time">~5 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">5</div>
-          <div><h3>発表内容の概要</h3><p>WireGuard for Apache NuttX</p></div>
+          <div><h3>発表内容の概要（サブ）</h3><p>WireGuard for Apache NuttX</p></div>
           <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~2 MIN</div>
+          <div class="agenda-time">~3 MIN</div>
         </div>
     </div></div>
 
     <div class="num">3 / 22</div>
     <div class="notes-src">
-今日の流れです。30分で、六つのパートに分けています。
+今日の流れです。六つのパートで、質疑も含めて30分です。
 ||
 前半は、カンファレンスの紹介と、登壇までの道のり。中心は三つ目の、渡航支援制度TACです。そのあと、現地での様子、発表の概要、学びの順に進みます。
     </div>
   </section>
 
-  <section class="slide">
+  <section class="slide jp">
     <h2>Community Over Code</h2>
     <div class="body" style="gap:22px">
       <div class="two" style="grid-template-columns:1.25fr .75fr">
@@ -1370,7 +1382,7 @@
       </div>
     </div>
 
-    <div class="num"><span class="part">PART 1 &middot; 1/2</span>4 / 22</div>
+    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">4 / 22</div>
     <div class="notes-src">
 まず、Community Over Codeについてです。
 ||
@@ -1394,7 +1406,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
       <p class="aside" style="font-size:16px"><strong>Linux Foundation系との違い：</strong>どちらが企業向け・個人向けと単純に分けられるものではない。何を中心に人が集まり、どう支えているかで見ると分かりやすい。</p>
     </div>
 
-    <div class="num"><span class="part">PART 1 &middot; 2/2</span>5 / 22</div>
+    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">5 / 22</div>
     <div class="notes-src">
 ASFの特徴の一つは、財団の会員が企業ではなく個人であることです。
 ||
@@ -1407,18 +1419,26 @@ ASFの特徴の一つは、財団の会員が企業ではなく個人である�
   <section class="slide jp">
     <h2>登壇までの道のり</h2>
     <div class="body" style="justify-content:flex-start;padding-top:6px">
-      <div class="timeline-v" style="--w:1">
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">2025</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>GSoCに応募 → 不採択</h3><p>Google Summer of Codeに初めて応募しましたが、採択されませんでした。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">2026 2–3月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>再挑戦：NuttXへのWireGuard移植</h3><p>アイデアを調べ、GitHub上で相談しながら提案をまとめました。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">3月20日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Alinさんから声がかかる</h3><p>Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさん。CfPへの応募を勧められ、応募しました。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">5月上旬</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>CfP採択 / GSoC不採択</h3><p>またGSoCは不採択。でも、登壇の機会が決まったので、個人で開発を続けました。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">6月7日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>TACの採択連絡</h3><p>渡航費用の支援が決まりました。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">8月〜9月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Version 1 → Version 2</h3><p>アプリ版を作り、カーネルドライバ版へ。</p></div></div>
-        <div class="tlv-item" style="grid-template-columns:150px 24px 1fr;padding:8px 0"><div class="tlv-year">10月13日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>グラスゴーで登壇</h3><p>初めての海外ソフトウェアカンファレンスでの登壇。</p></div></div>
+      <div class="ptl2">
+        <div class="timeline-v">
+<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">2025</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>GSoCに応募 → 不採択</h3><p>Google Summer of Codeに初めて応募しましたが、採択されませんでした。</p></div></div>
+<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">2026 2–3月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>再挑戦：NuttXへのWireGuard移植</h3><p>アイデアを調べ、GitHub上で相談しながら提案をまとめました。</p></div></div>
+<div class="tlv-item key" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">3月20日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Alinさんから声がかかる</h3><p>Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさん。CfPへの応募を勧められ、応募しました。</p></div></div>
+<div class="tlv-item key" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">5月上旬</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>CfP採択 / GSoC不採択</h3><p>GSoCはまた不採択。でも登壇が決まったので、個人で開発を続けました。</p></div></div>
+<div class="tlv-item key" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">6月7日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>TACの採択連絡</h3><p>渡航費用の支援が決まりました。</p></div></div>
+<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">8〜9月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>Version 1 → Version 2</h3><p>アプリ版を作り、カーネルドライバ版へ。</p></div></div>
+<div class="tlv-item key" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">10月13日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>グラスゴーで登壇</h3><p>初めての海外ソフトウェアカンファレンスでの登壇。</p></div></div>
+        </div>
+        <div class="res">
+          <div class="fact wg"><b>GSoC 2026</b><p>不採択</p></div>
+          <div class="fact nx"><b>Community Over Code CfP</b><p>採択 → 登壇</p></div>
+          <div class="fact nx"><b>TAC（渡航支援）</b><p>採択 → 費用の支援</p></div>
+          <div class="takeaway" style="margin-top:0;text-align:left"><b>Takeaway</b><p style="font-size:17px">一つ落ちても、別の入口が開いた。</p></div>
+        </div>
       </div>
     </div>
 
-    <div class="num"><span class="part">PART 2 &middot; 1/2</span>6 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">6 / 22</div>
     <div class="notes-src">
 登壇までの道のりです。
 ||
@@ -1426,7 +1446,7 @@ GSoC、Google Summer of Codeには、2025年にも応募して不採択でした
 ||
 3月20日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、Community Over CodeのCfP、つまり講演募集への応募を勧めてくれました。応募して、5月上旬に結果が届きました。GSoCは不採択でしたが、CfPは採択でした。
 ||
-登壇が決まったので、個人の活動として開発を続けました。6月にはTACの採択連絡も届いて、10月13日に登壇しました。
+登壇が決まったので、個人の活動として開発を続けました。6月にはTACの採択連絡も届いて、10月13日に登壇しました。右の三つが結果です。一つ落ちても、別の入口が開きました。
 ||
 [note] 時系列の注意：6月7日のTAC採択と、5月上旬のCfP採択の前後関係は、メールで日付を確認しておく。
     </div>
@@ -1444,7 +1464,7 @@ GSoC、Google Summer of Codeには、2025年にも応募して不採択でした
       <div class="takeaway"><b>Takeaway</b><p>結果が不採択でも、公開で動いた記録が次のきっかけになる。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 2 &middot; 2/2</span>7 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">7 / 22</div>
     <div class="notes-src">
 振り返ると、いくつかのことが重なっていました。
 ||
@@ -1466,7 +1486,7 @@ GSoCの結果だけを見れば不採択です。でも、応募して、公開�
       <div class="takeaway"><b>Takeaway</b><p>発表の機会があっても、費用で諦める人は多いはず。そこで応募したのがTAC。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 3 &middot; 1/5</span>8 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">8 / 22</div>
     <div class="notes-src">
 ここからが今日の中心です。
 ||
@@ -1487,7 +1507,7 @@ GSoCの結果だけを見れば不採択です。でも、応募して、公開�
       <p class="fine" style="margin:0">出典：Apache TAC 公式の案内</p>
     </div>
 
-    <div class="num"><span class="part">PART 3 &middot; 2/5</span>9 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">9 / 22</div>
     <div class="notes-src">
 TACは、Travel Assistance Committeeの略です。経済的な理由で参加が難しい人に、ASFのイベントへの参加を支援する仕組みです。
 ||
@@ -1509,7 +1529,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <p class="aside" style="font-size:16px"><strong>注意：</strong>採択の基準や結果は回によって変わります。応募前に必ず公式の案内を読んでください。</p>
     </div>
 
-    <div class="num"><span class="part">PART 3 &middot; 3/5</span>10 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">10 / 22</div>
     <div class="notes-src">
 応募はオンラインで、申請内容をもとに審査されます。
 ||
@@ -1536,7 +1556,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <div class="takeaway" style="margin-top:0"><b>Takeaway</b><p>手続きは基本メール。航空券や宿は、希望を伝えれば手配してもらえる。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 3 &middot; 4/5</span>11 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">11 / 22</div>
     <div class="notes-src">
 採択の連絡が届いたのは6月7日でした。そのあとは、メールでのやり取りが中心です。受諾の返信、必要書類の確認、航空券の希望、パスポートと渡航手続きについて連絡しました。イギリスの電子渡航認証、UK ETAの取得も自分で進めました。
 ||
@@ -1556,7 +1576,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <div class="claim ok"><p>録画は、基本的に開始ボタンと停止ボタンを押すだけ。</p><small>日本でカンファレンスのボランティアを経験していたので、仕事の違いは大きくなかった。今回は担当量が比較的少なく、登壇・聴講・交流と両立できた。担当は回や割り当てで変わる。</small></div>
     </div>
 
-    <div class="num"><span class="part">PART 3 &middot; 5/5</span>12 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">12 / 22</div>
     <div class="notes-src">
 TACでは、支援を受ける人に、運営への協力を求めています。設営や受付、セッションの補助、撤収などです。
 ||
@@ -1581,7 +1601,7 @@ TACでは、支援を受ける人に、運営への協力を求めています�
       </table>
     </div>
 
-    <div class="num"><span class="part">PART 4 &middot; 1/3</span>13 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">13 / 22</div>
     <div class="notes-src">
 渡航は10月9日から16日まででした。
 ||
@@ -1599,7 +1619,7 @@ TACでは、支援を受ける人に、運営への協力を求めています�
       </div>
     </div>
 
-    <div class="num"><span class="part">PART 4 &middot; 2/3</span>14 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">14 / 22</div>
     <div class="notes-src">
 [写真を差し替える] 会場、TACの集合写真、登壇中の写真を入れる。
 ||
@@ -1623,7 +1643,7 @@ TACでは、支援を受ける人に、運営への協力を求めています�
       <div class="takeaway"><b>Takeaway</b><p>同じApacheの中に、これだけ違う分野が並ぶ。どのソフトウェアの裏にも、続けている人たちがいる。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 4 &middot; 3/3</span>15 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num">15 / 22</div>
     <div class="notes-src">
 講演は、組込みからデータ処理、検索、AI、教育まで幅広く聞きました。
 ||
@@ -1680,7 +1700,7 @@ OSS教育の講演では、「バイブコーディングがうまくいくの�
       </div>
     </div>
 
-    <div class="num"><span class="part">PART 5 &middot; 1/3</span>16 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num">16 / 22</div>
     <div class="notes-src">
 ここから、発表した内容の概要です。タイトルは「Implementing WireGuard for Apache NuttX」です。
 ||
@@ -1701,7 +1721,7 @@ NuttXは組込み機器向けのOS、WireGuardは暗号化された通信経路�
       <div class="takeaway"><b>Takeaway</b><p>ライブデモでは、Stack-chan（ロボット）をVPN越しに操作しました。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 5 &middot; 2/3</span>17 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num">17 / 22</div>
     <div class="notes-src">
 開発は二段階です。まず、wireguard-lwipという既存の実装を活用して、アプリケーションとして動かしました。次に、NuttXのカーネルドライバとして統合しました。
 ||
@@ -1723,7 +1743,7 @@ ESP32-S3、Spresense、QEMUで動作を確認しています。当日はライ�
       <div class="takeaway"><b>Takeaway</b><p>AIはコードを書く手伝いをしてくれる。理解は、自分の仕事だった。</p></div>
     </div>
 
-    <div class="num"><span class="part">PART 5 &middot; 3/3</span>18 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num">18 / 22</div>
     <div class="notes-src">
 発表では、AIの使い方も正直に話しました。Claudeをかなり使っています。調べものもコーディングも速くなりました。
 ||
@@ -1741,7 +1761,7 @@ NuttXでは、AIが手伝ったコミットにAssisted-byと書き、AIはSigned
       <div class="sum-row c"><div class="sum-n">3</div><div><h3>顔の見える関係が増える</h3><p>オンラインで見ていたコミュニティが、同じ場所で話す人たちとして見えるようになった。</p></div></div>
     </div></div>
 
-    <div class="num"><span class="part">PART 6 &middot; 1/3</span>19 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num">19 / 22</div>
     <div class="notes-src">
 参加して得た一番大きな学びは、新しい世界を見て、自分もそこに参加し始められたことです。
 ||
@@ -1760,7 +1780,7 @@ NuttXでは、AIが手伝ったコミットにAssisted-byと書き、AIはSigned
       <li>発表に応募してみる<span>不採択でも、そこで終わりではない。TACのような支援もある。</span></li>
     </ul></div>
 
-    <div class="num"><span class="part">PART 6 &middot; 2/3</span>20 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num">20 / 22</div>
     <div class="notes-src">
 最初から大きな実績が必要だとは思いません。気になるプロジェクトを調べる、質問する、小さな改善に取り組む、発表に応募してみる。そうした一歩が、次の機会につながることがあります。
 ||
@@ -1782,7 +1802,7 @@ NuttXでは、AIが手伝ったコミットにAssisted-byと書き、AIはSigned
       </div>
     </div>
 
-    <div class="num"><span class="part">PART 6 &middot; 3/3</span>21 / 22</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num">21 / 22</div>
     <div class="notes-src">
 これからも、NuttXとOSSのコミュニティに継続して関わって、貢献を積み重ねていきたいです。その先で、コミッターやPMCメンバーの役割も担えるようになれたらと思います。
 ||
@@ -1790,7 +1810,7 @@ NuttXでは、AIが手伝ったコミットにAssisted-byと書き、AIはSigned
     </div>
   </section>
 
-  <section class="slide">
+  <section class="slide jp">
     <h2>Thank You</h2>
     <div class="body" style="justify-content:center">
       <div class="bye">
