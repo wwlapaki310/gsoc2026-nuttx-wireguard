@@ -1030,6 +1030,14 @@
   .reveal .frame .about-events { display: flex; flex-wrap: wrap; gap: 6px;}
   .reveal .frame .about-events .chip.hobby { border-style: dashed;}
   .reveal .frame .about-events .chip { font-size: 12.5px; padding: 4px 10px;}
+  .reveal .frame .itin { display: grid; gap: 8px; flex: 1; margin-bottom: 34px; align-content: stretch; grid-auto-rows: 1fr;}
+  .reveal .frame .itin-row { display: grid; grid-template-columns: 150px 96px 1fr; align-items: center; gap: 18px; padding: 0 22px; border: 1px solid var(--line); border-left: 6px solid var(--line); border-radius: 6px; background: #fff;}
+  .reveal .frame .itin-row.key { border-left-color: var(--wg); background: #f4eaf3;}
+  .reveal .frame .itin-d b { display: block; font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--ink); line-height: 1.1;}
+  .reveal .frame .itin-d span { font-size: 15px; color: var(--quiet);}
+  .reveal .frame .itin-t { font-size: 18px; font-weight: 800; letter-spacing: .04em; color: var(--wg);}
+  .reveal .frame .itin-x { font-size: 22px; line-height: 1.35; color: var(--ink);}
+  .reveal .frame .itin-row.key .itin-x { font-weight: 800;}
   .reveal .frame .ptl2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 34px; align-items: start;}
   .reveal .frame .tlv-item.key .tlv-dot { background: var(--nx); width: 17px; height: 17px; margin-top: 4px;}
   .reveal .frame .tlv-item.key .tlv-year,
@@ -1672,18 +1680,17 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">日程：渡航8日間</p>
-    <div class="body">
-      <p class="dm-label" style="margin:0 0 6px">ITINERARY</p>
-      <table class="compact">
-        <tr><th>日付</th><th>主な行動</th></tr>
-        <tr><td>10/9（金）</td><td>羽田を出発。ロンドン経由でグラスゴーへ</td></tr>
-        <tr><td>10/10（土）</td><td>TACの集合・運営説明、Tシャツ受け取り、会場準備、交流</td></tr>
-        <tr><td>10/11（日）</td><td>カンファレンス初日。Airflow、StreamPipesなどの講演を聴講</td></tr>
-        <tr><td>10/12（月）</td><td>AI時代のOSS教育、Arrow／Parquetのファジングなどの講演を聴講</td></tr>
-        <tr><td style="color:var(--wg)">10/13（火）</td><td><strong>WireGuard移植について登壇</strong>。NuttX関連の講演を聴講</td></tr>
-        <tr><td>10/14（水）</td><td>NuttXハッカソン、講演の録画・スピーカー支援。Tika、Lucene関連の講演</td></tr>
-        <tr><td>10/15–16</td><td>エディンバラから帰国。16日に羽田着</td></tr>
-      </table>
+    <div class="body" style="gap:8px;justify-content:flex-start">
+      <p class="dm-label" style="margin:0">ITINERARY</p>
+      <div class="itin">
+      <div class="itin-row"><div class="itin-d"><b>10/9</b><span>金</span></div><div class="itin-t">出発</div><div class="itin-x">羽田を出発。ロンドン経由でグラスゴーへ</div></div>
+      <div class="itin-row"><div class="itin-d"><b>10/10</b><span>土</span></div><div class="itin-t">準備</div><div class="itin-x">TACの集合・運営説明、Tシャツ受け取り、会場準備、交流</div></div>
+      <div class="itin-row"><div class="itin-d"><b>10/11</b><span>日</span></div><div class="itin-t">初日</div><div class="itin-x">カンファレンス初日。Airflow、StreamPipesなどの講演を聴講</div></div>
+      <div class="itin-row"><div class="itin-d"><b>10/12</b><span>月</span></div><div class="itin-t">2日目</div><div class="itin-x">AI時代のOSS教育、Arrow／Parquetのファジングなどの講演を聴講</div></div>
+      <div class="itin-row key"><div class="itin-d"><b>10/13</b><span>火</span></div><div class="itin-t">登壇</div><div class="itin-x">WireGuard移植について登壇。NuttX関連の講演を聴講</div></div>
+      <div class="itin-row"><div class="itin-d"><b>10/14</b><span>水</span></div><div class="itin-t">最終日</div><div class="itin-x">NuttXハッカソン、講演の録画・スピーカー支援。Tika、Lucene関連の講演</div></div>
+      <div class="itin-row"><div class="itin-d"><b>10/15–16</b><span>木金</span></div><div class="itin-t">帰国</div><div class="itin-x">エディンバラから帰国。16日に羽田着</div></div>
+      </div>
     </div>
 
     <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 1/9</span>18 / 33</div>
