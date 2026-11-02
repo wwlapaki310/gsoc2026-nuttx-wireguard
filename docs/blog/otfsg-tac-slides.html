@@ -1050,6 +1050,99 @@
   .reveal .frame .talks .fact { padding: 16px 20px;}
   .reveal .frame .talks .fact b { font-size: 17px; text-transform: none; letter-spacing: 0; font-family: inherit; font-weight: 800;}
   .reveal .frame .talks .fact p { font-size: 17px; line-height: 1.45;}
+  .reveal .frame .fact b { font-size: 22px; letter-spacing: 0; text-transform: none; font-family: inherit; font-weight: 800; margin-bottom: 6px;}
+  .reveal .frame .four .fact b { font-size: 18px; letter-spacing: 0;}
+  .reveal .frame .fact p { font-size: 19px;}
+  .reveal .frame .panel h3 { font-size: 25px;}
+  .reveal .frame .plabel { font-size: 15px; padding: 4px 12px;}
+  .reveal .frame .dm-label { font-size: 18px;}
+  .reveal .frame .chev { display: grid; grid-template-columns: repeat(3, 1fr);}
+  .reveal .frame .chev > div { margin-left: -16px;}
+  .reveal .frame .chev > div:first-child { margin-left: 0;}
+  .reveal .frame .chev b { display: block; padding: 15px 14px 15px 44px; color: #fff; font-size: 24px; font-weight: 800; line-height: 1.2; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 50%, calc(100% - 26px) 100%, 0 100%, 26px 50%);}
+  .reveal .frame .chev > div:first-child b { padding-left: 24px; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 50%, calc(100% - 26px) 100%, 0 100%);}
+  .reveal .frame .chev .c1 b { background: var(--wg);}
+  .reveal .frame .chev .c2 b { background: var(--nx);}
+  .reveal .frame .chev .c3 b { background: var(--blue);}
+  .reveal .frame .chev-t { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;}
+  .reveal .frame .chev-t p { margin: 0; padding: 0 26px 0 24px; font-size: 21px; line-height: 1.5; color: var(--muted); border-left: 2px solid var(--line);}
+  .reveal .frame .chev-t p:first-child { border-left: 0; padding-left: 8px;}
+  .reveal .frame .sum.s { gap: 10px;}
+  .reveal .frame .sum.s .sum-row { padding: 12px 24px;}
+  .reveal .frame .sum.s .sum-row h3 { font-size: 25px;}
+  .reveal .frame .sum.s .sum-row p { font-size: 20px;}
+  .reveal .frame .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 40px;}
+  .reveal .frame .yn h3 { margin: 0 0 10px; padding-bottom: 8px; font-size: 27px; border-bottom: 4px solid var(--nx);}
+  .reveal .frame .yn .no h3 { border-bottom-color: var(--gold);}
+  .reveal .frame .yn .pl h3 { border-bottom-color: var(--blue);}
+  .reveal .frame .yn ul { list-style: none; padding: 0; margin: 0;}
+  .reveal .frame .yn li { position: relative; padding-left: 36px; margin-bottom: 8px; font-size: 22px; line-height: 1.5; color: var(--muted);}
+  .reveal .frame .yn li::before { position: absolute; left: 0; font-weight: 800;}
+  .reveal .frame .yn .ok li::before { content: "✔"; color: var(--nx);}
+  .reveal .frame .yn .no li::before { content: "✕"; color: var(--gold);}
+  .reveal .frame .yn .pl li::before { content: "▸"; color: var(--blue);}
+  .reveal .frame .yn p { margin: 0; font-size: 22px; line-height: 1.55; color: var(--muted);}
+  .reveal .frame .hline { display: grid; grid-template-columns: 1fr 1fr 1.5fr; position: relative; padding-top: 20px; border-top: 4px solid var(--line); margin-top: 10px;}
+  .reveal .frame .hline > div { position: relative; padding-right: 20px;}
+  .reveal .frame .hline > div::before { content: ""; position: absolute; top: -30px; left: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--wg);}
+  .reveal .frame .hline > div:last-child::before { background: var(--nx);}
+  .reveal .frame .hline b { display: block; font-family: var(--mono); font-size: 26px; color: var(--wg);}
+  .reveal .frame .hline > div:last-child b { color: var(--nx);}
+  .reveal .frame .hline p { margin: 2px 0 0; font-size: 19px; line-height: 1.4; color: var(--muted);}
+  .reveal .frame .cloud { display: grid; grid-template-columns: 360px 1fr 1fr; border: 1px solid var(--line);}
+  .reveal .frame .cloud > div { padding: 3px 14px; border-top: 1px solid var(--line-2); font-size: 18px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+  .reveal .frame .cloud .h { border-top: 0; color: #fff; font-weight: 800; font-size: 20px; padding: 7px 14px;}
+  .reveal .frame .cloud .h.o { background: var(--ink);}
+  .reveal .frame .cloud .h.a { background: #b9650a;}
+  .reveal .frame .cloud .h.z { background: var(--blue);}
+  .reveal .frame .cloud .n b { font-size: 20px;}
+  .reveal .frame .cloud .n small { font-size: 15px; color: var(--quiet);}
+  .reveal .frame .cloud .tag { font-size: 13px; padding: 1px 8px; border-radius: 999px; background: var(--nx-soft); color: var(--nx); font-weight: 700;}
+  .reveal .frame .cloud .span2 { grid-column: 2 / 4; color: var(--muted);}
+  .reveal .frame .rename { display: flex; align-items: center; gap: 18px; padding: 16px 26px; border-left: 6px solid var(--wg); background: #f6eeee;}
+  .reveal .frame .rename .o { font-size: 26px; color: var(--quiet); text-decoration: line-through; text-decoration-thickness: 2px;}
+  .reveal .frame .rename .a { font-family: var(--mono); font-size: 18px; color: var(--wg);}
+  .reveal .frame .rename .nw { font-size: 30px; font-weight: 900; color: var(--wg);}
+  .reveal .frame .rename .w { font-size: 19px; color: var(--muted); margin-left: auto; max-width: 330px; line-height: 1.4;}
+  .reveal .frame .pillrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+  .reveal .frame .pillrow .lb { font-weight: 800; font-size: 20px; margin-right: 6px;}
+  .reveal .frame .pillrow .chip { font-size: 18px; padding: 7px 16px;}
+  .reveal .frame .stairs { display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; height: 225px;}
+  .reveal .frame .stairs > div { padding: 14px 20px; color: #fff; display: flex; flex-direction: column; justify-content: flex-start;}
+  .reveal .frame .stairs .t { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; opacity: .9;}
+  .reveal .frame .stairs b { font-size: 26px; font-weight: 800; margin: 2px 0 6px;}
+  .reveal .frame .stairs p { margin: 0; font-size: 19px; line-height: 1.4; color: #fff;}
+  .reveal .frame .mbar { display: flex; height: 58px; border-radius: 4px; overflow: hidden; margin: 10px 0 8px;}
+  .reveal .frame .mbar > div { display: flex; align-items: center; padding-left: 16px; color: #fff; font-weight: 800; font-size: 20px;}
+  .reveal .frame .mleg { display: flex; gap: 22px; font-size: 18px; color: var(--muted); margin-bottom: 8px;}
+  .reveal .frame .mleg i { display: inline-block; width: 14px; height: 14px; margin-right: 6px; border-radius: 2px; vertical-align: -1px;}
+  .reveal .frame .dl { display: grid; grid-template-columns: 96px 1fr; gap: 12px 16px;}
+  .reveal .frame .dl dt { font-weight: 800; color: var(--nx); font-size: 22px; line-height: 1.4;}
+  .reveal .frame .dl dd { margin: 0; font-size: 20px; line-height: 1.5; color: var(--muted);}
+  .reveal .frame .pj { position: relative; height: 440px;}
+  .reveal .frame .pj-axis { position: absolute; left: 0; right: 0; top: 312px; height: 3px; background: var(--ink);}
+  .reveal .frame .pj-m { position: absolute; top: 320px; width: 11.111%; text-align: center; font-family: var(--mono); font-size: 15px; color: var(--quiet); border-left: 1px solid var(--line);}
+  .reveal .frame .pj-ev { position: absolute; bottom: 128px; width: 215px; padding-left: 10px; border-left: 3px solid var(--wg);}
+  .reveal .frame .pj-ev.l1 { padding-bottom: 6px;}
+  .reveal .frame .pj-ev.l2 { padding-bottom: 86px;}
+  .reveal .frame .pj-ev.l3 { padding-bottom: 172px;}
+  .reveal .frame .pj-ev.l4 { padding-bottom: 240px;}
+  .reveal .frame .pj-ev.narrow { width: 120px;}
+  .reveal .frame .pj-ev b { display: block; font-family: var(--mono); font-size: 15px; letter-spacing: .04em; color: var(--wg);}
+  .reveal .frame .pj-ev span { font-size: 19px; line-height: 1.3; color: var(--ink);}
+  .reveal .frame .pj-ev.key { border-color: var(--nx);}
+  .reveal .frame .pj-ev.key b { color: var(--nx);}
+  .reveal .frame .pj-ev.right { left: auto; padding-left: 0; padding-right: 10px; border-left: 0; border-right: 3px solid var(--nx); text-align: right; width: 200px;}
+  .reveal .frame .pj-bar { position: absolute; height: 42px; padding: 3px 12px; display: flex; align-items: center; font-size: 17px; line-height: 1.2; border-radius: 4px;}
+  .reveal .frame .pj-bar.g { background: var(--wg-soft); border: 1px solid #ddb9bc;}
+  .reveal .frame .pj-bar.c { background: var(--nx-soft); border: 1px solid #b6d7d3;}
+  .reveal .frame .pj-bar.t { background: var(--gold-soft); border: 1px solid #e0d1a6; font-size: 15px;}
+  .reveal .frame .cite { margin: 0;}
+  .reveal .frame .cite img { display: block; width: 100%; border: 1px solid var(--line);}
+  .reveal .frame .cite figcaption { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--quiet);}
+  .reveal .frame .cite figcaption a { color: var(--muted);}
+  .reveal .frame .quote { margin: 0; padding: 10px 22px; border-left: 6px solid var(--gold); background: var(--gold-soft); font-size: 21px; line-height: 1.5; color: var(--ink);}
+  .reveal .frame .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet);}
 </style>
 <link rel="stylesheet" href="../presentation/coc-glasgow-reveal/coc.css">
 <link rel="stylesheet" href="otfsg-tac-reveal.css">
@@ -1300,11 +1393,8 @@
         </div>
         <div class="logo-panel"><img src="../presentation/assets/community-over-code-logo.png" alt="Community Over Code logo"></div>
       </div>
-      <div class="three">
-        <div class="fact wg"><b>旧称</b><p>ApacheCon。2023年3月に改称。「コードよりコミュニティ」というASFの価値観を名前にした</p></div>
-        <div class="fact nx"><b>対象</b><p>Airflow、Arrow、Lucene、NuttXなど、ASFの各プロジェクトの人が集まる</p></div>
-        <div class="fact blue"><b>形式</b><p>トラック別の講演、ハッカソン、BoF（有志の話し合い）</p></div>
-      </div>
+      <div class="rename"><span class="o">ApacheCon</span><span class="a">2023.3 &rarr;</span><span class="nw">Community Over Code</span><span class="w">「コードよりコミュニティ」というASFの価値観を名前にした</span></div>
+      <div class="pillrow"><span class="lb">形式</span><span class="chip">トラック別の講演</span><span class="chip">ハッカソン</span><span class="chip">BoF（有志の話し合い）</span><span class="lb" style="margin-left:18px">集まる人</span><span class="chip">Airflow</span><span class="chip">Arrow</span><span class="chip">Lucene</span><span class="chip">NuttX ほか</span></div>
     </div>
 
     <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 1/2</span>5 / 36</div>
@@ -1321,24 +1411,23 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">運営母体：Apache Software Foundation（ASF）</p>
-    <div class="body" style="gap:12px">
-      <div class="three">
-        <div class="fact wg" style="min-height:0"><b>1995 &rarr; 1999</b><p>Webサーバーを改良する有志の「Apache Group」が始まり。1999年に非営利の財団になった。</p></div>
-        <div class="fact nx" style="min-height:0"><b>会員は個人</b><p>企業ではなく個人が会員。企業はスポンサーとして支える。</p></div>
-        <div class="fact blue" style="min-height:0"><b>運営の支え</b><p>寄付と、企業のスポンサー支援。個人の活動を、企業の支援が支える。</p></div>
+    <div class="body" style="gap:10px">
+      <div class="hline">
+        <div><b>1995</b><p>Webサーバーを改良する有志が「Apache Group」を結成</p></div>
+        <div><b>1999</b><p>非営利の財団「ASF」を設立</p></div>
+        <div><b>現在</b><p>300以上のプロジェクト。会員は個人、運営は寄付と企業のスポンサー支援</p></div>
       </div>
-      <p class="dm-label" style="margin:0">300+ PROJECTS</p>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <div class="fact wg" style="min-height:0;padding:14px 16px"><b>HTTP Server</b><p style="font-size:19px;margin-top:4px">Webサイトを配信するサーバー</p></div>
-        <div class="fact blue" style="min-height:0;padding:14px 16px"><b>Kafka</b><p style="font-size:19px;margin-top:4px">データをリアルタイムに流す基盤</p></div>
-        <div class="fact gold" style="min-height:0;padding:14px 16px"><b>Spark</b><p style="font-size:19px;margin-top:4px">大量データの分散処理</p></div>
-        <div class="fact nx" style="min-height:0;padding:14px 16px"><b>Airflow</b><p style="font-size:19px;margin-top:4px">処理の順番と実行の管理</p></div>
-        <div class="fact wg" style="min-height:0;padding:14px 16px"><b>Arrow / Parquet</b><p style="font-size:19px;margin-top:4px">表形式データを速く扱う形式</p></div>
-        <div class="fact blue" style="min-height:0;padding:14px 16px"><b>Lucene</b><p style="font-size:19px;margin-top:4px">全文検索のライブラリ</p></div>
-        <div class="fact gold" style="min-height:0;padding:14px 16px"><b>StreamPipes</b><p style="font-size:19px;margin-top:4px">センサーデータの収集と可視化</p></div>
-        <div class="fact nx" style="min-height:0;padding:14px 16px"><b>NuttX</b><p style="font-size:19px;margin-top:4px">マイコン向けのOS。私の担当</p></div>
+      <div class="cloud" style="margin-top:6px">
+        <div class="h o">Apache OSS</div><div class="h a">AWS</div><div class="h z">Azure</div>
+        <div class="n"><b>Kafka</b> <small>データをリアルタイムに流す基盤</small></div><div>MSK</div><div>HDInsight、Event Hubs（Kafka互換）</div>
+        <div class="n"><b>Spark</b> <small>大量データの分散処理</small></div><div>EMR、Glue</div><div>HDInsight、Synapse</div>
+        <div class="n"><b>Airflow</b> <span class="tag">聴講</span> <small>処理の順番と実行の管理</small></div><div>MWAA</div><div>Data FactoryのAirflow</div>
+        <div class="n"><b>Cassandra</b> <small>分散データベース</small></div><div>Keyspaces</div><div>Managed Instance for Apache Cassandra</div>
+        <div class="n"><b>Arrow / Parquet</b> <span class="tag">聴講</span> <small>表形式データの形式</small></div><div>Athenaなどが読む</div><div>Synapseなどが読む</div>
+        <div class="n"><b>Lucene</b> <span class="tag">聴講</span> <small>全文検索のライブラリ</small></div><div>OpenSearch Service（Luceneが土台）</div><div>&mdash;</div>
+        <div class="n"><b>StreamPipes / NuttX</b> <span class="tag">聴講 / 登壇</span></div><div class="span2">クラウドの手前、エッジ機器とデバイス側で動くOSS。</div>
       </div>
-      <div class="takeaway"><b>Takeaway</b><p>Webサーバーから始まった有志の活動が、300以上のOSSを、個人の貢献で育てる財団になった。</p></div>
+      <div class="takeaway" style="margin-top:6px"><b>Takeaway</b><p>AWSやAzureのサービスの中身として、知らずに使っているOSSが多い。それを個人の貢献で育てているのがASF。</p></div>
     </div>
 
     <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 2/2</span>6 / 36</div>
@@ -1348,8 +1437,8 @@
       <p>運営母体のASFについて、簡単に紹介します。</p>
       <p>始まりは1995年に、Webサーバーを改良していた有志が集まったApache Groupです。1999年に非営利の財団になりました。財団の会員は企業ではなく個人で、企業はスポンサーとして支えています。</p>
       <p>運営は、寄付と企業のスポンサー支援で支えられています。</p>
-      <p>今は300以上のプロジェクトがあります。WebサーバーのHTTP Server、データ処理のKafkaやSpark、そして今回の会場で講演を聞いたAirflow、ArrowとParquet、Lucene、StreamPipes。私が取り組んでいるNuttXも、その一つです。</p>
-      <p>NOTE, do not read: 「300以上」は数が変わる。正確な数は公式ページを案内する。各プロジェクトの説明は一言だけにして、深入りしない。</p>
+      <p>今は300以上のプロジェクトがあります。例えばKafkaやSparkは、AWSならMSKやEMR、AzureならHDInsightといった、クラウドのサービスの中身として動いています。Airflow、Cassandra、Luceneも同じです。今回の会場では、このうちAirflow、ArrowとParquet、Lucene、StreamPipesの講演を聞きました。私が取り組んでいるNuttXも、その一つで、クラウドにつながるデバイス側のOSです。</p>
+      <p>NOTE, do not read: 「300以上」は数が変わる。クラウドのサービス名は、本番前に各社の公式ページで最新の名称を確認する。深入りせず、一言だけ。</p>
     </aside>
   </section>
 
@@ -1401,23 +1490,50 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">GSoC：Google Summer of Codeとは</p>
-    <div class="body ba" style="gap:16px">
-      <p class="lead" style="max-width:none;font-size:21px"><span class="hl">Google Summer of Code</span>。Googleが運営する、OSSプロジェクトに参加する人を支援するプログラム。</p>
-      <div class="three">
-        <div class="fact wg"><span class="plabel">WHAT</span><b>内容</b><p>OSSプロジェクトのメンターと一緒に、数か月かけて開発に取り組む。参加者には報酬が支払われる。</p></div>
-        <div class="fact nx"><span class="plabel">HOW</span><b>応募</b><p>参加するプロジェクトを選び、やりたい内容を提案書にまとめて応募する。提案は、プロジェクトの人と相談しながら磨く。</p></div>
-        <div class="fact blue"><span class="plabel">MY CASE</span><b>私の場合</b><p>2026年に応募。テーマは、NuttXへのWireGuard移植。結果は不採択。</p></div>
-      </div>
-      <div class="takeaway"><b>Takeaway</b><p>提案書を書き、公開の場で相談した過程は、不採択のあとも残った。次の応募の土台になった。</p></div>
+    <p class="eyebrow">経緯：GSoCへの応募から登壇まで</p>
+    <div class="body" style="gap:8px">
+      <div class="pj"><div class="pj-axis"></div><div class="pj-m" style="left:0.000%">2月</div><div class="pj-m" style="left:11.111%">3月</div><div class="pj-m" style="left:22.222%">4月</div><div class="pj-m" style="left:33.333%">5月</div><div class="pj-m" style="left:44.444%">6月</div><div class="pj-m" style="left:55.556%">7月</div><div class="pj-m" style="left:66.667%">8月</div><div class="pj-m" style="left:77.778%">9月</div><div class="pj-m" style="left:88.889%">10月</div><div class="pj-ev l4" style="left:5.19%"><b>2月中旬</b><span>GSoCのテーマを探し始める</span></div><div class="pj-ev l3" style="left:12.59%"><b>3月上旬</b><span>計画を公開して相談</span></div><div class="pj-ev l2" style="left:18.15%;width:175px"><b>3月20日</b><span>Alinさんに勧められ、CfPに応募</span></div><div class="pj-ev l1 narrow" style="left:23.70%"><b>4月上旬</b><span>GSoC提案を提出</span></div><div class="pj-ev l3 key" style="left:34.81%"><b>5月上旬</b><span>CfP採択、GSoC不採択</span></div><div class="pj-ev l1" style="left:46.7%"><b>6月7日</b><span>TAC採択。渡航費の支援が決定</span></div><div class="pj-ev l1 right key" style="right:7.41%"><b>10月11〜14日</b><span>グラスゴー。13日に登壇</span></div><div class="pj-bar g" style="top:346px;left:5.19%;width:29.6%"><b style="font-weight:800">GSoC</b>：探す → 提案 → 不採択</div><div class="pj-bar t" style="top:346px;left:35.9%;width:10.8%"><span><b style="font-weight:800">TAC</b><br>5/8〜6/7</span></div><div class="pj-bar c" style="top:396px;left:18.15%;width:16.65%"><b style="font-weight:800">CfP</b>：応募 → 採択</div></div>
+      <div class="takeaway"><b>Takeaway</b><p>CfPへの応募とTACの申請まで進めた。出口を一つに絞らなかったので、GSoCの不採択で止まらなかった。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 1/3</span>8 / 36</div>
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="../presentation/coc-glasgow-reveal/img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
+      <p>登壇までの流れです。</p>
+      <p>2月中旬に、GSoCのテーマを探し始めました。3月上旬に計画を公開して相談し、3月20日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、CfP、つまり講演募集への応募を勧めてくれました。4月上旬に、GSoCの提案を提出しました。GSoCとCfPは、別々の応募です。</p>
+      <p>5月上旬に、二つの結果が届きました。CfPは採択、GSoCは不採択でした。5月8日にはTACに応募して、6月7日に採択の連絡が届き、渡航費用の支援が決まりました。そして10月に、グラスゴーで登壇しました。</p>
+      <p>NOTE, do not read: 時系列の注意：5月上旬の結果と、5月8日のTAC応募、6月7日の採択の前後は、メールで日付を再確認しておく。</p>
+    </aside>
+  </section>
+
+  <section>
+  <div class="frame jp">
+    <p class="eyebrow">GSoC：Google Summer of Codeとは</p>
+    <div class="body" style="gap:12px">
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:start">
+        <div>
+          <img src="gsoc-logo.svg" alt="Google Summer of Code" style="width:380px;display:block;margin-bottom:8px">
+          <p class="lead" style="max-width:none;font-size:21px;margin:0 0 8px">Googleが運営する、OSSへの参加を支援するプログラム。</p>
+          <dl class="dl" style="grid-template-columns:96px 1fr;margin:0">
+            <dt>内容</dt><dd>メンターと一緒に、数か月かけて開発に取り組む。報酬が支払われる。</dd>
+            <dt>応募</dt><dd>プロジェクトを選び、やりたい内容を提案書にまとめる。プロジェクトの人と相談しながら磨く。</dd>
+            <dt style="color:var(--blue)">私の場合</dt><dd>2026年に応募。テーマはNuttXへのWireGuard移植。結果は不採択。</dd>
+          </dl>
+        </div>
+        <figure class="cite"><a href="https://note.com/yurikomium/n/n12dc41b8b222" target="_blank" rel="noopener noreferrer"><img src="note-gsoc.png" alt="note: 初めてのOSS活動におすすめ！Google Summer of Codeの夏が始まるよ"></a><figcaption>参考：hyaku「初めてのOSS活動におすすめ！Google Summer of Codeの夏が始まるよ」（note、2025/3/18）。応募条件や報酬は年ごとに変わる。<br><a href="https://note.com/yurikomium/n/n12dc41b8b222" target="_blank" rel="noopener noreferrer">note.com/yurikomium/n/n12dc41b8b222</a></figcaption></figure>
+      </div>
+      <blockquote class="quote">「コントリビューターはGoogleからお金をもらいながら、約3ヶ月にわたってOSS組織に貢献します。」</blockquote>
+      <div class="takeaway"><b>Takeaway</b><p>提案書を書き、公開の場で相談した過程は、不採択のあとも残った。次の応募の土台になった。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/3</span>9 / 36</div>
+    <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="../presentation/coc-glasgow-reveal/img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
+  </div>
+    <aside class="notes">
       <p>ここで、GSoCについて紹介します。Google Summer of Codeは、Googleが運営する、OSSに参加する人を支援するプログラムです。</p>
       <p>参加者は、プロジェクトのメンターと一緒に、数か月かけて開発に取り組みます。参加者には報酬が支払われます。応募するときは、プロジェクトを選んで、やりたい内容を提案書にまとめます。提案は、プロジェクトの人と相談しながら磨いていきます。</p>
+      <p>紹介には、noteの記事を参考にしました。リンクをスライドに載せています。</p>
       <p>私は2026年に応募して、テーマにNuttXへのWireGuard移植を選びました。結果は不採択でした。ただ、提案書を書いて、公開の場で相談したことは、そのあとにも残りました。</p>
       <p>NOTE, do not read: 報酬の額や応募条件は年ごとに変わる。数字は言わず、公式ページを案内する。</p>
     </aside>
@@ -1425,46 +1541,12 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">年表：GSoC不採択〜登壇</p>
-    <div class="body" style="justify-content:flex-start;padding-top:6px">
-      <div class="ptl2">
-        <div class="timeline-v">
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">2026年2〜3月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>GSoC応募とテーマ探し</h3><p>GSoCへの応募を決め、NuttXへのWireGuard移植をテーマに選び、GitHub上で相談しながら提案をまとめた。</p></div></div>
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">3月20日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>CfPの応募を勧められる</h3><p>Sonyの同僚Alin Jerpeleaさんの勧めで、CfPに応募。</p></div></div>
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">5月上旬</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>CfP採択、GSoC不採択</h3><p>登壇が決まり、個人で開発を続けた。</p></div></div>
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">6月7日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>TAC採択</h3><p>渡航費用の支援が決定。</p></div></div>
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">6〜10月</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>検討・開発</h3><p>実装方式を検討しながら開発し、登壇の直前まで続けた。</p></div></div>
-<div class="tlv-item" style="grid-template-columns:118px 24px 1fr;padding:7px 0"><div class="tlv-year">10月13日</div><div class="tlv-dot-col"><div class="tlv-dot"></div></div><div class="tlv-body"><h3>グラスゴーで登壇</h3><p>初めての海外カンファレンスでの登壇。</p></div></div>
-        </div>
-        <div class="res">
-          <div class="fact wg"><b>GSoC 2026</b><p>不採択</p></div>
-          <div class="fact nx"><b>Community Over Code CfP</b><p>採択 → 登壇</p></div>
-          <div class="fact nx"><b>TAC（渡航支援）</b><p>採択 → 費用の支援</p></div>
-        </div>
-      </div>
-      <div class="takeaway"><b>Takeaway</b><p>不採択の連絡を待たずに、CfPへの応募とTACの申請まで進めた。出口を一つに絞らなかったので、不採択で止まらなかった。</p></div>
-    </div>
-
-    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/3</span>9 / 36</div>
-    <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="../presentation/coc-glasgow-reveal/img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
-  </div>
-    <aside class="notes">
-      <p>登壇までの道のりです。</p>
-      <p>2026年の2月から3月に、GSoC、Google Summer of Codeへの応募を決めて、テーマを探しました。選んだのが、NuttXへのWireGuard移植です。</p>
-      <p>3月20日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、Community Over CodeのCfP、つまり講演募集への応募を勧めてくれました。応募して、5月上旬に結果が届きました。GSoCは不採択でしたが、CfPは採択でした。</p>
-      <p>登壇が決まったので、個人の活動として開発を続けました。6月にはTACの採択連絡も届きました。6月から10月まで、実装の方式を検討しながら開発を続けて、登壇の直前まで手を入れていました。そして10月13日に登壇しました。右の三つが結果です。GSoCは不採択でしたが、CfPとTACは採択されました。</p>
-      <p>NOTE, do not read: 時系列の注意：6月7日のTAC採択と、5月上旬のCfP採択の前後関係は、メールで日付を確認しておく。</p>
-    </aside>
-  </section>
-
-  <section>
-  <div class="frame jp">
     <p class="eyebrow">きっかけ：声がかかった3つの要因</p>
     <div class="body" style="gap:22px">
-      <div class="three">
-        <div class="fact wg"><b>公開の場で動いていた</b><p>提案の準備や相談を、GitHub上で進めていた。見つけてもらえる状態だった。</p></div>
-        <div class="fact nx"><b>社内のつながり</b><p>同じSonyグループで、仕事でも少し接点があった。会社のチャットで連絡をもらえた。</p></div>
-        <div class="fact blue"><b>「応募してみたら」</b><p>CfPという具体的な入口を、人が教えてくれた。</p></div>
+      <div class="sum s">
+        <div class="sum-row"><div class="sum-n">1</div><div><h3>公開の場で動いていた</h3><p>提案の準備や相談を、GitHub上で進めていた。見つけてもらえる状態だった。</p></div></div>
+        <div class="sum-row b"><div class="sum-n">2</div><div><h3>社内のつながり</h3><p>同じSonyグループで、仕事でも少し接点があった。会社のチャットで連絡をもらえた。</p></div></div>
+        <div class="sum-row c"><div class="sum-n">3</div><div><h3>「応募してみたら」</h3><p>CfPという具体的な入口を、人が教えてくれた。</p></div></div>
       </div>
       <div class="claim"><p>GSoCの結果が出る前に、CfPの声がかかった。</p><small>3月：GitHubで提案を公開して相談 → Alinさんに声をかけてもらう → CfPに応募。5月：CfP採択、GSoC不採択。</small></div>
       <div class="takeaway"><b>Takeaway</b><p>登壇につながったのは、GSoCの結果ではなく、公開の場で相談していたこと。</p></div>
@@ -1554,9 +1636,9 @@
     <p class="eyebrow">支援制度：TACの対象と対象外</p>
     <div class="body ba" style="gap:18px">
       <p class="lead" style="max-width:none;font-size:21px"><span class="hl">Travel Assistance Committee</span>。経済的な理由で参加が難しい人に、ASFのイベントへの参加を支援する仕組み。</p>
-      <div class="two">
-        <div class="panel nx" style="min-height:0"><span class="plabel">COVERED</span><h3>支援の対象</h3><ul style="margin:0;padding-left:22px"><li>交通費</li><li>会期中の宿泊費</li><li>カンファレンスの参加費</li></ul></div>
-        <div class="panel" style="min-height:0"><span class="plabel">NOT COVERED</span><h3>対象外・注意</h3><ul style="margin:0;padding-left:22px"><li>一般的な生活費は対象外</li><li>原則、本人への振込ではない。ASFや指定業者が交通・宿泊を手配して支払う</li><li>支援枠と予算は限られている</li></ul></div>
+      <div class="yn">
+        <div class="ok"><h3>支援の対象</h3><ul><li>交通費</li><li>会期中の宿泊費</li><li>カンファレンスの参加費</li></ul></div>
+        <div class="no"><h3>対象外・注意</h3><ul><li>一般的な生活費は対象外</li><li>原則、本人への振込ではない。ASFや指定業者が交通・宿泊を手配して支払う</li><li>支援枠と予算は限られている</li></ul></div>
       </div>
       <p class="fine" style="margin:0">出典：Apache TAC 公式の案内</p>
     </div>
@@ -1575,11 +1657,8 @@
   <div class="frame jp">
     <p class="eyebrow">応募：審査の3つの観点</p>
     <div class="body" style="gap:20px">
-      <div class="three">
-        <div class="fact wg"><b style="font-size:20px;text-transform:none;letter-spacing:0;font-family:inherit">&#9312; 応募</b><p>オンラインで申請。申請内容に基づいて審査される。</p></div>
-        <div class="fact nx"><b style="font-size:20px;text-transform:none;letter-spacing:0;font-family:inherit">&#9313; 重視される点</b><p>参加が本人にとってだけでなく、ASFやOSS全体にどんな意味を持つか。</p></div>
-        <div class="fact blue"><b style="font-size:20px;text-transform:none;letter-spacing:0;font-family:inherit">&#9314; 開催地</b><p>居住地に近いイベントが一般に優先される。遠方でも、参加する理由は考慮される。</p></div>
-      </div>
+      <div class="chev"><div class="c1"><b>&#9312; 応募</b></div><div class="c2"><b>&#9313; 重視される点</b></div><div class="c3"><b>&#9314; 開催地</b></div></div>
+      <div class="chev-t"><p>オンラインで申請。申請内容に基づいて審査される。</p><p>参加が本人にとってだけでなく、ASFやOSS全体にどんな意味を持つか。</p><p>居住地に近いイベントが一般に優先される。遠方でも、参加する理由は考慮される。</p></div>
       <div class="claim ok"><p>登壇者であることは、強い「参加する理由」になる。</p><small>私の場合は、CfPが採択されていたことが、申請内容の軸になりました。</small></div>
       <p class="aside" style="font-size:16px"><strong>注意：</strong>採択の基準や結果は回によって変わります。応募前に必ず公式の案内を読んでください。</p>
     </div>
@@ -1598,19 +1677,24 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">応募：フォームに書いた内容</p>
-    <div class="body ba" style="gap:16px">
-      <div class="two" style="grid-template-columns:1.6fr 1fr">
-        <div class="panel wg" style="min-height:0"><span class="plabel">MONEY</span><h3>お金の事情</h3>
-          <div class="three" style="gap:10px;margin-top:6px">
-            <div class="fact"><b>月収（額面）</b><p class="big-num" style="margin-top:4px;font-size:34px;white-space:nowrap">約2,500<small>USD</small></p></div>
-            <div class="fact gold"><b>必須の支出</b><p class="big-num" style="margin-top:4px;color:var(--gold);font-size:34px;white-space:nowrap">約2,300<small>USD</small></p></div>
-            <div class="fact nx"><b>手元に残る額</b><p class="big-num" style="margin-top:4px;color:var(--quiet);font-size:34px;white-space:nowrap">約200<small>USD/月</small></p></div>
-          </div>
-          <p style="margin:10px 0 0;font-size:18px;color:var(--muted)">税・社会保険、家賃・光熱費、食費などを項目ごとに金額で記入。会社の支援はなく、個人のOSS活動として参加する、と明記。<br><span style="font-size:15px">提出日：2026/5/8（CfP採択後）。申請の全文と個人情報は載せていません。</span></p>
+    <div class="body" style="gap:14px">
+      <div class="two" style="grid-template-columns:1.1fr 1fr;gap:44px">
+        <div>
+          <h3 style="margin:0 0 4px;font-size:27px">お金の事情</h3>
+          <p class="big-num" style="font-size:46px">約2,500<small>USD／月（額面）</small></p>
+          <div class="mbar"><div style="width:92%;background:var(--gold)">必須の支出 約2,300</div><div style="width:8%;background:var(--nx)"></div></div>
+          <div class="mleg"><span><i style="background:var(--gold)"></i>必須の支出（税・社会保険、家賃、食費など）</span><span><i style="background:var(--nx)"></i>手元に約200</span></div>
+          <p style="margin:6px 0 0;font-size:19px;color:var(--muted)">項目ごとに金額で記入。会社の支援はなく、個人のOSS活動として参加する、と明記。</p>
         </div>
-        <div class="panel nx" style="min-height:0"><span class="plabel">REQUEST</span><h3>希望した支援と、書いた理由</h3><ul style="margin:0;padding-left:22px;font-size:20px;line-height:1.55"><li>希望：宿泊とホテル費。参加費は希望せず</li><li>理由：登壇が採択済み。NuttXの開発に深く関わりたい</li><li>実績：公開・保守してきたサンプルアプリ。GSoC不採択も正直に記載</li><li>還元：参加後に日本の開発者へ共有。TACの運営協力も申し出た</li></ul></div>
+        <dl class="dl" style="margin:0">
+          <dt>希望</dt><dd>宿泊とホテル費。参加費は希望せず</dd>
+          <dt>理由</dt><dd>登壇が採択済み。NuttXの開発に深く関わりたい</dd>
+          <dt>実績</dt><dd>公開・保守してきたサンプルアプリ。GSoC不採択も正直に記載</dd>
+          <dt>還元</dt><dd>参加後に日本の開発者へ共有。TACの運営協力も申し出た</dd>
+        </dl>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>支出の内訳を金額で示し、「なぜ自費では難しいか」と「支援されたら何をするか」の両方を書いた。不採択も隠さず書いた。</p></div>
+      <p class="fine" style="margin:0">提出日：2026/5/8（CfP採択後）。申請の全文と個人情報は載せていません。</p>
     </div>
 
     <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 4/6</span>15 / 36</div>
@@ -1657,9 +1741,9 @@
   <div class="frame jp">
     <p class="eyebrow">見返り：運営への協力</p>
     <div class="body ba" style="gap:18px">
-      <div class="two">
-        <div class="panel blue" style="min-height:0"><span class="plabel">TAC'S REQUEST</span><h3>TACの求めること</h3><p>支援を受ける参加者は、イベントの運営に協力する。例：設営、受付、セッションの補助、撤収。</p></div>
-        <div class="panel nx" style="min-height:0"><span class="plabel">MY ROLE</span><h3>私の担当</h3><ul style="margin:0;padding-left:22px;color:var(--muted);font-size:20px;line-height:1.55"><li>会場準備（机、旗、バナーの設置）</li><li>最終日のセッション会場の録画とスピーカー対応</li><li>午後、ほかのスタッフの担当を引き受けた</li></ul></div>
+      <div class="yn">
+        <div class="pl"><h3>TACの求めること</h3><p>支援を受ける参加者は、イベントの運営に協力する。例：設営、受付、セッションの補助、撤収。</p></div>
+        <div class="ok"><h3>私の担当</h3><ul><li>会場準備（机、旗、バナーの設置）</li><li>最終日のセッション会場の録画とスピーカー対応</li><li>午後、ほかのスタッフの担当を引き受けた</li></ul></div>
       </div>
       <div class="claim ok"><p>録画は、基本的に開始ボタンと停止ボタンを押すだけ。</p><small>日本でカンファレンスのボランティアを経験していたので、仕事の違いは大きくなかった。今回は担当量が比較的少なく、登壇・聴講・交流と両立できた。担当は回や割り当てで変わる。</small></div>
     </div>
@@ -2078,11 +2162,8 @@
     <p class="eyebrow">メッセージ：声がかかった時に動ける準備</p>
     <div class="body" style="gap:16px">
       <p class="dm-label" style="margin:0">MESSAGE 1 / 2</p>
-      <div class="three">
-        <div class="fact wg"><span class="plabel">TRIGGER</span><b>声がかかった</b><p>CfPへの応募は、Alinさんに誘ってもらったのがきっかけだった。</p></div>
-        <div class="fact nx"><span class="plabel">PREPARED</span><b>動ける準備があった</b><p>OSSのカンファレンスでボランティアスタッフを経験していて、応募から登壇までの流れに、具体的なイメージがあった。</p></div>
-        <div class="fact gold"><span class="plabel">RESULT</span><b>応募につながった</b><p>誘われても、すぐに応募できる準備がある人は多くない。準備があったから、機会を取れた。</p></div>
-      </div>
+      <div class="chev"><div class="c1"><b>声がかかった</b></div><div class="c2"><b>動ける準備があった</b></div><div class="c3"><b>応募につながった</b></div></div>
+      <div class="chev-t"><p>CfPへの応募は、Alinさんに誘ってもらったのがきっかけだった。</p><p>OSSのカンファレンスでボランティアスタッフを経験していて、応募から登壇までの流れに、具体的なイメージがあった。</p><p>誘われても、すぐに応募できる準備がある人は多くない。準備があったから、機会を取れた。</p></div>
       <div class="claim ok"><p>機会は、声がかかった時に来る。</p><small>そこで動けるかどうかは、それまでの準備で決まる。</small></div>
       <div class="takeaway"><b>Takeaway</b><p>ボランティアで運営の側から見てきたことが、応募のイメージになった。準備は、機会が来る前に、小さく始めておく。</p></div>
     </div>
@@ -2102,10 +2183,10 @@
     <p class="eyebrow">メッセージ：まずおすすめの一歩</p>
     <div class="body" style="gap:16px">
       <p class="dm-label" style="margin:0">MESSAGE 2 / 2</p>
-      <div class="three">
-        <div class="fact wg"><span class="plabel">PROGRAMS</span><b>OSS貢献プログラム</b><p>GSoCのほか、Linux Foundation主催の同じようなプログラムもある。最初の入口として始めやすい。</p></div>
-        <div class="fact nx"><span class="plabel">EVENTS</span><b>OSSのイベントに参加</b><p>Apache系のイベントに参加する。Linux Foundation主催のイベントは、日本でも大きく開かれている。ボランティアスタッフは、いつも募集している。</p></div>
-        <div class="fact blue"><span class="plabel">NEARBY</span><b>日本のソフトウェアイベント</b><p>日本で開かれているイベントに、まず参加してみる。参加者としても、ボランティアとしても。</p></div>
+      <div class="sum s">
+        <div class="sum-row"><div class="sum-n">1</div><div><h3>OSS貢献プログラムに応募する</h3><p>GSoCのほか、Linux Foundation主催の同じようなプログラムもある。最初の入口として始めやすい。</p></div></div>
+        <div class="sum-row b"><div class="sum-n">2</div><div><h3>OSSのイベントに参加する</h3><p>Apache系のイベントに参加する。Linux Foundation主催のイベントは、日本でも大きく開かれている。ボランティアスタッフは、いつも募集している。</p></div></div>
+        <div class="sum-row c"><div class="sum-n">3</div><div><h3>日本のソフトウェアイベントに行く</h3><p>日本で開かれているイベントに、まず参加してみる。参加者としても、ボランティアとしても。</p></div></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>いきなり海外で登壇しなくていい。日本のイベントに参加し、ボランティアをするところから始められる。そこで見た景色が、次の応募の土台になる。</p></div>
     </div>
@@ -2126,16 +2207,16 @@
   <div class="frame jp">
     <p class="eyebrow">今後：NuttXとコミュニティへの貢献</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">THE STAIRS &mdash; ASFのプロジェクトでの役割</p>
-      <div class="three">
-        <div class="fact nx" style="min-height:0"><span class="plabel">YOU ARE HERE</span><b>① コントリビューター</b><p>PRを出して、レビューを受ける。NuttXで、WireGuardとNXDoomのPRに取り組んできた。</p></div>
-        <div class="fact blue" style="min-height:0"><span class="plabel">NEXT</span><b>② コミッター</b><p>継続的な貢献が認められ、変更をリポジトリに反映できる権限を持つ。</p></div>
-        <div class="fact gold" style="min-height:0"><span class="plabel">LATER</span><b>③ PMCメンバー</b><p>Project Management Committee。プロジェクトの運営と、リリースの承認を担う。</p></div>
+      <p class="dm-label" style="margin:0">ASFのプロジェクトでの役割</p>
+      <div class="stairs">
+        <div style="background:var(--nx);height:54%"><span class="t">YOU ARE HERE</span><b>① コントリビューター</b><p>PRを出して、レビューを受ける。</p></div>
+        <div style="background:var(--blue);height:74%"><span class="t">NEXT</span><b>② コミッター</b><p>継続的な貢献が認められ、変更をリポジトリに反映できる。</p></div>
+        <div style="background:#8a6410;height:100%"><span class="t">LATER</span><b>③ PMCメンバー</b><p>プロジェクトの運営と、リリースの承認を担う。</p></div>
       </div>
       <div class="claim ok"><p>この階段を、焦らず一段ずつ、上っていきたい。</p></div>
-      <div class="two">
-        <div class="panel" style="min-height:0;padding:12px 24px"><h3 style="margin:0 0 4px">NuttX</h3><p>WireGuardのupstreamへの提出とレビュー。ハッカソンやコミュニティでの活動。</p></div>
-        <div class="panel" style="min-height:0;padding:12px 24px"><h3 style="margin:0 0 4px">日本から</h3><p>日本から世界のコミュニティに参加する人が増えれば、日本の存在感にもつながる。</p></div>
+      <div class="yn" style="gap:40px">
+        <div class="pl"><h3>NuttX</h3><p style="font-size:20px">WireGuardのupstreamへの提出とレビュー。ハッカソンやコミュニティでの活動。</p></div>
+        <div class="pl"><h3>日本から</h3><p style="font-size:20px">日本から世界のコミュニティに参加する人が増えれば、日本の存在感にもつながる。</p></div>
       </div>
     </div>
 
