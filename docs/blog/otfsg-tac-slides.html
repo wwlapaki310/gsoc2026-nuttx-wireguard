@@ -1234,6 +1234,13 @@
   .reveal .frame .cmp6 .hline { margin-top: 4px !important;}
   .reveal .frame .cmp6 .hline p { font-size: 20px;}
   .reveal .frame .cmp6 .hline b { font-size: 30px;}
+  .reveal .frame .cmp7 .big td { font-size: 19px; padding: 5px 12px;}
+  .reveal .frame .cmp7 .big th { padding: 4px 12px;}
+  .reveal .frame .wide table.tight th { font-family: inherit !important; text-transform: none !important; letter-spacing: 0 !important; font-weight: 800 !important; color: var(--wg) !important; font-size: 22px !important;}
+  .reveal .frame .bigger table.tight th { font-size: 29px !important;}
+  .reveal .frame .cmp7 .big th,
+  .reveal .frame .cmp5 .big th,
+  .reveal .frame .cmp6 .big th { font-size: 20px !important;}
   .reveal .frame .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet);}
 </style>
 <link rel="stylesheet" href="../presentation/coc-glasgow-reveal/coc.css">
@@ -1590,20 +1597,25 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">カンファレンスの構成</p>
-    <div class="body wide" style="gap:18px">
+    <div class="body wide cmp7" style="gap:12px">
       <p class="hd">講演・ハッカソン・BoF・交流で構成される</p>
-      <dl class="dl" style="grid-template-columns:140px 1fr;margin:0;gap:14px 16px">
-        <dt>開催地</dt><dd>欧州・北米・アジアなど。今回のグラスゴーは欧州</dd>
-        <dt>講演</dt><dd>トラック（プロジェクトや分野ごとの枠）に分かれ、複数の会場で並行して進む</dd>
-        <dt>私</dt><dd>Apache NuttXのトラックで登壇</dd>
-      </dl>
-      <div class="panel bigger m" style="min-height:0;padding:6px 22px"><table class="tight">
+      <div class="panel big" style="min-height:0;padding:4px 20px"><table class="tight">
         <tr><th>企画</th><th>内容</th></tr>
+        <tr><td>講演</td><td>トラック（プロジェクトや分野ごとの枠）に分かれ、複数の会場で並行して進む</td></tr>
         <tr><td>基調講演（Keynote）</td><td>参加者に共通するテーマや、財団の活動などを扱う講演</td></tr>
         <tr><td>ハッカソン</td><td>開発者や利用者が集まり、コードの修正や実機での動作確認などに取り組む場</td></tr>
         <tr><td>BoF（Birds of a Feather）</td><td>共通のテーマに関心を持つ人が集まって話し合う場</td></tr>
         <tr><td>交流イベント</td><td>食事や懇親会など、参加者同士で話せる機会</td></tr>
       </table></div>
+      <div class="panel" style="min-height:0;padding:10px 20px">
+        <p style="margin:0 0 8px;font-size:21px;font-weight:800;color:var(--wg)">開催地：1998年以降、3地域・26都市（オンライン開催を除く）</p>
+        <div style="display:grid;grid-template-columns:104px 1fr;gap:7px 12px;align-items:center">
+          <b style="font-size:19px">北米 16</b><span style="display:flex;flex-wrap:wrap;gap:5px"><span class="chip" style="font-size:16px;padding:2px 11px;">San Francisco</span><span class="chip" style="font-size:16px;padding:2px 11px;">Orlando</span><span class="chip" style="font-size:16px;padding:2px 11px;">Santa Clara</span><span class="chip" style="font-size:16px;padding:2px 11px;">Las Vegas</span><span class="chip" style="font-size:16px;padding:2px 11px;">San Diego</span><span class="chip" style="font-size:16px;padding:2px 11px;">Austin</span><span class="chip" style="font-size:16px;padding:2px 11px;">Atlanta</span><span class="chip" style="font-size:16px;padding:2px 11px;">New Orleans</span><span class="chip" style="font-size:16px;padding:2px 11px;">Oakland</span><span class="chip" style="font-size:16px;padding:2px 11px;">Vancouver</span><span class="chip" style="font-size:16px;padding:2px 11px;">Portland</span><span class="chip" style="font-size:16px;padding:2px 11px;">Denver</span><span class="chip" style="font-size:16px;padding:2px 11px;">Miami</span><span class="chip" style="font-size:16px;padding:2px 11px;">Montréal</span><span class="chip" style="font-size:16px;padding:2px 11px;">Halifax</span><span class="chip" style="font-size:16px;padding:2px 11px;">Minneapolis</span></span>
+          <b style="font-size:19px">欧州 9</b><span style="display:flex;flex-wrap:wrap;gap:5px"><span class="chip" style="font-size:16px;padding:2px 11px;">London</span><span class="chip" style="font-size:16px;padding:2px 11px;">Stuttgart</span><span class="chip" style="font-size:16px;padding:2px 11px;">Dublin</span><span class="chip" style="font-size:16px;padding:2px 11px;">Amsterdam</span><span class="chip" style="font-size:16px;padding:2px 11px;">Sinsheim</span><span class="chip" style="font-size:16px;padding:2px 11px;">Budapest</span><span class="chip" style="font-size:16px;padding:2px 11px;">Seville</span><span class="chip" style="font-size:16px;padding:2px 11px;">Berlin</span><span class="chip" style="font-size:16px;padding:2px 11px;background:var(--nx);color:#fff;border-color:var(--nx)">Glasgow</span></span>
+          <b style="font-size:19px">アジア 2</b><span style="display:flex;flex-wrap:wrap;gap:5px"><span class="chip" style="font-size:16px;padding:2px 11px;">Colombo</span><span class="chip" style="font-size:16px;padding:2px 11px;">Beijing</span></span>
+        </div>
+        <p class="fine" style="margin:6px 0 0;font-size:14px">出典：ASF Conference History（apachecon.com/history）の1998〜2025年に、今回のGlasgow（緑）を加えて数えた。</p>
+      </div>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 5/6</span>9 / 52</div>
