@@ -1345,6 +1345,17 @@
   .pj-bar.g { background: var(--wg-soft); border: 1px solid #ddb9bc; }
   .pj-bar.c { background: var(--nx-soft); border: 1px solid #b6d7d3; }
   .pj-bar.t { background: var(--gold-soft); border: 1px solid #e0d1a6; font-size: 15px; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .kn { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .kn a { display: block; text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--paper, #fff); }
+  .kn img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+  .kn b { display: block; padding: 8px 10px 2px; font-size: 18px; line-height: 1.3; }
+  .kn span { display: block; padding: 0 10px 10px; font-size: 15px; line-height: 1.4; color: var(--muted); }
+  .pg4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .pg4 figure { margin: 0; }
+  .pg4 img { width: 100%; height: 190px; object-fit: cover; display: block; border: 1px solid var(--line); }
+  .pg4 figcaption { margin-top: 6px; font-size: 16px; line-height: 1.4; color: var(--muted); }
+  .pg4 figcaption b { display: block; color: var(--ink); font-size: 18px; }
   .cite { margin: 0; }
   .cite img { display: block; width: 100%; border: 1px solid var(--line); }
   .cite figcaption { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--quiet); }
@@ -1378,7 +1389,7 @@
     </div>
     <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../presentation/assets/slides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK</b></a>
 
-    <div class="num">1 / 36</div>
+    <div class="num">1 / 41</div>
     <div class="notes-src">
 こんばんは。ソニーセミコンダクタソリューションズの秋田です。
 ||
@@ -1489,7 +1500,7 @@
       </div>
       <p class="about-links"><a class="li" href="https://www.linkedin.com/in/satoru-akita-6070a4145" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn: Satoru Akita"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>Satoru Akita</span></a><a href="https://wwlapaki310.github.io/" target="_blank" rel="noopener noreferrer"><span>wwlapaki310.github.io</span></a></p>
 
-    <div class="num">2 / 36</div>
+    <div class="num">2 / 41</div>
     <div class="notes-src">
 簡単に自己紹介です。
 ||
@@ -1516,7 +1527,7 @@
         <div class="agenda-item">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">3</div>
@@ -1525,8 +1536,8 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item">
           <div class="agenda-num">5</div>
@@ -1536,11 +1547,11 @@
         <div class="agenda-item">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
     </div></div>
 
-    <div class="num">3 / 36</div>
+    <div class="num">3 / 41</div>
     <div class="notes-src">
 今日の流れです。六つのパートで、質疑も含めて30分です。
 ||
@@ -1560,7 +1571,7 @@
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
@@ -1569,8 +1580,8 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
@@ -1580,12 +1591,12 @@
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1</span>4 / 36</div>
+    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1</span>4 / 41</div>
     <div class="notes-src">
 最初は、カンファレンスの紹介です。
     </div>
@@ -1611,7 +1622,7 @@
       <div class="pillrow"><span class="lb">形式</span><span class="chip">トラック別の講演</span><span class="chip">ハッカソン</span><span class="chip">BoF（有志の話し合い）</span><span class="lb" style="margin-left:18px">集まる人</span><span class="chip">Airflow</span><span class="chip">Arrow</span><span class="chip">Lucene</span><span class="chip">NuttX ほか</span></div>
     </div>
 
-    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 1/2</span>5 / 36</div>
+    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 1/2</span>5 / 41</div>
     <div class="notes-src">
 まず、Community Over Codeについてです。
 ||
@@ -1644,7 +1655,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
       <div class="takeaway" style="margin-top:6px"><b>Takeaway</b><p>AWSやAzureのサービスの中身として、知らずに使っているOSSが多い。それを個人の貢献で育てているのがASF。</p></div>
     </div>
 
-    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 2/2</span>6 / 36</div>
+    <div class="stepper"><span class="on">1 CoC</span><span class="">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 1 &middot; 2/2</span>6 / 41</div>
     <div class="notes-src">
 運営母体のASFについて、簡単に紹介します。
 ||
@@ -1670,7 +1681,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         <div class="agenda-item current">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
@@ -1679,8 +1690,8 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
@@ -1690,12 +1701,12 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2</span>7 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2</span>7 / 41</div>
     <div class="notes-src">
 次は、登壇までの道のりです。
     </div>
@@ -1704,19 +1715,17 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
   <section class="slide jp">
     <p class="eyebrow">経緯：GSoCへの応募から登壇まで</p>
     <div class="body" style="gap:8px">
-      <div class="pj"><div class="pj-axis"></div><div class="pj-m" style="left:0.000%">2月</div><div class="pj-m" style="left:11.111%">3月</div><div class="pj-m" style="left:22.222%">4月</div><div class="pj-m" style="left:33.333%">5月</div><div class="pj-m" style="left:44.444%">6月</div><div class="pj-m" style="left:55.556%">7月</div><div class="pj-m" style="left:66.667%">8月</div><div class="pj-m" style="left:77.778%">9月</div><div class="pj-m" style="left:88.889%">10月</div><div class="pj-ev l4" style="left:5.19%"><b>2月中旬</b><span>GSoCのテーマを探し始める</span></div><div class="pj-ev l3" style="left:12.59%"><b>3月上旬</b><span>計画を公開して相談</span></div><div class="pj-ev l2" style="left:18.15%;width:175px"><b>3月20日</b><span>Alinさんに勧められ、CfPに応募</span></div><div class="pj-ev l1 narrow" style="left:23.70%"><b>4月上旬</b><span>GSoC提案を提出</span></div><div class="pj-ev l3 key" style="left:34.81%"><b>5月上旬</b><span>CfP採択、GSoC不採択</span></div><div class="pj-ev l1" style="left:46.7%"><b>6月7日</b><span>TAC採択。渡航費の支援が決定</span></div><div class="pj-ev l1 right key" style="right:7.41%"><b>10月11〜14日</b><span>グラスゴー。13日に登壇</span></div><div class="pj-bar g" style="top:346px;left:5.19%;width:29.6%"><b style="font-weight:800">GSoC</b>：探す → 提案 → 不採択</div><div class="pj-bar t" style="top:346px;left:35.9%;width:10.8%"><span><b style="font-weight:800">TAC</b><br>5/8〜6/7</span></div><div class="pj-bar c" style="top:396px;left:18.15%;width:16.65%"><b style="font-weight:800">CfP</b>：応募 → 採択</div></div>
-      <div class="takeaway"><b>Takeaway</b><p>CfPへの応募とTACの申請まで進めた。出口を一つに絞らなかったので、GSoCの不採択で止まらなかった。</p></div>
+      <div class="pj"><div class="pj-axis"></div><div class="pj-m" style="left:0.000%;width:16.667%">2月</div><div class="pj-m" style="left:16.667%;width:16.667%">3月</div><div class="pj-m" style="left:33.333%;width:16.667%">4月</div><div class="pj-m" style="left:50.000%;width:16.667%">5月</div><div class="pj-m" style="left:66.667%;width:16.667%">6月</div><div class="pj-m" style="left:83.333%;width:16.667%">10月</div><div class="pj-ev l2" style="left:8.33%;width:190px"><b>2月中旬</b><span>GSoCのテーマを探し始める</span></div><div class="pj-ev l4" style="left:25.56%"><b>3月16日</b><span>Issueで計画を公開</span></div><div class="pj-ev l3" style="left:27.5%;width:230px"><b>3月18〜19日</b><span>Alinさんに勧められ、翌日CfPに応募</span></div><div class="pj-ev l2" style="left:33.9%;width:175px"><b>3月31日</b><span>GSoC提案を提出</span></div><div class="pj-ev l1 key" style="left:42.2%;width:90px"><b>4月16日</b><span>CfP採択</span></div><div class="pj-ev l4" style="left:50.6%"><b>5月1日</b><span>GSoC不採択</span></div><div class="pj-ev l1" style="left:70.6%"><b>6月7日</b><span>TAC採択。渡航費の支援が決定</span></div><div class="pj-ev l2 right key" style="right:2%"><b>10月11〜14日</b><span>グラスゴー。13日に登壇</span></div><div class="pj-bar g" style="top:346px;left:8.33%;width:42.3%"><b style="font-weight:800">GSoC</b>：探す → 提案 → 不採択</div><div class="pj-bar t" style="top:346px;left:54.4%;width:16.2%"><span><b style="font-weight:800">TAC</b> 5/8〜6/7</span></div><div class="pj-bar c" style="top:396px;left:26.9%;width:15.3%"><b style="font-weight:800">CfP</b>：応募 → 採択</div></div>
+      <div class="takeaway"><b>Takeaway</b><p>GSoCの結果を待たずに、CfPに応募していた。出口を一つに絞らなかったので、GSoCの不採択で止まらなかった。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 1/3</span>8 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 1/3</span>8 / 41</div>
     <div class="notes-src">
 登壇までの流れです。
 ||
-2月中旬に、GSoCのテーマを探し始めました。3月上旬に計画を公開して相談し、3月20日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、CfP、つまり講演募集への応募を勧めてくれました。4月上旬に、GSoCの提案を提出しました。GSoCとCfPは、別々の応募です。
+2月中旬に、GSoCのテーマを探し始めました。3月16日にNuttXのGitHubにIssueを立てて、計画を公開して相談しました。18日に、Sonyの同僚で、NuttXコミュニティのAlin Jerpeleaさんが、CfP、つまり講演募集への応募を勧めてくれて、翌19日に応募しました。GSoCの提案は、3月31日に提出しました。GSoCとCfPは、別々の応募です。
 ||
-5月上旬に、二つの結果が届きました。CfPは採択、GSoCは不採択でした。5月8日にはTACに応募して、6月7日に採択の連絡が届き、渡航費用の支援が決まりました。そして10月に、グラスゴーで登壇しました。
-||
-[note] 時系列の注意：5月上旬の結果と、5月8日のTAC応募、6月7日の採択の前後は、メールで日付を再確認しておく。
+結果は、4月16日にCfPの採択、5月1日にGSoCの不採択でした。5月8日にTACに応募して、6月7日に採択の連絡が届き、渡航費用の支援が決まりました。そして10月に、グラスゴーで登壇しました。
     </div>
   </section>
 
@@ -1739,7 +1748,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
       <div class="takeaway"><b>Takeaway</b><p>提案書を書き、公開の場で相談した過程は、不採択のあとも残った。次の応募の土台になった。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/3</span>9 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/3</span>9 / 41</div>
     <div class="notes-src">
 ここで、GSoCについて紹介します。Google Summer of Codeは、Googleが運営する、OSSに参加する人を支援するプログラムです。
 ||
@@ -1761,17 +1770,17 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         <div class="sum-row b"><div class="sum-n">2</div><div><h3>社内のつながり</h3><p>同じSonyグループで、仕事でも少し接点があった。会社のチャットで連絡をもらえた。</p></div></div>
         <div class="sum-row c"><div class="sum-n">3</div><div><h3>「応募してみたら」</h3><p>CfPという具体的な入口を、人が教えてくれた。</p></div></div>
       </div>
-      <div class="claim"><p>GSoCの結果が出る前に、CfPの声がかかった。</p><small>3月：GitHubで提案を公開して相談 → Alinさんに声をかけてもらう → CfPに応募。5月：CfP採択、GSoC不採択。</small></div>
+      <div class="claim"><p>GSoCの結果が出る前に、CfPの声がかかった。</p><small>3/16：GitHubで提案を公開 → 3/18：Alinさんから連絡 → 3/19：CfPに応募。4/16：CfP採択、5/1：GSoC不採択。</small></div>
       <div class="takeaway"><b>Takeaway</b><p>登壇につながったのは、GSoCの結果ではなく、公開の場で相談していたこと。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 3/3</span>10 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="on">2 道のり</span><span class="">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 2 &middot; 3/3</span>10 / 41</div>
     <div class="notes-src">
 振り返ると、いくつかのことが重なっていました。
 ||
 一つ目は、提案の準備や相談をGitHubの公開の場で進めていたことです。二つ目は、同じSonyグループで、仕事でも少し接点があったこと。そして三つ目が、人が具体的な入口、CfPを教えてくれたことです。
 ||
-順序を整理します。3月に、公開の場で相談していたので、声をかけてもらえました。GSoCの結果が出たのは5月上旬で、その時点でCfPへの応募は済んでいました。結果は不採択でしたが、CfPは採択でした。GSoCの結果とは関係なく、公開で動いていたことが、登壇につながりました。
+順序を整理します。3月に、公開の場で相談していたので、声をかけてもらえました。GSoCの結果が出たのは5月1日で、その時点でCfPは4月16日に採択されていました。結果は不採択でしたが、CfPは採択でした。GSoCの結果とは関係なく、公開で動いていたことが、登壇につながりました。
     </div>
   </section>
 
@@ -1787,7 +1796,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">3</div>
@@ -1796,8 +1805,8 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
@@ -1807,12 +1816,12 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3</span>11 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3</span>11 / 41</div>
     <div class="notes-src">
 ここからが中心の、渡航支援制度TACの話です。
     </div>
@@ -1830,7 +1839,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
       <div class="takeaway"><b>Takeaway</b><p>登壇が決まっても、費用が壁になって断念しうる。TACという制度を知っていたことが、参加できた分かれ目だった。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 1/6</span>12 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 1/6</span>12 / 41</div>
     <div class="notes-src">
 ここからが今日の中心です。
 ||
@@ -1851,7 +1860,7 @@ Apacheと聞くとWebサーバーを思い浮かべるかもしれませんが�
       <p class="fine" style="margin:0">出典：Apache TAC 公式の案内</p>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 2/6</span>13 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 2/6</span>13 / 41</div>
     <div class="notes-src">
 TACは、Travel Assistance Committeeの略です。経済的な理由で参加が難しい人に、ASFのイベントへの参加を支援する仕組みです。
 ||
@@ -1870,7 +1879,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <p class="aside" style="font-size:16px"><strong>注意：</strong>採択の基準や結果は回によって変わります。応募前に必ず公式の案内を読んでください。</p>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 3/6</span>14 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 3/6</span>14 / 41</div>
     <div class="notes-src">
 応募はオンラインで、申請内容をもとに審査されます。
 ||
@@ -1904,7 +1913,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <p class="fine" style="margin:0">提出日：2026/5/8（CfP採択後）。申請の全文と個人情報は載せていません。</p>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 4/6</span>15 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 4/6</span>15 / 41</div>
     <div class="notes-src">
 応募したフォームに、何を書いたかを紹介します。提出は5月8日、CfPが採択されたあとです。
 ||
@@ -1935,7 +1944,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <div class="takeaway" style="margin-top:0"><b>Takeaway</b><p>手続きの大半はメールで済み、航空券と宿は手配してもらえる。自分で取るのは、返信の期限と、UK ETAなどの渡航認証。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 5/6</span>16 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 5/6</span>16 / 41</div>
     <div class="notes-src">
 採択の連絡が届いたのは6月7日でした。そのあとは、メールでのやり取りが中心です。受諾の返信、必要書類の確認、航空券の希望、パスポートと渡航手続きについて連絡しました。イギリスの電子渡航認証、UK ETAの取得も自分で進めました。
 ||
@@ -1955,7 +1964,7 @@ TACは、Travel Assistance Committeeの略です。経済的な理由で参加�
       <div class="claim ok"><p>録画は、基本的に開始ボタンと停止ボタンを押すだけ。</p><small>日本でカンファレンスのボランティアを経験していたので、仕事の違いは大きくなかった。今回は担当量が比較的少なく、登壇・聴講・交流と両立できた。担当は回や割り当てで変わる。</small></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 6/6</span>17 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="on">3 TAC</span><span class="">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 3 &middot; 6/6</span>17 / 41</div>
     <div class="notes-src">
 TACでは、支援を受ける人に、運営への協力を求めています。設営や受付、セッションの補助、撤収などです。
 ||
@@ -1977,7 +1986,7 @@ TACでは、支援を受ける人に、運営への協力を求めています�
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
@@ -1986,8 +1995,8 @@ TACでは、支援を受ける人に、運営への協力を求めています�
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
@@ -1997,12 +2006,12 @@ TACでは、支援を受ける人に、運営への協力を求めています�
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4</span>18 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4</span>18 / 41</div>
     <div class="notes-src">
 次は、現地での8日間の様子です。
     </div>
@@ -2023,7 +2032,7 @@ TACでは、支援を受ける人に、運営への協力を求めています�
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 1/10</span>19 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 1/14</span>19 / 41</div>
     <div class="notes-src">
 渡航は10月9日から16日まででした。
 ||
@@ -2032,18 +2041,18 @@ TACでは、支援を受ける人に、運営への協力を求めています�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">現地：会場・TAC・登壇</p>
+    <p class="eyebrow">現地：会場・TAC・日本人メンバー</p>
     <div class="body">
-      <div class="photo-grid">
-        <div class="photo-card"><div class="ph">PHOTO<br>会場（Hilton Glasgow）</div><div class="copy" style="min-height:110px"><p>会場の準備。机やバナーの設置を手伝いました。</p></div></div>
-        <div class="photo-card"><div class="ph">PHOTO<br>TACの集合写真</div><div class="copy" style="min-height:110px"><p>TACの参加者と。Tシャツを着て運営を支えました。</p></div></div>
-        <div class="photo-card"><div class="ph">PHOTO<br>登壇</div><div class="copy" style="min-height:110px"><p>10月13日、初めての海外ソフトウェアカンファレンスでの登壇。</p></div></div>
+      <div class="pg4" style="grid-template-columns:repeat(3,1fr);gap:18px;margin-top:20px">
+        <figure><img src="photos/20261103122759.png" alt="設営中の会場" style="height:270px"><figcaption><b>会場の準備</b>机やバナーの設置を手伝った</figcaption></figure>
+        <figure><img src="photos/20261103012432.png" alt="10/10 事前懇談会" style="height:270px"><figcaption><b>10/10 事前懇談会</b>7か国から来たTACのメンバーと、スコットランド料理</figcaption></figure>
+        <figure><img src="photos/20261103173537.png" alt="日本人メンバーで記念撮影" style="height:270px"><figcaption><b>日本から来た参加者と</b>海外のイベントで、日本の仲間に会えた</figcaption></figure>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 2/10</span>20 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 2/14</span>20 / 41</div>
     <div class="notes-src">
-[写真を差し替える] 会場、TACの集合写真、登壇中の写真を入れる。
+会場の準備、TACの事前懇談会、日本人メンバーとの写真です。
 ||
 土曜日の集まりでは、日本人の参加者3人とも会いました。海外のイベントで、日本からそれぞれの経緯で来ている人に会えたのが印象的でした。
 ||
@@ -2052,17 +2061,77 @@ TACでは、支援を受ける人に、運営への協力を求めています�
   </section>
 
   <section class="slide jp">
+    <p class="eyebrow">基調講演：5つのテーマ</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">KEYNOTES &middot; クリックでYouTube</p>
+      <div class="kn">
+        <a href="https://www.youtube.com/watch?v=Lbm9-W0rOT0" target="_blank" rel="noopener noreferrer"><img src="talk-Lbm9-W0rOT0.jpg" alt=""><b>AI時代のソフトウェア工学教育</b><span>Stephen Walli</span></a>
+        <a href="https://www.youtube.com/watch?v=tRNTuW-1VkI" target="_blank" rel="noopener noreferrer"><img src="talk-tRNTuW-1VkI.jpg" alt=""><b>Your Data. Your Models. Your Rules.</b><span>データ主権</span></a>
+        <a href="https://www.youtube.com/watch?v=3HWBqiyllbk" target="_blank" rel="noopener noreferrer"><img src="talk-3HWBqiyllbk.jpg" alt=""><b>From Consumers to Contributors</b><span>SnowflakeのASFへの貢献の道のり</span></a>
+        <a href="https://www.youtube.com/watch?v=zWUgJGG8854" target="_blank" rel="noopener noreferrer"><img src="talk-zWUgJGG8854.jpg" alt=""><b>Unmasking Phantoms in our Supply Chains</b><span>ソフトウェアのサプライチェーンのリスク</span></a>
+        <a href="https://www.youtube.com/watch?v=8DAqWHqQNNQ" target="_blank" rel="noopener noreferrer"><img src="talk-8DAqWHqQNNQ.jpg" alt=""><b>Ecosystem Eats Industry</b><span>Brian Baglow（インタラクション・エコノミー）</span></a>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>基調講演は、AI、データ主権、サプライチェーンなど、OSS全体に関わるテーマだった。録画はYouTubeで公開されている。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 3/14</span>21 / 41</div>
+    <div class="notes-src">
+基調講演は5本ありました。ソフトウェア工学教育、データ主権、SnowflakeがASFに貢献してきた道のり、サプライチェーンのリスク、そしてインタラクション・エコノミーです。
+||
+特に印象に残った1本目は、次のスライドで紹介します。録画は、カンファレンスの公式YouTubeチャンネルで見られます。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <p class="eyebrow">聴講：OSS教育とAI（基調講演）</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">TALK 1 / 10</p>
+      <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
+        <figure class="still yt" data-yt="Lbm9-W0rOT0" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: Keynote: Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli）"><img src="talk-Lbm9-W0rOT0.jpg" alt="Thumbnail: Keynote: Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli）"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <div class="panel blue" style="min-height:0"><p>AIが使える時代に、ソフトウェア工学やOSSへの参加をどう教えるか、という基調講演。</p><ul><li>暗黙知</li><li>All Software is Social Software</li><li>Semesters of Code：メンターの支援つきで、学生が実際のOSSに貢献する</li></ul><p style="font-size:14px;margin-top:10px">Keynote: Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli）</p><p><a href="https://youtu.be/Lbm9-W0rOT0" target="_blank" rel="noopener noreferrer">youtu.be/Lbm9-W0rOT0</a></p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>コードを書く速さと、プロジェクトを理解することは別。暗黙知は、人との実践で引き継がれる。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 4/14</span>22 / 41</div>
+    <div class="notes-src">
+「暗黙知のギャップがなければ、バイブコーディングはうまくいく」という趣旨の表現がありました。私自身、Claudeを使って初めてのOS開発をしたので、その実感と重なりました。
+||
+[note] 聴講していない講演は入れない。動画は公式チャンネルの録画。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <p class="eyebrow">聴講：OSPOとAI生成のPR</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">TALK 2 / 10</p>
+      <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
+        <figure class="still" style="max-width:600px;margin:0"><img src="photos/20261103171140.png" alt="From Legacy Governance to Community Leadership: Building a Network-Focused OSPO（Nikola Babadzhanov、Bosch）" style="width:100%;display:block;border:1px solid var(--line)"></figure>
+        <div class="panel gold" style="min-height:0"><p>AIが作ったPRが増えると、レビューする側の負担がどう変わるか、という講演。</p><ul><li>一つのプロジェクトで、最初のレビューが3〜4分から約90分に</li><li>AIの利用を許可・推奨：83.3%</li><li>人の実質的な関与を要求：67.3%、開示を要求：48.8%</li></ul><p style="font-size:14px;margin-top:10px">From Legacy Governance to Community Leadership: Building a Network-Focused OSPO（Nikola Babadzhanov、Bosch）</p></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>PRを出すのは速くなった。そのレビューを支えるのは、人の時間。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 5/14</span>23 / 41</div>
+    <div class="notes-src">
+AI生成のPRで、レビューする側の負担が変わるという講演です。数字は、講演で示された調査の値です。
+||
+[note] 聴講していない講演は入れない。動画は公式チャンネルの録画。
+    </div>
+  </section>
+
+  <section class="slide jp">
     <p class="eyebrow">聴講：Apache Airflow + AIエージェント</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 1 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 3 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <figure class="still yt" data-yt="TxmwLKmJ5YI" style="max-width:600px"><button class="yt-play" type="button" aria-label="Play: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><img src="talk-TxmwLKmJ5YI.jpg" alt="Thumbnail: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <figure class="still yt" data-yt="TxmwLKmJ5YI" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><img src="talk-TxmwLKmJ5YI.jpg" alt="Thumbnail: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel wg" style="min-height:0"><p>処理の流れ（ワークフロー）を管理するAirflowに、AIエージェントを組み込む講演。</p><ul><li>実行状況の把握</li><li>人による確認・判断の仕組み</li></ul><p style="font-size:14px;margin-top:10px">Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI</p><p><a href="https://youtu.be/TxmwLKmJ5YI" target="_blank" rel="noopener noreferrer">youtu.be/TxmwLKmJ5YI</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>AIに任せる範囲を広げるほど、実行を観測できることと、人が止められることが前提になる。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 3/10</span>21 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 6/14</span>24 / 41</div>
     <div class="notes-src">
 AirflowにAIエージェントを組み込み、実行状況を把握したり、人が確認・判断したりする仕組みの講演です。
 ||
@@ -2073,15 +2142,15 @@ AirflowにAIエージェントを組み込み、実行状況を把握したり�
   <section class="slide jp">
     <p class="eyebrow">聴講：Apache StreamPipes</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 2 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 4 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <figure class="still yt" data-yt="A8O0MUeGnew" style="max-width:600px"><button class="yt-play" type="button" aria-label="Play: Apache StreamPipes: IIoT from edge to cloud"><img src="talk-A8O0MUeGnew.jpg" alt="Thumbnail: Apache StreamPipes: IIoT from edge to cloud"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <figure class="still yt" data-yt="A8O0MUeGnew" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: Apache StreamPipes: IIoT from edge to cloud"><img src="talk-A8O0MUeGnew.jpg" alt="Thumbnail: Apache StreamPipes: IIoT from edge to cloud"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel nx" style="min-height:0"><p>センサーや機械のデータを取り込み、加工・保存・可視化する産業IoT基盤の講演。</p><ul><li>画面上の操作で処理を組み立てる</li><li>機器との通信方法</li></ul><p style="font-size:14px;margin-top:10px">Apache StreamPipes: IIoT from edge to cloud</p><p><a href="https://youtu.be/A8O0MUeGnew" target="_blank" rel="noopener noreferrer">youtu.be/A8O0MUeGnew</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>現場のデータを集めて見せるところまでを、画面操作でつなぐ。エッジ機器を扱う自分の仕事とも地続き。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 4/10</span>22 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 7/14</span>25 / 41</div>
     <div class="notes-src">
 普段扱っているエッジ機器や、工場の設備を制御するPLCにも近い話題でした。
 ||
@@ -2090,36 +2159,17 @@ AirflowにAIエージェントを組み込み、実行状況を把握したり�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">聴講：OSS教育とAI</p>
-    <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 3 / 7</p>
-      <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <div class="panel" style="min-height:0"><p>動画は公式チャンネルでまだ見つかっていません。</p><p><a href="https://www.youtube.com/@communityovercode/search?query=Walli+open+source+education" target="_blank" rel="noopener noreferrer">公式チャンネルで探す</a></p></div>
-        <div class="panel blue" style="min-height:0"><p>AIが使える時代に、ソフトウェア工学やOSSへの参加をどう教えるか、という講演。</p><ul><li>暗黙知</li><li>All Software is Social Software</li><li>実践としてのガバナンス</li></ul><p style="font-size:14px;margin-top:10px">Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli）</p></div>
-      </div>
-      <div class="takeaway"><b>Takeaway</b><p>コードを書く速さと、プロジェクトを理解することは別。暗黙知は、人との実践で引き継がれる。</p></div>
-    </div>
-
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 5/10</span>23 / 36</div>
-    <div class="notes-src">
-「暗黙知のギャップがなければ、バイブコーディングはうまくいく」という趣旨の表現がありました。私自身、Claudeを使って初めてのOS開発をしたので、その実感と重なりました。
-||
-[note] 聴講していない講演は入れない。動画は公式チャンネルの録画。この講演の動画URLは未確認。
-    </div>
-  </section>
-
-  <section class="slide jp">
     <p class="eyebrow">聴講：Arrow / Parquet C++のファジング</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 4 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 5 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <figure class="still yt" data-yt="X7h_kcSvzAo" style="max-width:600px"><button class="yt-play" type="button" aria-label="Play: 6 years of fuzzing Arrow and Parquet C++"><img src="talk-X7h_kcSvzAo.jpg" alt="Thumbnail: 6 years of fuzzing Arrow and Parquet C++"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <figure class="still yt" data-yt="X7h_kcSvzAo" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: 6 years of fuzzing Arrow and Parquet C++"><img src="talk-X7h_kcSvzAo.jpg" alt="Thumbnail: 6 years of fuzzing Arrow and Parquet C++"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel gold" style="min-height:0"><p>ArrowとParquetのC++実装を、6年間ファジングし続けた取り組み。</p><ul><li>多様な入力で不具合を探す</li><li>活動を支える資金</li></ul><p style="font-size:14px;margin-top:10px">6 years of fuzzing Arrow and Parquet C++</p><p><a href="https://youtu.be/X7h_kcSvzAo" target="_blank" rel="noopener noreferrer">youtu.be/X7h_kcSvzAo</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>不具合探しを6年続けるには、技術に加えて、活動を支える資金が要る。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 6/10</span>24 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 8/14</span>26 / 41</div>
     <div class="notes-src">
 ArrowとParquetのC++実装を6年間ファジングし続けた講演です。検証の技術だけでなく、活動を支える資金の話も出ました。
 ||
@@ -2130,15 +2180,15 @@ ArrowとParquetのC++実装を6年間ファジングし続けた講演です。�
   <section class="slide jp">
     <p class="eyebrow">聴講：NuttX製のロケット高度計</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 5 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 6 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <figure class="still yt" data-yt="QLZR6PHu3dc" style="max-width:600px"><button class="yt-play" type="button" aria-label="Play: NuttX-based Altimeter for High Powered Rocketry"><img src="talk-QLZR6PHu3dc.jpg" alt="Thumbnail: NuttX-based Altimeter for High Powered Rocketry"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <figure class="still yt" data-yt="QLZR6PHu3dc" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: NuttX-based Altimeter for High Powered Rocketry"><img src="talk-QLZR6PHu3dc.jpg" alt="Thumbnail: NuttX-based Altimeter for High Powered Rocketry"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel wg" style="min-height:0"><p>飛行データの記録やパラシュート展開を、NuttXで実装した事例。</p><ul><li>飛行データの記録</li><li>パラシュートの展開</li></ul><p style="font-size:14px;margin-top:10px">NuttX-based Altimeter for High Powered Rocketry</p><p><a href="https://youtu.be/QLZR6PHu3dc" target="_blank" rel="noopener noreferrer">youtu.be/QLZR6PHu3dc</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>飛行データの記録とパラシュートの展開という、失敗できない処理を、NuttXで実装している。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 7/10</span>25 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 9/14</span>27 / 41</div>
     <div class="notes-src">
 大学ではロケットなど航空宇宙を学んでいたので、個人的にも関心のあるテーマでした。
 ||
@@ -2147,19 +2197,40 @@ ArrowとParquetのC++実装を6年間ファジングし続けた講演です。�
   </section>
 
   <section class="slide jp">
+    <p class="eyebrow">聴講：NuttXの移植と、グラフィックス</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">TALK 7&ndash;8 / 10</p>
+      <div class="two" style="gap:28px;grid-template-columns:1fr 1fr;justify-items:center">
+        <div><div style="zoom:.6"><figure class="still yt" data-yt="q_CLBcrHyFw" style="max-width:330px;width:330px"><button class="yt-play" type="button" aria-label="Play: OpenGL ES on Apache NuttX: the uGLy project"><img src="talk-q_CLBcrHyFw.jpg" alt="Thumbnail: OpenGL ES on Apache NuttX: the uGLy project"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure></div><div class="panel nx" style="min-height:0;margin-top:10px"><h3>OpenGL ES on NuttX：µGLy</h3><p>OpenGL ES 1.0 Common Liteを、NuttXで使えるようにする。GSoCの途中経過。</p></div></div>
+        <div><div style="zoom:.6"><figure class="still yt" data-yt="fRevSa9NM1I" style="max-width:330px;width:330px"><button class="yt-play" type="button" aria-label="Play: Bringing NuttX to Raspberry Pi 4B"><img src="talk-fRevSa9NM1I.jpg" alt="Thumbnail: Bringing NuttX to Raspberry Pi 4B"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure></div><div class="panel wg" style="min-height:0;margin-top:10px"><h3>Raspberry Pi 4BへのNuttX移植</h3><p>Linuxでおなじみのボードで、NuttXを動かす。GSoCのプロジェクトで、設計の段階。</p></div></div>
+      </div>
+      <div class="takeaway"><b>Takeaway</b><p>NuttXの対象は、GSoCのプロジェクトとして、まだ広がっている。自分の移植も、その流れの一つ。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 10/14</span>28 / 41</div>
+    <div class="notes-src">
+NuttXの講演を、あと2本聴きました。
+||
+OpenGL ESをNuttXで使えるようにするµGLyと、Raspberry Pi 4BへのNuttXの移植です。どちらもGSoCのプロジェクトで、途中の経過が紹介されました。
+||
+[note] 2本とも動画は公式チャンネルの録画。
+    </div>
+  </section>
+
+  <section class="slide jp">
     <p class="eyebrow">聴講：Apache Tika 4.x</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 6 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 9 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <figure class="still yt" data-yt="RVFurkHgMMg" style="max-width:600px"><button class="yt-play" type="button" aria-label="Play: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><img src="talk-RVFurkHgMMg.jpg" alt="Thumbnail: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <figure class="still yt" data-yt="RVFurkHgMMg" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><img src="talk-RVFurkHgMMg.jpg" alt="Thumbnail: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
         <div class="panel nx" style="min-height:0"><p>さまざまな形式のファイルから、本文や作成者などの情報を取り出すTikaの講演。</p><ul><li>図・表・画像も検索に使う</li><li>VLMの活用</li><li>抽出結果の誤り</li></ul><p style="font-size:14px;margin-top:10px">Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack</p><p><a href="https://youtu.be/RVFurkHgMMg" target="_blank" rel="noopener noreferrer">youtu.be/RVFurkHgMMg</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>検索の質は、検索エンジンの手前の、ファイルから何を取り出すかで決まる。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 8/10</span>26 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 11/14</span>29 / 41</div>
     <div class="notes-src">
-Tikaは、ファイルから情報を取り出すソフトウェアです。図や表、画像の情報も検索に使う取り組みでした。
+Tikaは、ファイルから情報を取り出すソフトウェアです。図や表、画像の情報も検索に使う取り組みでした。仕事で、1000ページを超えるPDFの仕様書から情報を取り出す作業をしているので、関係の深い話でした。
 ||
 [note] 聴講していない講演は入れない。動画は公式チャンネルの録画。
     </div>
@@ -2168,19 +2239,19 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
   <section class="slide jp">
     <p class="eyebrow">聴講：Luceneのベクトル検索</p>
     <div class="body" style="gap:14px">
-      <p class="dm-label" style="margin:0">TALK 7 / 7</p>
+      <p class="dm-label" style="margin:0">TALK 10 / 10</p>
       <div class="two v1-still" style="gap:28px;grid-template-columns:600px 1fr">
-        <div class="panel" style="min-height:0"><p>動画は公式チャンネルでまだ見つかっていません。</p><p><a href="https://www.youtube.com/@communityovercode/search?query=Lucene+KNN" target="_blank" rel="noopener noreferrer">公式チャンネルで探す</a></p></div>
-        <div class="panel gold" style="min-height:0"><p>文章などの特徴を数値の並びに変換し、似たものを探すベクトル検索の高速化。</p><ul><li>検索に使うデータ構造</li><li>数値の保存方法</li></ul><p style="font-size:14px;margin-top:10px">Apache Lucene（ベクトル検索の高速化）</p></div>
+        <figure class="still yt" data-yt="J93Ac5-FvRk" style="max-width:600px;width:600px"><button class="yt-play" type="button" aria-label="Play: Optimizing KNN Indexing in Apache Lucene"><img src="talk-J93Ac5-FvRk.jpg" alt="Thumbnail: Optimizing KNN Indexing in Apache Lucene"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
+        <div class="panel gold" style="min-height:0"><p>文章などの特徴を数値の並びに変換し、似たものを探すベクトル検索の高速化。</p><ul><li>検索に使うデータ構造</li><li>数値の保存方法</li></ul><p style="font-size:14px;margin-top:10px">Optimizing KNN Indexing in Apache Lucene</p><p><a href="https://youtu.be/J93Ac5-FvRk" target="_blank" rel="noopener noreferrer">youtu.be/J93Ac5-FvRk</a></p></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>データ構造と数値の保存方法を工夫して、速度とメモリ使用量を同時に改善している。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 9/10</span>27 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 12/14</span>30 / 41</div>
     <div class="notes-src">
-検索に使うデータ構造や数値の保存方法を工夫して、処理速度やメモリ使用量を改善する取り組みでした。
+検索に使うデータ構造や数値の保存方法を工夫して、処理速度やメモリ使用量を改善する取り組みでした。正直、内容は難しくて、全部は追いきれませんでした。
 ||
-[note] 聴講していない講演は入れない。動画は公式チャンネルの録画。この講演の動画URLは未確認。
+[note] 聴講していない講演は入れない。動画は公式チャンネルの録画。
     </div>
   </section>
 
@@ -2195,7 +2266,7 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
       <div class="takeaway"><b>Takeaway</b><p>ハッカソンの成果を、帰国後に本家のPRにした。重複したPRは自分で閉じ、先に入った他の人のPRには、実機で確認した結果をコメントした。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 10/10</span>28 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 13/14</span>31 / 41</div>
     <div class="notes-src">
 ハッカソンでは、SPRESENSEでDOOMを動かしました。動画は、そのときのものです。
 ||
@@ -2204,6 +2275,30 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
 もう1本は、画面切り替えの演出を切る機能でしたが、NXDoomのメンテナーが同じ機能のPRを先に出していました。重複だったので、自分で閉じて、そちらのPRに、実機で確認した結果をコメントしました。実測では、約19fpsで動きました。
 ||
 [note] 動画は埋め込み。会場のネットワークで再生できない場合は、サムネイルだけ見せて先へ進む。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <p class="eyebrow">交流：夜のイベントと、参加者との会話</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">EVENINGS</p>
+      <div class="pg4">
+        <figure><img src="photos/20261103012432.png" alt=""><figcaption><b>10/10 事前懇談会</b>TACの席で、7か国のメンバーと</figcaption></figure>
+        <figure><img src="photos/20261103013102.png" alt=""><figcaption><b>10/11 ウェルカムパーティー</b>科学博物館を貸し切り</figcaption></figure>
+        <figure><img src="photos/20261103110129.png" alt=""><figcaption><b>10/14 LT大会</b>スライド禁止、5分のフリートーク</figcaption></figure>
+        <figure><img src="photos/20261103110718.png" alt=""><figcaption><b>本の寄贈所</b>おすすめの本を、手紙つきで贈り合う</figcaption></figure>
+      </div>
+      <p style="margin:0;font-size:18px;color:var(--muted)">このほか、10/12はゲームナイト、10/13はクイズナイト。</p>
+      <div class="takeaway"><b>Takeaway</b><p>講演のほかに、毎晩、人と話す場があった。NuttXの人たちとも、ここで直接話せた。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="on">4 現地</span><span class="">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 4 &middot; 14/14</span>32 / 41</div>
+    <div class="notes-src">
+夜にも、毎日イベントがありました。10日の事前懇談会、11日は科学博物館を貸し切ったウェルカムパーティー、12日はゲームナイト、13日はクイズナイト、14日はLT大会でした。
+||
+LT大会は、スライドを使わずに、5分間話すという形式でした。本の寄贈所では、おすすめの本を持ち寄って、手紙をつけて贈り合いました。
+||
+講演を聞くだけでは分からない、その人の背景や考えを、こうした場で聞けました。
     </div>
   </section>
 
@@ -2219,7 +2314,7 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
@@ -2228,8 +2323,8 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">5</div>
@@ -2239,12 +2334,12 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         <div class="agenda-item dim">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 5</span>29 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 5</span>33 / 41</div>
     <div class="notes-src">
 次は、発表の紹介です。本番のスライドに切り替えます。
     </div>
@@ -2265,7 +2360,7 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
       <div class="takeaway"><b>Takeaway</b><p>NuttXにWireGuardを移植した発表。本番のスライドは、このあと別に開く。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 5 &middot; 1/1</span>30 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="on">5 発表</span><span class="">6 学び</span></div><div class="num"><span class="part">PART 5 &middot; 1/1</span>34 / 41</div>
     <div class="notes-src">
 発表した内容そのものは、グラスゴーで使ったスライドで紹介します。ここで画面を切り替えます。
 ||
@@ -2287,7 +2382,7 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         <div class="agenda-item dim">
           <div class="agenda-num">2</div>
           <div><h3>登壇までの道のり</h3><p>GSoCの紹介・CfP採択まで</p></div>
-          <div class="agenda-time">~5 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
@@ -2296,8 +2391,8 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">4</div>
-          <div><h3>現地での8日間</h3><p>日程・聴講・ハッカソン</p></div>
-          <div class="agenda-time">~6 MIN</div>
+          <div><h3>現地での8日間</h3><p>日程・基調講演・聴講・ハッカソン・交流</p></div>
+          <div class="agenda-time">~7 MIN</div>
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">5</div>
@@ -2307,12 +2402,12 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
         <div class="agenda-item current">
           <div class="agenda-num">6</div>
           <div><h3>学びと、次の一歩</h3><p>参加を考えている方へ</p></div>
-          <div class="agenda-time">~3 MIN</div>
+          <div class="agenda-time">~4 MIN</div>
         </div>
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6</span>31 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6</span>35 / 41</div>
     <div class="notes-src">
 最後に、学びと、次の一歩です。
     </div>
@@ -2321,18 +2416,20 @@ Tikaは、ファイルから情報を取り出すソフトウェアです。図�
   <section class="slide jp">
     <p class="eyebrow">学び：参加して得た3つのこと</p>
     <div class="body"><div class="sum">
-      <div class="sum-row"><div class="sum-n">1</div><div><h3>個人でも、制度を使えば海外に参加できる</h3><p>TACで、交通費・宿泊費・参加費の支援を受けられた。個人の会員が中心のASFには、個人の参加を支える仕組みがあった。</p></div></div>
-      <div class="sum-row b"><div class="sum-n">2</div><div><h3>CfPは、人に教えてもらって知った</h3><p>CfPへの応募は、Alinさんの勧めがきっかけだった。提案をGitHubで公開していたから、声をかけてもらえた。</p></div></div>
-      <div class="sum-row c"><div class="sum-n">3</div><div><h3>顔の見える関係が増える</h3><p>オンラインで見ていたNuttXの人たちと、現地で会って話せた。会うと、その人がどんな経緯でOSSに関わっているかまで分かった。</p></div></div>
+      <div class="sum-row"><div class="sum-n">1</div><div><h3>AI時代にこそ、Community Over Code</h3><p>新しく来た人を迎え入れ、使う人がソフトウェアを動かせるよう助ける。AIでコードが速く作れても、人のコミュニティが要る。</p></div></div>
+      <div class="sum-row b"><div class="sum-n">2</div><div><h3>貢献から、プロジェクトの運営へ</h3><p>コントリビューターからコミッター、PMCメンバーへ。運営の側に回る道が、はっきり見えた。</p></div></div>
+      <div class="sum-row c"><div class="sum-n">3</div><div><h3>国内の経験が、海外での登壇を支えた</h3><p>国内カンファレンスのボランティア、研究室での英語、海外での展示。そうした経験が、英語での応募の土台になった。</p></div></div>
     </div></div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 1/4</span>32 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 1/5</span>36 / 41</div>
     <div class="notes-src">
-参加して得た一番大きな学びは、新しい世界を見て、自分もそこに参加し始められたことです。
+参加して得た学びは、三つです。
 ||
-CfPへの応募は、Alinさんに勧められて知りました。提案の準備をGitHubで公開していたので、見つけて声をかけてもらえました。
+一つ目。基調講演や、AIが作ったPRの話を聞いて、AIの時代だからこそ、Community Over Codeだと感じました。新しく来た人を迎え入れること、使う人がソフトウェアを動かせるよう助けること。コードが速く作れるようになっても、人のコミュニティが必要です。
 ||
-そして、オンラインで見ていたコミュニティの人たちと、同じ場所で話せたことが、大きな経験でした。
+二つ目。ASFの中で、コントリビューターからコミッター、PMCメンバーへと、運営の側に回っていく道が、はっきり見えました。
+||
+三つ目。英語での応募を支えたのは、国内カンファレンスのボランティアと、研究室での英語、海外での展示の経験でした。
     </div>
   </section>
 
@@ -2341,12 +2438,12 @@ CfPへの応募は、Alinさんに勧められて知りました。提案の準�
     <div class="body" style="gap:16px">
       <p class="dm-label" style="margin:0">MESSAGE 1 / 2</p>
       <div class="chev"><div class="c1"><b>声がかかった</b></div><div class="c2"><b>動ける準備があった</b></div><div class="c3"><b>応募につながった</b></div></div>
-      <div class="chev-t"><p>CfPへの応募は、Alinさんに誘ってもらったのがきっかけだった。</p><p>OSSのカンファレンスでボランティアスタッフを経験していて、応募から登壇までの流れに、具体的なイメージがあった。</p><p>誘われても、すぐに応募できる準備がある人は多くない。準備があったから、機会を取れた。</p></div>
+      <div class="chev-t"><p>CfPへの応募は、Alinさんに誘ってもらったのがきっかけだった。</p><p>国内のカンファレンスでボランティアスタッフを経験していて、応募から登壇までの流れに、具体的なイメージがあった。研究室で英語を使い、海外の展示にも出ていた。</p><p>誘われても、すぐに応募できる準備がある人は多くない。準備があったから、機会を取れた。</p></div>
       <div class="claim ok"><p>機会は、声がかかった時に来る。</p><small>そこで動けるかどうかは、それまでの準備で決まる。</small></div>
       <div class="takeaway"><b>Takeaway</b><p>ボランティアで運営の側から見てきたことが、応募のイメージになった。準備は、機会が来る前に、小さく始めておく。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 2/4</span>33 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 2/5</span>37 / 41</div>
     <div class="notes-src">
 ここからは、私の学びとは別に、皆さんに伝えたいメッセージです。
 ||
@@ -2361,14 +2458,14 @@ CfPへの応募は、Alinさんに勧められて知りました。提案の準�
     <div class="body" style="gap:16px">
       <p class="dm-label" style="margin:0">MESSAGE 2 / 2</p>
       <div class="sum s">
-        <div class="sum-row"><div class="sum-n">1</div><div><h3>OSS貢献プログラムに応募する</h3><p>GSoCのほか、Linux Foundation主催の同じようなプログラムもある。最初の入口として始めやすい。</p></div></div>
+        <div class="sum-row"><div class="sum-n">1</div><div><h3>OSS貢献プログラムに応募する</h3><p>GSoCのほか、LFX Mentorship、Outreachyなどがある。仕事で使っているOSSのテーマを選ぶのも手。</p></div></div>
         <div class="sum-row b"><div class="sum-n">2</div><div><h3>OSSのイベントに参加する</h3><p>Apache系のイベントに参加する。Linux Foundation主催のイベントは、日本でも大きく開かれている。ボランティアスタッフは、いつも募集している。</p></div></div>
         <div class="sum-row c"><div class="sum-n">3</div><div><h3>日本のソフトウェアイベントに行く</h3><p>日本で開かれているイベントに、まず参加してみる。参加者としても、ボランティアとしても。</p></div></div>
       </div>
       <div class="takeaway"><b>Takeaway</b><p>いきなり海外で登壇しなくていい。日本のイベントに参加し、ボランティアをするところから始められる。そこで見た景色が、次の応募の土台になる。</p></div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 3/4</span>34 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 3/5</span>38 / 41</div>
     <div class="notes-src">
 二つ目は、まずおすすめしたい一歩です。
 ||
@@ -2378,7 +2475,7 @@ OSSへの貢献を支えるプログラムが、いくつかあります。私�
 ||
 もっと身近なところでは、日本で開かれているソフトウェアのイベントに、まず参加してみる、でも十分です。
 ||
-[note] Linux Foundation側のプログラム名は、聞かれたら公式サイトを案内する（LFX Mentorshipなど）。募集時期や条件は年ごとに変わる。
+[note] LFX MentorshipはLinux Foundation側のプログラム。募集時期や条件は年ごとに変わる。
     </div>
   </section>
 
@@ -2398,11 +2495,33 @@ OSSへの貢献を支えるプログラムが、いくつかあります。私�
       </div>
     </div>
 
-    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 4/4</span>35 / 36</div>
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 4/5</span>39 / 41</div>
     <div class="notes-src">
 ASFのプロジェクトには、役割の階段があります。PRを出してレビューを受けるコントリビューター、継続的な貢献が認められて、変更を反映できるコミッター、運営とリリースの承認を担うPMCメンバーです。今の私は、一番下のコントリビューターです。焦らず、継続して関わって、この階段を一段ずつ上っていきたいです。
 ||
 日本から世界のコミュニティに参加する人が増えれば、日本の存在感を示すことにもつながると思います。この体験が、誰かの最初の一歩のきっかけになればうれしいです。
+    </div>
+  </section>
+
+  <section class="slide jp">
+    <p class="eyebrow">先人：上田理さんの歩み</p>
+    <div class="body" style="gap:14px">
+      <p class="dm-label" style="margin:0">登壇の準備で知った人</p>
+      <div class="two" style="gap:26px;grid-template-columns:1fr 1fr">
+        <figure class="cite"><img src="photos/20261103172316.png" alt="" style="height:250px;object-fit:contain;background:#222"><figcaption>「CE Linux Forum 10年間の不思議な体験」より。国内のカンファレンスを踏み台にして、世界へ、という理念で活動していた。</figcaption></figure>
+        <figure class="cite"><img src="photos/20261103172229.png" alt="" style="height:250px;object-fit:contain;background:#222"><figcaption>同じ資料より。大航海時代に世界へ出ていくような、歴史的な経験にも感じた。</figcaption></figure>
+      </div>
+      <p style="margin:0;font-size:19px;color:var(--muted)">ソニーでOSS活動を進めてこられた、上田理さん（2023年逝去）。<a href="https://www.sony.com/ja/SonyInfo/technology/stories/entries/OSS_DevelopmentSupport/" target="_blank" rel="noopener noreferrer">ソニー公式</a> / <a href="https://openchainproject.org/news/2023/08/28/in-memory-of-ueda-san" target="_blank" rel="noopener noreferrer">OpenChain</a></p>
+      <div class="takeaway"><b>Takeaway</b><p>国内から世界へ。先人が切り開いた道の上に、今回の参加がある。その思いを、自分なりに引き継ぎたい。</p></div>
+    </div>
+
+    <div class="stepper"><span class="done">1 CoC</span><span class="done">2 道のり</span><span class="done">3 TAC</span><span class="done">4 現地</span><span class="done">5 発表</span><span class="on">6 学び</span></div><div class="num"><span class="part">PART 6 &middot; 5/5</span>40 / 41</div>
+    <div class="notes-src">
+最後に、登壇の準備をする中で知った、先人の歩みを紹介します。
+||
+ソニーでOSSの活動を進めてこられた、上田理さんです。2023年に亡くなられましたが、公開されている資料を読んで、その考え方に強く共感しました。
+||
+CE Linux Forumの10年間の資料には、国内のカンファレンスを踏み台にして、世界へ出ていくという理念が書かれていました。今回、私が日本から世界のコミュニティに参加できたのも、こうした先人の活動の上にあると感じています。
     </div>
   </section>
 
@@ -2419,7 +2538,7 @@ ASFのプロジェクトには、役割の階段があります。PRを出して
       </div>
     </div>
 
-    <div class="num">36 / 36</div>
+    <div class="num">41 / 41</div>
     <div class="notes-src">
 ありがとうございました。
 ||
