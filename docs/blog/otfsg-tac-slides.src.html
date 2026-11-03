@@ -1414,7 +1414,7 @@
   .prog a { color: var(--wg); font-family: var(--mono); font-size: 19px; word-break: break-all; }
   .prog .panel { padding: 22px 26px !important; } .prog .panel h3 { font-size: 38px; } .prog .panel p { font-size: 24px; margin: 8px 0 14px; }
   .hd { margin: 0; font-size: 33px; font-weight: 800; line-height: 1.3; color: var(--wg); }
-  .stairs > div { overflow: hidden; } .stairs b { font-size: 26px !important; } .stairs p { font-size: 18px !important; line-height: 1.35; } .stairs .cnt { margin-top: 6px !important; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.5); font-size: 17px !important; } .stairs .cnt b { font-size: 24px; }
+  .stairs > div { overflow: hidden; } .stairs b { font-size: 26px !important; } .stairs p { font-size: 18px !important; line-height: 1.35; } .stairs .cnt { margin-top: 6px !important;  font-size: 17px !important; } .stairs .cnt b { font-size: 24px; }
   .evb .pillrow .chip { font-size: 18px; padding: 5px 14px; } .evb .pillrow { gap: 8px; }
   .pg4.ev img { height: 215px; } .pg4.ev figcaption { font-size: 17px; line-height: 1.4; } .pg4.ev figcaption b { font-size: 20px; }
   .cmp5 .fact p.big-num { font-size: 54px; } .cmp5 .fact { padding: 8px 20px; } .cmp5 .big td { padding: 7px 12px; font-size: 21px; }
@@ -1446,6 +1446,16 @@
   .gr3 > .panel > ul b { color: #3a3340; background: #eceff1; padding: 0 3px; }
   .gr3.cond > .panel { padding: 12px 26px 14px !important; }
   .gr3.cond > .panel > h3 { background: none; color: #3a3340 !important; padding: 0; font-size: 30px !important; }
+  .mpr .panel.mp { padding: 8px 18px 8px !important; display: flex; flex-direction: column; }
+  .mpr .lg { height: 46px; display: flex; align-items: center; margin-bottom: 4px; }
+  .mpr .panel.mp h3 { font-size: 30px; margin: 0 0 6px; color: #3a3340; }
+  .mpr .panel.mp ul { padding-left: 20px; margin: 0 0 4px; font-size: 17px; line-height: 1.35; color: var(--ink); }
+  .mpr .panel.mp ul li { margin-bottom: 4px; }
+  .mpr .panel.mp a { margin-top: auto; font-size: 14px; }
+  .mpr .mine { margin: 0 0 6px; font-weight: 800; font-size: 16px; color: #3a3340; background: #eceff1; display: inline-block; padding: 1px 8px; align-self: flex-start; }
+  .endc .panel { text-align: center; padding: 10px 14px 12px !important; } .endc .ic { margin-bottom: 2px; } .gr3.endc > .panel > h3 { margin: 0 !important; padding: 0 !important; background: none !important; color: #3a3340 !important; font-size: 24px !important; }
+  .endq { padding: 10px 24px; border-left: 5px solid #8f8795; background: #eceff1; } .endq p { margin: 0; font-size: 22px; line-height: 1.45; font-weight: 800; } .endq small { color: var(--muted); font-size: 15px; }
+  .endn { padding: 12px 28px; background: #3a3340; color: #fff; } .endn p { margin: 0; font-size: 32px; font-weight: 900; letter-spacing: .03em; } .endn small { color: #d4cfd8; font-size: 16px; display: block; margin-top: 2px; }
   .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet); }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2778,9 +2788,9 @@ Luceneは、アプリケーションに検索機能を組み込むためのソ�
     <div class="body wide" style="gap:8px;justify-content:flex-start">
       <p class="dm-label" style="margin:0;font-size:16px">Apacheプロジェクトでの役割</p>
       <div class="stairs" style="height:268px;flex:none">
-        <div style="background:#8f8795;height:54%"><span class="t">まずは</span><b>① コントリビューター</b><p>コードや文書、小さな修正で貢献する。</p><p class="cnt">人数は報告に記載なし</p></div>
-        <div style="background:#3a3340;height:74%"><span class="t">その先</span><b>② コミッター</b><p>変更を取り込む権限を持つ。</p><p class="cnt">ASF全体で<b>10,225人</b>（FY2026）</p></div>
-        <div style="background:#2a2430;height:100%"><span class="t">少しずつ</span><b>③ PMCメンバー</b><p>プロジェクトの運営を担う（Project Management Committee）。</p><p class="cnt">ASFは<b>302プロジェクト</b>（FY2026）。人数は報告に記載なし</p></div>
+        <div style="background:#8f8795;height:54%"><span class="t">まずは</span><b>① コントリビューター</b><p>コードや文書、小さな修正で貢献する。</p><p>PRを出して、レビューを受ける。</p></div>
+        <div style="background:#3a3340;height:74%"><span class="t">その先</span><b>② コミッター</b><p>継続的な貢献で信頼され、変更を取り込む権限を持つ。</p><p class="cnt">ASF全体で<b>10,225人</b>（FY2026）</p></div>
+        <div style="background:#2a2430;height:100%"><span class="t">少しずつ</span><b>③ PMCメンバー</b><p>プロジェクトの運営を担う（Project Management Committee）。</p><p>リリースの承認も担う。</p></div>
       </div>
       <div class="claim"><p><span style="color:var(--quiet);font-size:15px;letter-spacing:.1em;margin-right:14px">今後の計画</span>まずはコントリビューターとして継続して関わり、役割を少しずつ広げて、国際コミュニティで活動する人になりたい。</p></div>
       <ul class="bl" style="font-size:20px;line-height:1.5"><li>今は業務でNuttXを使わなくなった。腰を据えて関わるプロジェクトは、これから考える。</li><li>Alinさんの活動を見て、OSSをApacheのプロジェクト候補として提案し、財団のもとで育てる取り組みにも関心を持った。</li></ul>
@@ -2850,18 +2860,13 @@ Alinさんから声をかけてもらったとき、心理的障壁なく、す�
 
   <section class="slide jp">
     <p class="eyebrow">メンタリングプログラム</p>
-    <div class="body wide prog" style="gap:22px">
-      <p class="hd">募集テーマから関心のあるものを選び、開発者と話しながら手を動かす</p>
-      <div class="gr3">
-        <div class="panel"><h3>GSoC</h3><p>Google Summer of Code。私が応募したプログラム。</p><a href="https://summerofcode.withgoogle.com/" target="_blank" rel="noopener noreferrer">summerofcode.withgoogle.com</a></div>
-        <div class="panel"><h3>LFX Mentorship</h3><p>Linux Foundationのメンタリングプログラム。</p><a href="https://mentorship.linuxfoundation.org/" target="_blank" rel="noopener noreferrer">mentorship.linuxfoundation.org</a></div>
-        <div class="panel"><h3>Outreachy</h3><p>多様性を支える、技術分野のインターンシップ。</p><a href="https://www.outreachy.org/" target="_blank" rel="noopener noreferrer">outreachy.org</a></div>
+    <div class="body wide prog" style="gap:10px">
+      <p class="hd" style="font-size:26px;margin:0">募集テーマから関心のあるものを選び、開発者と話しながら手を動かす</p>
+      <div class="gr3 mpr">
+<div class="panel mp"><div class="lg"><img src="gsoc-logo.svg" alt="Google Summer of Code" style="height:50px;width:auto;max-width:100%"></div><h3>GSoC（私が応募）</h3><ul><li>Google運営。OSS初心者向けの世界規模のオンラインプログラム</li><li>12週間以上のプロジェクトに、OSS団体のメンターと取り組む</li><li>2005年以降、1,000以上の団体、21,000人以上が参加</li></ul><a href="https://summerofcode.withgoogle.com" target="_blank" rel="noopener noreferrer">summerofcode.withgoogle.com</a></div><div class="panel mp"><div class="lg"><img src="lfx-logo.png" alt="LFX" style="height:50px;width:auto"></div><h3>LFX Mentorship</h3><ul><li>Linux Foundationのメンタリングプログラム</li><li>12週間、メンターと毎週レビューしながらタスクに取り組む</li><li>18歳以上。経歴の中で参加できるのは1プログラムだけ</li><li>報酬の有無と額は、プログラムと居住国で異なる</li></ul><a href="https://mentorship.linuxfoundation.org" target="_blank" rel="noopener noreferrer">mentorship.linuxfoundation.org</a></div><div class="panel mp"><div class="lg"><img src="outreachy-logo.png" alt="Outreachy" style="height:44px;width:auto"></div><h3>Outreachy</h3><ul><li>技術業界で過小評価や差別を受ける人のための有償リモートインターン</li><li>3か月間。5〜8月と12〜3月の年2回</li><li>報酬は7,000米ドル。プログラミング、ドキュメント、UXなど</li></ul><a href="https://outreachy.org" target="_blank" rel="noopener noreferrer">outreachy.org</a></div>
       </div>
-      <ul class="bl" style="font-size:25px;line-height:1.6">
-        <li>私も、GSoCに向けてテーマを選び、コミュニティに相談したことが、登壇につながった</li>
-        <li>業務でOSS活動をしていない人におすすめ。コミュニティが重視するテーマが載っているので、CFP採択率が高い印象</li>
-      </ul>
-      <p class="fine" style="margin:0">OSSJ 2025：GoogleのStephanie Taylorさんが「Bridging the Gap: Mentorship Programs for Your Open Source Journey」で、この3つを紹介していた。</p>
+      <ul class="bl" style="font-size:17px;line-height:1.35;margin:0"><li>私も、GSoCに向けてテーマを選び、コミュニティに相談したことが、登壇につながった</li><li>業務でOSS活動をしていない人におすすめ。コミュニティが重視するテーマが載っているので、CFP採択率が高い印象</li></ul>
+      <p class="fine" style="margin:0;font-size:12.5px;line-height:1.3">OSSJ 2025：GoogleのStephanie Taylorさんが「Bridging the Gap: Mentorship Programs for Your Open Source Journey」で、この3つを紹介していた。</p>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="done">6 聴講</span><span class="on">7 学び</span></div><div class="num"><span class="part">PART 7 &middot; 6/8</span>49 / 52</div>
@@ -2876,13 +2881,17 @@ Alinさんから声をかけてもらったとき、心理的障壁なく、す�
 
   <section class="slide jp">
     <p class="eyebrow">終わりに</p>
-    <div class="body" style="gap:16px">
-      <p style="margin:0;font-size:22px;line-height:1.55;color:var(--muted)">個人のOSS活動からCommunity Over Codeに登壇し、世界のSWコミュニティに飛び込んだ体験談。</p>
-      <p class="hd" style="font-size:28px">海外登壇は、幼い頃からITに触れてきた人だけの世界でもない</p>
-      <div class="pillrow"><span class="chip">技術に興味がある人</span><span class="chip">世界の人と話してみたい人</span><span class="chip">コミュニティに関わってみたい人</span><span class="lb">にも、入口がある</span></div>
-      <p class="fine" style="margin:0">（自分が業務でSWを専業にしたのは27歳くらいから。）</p>
-      <div class="claim"><p>国や会社を越えて一緒にものをつくり、顔の見える関係を増やすことが、世界の相互理解や、平和に繋がるとも思っている。</p><small>OSS活動は、SWのエコシステムを支え、世界の営みを支える国際活動。</small></div>
-      <div class="claim"><p>次は君の番だ！！（ワンフォーオール！！）</p><small>自分も、まだ参加し始めたばかり。この体験が、誰かが世界のコミュニティへ一歩踏み出すきっかけになればうれしい。</small></div>
+    <div class="body wide" style="gap:14px">
+      <p style="margin:0;font-size:20px;color:var(--muted)">個人のOSS活動からCommunity Over Codeに登壇し、世界のSWコミュニティに飛び込んだ体験談。</p>
+      <p class="hd" style="font-size:32px;margin:0">海外登壇は、幼い頃からITに触れてきた人だけの世界でもない</p>
+      <div class="gr3 endc">
+        <div class="panel"><div class="ic"><svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#3a3340" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="14" width="48" height="34" rx="4"/><path d="M20 28l6 5-6 5M32 38h10"/><path d="M24 56h16"/></svg></div><h3>技術に興味がある人</h3></div>
+        <div class="panel"><div class="ic"><svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#3a3340" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="32" cy="32" r="22"/><ellipse cx="32" cy="32" rx="9" ry="22"/><path d="M10 24h44M10 40h44"/></svg></div><h3>世界の人と話してみたい人</h3></div>
+        <div class="panel"><div class="ic"><svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="#3a3340" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="20" cy="22" r="7"/><circle cx="44" cy="24" r="6"/><path d="M6 52c0-11 7-17 14-17s14 6 14 17M36 42c4-3 10-3 14 0 3 2 5 5 5 10"/></svg></div><h3>コミュニティに関わってみたい人</h3></div>
+      </div>
+      <p style="margin:0;font-size:24px;font-weight:800;color:#3a3340;text-align:center">そうした人にも、入口がある<span style="font-weight:500;font-size:16px;color:var(--quiet);margin-left:14px">（自分が業務でSWを専業にしたのは27歳くらいから）</span></p>
+      <div class="endq"><p>国や会社を越えて一緒にものをつくり、顔の見える関係を増やすことが、世界の相互理解や、平和に繋がるとも思っている。</p><small>OSS活動は、SWのエコシステムを支え、世界の営みを支える国際活動。</small></div>
+      <div class="endn"><p>次は君の番だ！！（ワンフォーオール！！）</p><small>自分も、まだ参加し始めたばかり。この体験が、誰かが世界のコミュニティへ一歩踏み出すきっかけになればうれしい。</small></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="done">6 聴講</span><span class="on">7 学び</span></div><div class="num"><span class="part">PART 7 &middot; 7/8</span>50 / 52</div>
