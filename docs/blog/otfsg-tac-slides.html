@@ -1153,6 +1153,34 @@
   .reveal .frame .cite figcaption { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--quiet);}
   .reveal .frame .cite figcaption a { color: var(--muted);}
   .reveal .frame .quote { margin: 0; padding: 10px 22px; border-left: 6px solid var(--gold); background: var(--gold-soft); font-size: 21px; line-height: 1.5; color: var(--ink);}
+  .reveal .frame .chev .c1 b,
+  .reveal .frame .chev .c2 b,
+  .reveal .frame .chev .c3 b { background: var(--wg);}
+  .reveal .frame .sum-row,
+  .reveal .frame .sum-row.b,
+  .reveal .frame .sum-row.c { border-left-color: var(--wg) !important;}
+  .reveal .frame .sum-row .sum-n,
+  .reveal .frame .sum-row.b .sum-n,
+  .reveal .frame .sum-row.c .sum-n { background: var(--wg) !important;}
+  .reveal .frame .hline > div:last-child::before { background: var(--wg);}
+  .reveal .frame .hline > div:last-child b { color: var(--wg);}
+  .reveal .frame .pj-ev.key { border-color: var(--blue);}
+  .reveal .frame .pj-ev.key b { color: var(--blue);}
+  .reveal .frame .pj-bar.c { background: var(--blue-soft); border: 1px solid #bfd1e5;}
+  .reveal .frame .yn.sm li,
+  .reveal .frame .yn.sm p { font-size: 19px; line-height: 1.45;}
+  .reveal .frame .bl { margin: 0; padding-left: 26px; font-size: 21px; line-height: 1.6; color: var(--muted);}
+  .reveal .frame .bl li { margin-bottom: 4px;}
+  .reveal .frame .gr3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;}
+  .reveal .frame .gr3 .panel { min-height: 0; padding: 12px 18px;}
+  .reveal .frame .gr3 h3 { margin: 0 0 6px; font-size: 20px; color: var(--wg);}
+  .reveal .frame .gr3 ul { margin: 0; padding-left: 20px; font-size: 16.5px; line-height: 1.4; color: var(--muted);}
+  .reveal .frame .yn .pl h3 { border-bottom-color: var(--wg);}
+  .reveal .frame .yn .pl li::before { color: var(--wg);}
+  .reveal .frame .pj-ev.key { border-color: var(--nx);}
+  .reveal .frame .pj-ev.key b { color: var(--nx);}
+  .reveal .frame .pj-bar.c { background: var(--nx-soft); border: 1px solid #b6d7d3;}
+  .reveal .frame .pj-bar.t { background: var(--line-2); border: 1px solid var(--line);}
   .reveal .frame .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet);}
 </style>
 <link rel="stylesheet" href="../presentation/coc-glasgow-reveal/coc.css">
@@ -1312,7 +1340,7 @@
         </div>
         <div class="agenda-item">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item">
@@ -1363,7 +1391,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1467,10 +1495,10 @@
     <p class="eyebrow">ASFの収入源：スポンサー支援と寄付</p>
     <div class="body" style="gap:14px">
       <p class="lead" style="max-width:none;font-size:22px;margin:0">FY2026の収入は約387万ドル。主な財源は、スポンサー支援と寄付。</p>
-      <div class="mbar"><div style="width:49%;background:var(--wg)">スポンサー制度 約190万</div><div style="width:45%;background:var(--nx)">一般寄付 約175万</div><div style="width:4.7%;background:var(--gold)"></div><div style="width:1.3%;background:var(--blue)"></div></div>
-      <div class="mleg"><span><i style="background:var(--wg)"></i>スポンサー制度 約190万ドル</span><span><i style="background:var(--nx)"></i>一般寄付 約175万ドル</span><span><i style="background:var(--gold)"></i>イベント協賛 約18万ドル</span><span><i style="background:var(--blue)"></i>イベント参加費 約3.9万ドル</span></div>
+      <div class="mbar"><div style="width:49%;background:#6e1f27">スポンサー制度 約190万</div><div style="width:45%;background:#9a3a43">一般寄付 約175万</div><div style="width:4.7%;background:#c58a90"></div><div style="width:1.3%;background:#e0bcc0"></div></div>
+      <div class="mleg"><span><i style="background:#6e1f27"></i>スポンサー制度 約190万ドル</span><span><i style="background:#9a3a43"></i>一般寄付 約175万ドル</span><span><i style="background:#c58a90"></i>イベント協賛 約18万ドル</span><span><i style="background:#e0bcc0"></i>イベント参加費 約3.9万ドル</span></div>
       <p style="margin:0;font-size:21px;line-height:1.6;color:var(--muted)">クラウド環境・開発ツール・法務サービスなどの現物・サービス提供も受け、開発環境、セキュリティ、法務、コミュニティ活動を支えている。</p>
-      <div class="claim ok"><p>財団の会員は個人。企業によるスポンサー支援と、各プロジェクトの技術的な意思決定は分けられている。</p></div>
+      <div class="claim"><p>財団の会員は個人。企業によるスポンサー支援と、各プロジェクトの技術的な意思決定は分けられている。</p></div>
       <p class="fine" style="margin:0">※財務報告の「Revenue」欄の概数。準備金の運用収益などは別枠で、収入構成は年度によって変わる。</p>
     </div>
 
@@ -1488,9 +1516,9 @@
     <p class="eyebrow">ApacheConからCommunity Over Codeへ</p>
     <div class="body" style="gap:20px">
       <div class="rename"><span class="o">ApacheCon</span><span class="a">1998 &rarr; 2023</span><span class="nw">Community Over Code</span><span class="w">名称が変わった</span></div>
-      <div class="yn">
-        <div class="pl"><h3>ApacheCon</h3><p>開発者や利用者が直接集まる場として始まった。最初は、財団設立よりも前の1998年に、アメリカのサンフランシスコで開催。当初はApache HTTP Serverの開発者・利用者のイベントで、ASFが扱うプロジェクトの広がりに合わせて、講演の分野も増えた。</p></div>
-        <div class="ok"><h3>Community Over Code</h3><p>OSSを長く育てていくには、コードをつくるだけでなく、開発を続けるコミュニティが大切だという考えが込められた名前。技術の紹介に加え、プロジェクトの運営や、人が継続して参加できる仕組みについても話すイベント。</p></div>
+      <div class="yn sm">
+        <div class="pl"><h3>ApacheCon</h3><ul><li>開発者や利用者が直接集まる場として開始</li><li>1998年、財団設立より前に、サンフランシスコで開催</li><li>当初はApache HTTP Serverの開発者・利用者のイベント</li><li>ASFのプロジェクトの広がりに合わせて、講演の分野も増えた</li></ul></div>
+        <div class="pl"><h3>Community Over Code</h3><ul><li>OSSを長く育てるには、コードだけでなく、開発を続けるコミュニティが大切</li><li>技術の紹介に加え、プロジェクトの運営や、人が継続して参加できる仕組みも話す</li></ul></div>
       </div>
     </div>
 
@@ -1507,7 +1535,11 @@
   <div class="frame jp">
     <p class="eyebrow">カンファレンスの構成</p>
     <div class="body" style="gap:14px">
-      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">欧州・北米・アジアなどで開催されてきた。今回のグラスゴーは欧州での開催。講演はプロジェクトや分野ごとの枠（トラック）に分かれ、複数の会場で並行して進む。私はApache NuttXのトラックで登壇した。</p>
+      <dl class="dl" style="grid-template-columns:110px 1fr;margin:0">
+        <dt>開催地</dt><dd>欧州・北米・アジアなどで開催。今回のグラスゴーは欧州</dd>
+        <dt>講演</dt><dd>プロジェクトや分野ごとの枠（トラック）に分かれ、複数の会場で並行して進む</dd>
+        <dt>私</dt><dd>Apache NuttXのトラックで登壇</dd>
+      </dl>
       <div class="panel" style="min-height:0"><table class="tight">
         <tr><th>企画</th><th>内容</th></tr>
         <tr><td>基調講演（Keynote）</td><td>参加者に共通するテーマや、財団の活動などを扱う講演</td></tr>
@@ -1515,7 +1547,7 @@
         <tr><td>BoF（Birds of a Feather）</td><td>共通のテーマに関心を持つ人が集まって話し合う場</td></tr>
         <tr><td>交流イベント</td><td>食事や懇親会など、参加者同士で話せる機会</td></tr>
       </table></div>
-      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">運営には、多くのボランティアも関わっている。講演を聞くほか、開発や議論、運営の手伝いなど、いろいろな形で参加できる。</p>
+      <p style="margin:0;font-size:20px;color:var(--muted)">運営には多くのボランティアも関わる。聞く、開発する、議論する、運営を手伝うなど、いろいろな形で参加できる。</p>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 5/6</span>9 / 52</div>
@@ -1531,14 +1563,14 @@
   <div class="frame jp">
     <p class="eyebrow">Linux Foundation系イベントとの違い</p>
     <div class="body" style="gap:14px">
-      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">Open Source SummitやKubeCon + CloudNativeConも広く知られている。私もOpen Source Summit Japan 2025とKubeCon + CloudNativeCon Japan 2026に、ボランティアとして参加した。</p>
+      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">私もOpen Source Summit Japan 2025とKubeCon + CloudNativeCon Japan 2026に、ボランティアとして参加した。</p>
       <div class="panel" style="min-height:0"><table class="tight">
         <tr><th>観点</th><th>Apache Software Foundation</th><th>Linux Foundation</th></tr>
         <tr><td>成り立ち</td><td>Apache HTTP Serverの開発コミュニティから発展</td><td>Linuxの開発支援や標準化に関わる組織の統合から発展</td></tr>
         <tr><td>組織の特徴</td><td>財団の会員は個人。各プロジェクトのコミュニティが開発・運営を担う</td><td>企業会員を含む仕組みを持ち、さまざまなプロジェクトの活動を支援</td></tr>
         <tr><td>今回比較するイベント</td><td>Community Over Code：ASFのプロジェクトを中心とした集まり</td><td>Open Source Summit：幅広いOSS分野、KubeCon：クラウド技術のコミュニティを中心とした集まり</td></tr>
       </table></div>
-      <p style="margin:0;font-size:20px;line-height:1.5;color:var(--muted)">資金面では、ASFも企業や個人からの寄付・スポンサー支援を受けている。Community Over Codeにも参加費やイベント協賛の仕組みがあり、コミュニティの活動を資金面から支えている。</p>
+      <p style="margin:0;font-size:20px;line-height:1.5;color:var(--muted)">資金面では、ASFも企業や個人からの寄付・スポンサー支援を受け、Community Over Codeにも参加費やイベント協賛の仕組みがある。</p>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 6/6</span>10 / 52</div>
@@ -1567,7 +1599,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1629,13 +1661,13 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">GSoCへの応募：選んだテーマ</p>
-    <div class="body" style="gap:14px">
+    <div class="body" style="gap:16px">
       <div class="two" style="gap:24px">
-        <div class="panel nx" style="min-height:0"><h3>NuttX</h3><p>マイコンなどの組込み機器で使われるOS（機器の動作を支える基本ソフトウェア）。決められた時間内に処理することを重視する「リアルタイムOS」に分類される。</p></div>
-        <div class="panel wg" style="min-height:0"><h3>WireGuard</h3><p>ネットワーク越しに、暗号化された通信経路をつくるVPNの仕組み。</p></div>
+        <div class="panel" style="min-height:0"><h3>NuttX</h3><p>組込み機器向けのOS。決められた時間内の処理を重視する「リアルタイムOS」。</p></div>
+        <div class="panel" style="min-height:0"><h3>WireGuard</h3><p>ネットワーク越しに、暗号化された通信経路をつくるVPNの仕組み。</p></div>
       </div>
-      <p style="margin:0;font-size:21px;line-height:1.6;color:var(--muted)">普段から、カメラなどの機器側でAIの処理を行うエッジAIや、組込み機器に関わっていることもあり、遠隔の機器へ安全に接続するための機能をNuttXに加える、というテーマに関心を持った。</p>
-      <div class="claim"><p>応募に向けて提案をまとめ、NuttXのGitHubに相談用のIssueを立て、実装方針や計画について議論した。</p></div>
+      <p style="margin:0;font-size:21px;line-height:1.5;color:var(--muted)">エッジAIや組込み機器に関わっているため、遠隔の機器へ安全に接続する機能をNuttXに加えるテーマに関心を持った。</p>
+      <div class="chev"><div class="c1"><b>提案をまとめる</b></div><div class="c2"><b>相談用のIssueを立てる</b></div><div class="c3"><b>方針・計画を議論</b></div></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/4</span>13 / 52</div>
@@ -1651,10 +1683,10 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">登壇応募のきっかけ</p>
-    <div class="body" style="gap:18px">
-      <div class="chev"><div class="c1"><b>活動を見つけてもらう</b></div><div class="c2"><b>会社のチャットで連絡</b></div><div class="c3"><b>CFPへの応募を勧められる</b></div></div>
-      <div class="chev-t"><p>その活動を見つけて声をかけてくださったのが、Sonyのスウェーデン・Lund拠点にいるAlin Jerpeleaさん。</p><p>私はソニーセミコンダクタソリューションズに所属し、Lundの方々とは仕事でも少し接点があった。同じSonyグループというつながりもあり、Alinさんが会社のチャットで連絡をくださった。</p><p>勧めていただいたのが、Community Over CodeへのCFP（Call for Presentations、講演募集）への応募。3/18（水）に声かけてもらい、翌日3/19（木）に応募した。</p></div>
-      <div class="claim"><p>OSSの公開の場で進めていた相談が、会社の中でのつながりとも重なり、海外で発表する機会につながった。</p></div>
+    <div class="body" style="gap:20px">
+      <div class="chev"><div class="c1"><b>公開の場で相談</b></div><div class="c2"><b>Alinさんが連絡</b></div><div class="c3"><b>CFPに応募</b></div></div>
+      <div class="chev-t"><p>NuttXのGitHubで、提案に向けた相談・議論を進めていた。</p><p>Sony Lund拠点のAlin Jerpeleaさんが活動を見つけ、会社のチャットで連絡をくれた。</p><p>CFP（Call for Presentations、講演募集）への応募を勧められ、3/18に連絡、翌3/19に応募した。</p></div>
+      <div class="claim"><p>公開の場での相談が、社内のつながりとも重なり、海外で発表する機会になった。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 3/4</span>14 / 52</div>
@@ -1670,13 +1702,13 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">応募・採択結果</p>
-    <div class="body" style="gap:16px">
+    <div class="body" style="gap:18px">
       <div class="two" style="gap:24px">
-        <div class="panel nx" style="min-height:0"><h3>4/16　CFP採択</h3><p>先に届いたのは、Community Over CodeのCFP採択の連絡。日本時間の4月16日に通知を受け、現地で登壇する旨を返信した。</p></div>
-        <div class="panel wg" style="min-height:0"><h3>5/1　GSoC不採択</h3><p>その後、GSoC不採択の連絡が届いた。発表の機会はいただけたものの、GSoCの報酬を受けて開発に取り組むことはできなくなった。</p></div>
+        <div class="panel nx" style="min-height:0"><h3>4/16　CFP採択</h3><p>日本時間4/16に通知。現地で登壇する旨を返信した。</p></div>
+        <div class="panel wg" style="min-height:0"><h3>5/1　GSoC不採択</h3><p>報酬を受けて開発に取り組むことは、できなくなった。</p></div>
       </div>
-      <p style="margin:0;font-size:21px;line-height:1.6;color:var(--muted)">そこから、個人で開発を続けて登壇するか、辞退するかも含めて、どうするかを考えた。開発に加え、現地へ行くための費用も検討する必要があった。</p>
-      <div class="claim ok"><p>応募のきっかけをつくり、背中を押してくださったAlinさんには、とても感謝している。</p></div>
+      <div class="pillrow"><span class="lb">考えたこと</span><span class="chip">個人で開発を続けて登壇するか</span><span class="chip">辞退するか</span><span class="chip">現地へ行くための費用</span></div>
+      <div class="claim"><p>応募のきっかけをつくり、背中を押してくださったAlinさんには、とても感謝している。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 4/4</span>15 / 52</div>
@@ -1706,7 +1738,7 @@
         </div>
         <div class="agenda-item current">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -1766,7 +1798,7 @@
     <p class="eyebrow">TAC：応募条件</p>
     <div class="body" style="gap:20px">
       <div class="chev"><div class="c1"><b>&#9312; 応募</b></div><div class="c2"><b>&#9313; 重視される点</b></div><div class="c3"><b>&#9314; 開催地</b></div></div>
-      <div class="chev-t"><p>応募はオンラインで行い、申請内容に基づいて審査される。</p><p>参加が本人にとってだけでなく、ASFやOSS全体にどのような意味を持つかも重視される。</p><p>居住地に近い開催地への申請が一般に優先される。遠方のイベントへ参加する理由も考慮される、と説明されている。</p></div>
+      <div class="chev-t"><p>オンラインで申請。申請内容に基づいて審査される。</p><p>参加が本人だけでなく、ASFやOSS全体にどんな意味を持つか。</p><p>居住地に近い開催地が一般に優先。遠方でも、参加する理由は考慮される。</p></div>
       <div class="claim"><p>支援枠と予算は限られているため、応募すれば必ず採択されるわけではない。</p></div>
     </div>
 
@@ -1786,10 +1818,10 @@
       <p class="lead" style="max-width:none;font-size:22px;margin:0">参加を検討するうえでの課題は、グラスゴーまで行くための費用。</p>
       <div class="three">
         <div class="fact wg"><b>航空券 + ホテル</b><p class="big-num" style="margin-top:6px">約50<small>万円</small></p><p style="margin-top:8px">自費で手配すると、当時の見積もり</p></div>
-        <div class="fact gold"><b>宿泊費だけでも</b><p class="big-num" style="margin-top:6px;color:var(--gold)">約20<small>万円</small></p><p style="margin-top:8px">一泊3万円程度なら、滞在全体で</p></div>
-        <div class="fact nx"><b>GSoCの報酬</b><p class="big-num" style="margin-top:6px;color:var(--quiet)">なし</p><p style="margin-top:8px">採択されていればあったが、不採択</p></div>
+        <div class="fact wg"><b>宿泊費だけでも</b><p class="big-num" style="margin-top:6px">約20<small>万円</small></p><p style="margin-top:8px">一泊3万円程度なら、滞在全体で</p></div>
+        <div class="fact wg"><b>GSoCの報酬</b><p class="big-num" style="margin-top:6px">なし</p><p style="margin-top:8px">採択されていればあったが、不採択</p></div>
       </div>
-      <div class="claim"><p>勤務先の支援がない個人のOSS活動としては、大きな負担。開発を続けて登壇できる方法を探す中で、TACを見つけ、5月8日に応募した。</p></div>
+      <div class="claim"><p>勤務先の支援がない個人のOSS活動。登壇できる方法を探す中でTACを見つけ、5/8に応募した。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="on">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 3 &middot; 3/7</span>19 / 52</div>
@@ -1804,16 +1836,16 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">応募内容：5/8に申請、6/7に採択</p>
-    <div class="body" style="gap:10px">
-      <dl class="dl" style="grid-template-columns:190px 1fr;gap:9px 18px;margin:0">
-        <dt style="font-size:20px">参加目的</dt><dd style="font-size:19px;line-height:1.4">採択された講演でNuttXへのWireGuard移植を発表し、開発者からフィードバックを得たい。仕事で関わってきた衛星やエッジAIカメラとの接点もあり、NuttXの開発・保守・活用をコミュニティから学びたい</dd>
-        <dt style="font-size:20px">これまでのOSS活動</dt><dd style="font-size:19px;line-height:1.4">大規模OSSへの直接の貢献はまだ少ない一方、個人でのロボット関連プロジェクトや、業務でのエッジAIカメラ向けサンプル・開発支援ツールの公開・保守経験がある</dd>
-        <dt style="font-size:20px">今後の開発</dt><dd style="font-size:19px;line-height:1.4">GSoCには不採択だったが、WireGuard移植の提案と開発を継続する。今回の発表を節目に、NuttXへの継続的な貢献につなげたい</dd>
-        <dt style="font-size:20px">支援が必要な理由</dt><dd style="font-size:19px;line-height:1.4">業務外の個人OSS活動としての参加で、勤務先などからの渡航支援はない。月の収入から税金・社会保険、生活費と養育費を差し引くと、個人の活動に使えるお金は月200ドル程度。申請時の米ドル換算の概算と収支の内訳を添えて説明した</dd>
-        <dt style="font-size:20px">会場での協力</dt><dd style="font-size:19px;line-height:1.4">ハッカソンへの参加・協力と、TAC参加者としての運営業務。SecHack365のチューターや、Open Source Summit Japan・SRE NEXTでのボランティア経験も記載した</dd>
-        <dt style="font-size:20px">参加後の共有</dt><dd style="font-size:19px;line-height:1.4">学んだ内容を日本の開発者へ共有し、ApacheコミュニティやASFのイベントを紹介したい</dd>
-      </dl>
-      <p style="margin:0;font-size:17px;line-height:1.5;color:var(--quiet)">実績の説明には、GitHubプロフィールやWireGuard移植のリポジトリ、業務のサンプルアプリなどのリンクを添えた。大規模OSSへの貢献経験が限られていることも、そのまま書いた。</p>
+    <div class="body" style="gap:12px">
+      <div class="gr3">
+        <div class="panel"><h3>参加目的</h3><ul><li>採択された講演でWireGuard移植を発表し、開発者からフィードバックを得たい</li><li>衛星やエッジAIカメラとの接点。NuttXの開発・保守・活用を学びたい</li></ul></div>
+        <div class="panel"><h3>これまでのOSS活動</h3><ul><li>大規模OSSへの直接の貢献はまだ少ない</li><li>個人のロボット関連プロジェクト</li><li>業務のエッジAIカメラ向けサンプル・開発支援ツールの公開・保守</li></ul></div>
+        <div class="panel"><h3>今後の開発</h3><ul><li>GSoC不採択でも、WireGuard移植の提案と開発を継続</li><li>今回の発表を節目に、NuttXへ継続的に貢献したい</li></ul></div>
+        <div class="panel"><h3>支援が必要な理由</h3><ul><li>個人のOSS活動で、勤務先の渡航支援はない</li><li>収入から税金・社会保険・生活費・養育費を引くと、使えるお金は月200ドル程度</li></ul></div>
+        <div class="panel"><h3>会場での協力</h3><ul><li>ハッカソンへの参加・協力、TACの運営業務</li><li>SecHack365のチューター、OSSJ・SRE NEXTのボランティア経験</li></ul></div>
+        <div class="panel"><h3>参加後の共有</h3><ul><li>学んだ内容を日本の開発者へ共有</li><li>ApacheコミュニティやASFのイベントを紹介</li></ul></div>
+      </div>
+      <p style="margin:0;font-size:17px;line-height:1.5;color:var(--quiet)">GitHubプロフィールやリポジトリなどのリンクを添付。大規模OSSへの貢献経験が限られていることも、そのまま書いた。</p>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="on">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 3 &middot; 4/7</span>20 / 52</div>
@@ -1838,7 +1870,7 @@
           <div><b>3</b>パスポート情報や渡航日程の連絡</div>
           <div><b>4</b>イギリスの電子渡航認証「UK ETA」の取得</div>
           <div><b>5</b>航空券の希望を伝え、今回はJALを利用</div>
-          <div><b>6</b>会場のHilton Glasgowに宿泊。相部屋を想像していたものの、実際はツインルームを一人で利用</div>
+          <div><b>6</b>会場のHilton Glasgowに宿泊。相部屋の想定が、ツインルームを一人で利用</div>
           <div><b>7</b>SlackのTACチャンネルに参加し、各種やり取り</div>
         </div>
       </div>
@@ -1857,11 +1889,11 @@
   <div class="frame jp">
     <p class="eyebrow">運営への協力</p>
     <div class="body ba" style="gap:18px">
-      <div class="yn">
-        <div class="pl"><h3>TACの求めること</h3><p>支援を受ける参加者に、イベント運営への協力を求めている。設営や受付、セッションの補助、撤収などが例として挙げられている。</p></div>
-        <div class="ok"><h3>私の担当</h3><ul><li>会場の設営</li><li>講演の録画対応</li></ul></div>
+      <div class="yn sm">
+        <div class="pl"><h3>TACの求めること</h3><ul><li>支援を受ける参加者は、運営に協力</li><li>例：設営、受付、セッションの補助、撤収</li></ul></div>
+        <div class="pl"><h3>私の担当</h3><ul><li>会場の設営</li><li>講演の録画対応</li></ul></div>
       </div>
-      <div class="claim ok"><p>費用を支援していただくだけでなく、開催を手伝う運営側として関われたことも、今回の経験の一部。</p></div>
+      <div class="claim"><p>費用を支援していただくだけでなく、開催を手伝う運営側として関われた。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="on">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 3 &middot; 6/7</span>22 / 52</div>
@@ -1908,7 +1940,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item current">
@@ -1974,12 +2006,9 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:28px;grid-template-columns:460px 1fr">
         <figure class="cite"><img src="photos/20261103012037.png" alt="撮影用カメラ" style="height:300px;object-fit:cover"><figcaption>撮影用カメラ。ボタンを押すだけだよ、と説明を受けた。</figcaption></figure>
-        <div>
-          <p style="margin:0 0 12px;font-size:21px;line-height:1.55;color:var(--muted)">10/10（土）にTACの参加者が集まり、Tシャツを受け取って、運営について説明を受けた。</p>
-          <p style="margin:0 0 12px;font-size:21px;line-height:1.55;color:var(--muted)">会場の部屋の使い分けや、運営上の注意点、初日の受付が忙しくなることなどの案内。セッション会場では、カメラの録画開始・停止や、スピーカーの支援を担当する説明もあった。</p>
-        </div>
+        <ul class="bl"><li>10/10（土）にTACの参加者が集合</li><li>Tシャツを受け取り、運営の説明</li><li>案内：部屋の使い分け、運営上の注意点、初日の受付が忙しいこと</li><li>セッション会場の担当：カメラの録画開始・停止、スピーカーの支援</li></ul>
       </div>
-      <div class="claim ok"><p>日本でもカンファレンスのボランティアを経験していたので、仕事内容に大きな違いは感じなかった。</p></div>
+      <div class="claim"><p>日本でもカンファレンスのボランティアを経験していたので、仕事内容に大きな違いは感じなかった。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="on">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 4 &middot; 2/3</span>26 / 52</div>
@@ -1999,8 +2028,8 @@
         <figure><img src="photos/20261103012528.png" alt="看板の設営" style="height:190px"><figcaption><b>看板？の設営</b>身長が足りず、他メンバーと共同で設営した</figcaption></figure>
         <figure><img src="photos/20261103012748.png" alt="スピーカー対応" style="height:190px"><figcaption><b>スピーカー対応</b>部屋の後方に待機。初日はケーブル貸出や機材トラブルが少しあり、担当した最終日は出番がなかった</figcaption></figure>
       </div>
-      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">実際に担当したのは、会場準備での机や看板・バナーなどの設置と、最終日のセッション会場での録画・スピーカー対応。録画機器の操作はシンプルで、録画ボタンを押して開始し、講演が終わったら停止する形。</p>
-      <div class="claim ok"><p>担当量は比較的少なく、登壇準備や聴講、交流の時間も確保できた。運営への協力と自分の参加を両立できた。</p><small>TACと別に運営・ボランティアスタッフがいて、TACメンバーは余力があればSlackで仕事を拾うスタイル。担当内容は開催回や割り当てによって変わると思う。</small></div>
+      <ul class="bl" style="font-size:19px;line-height:1.5"><li>会場準備：机や看板・バナーなどの設置</li><li>最終日：セッション会場での録画・スピーカー対応。録画ボタンを押して開始、講演後に停止するだけ</li></ul>
+      <div class="claim"><p>担当量は比較的少なく、運営への協力と自分の参加を両立できた。</p><small>TACと別に運営・ボランティアスタッフがいて、TACメンバーは余力があればSlackで仕事を拾うスタイル。担当内容は開催回や割り当てによって変わると思う。</small></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="on">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 4 &middot; 3/3</span>27 / 52</div>
@@ -2030,7 +2059,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2106,7 +2135,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2170,7 +2199,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="Lbm9-W0rOT0" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli、Carnegie Mellon University）"><img src="talk-Lbm9-W0rOT0.jpg" alt="Thumbnail: Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli、Carnegie Mellon University）"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel blue" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">大学生がメンターの支援を受けながら実際のOSSプロジェクトに貢献する「Semesters of Code」の取り組み。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">OSSコミュニティそのものを学びの場にして、生成AIでコードの書き方が変わるなか、ソフトウェア開発をどう教えるかを考える講演。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">学生が実際のプロジェクトに入り、コミュニティの人とやりとりしながら貢献する過程を、大学の授業として設計しているところに惹かれた。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli、Carnegie Mellon University）</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/Lbm9-W0rOT0" target="_blank" rel="noopener noreferrer">youtu.be/Lbm9-W0rOT0</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">大学生がメンターの支援を受けながら実際のOSSプロジェクトに貢献する「Semesters of Code」の取り組み。</li><li style="margin-bottom:8px">OSSコミュニティそのものを学びの場にして、生成AIでコードの書き方が変わるなか、ソフトウェア開発をどう教えるかを考える講演。</li><li style="margin-bottom:8px">学生が実際のプロジェクトに入り、コミュニティの人とやりとりしながら貢献する過程を、大学の授業として設計しているところに惹かれた。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Open Source Software Engineering Education in an AI Encumbered World（Stephen Walli、Carnegie Mellon University）</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/Lbm9-W0rOT0" target="_blank" rel="noopener noreferrer">youtu.be/Lbm9-W0rOT0</a></p></div>
       </div>
       <div class="claim"><p>いつか自分でも、受講者がOSSコミュニティに最初の一歩を踏み出せるようなカリキュラムをつくって、講義できるようになりたい。</p></div>
     </div>
@@ -2192,7 +2221,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still" style="max-width:520px;margin:0"><img src="photos/20261103171140.png" alt="From Legacy Governance to Community Leadership: Building a Network-Focused OSPO（Nikola Babadzhanov、Bosch）" style="width:100%;display:block;border:1px solid var(--line)"></figure>
-        <div class="panel gold" style="min-height:0"><p style="margin:0 0 10px;font-size:17.5px;line-height:1.45">生成AIでPRの下書きを数秒で作れても、受け取った側は差分を読み、変更の意図を確かめ、何をテストすべきかを判断する。あるOSSプロジェクトでは、PRの一次確認からテスト対象を見つけるまでの時間が、3〜4分から約90分に延びた。</p><p style="margin:0 0 10px;font-size:17.5px;line-height:1.45">Hacktoberfest：2020年に内容の乏しいPRが殺到し、参加を表明したリポジトリだけを対象にする方式へ。2026年には、AIで手間の少ないPRを作りやすくなったことを背景に、PRを報酬の集計対象から外した。</p><p style="margin:0 0 10px;font-size:17.5px;line-height:1.45">AI利用方針の調査：83.3%がコードへの貢献でAI利用を許可または奨励。67.3%が人間の十分な関与を、48.8%がAI利用の開示を求めていた。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">From Legacy Governance to Community Leadership: Building a Network-Focused OSPO（Nikola Babadzhanov、Bosch）</p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:17.5px;line-height:1.5"><li style="margin-bottom:8px">生成AIでPRの下書きを数秒で作れても、受け取った側は差分を読み、変更の意図を確かめ、何をテストすべきかを判断する。あるOSSでは、PRの一次確認からテスト対象を見つけるまでの時間が、<b>3〜4分から約90分</b>に延びた。</li><li style="margin-bottom:8px">Hacktoberfest：2020年に内容の乏しいPRが殺到し、参加を表明したリポジトリだけを対象にする方式へ。2026年には、AIで手間の少ないPRを作りやすくなったことを背景に、PRを報酬の集計対象から外した。</li><li style="margin-bottom:8px">AI利用方針の調査：<b>83.3%</b>が許可または奨励。<b>67.3%</b>が人間の十分な関与を、<b>48.8%</b>が利用の開示を求めた。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">From Legacy Governance to Community Leadership: Building a Network-Focused OSPO（Nikola Babadzhanov、Bosch）</p></div>
       </div>
       <div class="claim"><p>企業のOSPOにも、開発者がコミュニティとのやり取りまで担えるよう支える役割があると感じた。</p></div>
     </div>
@@ -2201,9 +2230,9 @@
     <div class="coc-footer"><span>October 11&ndash;14, 2026</span><img src="../presentation/coc-glasgow-reveal/img/footer.png" alt="Community Over Code"><span>Glasgow, Scotland</span></div>
   </div>
     <aside class="notes">
-      <p>生成AIでPRの下書きを数秒で作れても、受け取った側は差分を読み、変更の意図を確かめ、何をテストすべきかを判断する。あるOSSプロジェクトでは、PRの一次確認からテスト対象を見つけるまでの時間が、3〜4分から約90分に延びた。</p>
+      <p>生成AIでPRの下書きを数秒で作れても、受け取った側は差分を読み、変更の意図を確かめ、何をテストすべきかを判断する。あるOSSでは、PRの一次確認からテスト対象を見つけるまでの時間が、<b>3〜4分から約90分</b>に延びた。</p>
       <p>Hacktoberfest：2020年に内容の乏しいPRが殺到し、参加を表明したリポジトリだけを対象にする方式へ。2026年には、AIで手間の少ないPRを作りやすくなったことを背景に、PRを報酬の集計対象から外した。</p>
-      <p>AI利用方針の調査：83.3%がコードへの貢献でAI利用を許可または奨励。67.3%が人間の十分な関与を、48.8%がAI利用の開示を求めていた。</p>
+      <p>AI利用方針の調査：<b>83.3%</b>が許可または奨励。<b>67.3%</b>が人間の十分な関与を、<b>48.8%</b>が利用の開示を求めた。</p>
       <p>企業のOSPOにも、開発者がコミュニティとのやり取りまで担えるよう支える役割があると感じた。</p>
     </aside>
   </section>
@@ -2214,7 +2243,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="TxmwLKmJ5YI" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><img src="talk-TxmwLKmJ5YI.jpg" alt="Thumbnail: Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel wg" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">Airflowは、複数の処理を決められた順序や時刻に実行し、結果を管理するソフトウェア。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">講演では、その処理の中にAIエージェント（目的に沿って処理やツールを選び、作業を進めるAI）を組み込み、実行状況を把握したり、人が確認・判断したりする仕組みを扱っていた。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/TxmwLKmJ5YI" target="_blank" rel="noopener noreferrer">youtu.be/TxmwLKmJ5YI</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">Airflowは、複数の処理を決められた順序や時刻に実行し、結果を管理するソフトウェア。</li><li style="margin-bottom:8px">講演では、その処理の中にAIエージェント（目的に沿って処理やツールを選び、作業を進めるAI）を組み込み、実行状況を把握したり、人が確認・判断したりする仕組みを扱っていた。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Agentic Operators in Apache Airflow: Reliable, Observable, Human-Governed AI</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/TxmwLKmJ5YI" target="_blank" rel="noopener noreferrer">youtu.be/TxmwLKmJ5YI</a></p></div>
       </div>
       <div class="claim"><p>前日の夕食でたまたま隣の席になった縁で聞いた。生成AIをCI/CDフローに組み込むことや、その不確実性への対処方法が参考になり、使ってみたいと思った。</p></div>
     </div>
@@ -2235,7 +2264,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="A8O0MUeGnew" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Apache StreamPipes: IIoT from edge to cloud"><img src="talk-A8O0MUeGnew.jpg" alt="Thumbnail: Apache StreamPipes: IIoT from edge to cloud"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel nx" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">センサーや機械からデータを取り込み、加工・保存・可視化へつなげる産業IoT基盤の紹介。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">画面上の操作で処理を組み立てる仕組みや、機器との通信方法、クラウドサービスとの違いなどに関心を持った。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Apache StreamPipes: IIoT from edge to cloud</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/A8O0MUeGnew" target="_blank" rel="noopener noreferrer">youtu.be/A8O0MUeGnew</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">センサーや機械からデータを取り込み、加工・保存・可視化へつなげる産業IoT基盤の紹介。</li><li style="margin-bottom:8px">画面上の操作で処理を組み立てる仕組みや、機器との通信方法、クラウドサービスとの違いなどに関心を持った。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Apache StreamPipes: IIoT from edge to cloud</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/A8O0MUeGnew" target="_blank" rel="noopener noreferrer">youtu.be/A8O0MUeGnew</a></p></div>
       </div>
       <div class="claim"><p>普段扱っているエッジ機器や、工場の設備を制御するPLCにも近い話題だった。</p></div>
     </div>
@@ -2256,7 +2285,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="X7h_kcSvzAo" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: 6 years of fuzzing Arrow and Parquet C++"><img src="talk-X7h_kcSvzAo.jpg" alt="Thumbnail: 6 years of fuzzing Arrow and Parquet C++"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel gold" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">Arrowは大量のデータをメモリ上で効率よく扱う仕組み、Parquetは分析用データの保存形式。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">これらをC++で実装したコードに、多様な入力を与えて不具合を探す「ファジング」を6年間続けてきた取り組み。検証の技術に加え、活動の継続や、それを支える資金についても考える機会になった。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">6 years of fuzzing Arrow and Parquet C++</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/X7h_kcSvzAo" target="_blank" rel="noopener noreferrer">youtu.be/X7h_kcSvzAo</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">Arrowは大量のデータをメモリ上で効率よく扱う仕組み、Parquetは分析用データの保存形式。</li><li style="margin-bottom:8px">これらをC++で実装したコードに、多様な入力を与えて不具合を探す「ファジング」を6年間続けてきた取り組み。検証の技術に加え、活動の継続や、それを支える資金についても考える機会になった。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">6 years of fuzzing Arrow and Parquet C++</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/X7h_kcSvzAo" target="_blank" rel="noopener noreferrer">youtu.be/X7h_kcSvzAo</a></p></div>
       </div>
       <div class="claim"><p>最近はC++を書いており、ツール利用の参考になった。</p></div>
     </div>
@@ -2277,7 +2306,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="QLZR6PHu3dc" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: NuttX-based Altimeter for High Powered Rocketry"><img src="talk-QLZR6PHu3dc.jpg" alt="Thumbnail: NuttX-based Altimeter for High Powered Rocketry"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel wg" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">NuttXを使ったロケット用高度計の講演。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">飛行データの記録や、パラシュート展開などの機能を、具体的な機器として実装する話だった。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">NuttX-based Altimeter for High Powered Rocketry</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/QLZR6PHu3dc" target="_blank" rel="noopener noreferrer">youtu.be/QLZR6PHu3dc</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">NuttXを使ったロケット用高度計の講演。</li><li style="margin-bottom:8px">飛行データの記録や、パラシュート展開などの機能を、具体的な機器として実装する話だった。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">NuttX-based Altimeter for High Powered Rocketry</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/QLZR6PHu3dc" target="_blank" rel="noopener noreferrer">youtu.be/QLZR6PHu3dc</a></p></div>
       </div>
       <div class="claim"><p>機械・航空やロボティクスを学んできた自分にとって、特に関心のあるテーマ。大学時代にロケットを作っていたので、少しロケット談義をした。</p></div>
     </div>
@@ -2298,7 +2327,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="q_CLBcrHyFw" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: OpenGL ES on Apache NuttX: the µGLy project"><img src="talk-q_CLBcrHyFw.jpg" alt="Thumbnail: OpenGL ES on Apache NuttX: the µGLy project"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel nx" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">OpenGL ESは、組込み機器などで図形や3Dの映像を描くための共通の規格。µGLyは、その規格の一つであるOpenGL ES 1.0 Common LiteをNuttXで使えるようにするプロジェクト。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">メモリなどの制約が厳しい環境で、共通の規格を使えるようにする狙いに関心を持った。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">OpenGL ES on Apache NuttX: the µGLy project</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/q_CLBcrHyFw" target="_blank" rel="noopener noreferrer">youtu.be/q_CLBcrHyFw</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">OpenGL ESは、組込み機器などで図形や3Dの映像を描くための共通の規格。µGLyは、その規格の一つであるOpenGL ES 1.0 Common LiteをNuttXで使えるようにするプロジェクト。</li><li style="margin-bottom:8px">メモリなどの制約が厳しい環境で、共通の規格を使えるようにする狙いに関心を持った。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">OpenGL ES on Apache NuttX: the µGLy project</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/q_CLBcrHyFw" target="_blank" rel="noopener noreferrer">youtu.be/q_CLBcrHyFw</a></p></div>
       </div>
       <div class="claim"><p>たしかGSoCのプロジェクトで、途中経過とのこと。</p></div>
     </div>
@@ -2319,7 +2348,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="fRevSa9NM1I" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Bringing NuttX to Raspberry Pi 4B"><img src="talk-fRevSa9NM1I.jpg" alt="Thumbnail: Bringing NuttX to Raspberry Pi 4B"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel wg" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">小型コンピューターのRaspberry Pi 4Bへ、NuttXを移植する取り組み。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">Linuxでおなじみのボードを別のOSで動かす話として、移植時にどの部分から機能を揃えていくのか、NuttXの対象を広げる意味は何か、という点に関心を持った。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Bringing NuttX to Raspberry Pi 4B</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/fRevSa9NM1I" target="_blank" rel="noopener noreferrer">youtu.be/fRevSa9NM1I</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">小型コンピューターのRaspberry Pi 4Bへ、NuttXを移植する取り組み。</li><li style="margin-bottom:8px">Linuxでおなじみのボードを別のOSで動かす話として、移植時にどの部分から機能を揃えていくのか、NuttXの対象を広げる意味は何か、という点に関心を持った。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Bringing NuttX to Raspberry Pi 4B</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/fRevSa9NM1I" target="_blank" rel="noopener noreferrer">youtu.be/fRevSa9NM1I</a></p></div>
       </div>
       <div class="claim"><p>これもGSoCのプロジェクト発表で、検討ベースの内容だった。</p></div>
     </div>
@@ -2340,7 +2369,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="RVFurkHgMMg" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><img src="talk-RVFurkHgMMg.jpg" alt="Thumbnail: Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel nx" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">Tikaは、さまざまな形式のファイルから、本文や作成者などの情報を取り出すソフトウェア。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">講演では、PDFの本文だけでなく、図や表、画像の情報も検索に使う取り組みを紹介。画像と言葉を一緒に扱うAIモデル「VLM」の活用や、抽出結果の誤り、ファイル内に残る思わぬ情報の扱いも話題になった。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/RVFurkHgMMg" target="_blank" rel="noopener noreferrer">youtu.be/RVFurkHgMMg</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">Tikaは、さまざまな形式のファイルから、本文や作成者などの情報を取り出すソフトウェア。</li><li style="margin-bottom:8px">講演では、PDFの本文だけでなく、図や表、画像の情報も検索に使う取り組みを紹介。画像と言葉を一緒に扱うAIモデル「VLM」の活用や、抽出結果の誤り、ファイル内に残る思わぬ情報の扱いも話題になった。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Everything, Everywhere, All Embedded: Apache Tika 4.x in Your Search Stack</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/RVFurkHgMMg" target="_blank" rel="noopener noreferrer">youtu.be/RVFurkHgMMg</a></p></div>
       </div>
       <div class="claim"><p>ちょうど1000ページ超のPDFから、LLMベースでいかに仕様を抽出するか悩んでおり、参考になった。</p></div>
     </div>
@@ -2361,7 +2390,7 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="J93Ac5-FvRk" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Optimizing KNN Indexing in Apache Lucene"><img src="talk-J93Ac5-FvRk.jpg" alt="Thumbnail: Optimizing KNN Indexing in Apache Lucene"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel gold" style="min-height:0"><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">Luceneは、アプリケーションに検索機能を組み込むためのソフトウェア。</p><p style="margin:0 0 10px;font-size:19.5px;line-height:1.45">文章などの特徴を数値の並びに変換し、似たものを探す「ベクトル検索」の高速化がテーマ。検索に使うデータ構造や数値の保存方法を工夫して、処理速度やメモリ使用量を改善する取り組み。</p><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Optimizing KNN Indexing in Apache Lucene</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/J93Ac5-FvRk" target="_blank" rel="noopener noreferrer">youtu.be/J93Ac5-FvRk</a></p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0 0 6px;padding-left:22px;font-size:19.5px;line-height:1.5"><li style="margin-bottom:8px">Luceneは、アプリケーションに検索機能を組み込むためのソフトウェア。</li><li style="margin-bottom:8px">文章などの特徴を数値の並びに変換し、似たものを探す「ベクトル検索」の高速化がテーマ。検索に使うデータ構造や数値の保存方法を工夫して、処理速度やメモリ使用量を改善する取り組み。</li></ul><p style="font-size:14px;margin:6px 0 0;color:var(--quiet)">Optimizing KNN Indexing in Apache Lucene</p><p style='font-size:14px;margin:0'><a href="https://youtu.be/J93Ac5-FvRk" target="_blank" rel="noopener noreferrer">youtu.be/J93Ac5-FvRk</a></p></div>
       </div>
       <div class="claim"><p>正直あまりわからなかったが、同じApacheのイベントの中に、これだけ異なる分野が並んでいることも印象に残った。かなり理論ベースの学術的な発表だった。</p></div>
     </div>
@@ -2382,9 +2411,9 @@
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:28px;grid-template-columns:500px 1fr">
         <figure class="still yt" data-yt="ikh1EEGco8Q" style="max-width:500px"><button class="yt-play" type="button" aria-label="Play: Doom on Sony Spresense"><img src="talk-ikh1EEGco8Q.jpg" alt="Thumbnail: Doom on Sony Spresense"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
-        <div class="panel nx" style="min-height:0"><p style="margin:0 0 10px;font-size:20px;line-height:1.5">10/14に参加。公式の事前案内では、ソニーの小型開発ボード「Spresense」などを使って、NuttXのソースコードから実行用のプログラムを作り、動かす企画として紹介されていた。</p><p style="margin:0;font-size:20px;line-height:1.5">今回の成果の一つが、Spresense上での3Dシューティングゲーム「DOOM」の動作。開催後の公式レポートでも、会場でこの目標を達成したことが紹介されている。</p></div>
+        <div class="panel" style="min-height:0"><ul style="margin:0;padding-left:22px;font-size:20px;line-height:1.55"><li style="margin-bottom:8px">10/14に参加</li><li style="margin-bottom:8px">企画：ソニーの小型開発ボード「Spresense」などで、NuttXのソースコードから実行用プログラムを作って動かす</li><li style="margin-bottom:8px">成果の一つ：Spresense上での3Dシューティングゲーム「DOOM」の動作</li><li>開催後の公式レポートでも、会場での達成が紹介された</li></ul></div>
       </div>
-      <div class="claim ok"><p>講演を聞くだけでなく、実機を囲んで取り組み、その結果を人に見せる場に参加できた。帰国後には、開発内容をPR提出してContributeした。</p></div>
+      <div class="claim"><p>実機を囲んで取り組み、結果を人に見せる場に参加できた。帰国後、開発内容をPR提出してContributeした。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="on">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 6 &middot; 12/13</span>42 / 52</div>
@@ -2402,14 +2431,14 @@
   <div class="frame jp">
     <p class="eyebrow">参加者との交流</p>
     <div class="body" style="gap:12px">
-      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">講演での質疑応答の他、毎晩何かしらのイベントが開催されていた。10/10 事前懇談会、10/11 ウェルカムパーティー、10/12 Game Night、10/13 クイズ大会、10/14 LT大会。昼食も懇談会形式。</p>
+      <div class="pillrow"><span class="lb">毎晩</span><span class="chip">10/10 事前懇談会</span><span class="chip">10/11 ウェルカムパーティー</span><span class="chip">10/12 Game Night</span><span class="chip">10/13 クイズ大会</span><span class="chip">10/14 LT大会</span></div>
       <div class="pg4">
         <figure><img src="photos/20261103012432.png" alt=""><figcaption><b>10/10 事前懇談会</b>TACメンバー中心の机で、7か国出身のメンバーとスコットランド料理（無料！）</figcaption></figure>
         <figure><img src="photos/20261103013102.png" alt=""><figcaption><b>10/11 ウェルカムパーティー</b>科学博物館を貸し切り。ここで日本人の方とも会えた</figcaption></figure>
         <figure><img src="photos/20261103110129.png" alt=""><figcaption><b>10/14 LT大会</b>スライド禁止で5分間フリートーク形式</figcaption></figure>
         <figure><img src="photos/20261103110718.png" alt=""><figcaption><b>本の寄贈所</b>おすすめの本を持ち寄って、手紙付きでプレゼントし合う交流場</figcaption></figure>
       </div>
-      <div class="claim ok"><p>講演だけでは分からない、その人がどんな経緯でOSSに関わり、何に取り組んでいるのかを知る機会になった。NuttXの関係者と現地で会えたことも、大切な経験。</p></div>
+      <div class="claim"><p>講演だけでは分からない、その人がOSSに関わった経緯を知れた。NuttXの関係者とも、現地で会えた。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="on">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 6 &middot; 13/13</span>43 / 52</div>
@@ -2439,7 +2468,7 @@
         </div>
         <div class="agenda-item dim">
           <div class="agenda-num">3</div>
-          <div><h3>渡航支援制度（TAC） ★メイン</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
+          <div><h3>渡航支援制度（TAC）</h3><p>制度概要・応募内容・手続き・運営協力・時系列</p></div>
           <div class="agenda-time">~8 MIN</div>
         </div>
         <div class="agenda-item dim">
@@ -2479,7 +2508,7 @@
     <div class="body" style="gap:16px">
       <p class="lead" style="max-width:none;font-size:22px;margin:0">いちばん印象に残ったのは、「Community Over Code」という言葉を、実際に行動に移している人たちに会えたこと。</p>
       <div class="chev"><div class="c1"><b>初めて来た人を歓迎</b></div><div class="c2"><b>食事やハッカソンで話す</b></div><div class="c3"><b>実機で動かせるよう手を貸す</b></div></div>
-      <p style="margin:0;font-size:20px;line-height:1.5;color:var(--muted)">そういう一つひとつの行動が、OSSを使う人や、次に開発に加わる人を増やしていくのだと感じた。</p>
+      <p style="margin:0;font-size:20px;line-height:1.5;color:var(--muted)">一つひとつの行動が、OSSを使う人や、次に開発に加わる人を増やしていく。</p>
       <div class="claim"><p>生成AIでコードを書くのが速くなるほど、何を一緒に作るのかを話し合い、使う人を支え、長く付き合える関係をつくることが大事になる。今回見たのは、その実践。</p></div>
     </div>
 
@@ -2495,9 +2524,10 @@
   <section>
   <div class="frame jp">
     <p class="eyebrow">感想・学び：国を越えた議論に、日本から</p>
-    <div class="body" style="gap:18px">
-      <p style="margin:0;font-size:22px;line-height:1.6;color:var(--muted)">ヨーロッパの歴史を思い浮かべると、背景の異なる人たちが話し合い、共通のルールをつくっていくという点で、少し重なるものを感じた。ソフトウェアでも、世界で使われる標準や取り決めは、国を越えた議論の積み重ねで形になっていく。</p>
-      <div class="claim ok"><p>日本からもその議論に加わり、使う側で得た知見を持ち寄る人が増えれば、日本の技術を生かせる場が広がり、国としての力にもつながると思う。</p></div>
+    <div class="body" style="gap:20px">
+      <div class="chev"><div class="c1"><b>ヨーロッパの歴史</b></div><div class="c2"><b>ソフトウェアの標準</b></div><div class="c3"><b>日本から</b></div></div>
+      <div class="chev-t"><p>背景の異なる人たちが話し合い、共通のルールをつくってきた。</p><p>世界で使われる標準や取り決めも、国を越えた議論の積み重ねで形になる。</p><p>使う側で得た知見を持ち寄る人が増えれば、日本の技術を生かせる場が広がる。</p></div>
+      <div class="claim"><p>日本からその議論に加わる人が増えれば、国としての力にもつながると思う。</p></div>
       <p class="fine" style="margin:0">参考：Briefing: The Apache Way | Apache Software Foundation</p>
     </div>
 
@@ -2516,14 +2546,14 @@
     <div class="body" style="gap:12px">
       <p class="dm-label" style="margin:0">今後の計画：Apacheプロジェクトへの関わり方の順序</p>
       <div class="stairs" style="height:200px">
-        <div style="background:var(--nx);height:54%"><span class="t">まずは</span><b>① コントリビューター</b><p>コードや文書、小さな修正で貢献する。</p></div>
-        <div style="background:var(--blue);height:74%"><span class="t">その先</span><b>② コミッター</b><p>変更を取り込む権限を持つ。</p></div>
-        <div style="background:#8a6410;height:100%"><span class="t">少しずつ</span><b>③ PMCメンバー</b><p>プロジェクトの運営を担う（Project Management Committee）。</p></div>
+        <div style="background:#c58a90;height:54%"><span class="t">まずは</span><b>① コントリビューター</b><p>コードや文書、小さな修正で貢献する。</p></div>
+        <div style="background:#9a3a43;height:74%"><span class="t">その先</span><b>② コミッター</b><p>変更を取り込む権限を持つ。</p></div>
+        <div style="background:#6e1f27;height:100%"><span class="t">少しずつ</span><b>③ PMCメンバー</b><p>プロジェクトの運営を担う（Project Management Committee）。</p></div>
       </div>
-      <div class="claim ok"><p>まずは、コントリビューターとして、継続して関わりたい。その先で、少しずつ役割を広げていけたらと思う。</p></div>
+      <div class="claim"><p>まずはコントリビューターとして継続して関わり、少しずつ役割を広げたい。</p></div>
       <div class="yn" style="gap:40px">
-        <div class="pl"><p style="font-size:19px">今は業務でNuttXを使わなくなったので、どのプロジェクトに腰を据えて関わるかは、これから考えるところ。</p></div>
-        <div class="pl"><p style="font-size:19px">Alinさんの活動を見て、既存のプロジェクトに貢献することに加え、OSSをApacheのプロジェクト候補として提案し、財団のもとで育てていく取り組みにも関心を持った。</p></div>
+        <div class="pl"><p style="font-size:19px">今は業務でNuttXを使わなくなった。腰を据えて関わるプロジェクトは、これから考える。</p></div>
+        <div class="pl"><p style="font-size:19px">Alinさんの活動を見て、OSSをApacheのプロジェクト候補として提案し、財団のもとで育てる取り組みにも関心を持った。</p></div>
       </div>
     </div>
 
@@ -2540,11 +2570,11 @@
   <div class="frame jp">
     <p class="eyebrow">感想・学び：英語での登壇応募を支えた経験</p>
     <div class="body" style="gap:16px">
-      <p class="lead" style="max-width:none;font-size:22px;margin:0">Alinさんから声をかけてもらったとき、心理的障壁なく直ぐにCFPに応募できるだけの準備ができていたのは大きかった。</p>
+      <p class="lead" style="max-width:none;font-size:22px;margin:0">声をかけてもらったとき、心理的障壁なく、すぐにCFPに応募できる準備ができていた。</p>
       <div class="chev"><div class="c1"><b>国内のカンファレンス</b></div><div class="c2"><b>研究室</b></div><div class="c3"><b>海外の展示会</b></div></div>
       <div class="chev-t"><p>ソフトウェアカンファレンスでボランティアをして、イベントの雰囲気や運営の流れを知っていた。</p><p>学部・修士課程の研究室で、英語でやりとりしたり、研究の内容を論文にまとめたりした。</p><p>海外の展示会に派遣してもらい、ハッカソンをした。</p></div>
       <div class="claim"><p>別々に積んできた経験が、英語で講演の提案を書くときにつながった。</p></div>
-      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">身近に、海外のコミュニティで活動している人が何人かいたことも大きい。どんな人が、どう関わっているのかを近くで見ていたから、自分が応募する姿も想像できた。</p>
+      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">身近に、海外のコミュニティで活動する人が何人かいた。どう関わっているかを近くで見ていたので、応募する姿も想像できた。</p>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="done">6 聴講</span><span class="on">7 学び</span></div><div class="num"><span class="part">PART 7 &middot; 4/7</span>48 / 52</div>
@@ -2563,9 +2593,9 @@
     <div class="body" style="gap:10px">
       <p style="margin:0;font-size:19px;color:var(--muted)">身近なOSS活動から、海外のコミュニティに関わるには。自分が知っている範囲での、おすすめの入り口。</p>
       <div class="sum s">
-        <div class="sum-row"><div class="sum-n">1</div><div><h3>業務で使うOSSに貢献する</h3><p>王道。業務で見つけた不具合の再現手順の共有や、ドキュメントの分かりにくい箇所の修正から始められる。案外、世の中で使われているOSSのメンテナは少ないし、簡単に直せる箇所がある。</p></div></div>
-        <div class="sum-row b"><div class="sum-n">2</div><div><h3>GSoCなどでテーマを探す</h3><p>GSoCやLinux Foundationのメンタリングプログラムで募集テーマを見て、関心のあるものを選び、開発者と話しながら手を動かす。私の場合も、GSoCに向けてテーマを選び、コミュニティに相談したことが、登壇につながった。</p></div></div>
-        <div class="sum-row c"><div class="sum-n">3</div><div><h3>国内のイベントに参加する</h3><p>connpassなどで見つけた小さな勉強会からでも、参加や発表の経験を積める。カンファレンスでボランティアスタッフの募集を見かけたら、運営側に入ってみるのも一つの方法。</p></div></div>
+        <div class="sum-row"><div class="sum-n">1</div><div><h3>業務で使うOSSに貢献する</h3><p>王道。再現手順の共有や、ドキュメントの分かりにくい箇所の修正から。案外、メンテナは少なく、簡単に直せる箇所がある。</p></div></div>
+        <div class="sum-row b"><div class="sum-n">2</div><div><h3>GSoCなどでテーマを探す</h3><p>GSoCやLinux Foundationのプログラムの募集テーマから選び、開発者と話しながら手を動かす。私も、テーマを選んで相談したことが、登壇につながった。</p></div></div>
+        <div class="sum-row c"><div class="sum-n">3</div><div><h3>国内のイベントに参加する</h3><p>connpassなどの小さな勉強会から、参加や発表の経験を積める。ボランティアスタッフの募集を見かけたら、運営側に入るのも一つの方法。</p></div></div>
       </div>
     </div>
 
@@ -2586,8 +2616,8 @@
     <p class="eyebrow">終わりに</p>
     <div class="body" style="gap:16px">
       <p style="margin:0;font-size:22px;line-height:1.55;color:var(--muted)">個人のOSS活動からCommunity Over Codeに登壇し、世界のSWコミュニティに飛び込んだ体験談。</p>
-      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">海外登壇と聞くと「自分なんかが、、」と思ってしまう人もいるかもしれないが、幼い頃からITに触れてきた人だけの世界でもない。技術に興味がある人、世界の人と話してみたい人、コミュニティに関わってみたい人にも、入口がある。（ちなみに自分は、業務でSWをしっかり専業にしたのは27歳くらいから。）</p>
-      <div class="claim ok"><p>国や会社を越えて一緒にものをつくり、顔の見える関係を増やすことが、世界の相互理解や、平和に繋がるとも思っている。</p><small>OSS活動は、SWのエコシステムを支え、世界の営みを支える国際活動。</small></div>
+      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">海外登壇は、幼い頃からITに触れてきた人だけの世界でもない。技術に興味がある人、世界の人と話してみたい人、コミュニティに関わってみたい人にも、入口がある。（自分が業務でSWを専業にしたのは27歳くらいから。）</p>
+      <div class="claim"><p>国や会社を越えて一緒にものをつくり、顔の見える関係を増やすことが、世界の相互理解や、平和に繋がるとも思っている。</p><small>OSS活動は、SWのエコシステムを支え、世界の営みを支える国際活動。</small></div>
       <div class="claim"><p>次は君の番だ！！（ワンフォーオール！！）</p><small>自分も、まだ参加し始めたばかり。この体験が、誰かが世界のコミュニティへ一歩踏み出すきっかけになればうれしい。</small></div>
     </div>
 
@@ -2606,12 +2636,12 @@
   <div class="frame jp">
     <p class="eyebrow">登壇準備を通して知った先人の歩み（上田理さん）</p>
     <div class="body" style="gap:12px">
-      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">登壇の準備で、ソニーがこれまでOSSにどう関わってきたのかを調べた。そのときに知ったのが、上田理さんが社内外で進めてこられたOSS活動。企業や地域を越えて開発者との関係を築くという考え方に、強く共感した。</p>
+      <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">登壇の準備で、ソニーのOSS活動を調べて知った、上田理さんの歩み。企業や地域を越えて開発者との関係を築く考え方に、強く共感した。</p>
       <div class="two" style="gap:26px;grid-template-columns:1fr 1fr">
         <figure class="cite"><img src="photos/20261103172316.png" alt="" style="height:200px;object-fit:contain;background:#222"><figcaption>CE Linux Forum 10年間の不思議な体験 より。国内カンファレンスを踏み台に！！という理念で活動していたとのこと。</figcaption></figure>
         <figure class="cite"><img src="photos/20261103172229.png" alt="" style="height:200px;object-fit:contain;background:#222"><figcaption>同じ資料より。大航海時代に世界に出たり、アメリカを建国する歴史的経験なのかな〜とも感じた。</figcaption></figure>
       </div>
-      <div class="claim ok"><p>技術を通じて世界の人とつながることの価値は、こうした先人の活動とも重なる。その思いを、自分なりに引き継いでいける人になりたい。</p><small>残念ながら、ご存命の間にお話できなかった。　<a href="https://www.sony.com/ja/SonyInfo/technology/stories/entries/OSS_DevelopmentSupport/" target="_blank" rel="noopener noreferrer">ソニー公式</a> / <a href="https://openchainproject.org/news/2023/08/28/in-memory-of-ueda-san" target="_blank" rel="noopener noreferrer">OpenChain</a></small></div>
+      <div class="claim"><p>技術を通じて世界の人とつながることの価値は、こうした先人の活動とも重なる。その思いを、自分なりに引き継いでいける人になりたい。</p><small>残念ながら、ご存命の間にお話できなかった。　<a href="https://www.sony.com/ja/SonyInfo/technology/stories/entries/OSS_DevelopmentSupport/" target="_blank" rel="noopener noreferrer">ソニー公式</a> / <a href="https://openchainproject.org/news/2023/08/28/in-memory-of-ueda-san" target="_blank" rel="noopener noreferrer">OpenChain</a></small></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="done">2 きっかけ</span><span class="done">3 TAC</span><span class="done">4 日程</span><span class="done">5 登壇</span><span class="done">6 聴講</span><span class="on">7 学び</span></div><div class="num"><span class="part">PART 7 &middot; 7/7</span>51 / 52</div>
@@ -2631,7 +2661,7 @@
         <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../presentation/assets/slides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK SLIDES</b></a>
         <div>
           <p class="lnk"><small>GITHUB</small><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></p>
-          <p class="lnk"><small>感謝</small><span style="font-size:19px;color:var(--muted);line-height:1.6">登壇への応募を勧めてくださったAlin Jerpeleaさん、開発や議論で関わってくださったApache NuttXコミュニティの皆さん、渡航を支援してくださったTAC、カンファレンスの運営・スポンサーの皆さん、現地で交流してくださった皆さん、OTFSG Tokyoの皆さん</span></p>
+          <p class="lnk"><small>感謝</small><span class="pillrow" style="margin-top:6px"><span class="chip">Alin Jerpeleaさん</span><span class="chip">Apache NuttXコミュニティ</span><span class="chip">TAC</span><span class="chip">運営・スポンサー</span><span class="chip">現地で交流した皆さん</span><span class="chip">OTFSG Tokyoの皆さん</span></span></p>
           <p class="who">Satoru Akita / Sony Semiconductor Solutions</p>
         </div>
       </div>
