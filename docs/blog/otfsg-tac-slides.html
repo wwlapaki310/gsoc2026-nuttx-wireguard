@@ -1181,6 +1181,17 @@
   .reveal .frame .pj-ev.key b { color: var(--nx);}
   .reveal .frame .pj-bar.c { background: var(--nx-soft); border: 1px solid #b6d7d3;}
   .reveal .frame .pj-bar.t { background: var(--line-2); border: 1px solid var(--line);}
+  .reveal .frame .big td { font-size: 23px; padding: 13px 12px;}
+  .reveal .frame .big th { font-size: 14px; padding: 8px 12px;}
+  .reveal .frame .wide .hline p { font-size: 22px; line-height: 1.45;}
+  .reveal .frame .wide .hline b { font-size: 36px;}
+  .reveal .frame .yn.lg h3 { font-size: 32px;}
+  .reveal .frame .yn.lg li { font-size: 23px; line-height: 1.5; margin-bottom: 12px;}
+  .reveal .frame .bigger table.tight td { font-size: 27px !important; padding: 18px 14px !important;}
+  .reveal .frame .bigger table.tight th { font-size: 15px !important;}
+  .reveal .frame .bigger.m table.tight td { font-size: 23px !important; padding: 11px 14px !important;}
+  .reveal .frame .wide .dl dt { font-size: 24px;}
+  .reveal .frame .wide .dl dd { font-size: 23px;}
   .reveal .frame .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet);}
 </style>
 <link rel="stylesheet" href="../presentation/coc-glasgow-reveal/coc.css">
@@ -1427,25 +1438,26 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">イベント概要：Community Over Code Glasgow 2026</p>
-    <div class="body" style="gap:18px">
-      <div class="two" style="grid-template-columns:1.4fr .6fr">
-        <div class="panel" style="min-height:0">
+    <p class="eyebrow">Community Over Codeは、ASFが開く国際カンファレンス</p>
+    <div class="body wide" style="gap:18px">
+      <div class="two" style="grid-template-columns:1.5fr .5fr;align-items:stretch">
+        <div class="panel big" style="min-height:0;padding:10px 22px">
           <table class="tight">
             <tr><th>項目</th><th>内容</th></tr>
             <tr><td>イベント</td><td>Community Over Code Glasgow 2026</td></tr>
             <tr><td>会期</td><td>2026年10月11日（日）〜14日（水）</td></tr>
             <tr><td>開催地</td><td>イギリス・スコットランド、グラスゴー</td></tr>
             <tr><td>会場</td><td>Hilton Glasgow</td></tr>
-            <tr><td>主な内容</td><td>技術講演、プロジェクト運営についての議論、ハッカソン、交流</td></tr>
-            <tr><td>参加者数</td><td>465人</td></tr>
-            <tr><td>分科会セッション</td><td>182件</td></tr>
-            <tr><td>ハッカソン</td><td>20件</td></tr>
+            <tr><td>主な内容</td><td>技術講演、プロジェクト運営の議論、ハッカソン、交流</td></tr>
           </table>
         </div>
         <div class="logo-panel"><img src="../presentation/assets/community-over-code-logo.png" alt="Community Over Code logo"></div>
       </div>
-      <p class="lead" style="max-width:none;font-size:22px;margin:0">Community Over Codeは、Apache Software Foundationが開催する国際カンファレンス。</p>
+      <div class="three">
+        <div class="fact wg"><b>参加者</b><p class="big-num" style="margin-top:6px">465<small>人</small></p></div>
+        <div class="fact wg"><b>分科会セッション</b><p class="big-num" style="margin-top:6px">182<small>件</small></p></div>
+        <div class="fact wg"><b>ハッカソン</b><p class="big-num" style="margin-top:6px">20<small>件</small></p></div>
+      </div>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 1/6</span>5 / 52</div>
@@ -1459,16 +1471,16 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">ASFについて：OSSの開発を支える非営利団体</p>
-    <div class="body" style="gap:10px">
-      <div class="hline">
-        <div><b>1995</b><p>Apache HTTP Serverの開発が始まる。1996年にNetcraftの調査で世界最多の利用。2026年7月も約1.72億サイト（11.50%）</p></div>
+    <p class="eyebrow">ASFは、Apache HTTP Serverから生まれた非営利団体</p>
+    <div class="body wide" style="gap:14px">
+      <div class="hline" style="margin-top:8px">
+        <div><b>1995</b><p>Apache HTTP Serverの開発が始まる。1996年にNetcraftの調査で世界最多の利用に</p></div>
         <div><b>1999</b><p>財団を設立。法務・資金・開発環境を共通で支え、個人の活動が終わっても開発を続けられるように</p></div>
         <div><b>FY2026</b><p>302プロジェクト、コミッター10,225人、財団会員1,188人、スポンサー62、年間1,709リリース</p></div>
       </div>
-      <div class="panel" style="min-height:0;margin-top:12px">
+      <div class="panel big" style="min-height:0;margin-top:8px;padding:6px 22px">
         <table class="tight">
-          <tr><th>ソフトウェア</th><th>主な用途</th><th>GitHubスター数</th></tr>
+          <tr><th>代表的なソフトウェア</th><th>主な用途</th><th>GitHubスター数</th></tr>
           <tr><td>Apache HTTP Server</td><td>Webページなどの配信</td><td>4,038</td></tr>
           <tr><td>Apache Hadoop</td><td>大量データの分散保存・処理</td><td>15,707</td></tr>
           <tr><td>Apache Spark</td><td>複数のコンピューターによる大量データの処理</td><td>44,385</td></tr>
@@ -1476,7 +1488,7 @@
           <tr><td>Apache Airflow</td><td>処理の実行順序・スケジュールの管理</td><td>47,347</td></tr>
         </table>
       </div>
-      <p class="fine" style="margin:0">※スター数は2026年11月3日取得。コミッターは、継続的な貢献で信頼され、コードの変更を反映する権限を持つ人。</p>
+      <p class="fine" style="margin:0 0 14px">※スター数は2026年11月3日取得。</p>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 2/6</span>6 / 52</div>
@@ -1492,14 +1504,13 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">ASFの収入源：スポンサー支援と寄付</p>
-    <div class="body" style="gap:14px">
-      <p class="lead" style="max-width:none;font-size:22px;margin:0">FY2026の収入は約387万ドル。主な財源は、スポンサー支援と寄付。</p>
-      <div class="mbar"><div style="width:49%;background:#6e1f27">スポンサー制度 約190万</div><div style="width:45%;background:#9a3a43">一般寄付 約175万</div><div style="width:4.7%;background:#c58a90"></div><div style="width:1.3%;background:#e0bcc0"></div></div>
-      <div class="mleg"><span><i style="background:#6e1f27"></i>スポンサー制度 約190万ドル</span><span><i style="background:#9a3a43"></i>一般寄付 約175万ドル</span><span><i style="background:#c58a90"></i>イベント協賛 約18万ドル</span><span><i style="background:#e0bcc0"></i>イベント参加費 約3.9万ドル</span></div>
-      <p style="margin:0;font-size:21px;line-height:1.6;color:var(--muted)">クラウド環境・開発ツール・法務サービスなどの現物・サービス提供も受け、開発環境、セキュリティ、法務、コミュニティ活動を支えている。</p>
-      <div class="claim"><p>財団の会員は個人。企業によるスポンサー支援と、各プロジェクトの技術的な意思決定は分けられている。</p></div>
-      <p class="fine" style="margin:0">※財務報告の「Revenue」欄の概数。準備金の運用収益などは別枠で、収入構成は年度によって変わる。</p>
+    <p class="eyebrow">ASFの運営は、スポンサー支援と寄付で成り立つ</p>
+    <div class="body wide" style="gap:16px">
+      <p class="big-num" style="font-size:72px;margin:0">約387<small style="font-size:30px">万ドル</small><span style="font-size:24px;font-weight:600;color:var(--muted);margin-left:14px">FY2026の収入</span></p>
+      <div class="mbar" style="height:110px;font-size:26px"><div style="width:49%;background:#6e1f27;font-size:26px">スポンサー制度 約190万</div><div style="width:45%;background:#9a3a43;font-size:26px">一般寄付 約175万</div><div style="width:4.7%;background:#c58a90"></div><div style="width:1.3%;background:#e0bcc0"></div></div>
+      <div class="mleg" style="font-size:21px;gap:28px"><span><i style="background:#6e1f27"></i>スポンサー制度</span><span><i style="background:#9a3a43"></i>一般寄付</span><span><i style="background:#c58a90"></i>イベント協賛 約18万</span><span><i style="background:#e0bcc0"></i>イベント参加費 約3.9万</span></div>
+      <div class="claim"><p style="font-size:26px">財団の会員は個人。企業のスポンサー支援と、各プロジェクトの技術的な意思決定は分けられている。</p></div>
+      <p class="fine" style="margin:0">※財務報告の「Revenue」欄の概数。準備金の運用収益などは別枠。</p>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 3/6</span>7 / 52</div>
@@ -1513,10 +1524,10 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">ApacheConからCommunity Over Codeへ</p>
-    <div class="body" style="gap:20px">
-      <div class="rename"><span class="o">ApacheCon</span><span class="a">1998 &rarr; 2023</span><span class="nw">Community Over Code</span><span class="w">名称が変わった</span></div>
-      <div class="yn sm">
+    <p class="eyebrow">その集まりが、ApacheConからCommunity Over Codeに改称</p>
+    <div class="body wide" style="gap:26px">
+      <div class="rename" style="padding:24px 34px"><span class="o" style="font-size:34px">ApacheCon</span><span class="a" style="font-size:24px">1998 &rarr; 2023</span><span class="nw" style="font-size:42px">Community Over Code</span></div>
+      <div class="yn lg">
         <div class="pl"><h3>ApacheCon</h3><ul><li>開発者や利用者が直接集まる場として開始</li><li>1998年、財団設立より前に、サンフランシスコで開催</li><li>当初はApache HTTP Serverの開発者・利用者のイベント</li><li>ASFのプロジェクトの広がりに合わせて、講演の分野も増えた</li></ul></div>
         <div class="pl"><h3>Community Over Code</h3><ul><li>OSSを長く育てるには、コードだけでなく、開発を続けるコミュニティが大切</li><li>技術の紹介に加え、プロジェクトの運営や、人が継続して参加できる仕組みも話す</li></ul></div>
       </div>
@@ -1533,21 +1544,20 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">カンファレンスの構成</p>
-    <div class="body" style="gap:14px">
-      <dl class="dl" style="grid-template-columns:110px 1fr;margin:0">
-        <dt>開催地</dt><dd>欧州・北米・アジアなどで開催。今回のグラスゴーは欧州</dd>
-        <dt>講演</dt><dd>プロジェクトや分野ごとの枠（トラック）に分かれ、複数の会場で並行して進む</dd>
+    <p class="eyebrow">講演・ハッカソン・BoF・交流で構成される</p>
+    <div class="body wide" style="gap:18px">
+      <dl class="dl" style="grid-template-columns:140px 1fr;margin:0;gap:14px 16px">
+        <dt>開催地</dt><dd>欧州・北米・アジアなど。今回のグラスゴーは欧州</dd>
+        <dt>講演</dt><dd>トラック（プロジェクトや分野ごとの枠）に分かれ、複数の会場で並行して進む</dd>
         <dt>私</dt><dd>Apache NuttXのトラックで登壇</dd>
       </dl>
-      <div class="panel" style="min-height:0"><table class="tight">
+      <div class="panel bigger m" style="min-height:0;padding:6px 22px"><table class="tight">
         <tr><th>企画</th><th>内容</th></tr>
         <tr><td>基調講演（Keynote）</td><td>参加者に共通するテーマや、財団の活動などを扱う講演</td></tr>
         <tr><td>ハッカソン</td><td>開発者や利用者が集まり、コードの修正や実機での動作確認などに取り組む場</td></tr>
         <tr><td>BoF（Birds of a Feather）</td><td>共通のテーマに関心を持つ人が集まって話し合う場</td></tr>
         <tr><td>交流イベント</td><td>食事や懇親会など、参加者同士で話せる機会</td></tr>
       </table></div>
-      <p style="margin:0;font-size:20px;color:var(--muted)">運営には多くのボランティアも関わる。聞く、開発する、議論する、運営を手伝うなど、いろいろな形で参加できる。</p>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 5/6</span>9 / 52</div>
@@ -1561,15 +1571,14 @@
 
   <section>
   <div class="frame jp">
-    <p class="eyebrow">Linux Foundation系イベントとの違い</p>
-    <div class="body" style="gap:14px">
-      <div class="panel" style="min-height:0"><table class="tight">
+    <p class="eyebrow">Linux Foundation系とは、組織の成り立ちと中心が違う</p>
+    <div class="body wide" style="gap:16px">
+      <div class="panel bigger" style="min-height:0;padding:10px 22px"><table class="tight">
         <tr><th>観点</th><th>Apache Software Foundation</th><th>Linux Foundation</th></tr>
         <tr><td>成り立ち</td><td>Apache HTTP Serverの開発コミュニティから発展</td><td>Linuxの開発支援や標準化に関わる組織の統合から発展</td></tr>
         <tr><td>組織の特徴</td><td>財団の会員は個人。各プロジェクトのコミュニティが開発・運営を担う</td><td>企業会員を含む仕組みを持ち、さまざまなプロジェクトの活動を支援</td></tr>
-        <tr><td>今回比較するイベント</td><td>Community Over Code：ASFのプロジェクトを中心とした集まり</td><td>Open Source Summit：幅広いOSS分野、KubeCon：クラウド技術のコミュニティを中心とした集まり</td></tr>
+        <tr><td>今回比較するイベント</td><td>Community Over Code：ASFのプロジェクトを中心とした集まり</td><td>Open Source Summit：幅広いOSS分野<br>KubeCon：クラウド技術のコミュニティを中心とした集まり</td></tr>
       </table></div>
-      <div class="pillrow"><span class="lb">資金面（ASF）</span><span class="chip">企業や個人からの寄付</span><span class="chip">スポンサー支援</span><span class="chip">イベントの参加費・協賛</span></div>
     </div>
 
     <div class="stepper"><span class="on">1 概要</span><span class="">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 1 &middot; 6/6</span>10 / 52</div>
@@ -1707,7 +1716,8 @@
         <div class="panel wg" style="min-height:0"><h3>5/1　GSoC不採択</h3><p>報酬を受けて開発に取り組むことは、できなくなった。</p></div>
       </div>
       <div class="pillrow"><span class="lb">考えたこと</span><span class="chip">個人で開発を続けて登壇するか</span><span class="chip">辞退するか</span><span class="chip">現地へ行くための費用</span></div>
-      <div class="claim"><p>応募のきっかけをつくり、背中を押してくださったAlinさんには、とても感謝している。</p></div>
+      <div class="mleg" style="margin:0;font-size:17px;gap:24px"><span><i style="background:var(--nx)"></i>緑：採択（得られたもの）</span><span><i style="background:var(--wg)"></i>赤：不採択（得られなかったもの）</span></div>
+      <div class="claim"><p>発表の機会は得られたが、GSoCの報酬を受けて開発に取り組むことはできなくなった。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 4/4</span>15 / 52</div>
@@ -1780,6 +1790,7 @@
         <div class="ok"><h3>公式の案内で支援対象</h3><ul><li>交通費</li><li>会期中の宿泊費</li><li>カンファレンス参加費</li></ul></div>
         <div class="no"><h3>対象外・注意</h3><ul><li>一般的な生活費は対象外</li><li>原則、支援金を本人へ振り込む形ではない。ASFや指定業者が交通・宿泊を手配して支払う</li></ul></div>
       </div>
+      <div class="mleg" style="margin:0;font-size:17px;gap:24px"><span><i style="background:var(--nx)"></i>緑：支援の対象</span><span><i style="background:var(--gold)"></i>橙：対象外・注意</span></div>
       <p class="fine" style="margin:0">出典：TAC公式サイト（応募方法・支援範囲・審査の説明）</p>
     </div>
 
@@ -1909,6 +1920,7 @@
     <p class="eyebrow">参加までの時系列</p>
     <div class="body" style="gap:8px">
       <div class="pj"><div class="pj-axis"></div><div class="pj-m" style="left:0%;width:20%">2月</div><div class="pj-m" style="left:20%;width:20%">3月</div><div class="pj-m" style="left:40%;width:20%">4月</div><div class="pj-m" style="left:60%;width:20%">5月</div><div class="pj-m" style="left:80%;width:20%">6月</div><div class="pj-ev l2" style="left:10%;width:190px"><b>2月ごろ</b><span>GSoCへの応募を検討開始</span></div><div class="pj-ev l4" style="left:30%;width:260px"><b>3月16日</b><span>NuttXのGitHubにIssueを起票し、提案・相談</span></div><div class="pj-ev l3" style="left:32.7%;width:230px"><b>3月19日</b><span>CFPへ講演案を提出</span></div><div class="pj-ev l2" style="left:40.7%;width:175px"><b>3月31日</b><span>GSoCの提案書を正式に提出</span></div><div class="pj-ev l1 key" style="left:50.7%;width:90px"><b>4月16日</b><span>CFP採択</span></div><div class="pj-ev l4" style="left:60.7%"><b>5月1日</b><span>GSoC不採択</span></div><div class="pj-ev l2" style="left:65.3%;width:120px"><b>5月8日</b><span>TACへ応募</span></div><div class="pj-ev l1 key" style="left:84.7%;width:140px"><b>6月7日</b><span>TAC採択</span></div><div class="pj-bar g" style="top:346px;left:10%;width:50.7%"><b style="font-weight:800">GSoC</b>：検討 → 提案 → 不採択</div><div class="pj-bar t" style="top:346px;left:65.3%;width:19.4%"><span><b style="font-weight:800">TAC</b> 5/8〜6/7</span></div><div class="pj-bar c" style="top:396px;left:32.7%;width:18%"><b style="font-weight:800">CFP</b>：応募 → 採択</div></div>
+      <div class="mleg" style="margin:0;font-size:17px;gap:24px"><span><i style="background:var(--wg-soft)"></i>赤の帯：GSoC</span><span><i style="background:var(--nx-soft)"></i>緑の帯：CFP</span><span><i style="background:var(--line-2)"></i>灰の帯：TAC</span><span><i style="background:var(--nx)"></i>緑の縦線：採択の通知</span></div>
       <p class="fine" style="margin:0">※日付は日本時間。2月ごろの検討開始は記憶に基づき、それ以外はIssueの作成記録、提出・結果通知、応募記録に基づく。</p>
     </div>
 
