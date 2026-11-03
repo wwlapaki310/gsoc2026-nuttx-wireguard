@@ -38,3 +38,7 @@ In the CoC / OTFSG decks the base is the red-purple of the slide headings (`--wg
 - Overrides live in the `css_extra` block of the build script, after the Glasgow CSS: `.chev .c1/.c2/.c3` all `--wg`; `.sum-row*` all `--wg` (`!important`); `.pj-bar.c` and `.pj-ev.key` use `--nx`; `.pj-bar.t` is grey; `.yn .pl` uses `--wg`; `.yn .no` and `.panel.neg` are grey. `:root` overrides `--wg/--nx` after the Glasgow CSS.
 - Keep `.yn .ok` (accent) / `.yn .no` (gold) only for a real supported/not-supported contrast.
 - When adding a slide: pick the figure first, then colour it with the base; add the accent only for the single point the takeaway names.
+
+## Do not collide with the title colour
+
+If the template's slide titles are already coloured (CoC deck: red-purple `#7c297d`), the body base must be a different colour. In the OTFSG deck the body base is charcoal `#3a3340` with tints `#2a2430`, `#8f8795`, `#d4cfd8`; the accent stays yellow-green `#5f8f12`. Coloured titles and coloured body in the same hue make both hard to read.
