@@ -1173,6 +1173,9 @@
   .reveal .frame .bl li { margin-bottom: 4px;}
   .reveal .frame .gr3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;}
   .reveal .frame .gr3 .panel { min-height: 0; padding: 8px 18px;}
+  .reveal .frame .gr3.cond .panel { padding: 30px 28px; min-height: 290px;}
+  .reveal .frame .gr3.cond h3 { font-size: 36px !important; margin-bottom: 16px;}
+  .reveal .frame .gr3.cond p { font-size: 28px; line-height: 1.55; margin: 0;}
   .reveal .frame .gr3 h3 { margin: 0 0 8px; font-size: 24px; color: var(--wg);}
   .reveal .frame .gr3 ul { margin: 0; padding-left: 22px; font-size: 18px; line-height: 1.38; color: var(--muted);}
   .reveal .frame .yn .pl h3 { border-bottom-color: var(--wg);}
@@ -1894,8 +1897,11 @@
   <div class="frame jp">
     <p class="eyebrow">TAC：応募条件</p>
     <div class="body wide" style="gap:20px">
-      <div class="chev"><div class="c1"><b>&#9312; 応募</b></div><div class="c2"><b>&#9313; 重視される点</b></div><div class="c3"><b>&#9314; 開催地</b></div></div>
-      <div class="chev-t"><p>オンラインで申請。申請内容に基づいて審査される。</p><p>参加が本人だけでなく、ASFやOSS全体にどんな意味を持つか。</p><p>居住地に近い開催地が一般に優先。遠方でも、参加する理由は考慮される。</p></div>
+      <div class="gr3 cond">
+        <div class="panel"><h3>応募方法</h3><p>オンラインで申請。申請内容に基づいて審査される。</p></div>
+        <div class="panel"><h3>重視される点</h3><p>参加が本人だけでなく、ASFやOSS全体にどんな意味を持つか。</p></div>
+        <div class="panel"><h3>開催地</h3><p>居住地に近い開催地が一般に優先。遠方でも、参加する理由は考慮される。</p></div>
+      </div>
       <div class="claim"><p>支援枠と予算は限られているため、応募すれば必ず採択されるわけではない。</p></div>
     </div>
 
@@ -1912,7 +1918,7 @@
   <div class="frame jp">
     <p class="eyebrow">応募した経緯</p>
     <div class="body wide" style="gap:20px">
-      <p class="lead" style="max-width:none;font-size:22px;margin:0">参加を検討するうえでの課題は、グラスゴーまで行くための費用。</p>
+      <p class="hd" style="font-size:34px">開発に加えての次の課題は、グラスゴーまで行くための費用</p>
       <div class="three">
         <div class="fact wg"><b>航空券 + ホテル</b><p class="big-num" style="margin-top:6px">約50<small>万円</small></p><p style="margin-top:8px">自費で手配すると、当時の見積もり</p></div>
         <div class="fact wg"><b>宿泊費だけでも</b><p class="big-num" style="margin-top:6px">約20<small>万円</small></p><p style="margin-top:8px">一泊3万円程度なら、滞在全体で</p></div>
