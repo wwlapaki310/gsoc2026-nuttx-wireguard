@@ -127,3 +127,17 @@ Frame 1280x720; content padding 40/72/80 px; the CoC footer band is the bottom 5
 ## Publishing
 
 The decks are served from GitHub Pages at `https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html`. The QR code encodes that address; if it ever changes, update `URL` in both `build.py` and `make_qr.py`, then re-run `make_qr.py` and `build.py`. Commit the generated `index.html` together with its source, and regenerate the PDFs with `pdf.py` after content edits (CI also regenerates them).
+
+## Lessons from the OTFSG sharing-session deck (docs/blog/otfsg-tac-slides*.html)
+
+A second deck in the same look, built from a blog post. The source of truth is a generator script (scratchpad `build.py`, content as Python strings) -> `otfsg-tac-slides.src.html` -> `python -X utf8 docs/blog/build_reveal.py` -> `otfsg-tac-slides.html`. Never hand-edit the outputs. Rules that were settled with the author:
+
+- **Follow the source text.** When a deck is the slide version of a blog, keep the blog's structure, section order and wording. Only change what slides need (noun-phrase endings, shortening). Do not add framing the blog does not have ("message", takeaways, extra advice). Content found only in earlier drafts is dropped when the blog does not have it.
+- **Titles are the blog's headings**, short noun phrases (`Glasgow 2026の開催概要`, `財団の収入源`). The sentence that explains the slide goes inside the slide as the most prominent text (a `.hd` headline), never into the title. Order of the headlines should read as an explanation of the topic.
+- **Prose becomes a figure**: table, chevron flow (`.chev` + `.chev-t`), numbered steps (`.steps`), stacked bar, timeline, stairs, chips (`.pillrow`), bullet list. Keep the sentence only if the figure cannot carry it. Cut the sentence down; do not keep full sentences about the author's affiliation or similar filler.
+- **Use the whole slide.** A slide with free space gets larger type and larger figures (`.wide` class: 24-27 px). Tables: header cells must be larger than body cells (never the small mono caption style).
+- **Colour** follows the `slide-color-palette` skill: one base hue, a complementary accent for the key point, grey for negatives, and a legend wherever a colour carries meaning. Say whether panels are a contrast or a parallel list.
+- **Part dividers** are generated from `PART k` labels; the stepper at the bottom lists the parts. Merge slides that are only supplements into the previous one (e.g. a note under the slide it belongs to).
+- **Checking**: screenshot every slide (`chrome --headless --screenshot` of `file:///...html#/N`, N is 0-based, one `--user-data-dir` per parallel instance) and look at contact sheets. The usual failure is a bottom bar overlapping the stepper at the footer; shrink figures, not the stepper.
+- **Patching**: write patch scripts with the Write tool (a heredoc with Japanese and nested quotes breaks), assert each old string exists, replace by slide `<h2>` title.
+- **Facts**: use only facts in the source or checked against an official page (e.g. past venues from apachecon.com/history, counted and labelled as such). Personal figures such as income are not shown beyond what the blog says.

@@ -10,7 +10,7 @@ The user's preference, stated 2026-11-03:
 1. **Base: one hue, in tints and shades, plus black, white and grey.** Everything that is not special is drawn with this.
 2. **Accent: the complementary colour of the base, used sparingly at the important point** (the outcome, the key date, the one thing the audience must see).
 
-In the CoC / OTFSG decks the base is the Glasgow maroon (`--wg`, with tints such as `#6e1f27`, `#9a3a43`, `#c58a90`, `#e0bcc0`, `--wg-soft`) and the accent is teal (`--nx`, `--nx-soft`).
+In the CoC / OTFSG decks the base is the red-purple of the slide headings (`--wg: #7c297d`, tints `#4f1a50`, `#7c297d`, `#b985ba`, `#e2c8e3`, soft `#f3e8f3`). Its **complement is yellow-green** (`--nx: #5f8f12`, soft `#eef5da`); teal, blue and gold are not complements and must not be used as the accent. Negatives (not adopted, not supported, excluded) are **grey** (`--quiet`, `--line-2`), never red.
 
 ## Do
 
@@ -19,6 +19,12 @@ In the CoC / OTFSG decks the base is the Glasgow maroon (`--wg`, with tints such
 - The accent appears once or twice per slide at most, and means "look here" (e.g. CFP adopted, the 4/16 key date).
 - Use real contrast only when the slide compares two things (adopted vs not adopted, supported vs not supported). Then the accent colour is one side of the contrast, not decoration.
 - Prefer a figure over a paragraph: chevron flow, table, timeline, stacked bar, stairs, chips, bullet list, photo grid. Cut the sentence down to what the figure cannot show.
+
+## Meaning of a coloured panel
+
+- A coloured background must always say what it means: put a one-line legend next to it (`黄緑：採択 / 灰：不採択`) and add a symbol to the panel heading (`○`, `✕`), so colour is never the only carrier.
+- State the relation: a **contrast** (A vs B, adopted vs not) uses accent + grey with a legend; a **parallel list** uses the same colour for every item.
+- Conclusion bars (`.claim`) are in the base hue (purple tint), never red and never the accent.
 
 ## Don't
 
@@ -29,6 +35,6 @@ In the CoC / OTFSG decks the base is the Glasgow maroon (`--wg`, with tints such
 
 ## Implementation notes (otfsg deck)
 
-- Overrides live in the `css_extra` block of the build script, after the Glasgow CSS: `.chev .c1/.c2/.c3` all `--wg`; `.sum-row*` all `--wg` (`!important`); `.pj-bar.c` and `.pj-ev.key` use `--nx`; `.pj-bar.t` is grey; `.yn .pl` uses `--wg`.
+- Overrides live in the `css_extra` block of the build script, after the Glasgow CSS: `.chev .c1/.c2/.c3` all `--wg`; `.sum-row*` all `--wg` (`!important`); `.pj-bar.c` and `.pj-ev.key` use `--nx`; `.pj-bar.t` is grey; `.yn .pl` uses `--wg`; `.yn .no` and `.panel.neg` are grey. `:root` overrides `--wg/--nx` after the Glasgow CSS.
 - Keep `.yn .ok` (accent) / `.yn .no` (gold) only for a real supported/not-supported contrast.
 - When adding a slide: pick the figure first, then colour it with the base; add the accent only for the single point the takeaway names.
