@@ -1407,6 +1407,7 @@
   .steps > div.last { grid-column: 1 / 3; }
   .ov { display: grid; gap: 6px; }
   .ov > div { display: grid; grid-template-columns: 54px 1fr; gap: 18px; align-items: center; padding: 6px 22px; border: 1px solid var(--line); border-left: 6px solid var(--wg); background: #fff; }
+  .big4 { gap: 12px; } .big4 > div { padding: 18px 26px; } .big4 h3 { font-size: 30px !important; } .big4 p { font-size: 23px !important; margin-top: 6px; }
   .ov b.n { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--wg); color: #fff; font-size: 22px; }
   .ov h3 { margin: 0; font-size: 25px; line-height: 1.2; } .ov p { margin: 1px 0 0; font-size: 19px; line-height: 1.35; color: var(--muted); }
   .prog a { color: var(--wg); font-family: var(--mono); font-size: 19px; word-break: break-all; }
@@ -1429,6 +1430,10 @@
   .lf table.tight th:nth-child(2) { color: #3a3340 !important; border-bottom: 5px solid #b985ba !important; }
   .lf table.tight th:nth-child(3) { color: #5c6c78 !important; border-bottom: 5px solid #9aa5ad !important; }
   .lf table.tight td:nth-child(2) { background: #f3e8f3; } .lf table.tight td:nth-child(3) { background: #eceff1; color: #4a5660; }
+  /* header block, top right: stepper over page info, both right-aligned to the 72px margin */
+  .num { right: 72px !important; left: auto !important; top: 36px !important; bottom: auto !important; font-size: 12px; text-align: right; }
+  .stepper { top: 10px !important; right: 72px !important; }
+  .stepper span { font-size: 11px; padding: 2px 9px; }
   .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet); }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1713,7 +1718,7 @@ Community Over Codeは、Apache Software Foundationが開催する国際カン�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">Apache Software Foundationについて</p>
+    <p class="eyebrow" style="font-size:27px">Apache Software Foundationについて</p>
     <div class="body wide cmp6" style="gap:14px">
       <p class="hd">Apache HTTP Serverから生まれた、OSS開発を支える非営利団体</p>
       <div class="hline" style="margin-top:8px">
@@ -1766,7 +1771,7 @@ FY2026の報告では、302プロジェクト、コミッター10,225人、財�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">ApacheConからCommunity Over Codeへ</p>
+    <p class="eyebrow" style="font-size:27px">ApacheConからCommunity Over Codeへ</p>
     <div class="body wide" style="gap:26px">
       <div class="rename" style="padding:24px 34px"><span class="o" style="font-size:34px">ApacheCon</span><span class="a" style="font-size:24px">1998 &rarr; 2023</span><span class="nw" style="font-size:42px">Community Over Code</span></div>
       <div class="yn lg">
@@ -1815,7 +1820,7 @@ Community Over Codeは、開催地を変えながら、欧州・北米・アジ�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">Linux Foundation系イベントとの違い</p>
+    <p class="eyebrow" style="font-size:27px">Linux Foundation系イベントとの違い</p>
     <div class="body wide" style="gap:16px">
       <p class="hd">組織の成り立ちと、中心にするものが違う</p>
       <div class="panel bigger lf" style="min-height:0;padding:10px 22px"><table class="tight">
@@ -2485,7 +2490,7 @@ Airflowは、複数の処理を決められた順序や時刻に実行し、結�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">Arrow / Parquet C++のファジング</p>
+    <p class="eyebrow" style="font-size:27px">Arrow / Parquet C++のファジング</p>
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="X7h_kcSvzAo" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: 6 years of fuzzing Arrow and Parquet C++"><img src="talk-X7h_kcSvzAo.jpg" alt="Thumbnail: 6 years of fuzzing Arrow and Parquet C++"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
@@ -2525,7 +2530,7 @@ NuttXを使ったロケット用高度計の講演。
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">OpenGL ES on NuttX（µGLy）</p>
+    <p class="eyebrow" style="font-size:27px">OpenGL ES on NuttX（µGLy）</p>
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="q_CLBcrHyFw" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: OpenGL ES on Apache NuttX: the µGLy project"><img src="talk-q_CLBcrHyFw.jpg" alt="Thumbnail: OpenGL ES on Apache NuttX: the µGLy project"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
@@ -2545,7 +2550,7 @@ OpenGL ESは、組込み機器などで図形や3Dの映像を描くための共
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">Raspberry Pi 4BへのNuttX移植</p>
+    <p class="eyebrow" style="font-size:27px">Raspberry Pi 4BへのNuttX移植</p>
     <div class="body" style="gap:14px">
       <div class="two v1-still" style="gap:26px;grid-template-columns:520px 1fr">
         <figure class="still yt" data-yt="fRevSa9NM1I" style="max-width:520px;width:520px"><button class="yt-play" type="button" aria-label="Play: Bringing NuttX to Raspberry Pi 4B"><img src="talk-fRevSa9NM1I.jpg" alt="Thumbnail: Bringing NuttX to Raspberry Pi 4B"><span class="yt-btn" aria-hidden="true">&#9654;</span></button></figure>
@@ -2699,14 +2704,12 @@ Luceneは、アプリケーションに検索機能を組み込むためのソ�
 
   <section class="slide jp">
     <p class="eyebrow">感想・学び</p>
-    <div class="body" style="gap:10px;justify-content:center">
-      <div class="ov">
-        <div><b class="n">1</b><span><h3>生成AI時代の「Community Over Code」</h3><p>歓迎し、話し、手を貸す。その行動を実践している人たちに会えた</p></span></div>
-        <div><b class="n">2</b><span><h3>OSSへの貢献から、プロジェクトの運営へ</h3><p>まずはコントリビューター。コミッター、PMCへ、少しずつ役割を広げたい</p></span></div>
-        <div><b class="n">3</b><span><h3>英語での登壇応募を支えた経験</h3><p>国内イベント、研究室、海外の展示会。別々の経験が、提案を書くときにつながった</p></span></div>
-        <div><b class="n">4</b><span><h3>海外のコミュニティに関わる入口</h3><p>業務で使うOSS、メンタリングプログラム、国内のイベント</p></span></div>
-        <div><b class="n">5</b><span><h3>終わりに</h3><p>入口は、誰にでもある。次は君の番だ</p></span></div>
-        <div><b class="n">6</b><span><h3>先人の歩み（上田理さん）</h3><p>技術を通じて世界の人とつながる価値を、自分なりに引き継ぎたい</p></span></div>
+    <div class="body" style="gap:14px;justify-content:center">
+      <div class="ov big4">
+        <div><b class="n">1</b><span><h3>生成AI時代に感じた「Community Over Code」の精神性</h3><p>初めて来た人を歓迎し、食事やハッカソンで話し、使ってみたい人が実機で動かせるよう手を貸す。その行動を実践している人たちに会えた</p></span></div>
+        <div><b class="n">2</b><span><h3>OSSへの貢献から、プロジェクトの運営へ</h3><p>まずはコントリビューターとして継続して関わり、その先でコミッター、PMCメンバーへと、少しずつ役割を広げたい</p></span></div>
+        <div><b class="n">3</b><span><h3>英語での登壇応募を支えた、国内イベントと研究室での経験</h3><p>国内カンファレンスのボランティア、学部・修士の研究室での英語、海外の展示会への派遣とハッカソン。別々の経験が、提案を書くときにつながった</p></span></div>
+        <div><b class="n">4</b><span><h3>身近なOSS活動から、海外のコミュニティに関わるには</h3><p>業務で使うOSSへの貢献、メンタリングプログラム（GSoC・LFX Mentorship・Outreachy）、国内イベントへの参加</p></span></div>
       </div>
     </div>
 
@@ -2714,12 +2717,12 @@ Luceneは、アプリケーションに検索機能を組み込むためのソ�
     <div class="notes-src">
 最後に、感想と学びです。最初に全体像を示します。
 ||
-一つ目は、生成AI時代のCommunity Over Code。二つ目は、OSSへの貢献から、プロジェクトの運営へ。三つ目は、英語での登壇応募を支えた経験。四つ目は、海外のコミュニティに関わる入口。そのあと、終わりにと、先人の歩みです。
+一つ目は、生成AI時代に感じたCommunity Over Codeの精神性。二つ目は、OSSへの貢献から、プロジェクトの運営へ。三つ目は、英語での登壇応募を支えた、国内イベントと研究室での経験。四つ目は、身近なOSS活動から、海外のコミュニティに関わるには。そのあと、終わりにと、先人の歩みです。
     </div>
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">生成AI時代に感じた「Community Over Code」の精神性</p>
+    <p class="eyebrow" style="font-size:27px">生成AI時代に感じた「Community Over Code」の精神性</p>
     <div class="body wide" style="gap:16px">
       <p class="lead" style="max-width:none;font-size:22px;margin:0">いちばん印象に残ったのは、「Community Over Code」という言葉を、実際に行動に移している人たちに会えたこと。</p>
       <div class="chev"><div class="c1"><b>初めて来た人を歓迎</b></div><div class="c2"><b>食事やハッカソンで話す</b></div><div class="c3"><b>実機で動かせるよう手を貸す</b></div></div>
@@ -2764,7 +2767,7 @@ Luceneは、アプリケーションに検索機能を組み込むためのソ�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">英語での登壇応募を支えた、国内イベントと研究室での経験</p>
+    <p class="eyebrow" style="font-size:27px">英語での登壇応募を支えた、国内イベントと研究室での経験</p>
     <div class="body wide" style="gap:16px">
       <p class="lead" style="max-width:none;font-size:22px;margin:0">声をかけてもらったとき、心理的障壁なく、すぐにCFPに応募できる準備ができていた。</p>
       <div class="chev"><div class="c1"><b>国内のカンファレンス</b></div><div class="c2"><b>研究室</b></div><div class="c3"><b>海外の展示会</b></div></div>
@@ -2784,7 +2787,7 @@ Alinさんから声をかけてもらったとき、心理的障壁なく、す�
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">身近なOSS活動から、海外のコミュニティに関わるには</p>
+    <p class="eyebrow" style="font-size:27px">身近なOSS活動から、海外のコミュニティに関わるには</p>
     <div class="body wide" style="gap:10px">
       <p style="margin:0;font-size:19px;color:var(--muted)">身近なOSS活動から、海外のコミュニティに関わるには。自分が知っている範囲での、おすすめの入り口。</p>
       <div class="sum s">
@@ -2859,7 +2862,7 @@ OSS活動は、SWのエコシステムを支え、世界の営みを支える国
   </section>
 
   <section class="slide jp">
-    <p class="eyebrow">登壇準備を通して知った先人の歩み（上田理さん）</p>
+    <p class="eyebrow" style="font-size:27px">登壇準備を通して知った先人の歩み（上田理さん）</p>
     <div class="body" style="gap:12px">
       <p style="margin:0;font-size:19px;line-height:1.5;color:var(--muted)">登壇の準備で、ソニーのOSS活動を調べて知った、上田理さんの歩み。企業や地域を越えて開発者との関係を築く考え方に、強く共感した。</p>
       <div class="two" style="gap:26px;grid-template-columns:1fr 1fr">
