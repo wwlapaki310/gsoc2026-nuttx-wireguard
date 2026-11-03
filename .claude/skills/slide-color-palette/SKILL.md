@@ -22,7 +22,7 @@ In the CoC / OTFSG decks the base is the red-purple of the slide headings (`--wg
 
 ## Meaning of a coloured panel
 
-- A coloured background must always say what it means: put a one-line legend next to it (`黄緑：採択 / 灰：不採択`) and add a symbol to the panel heading (`○`, `✕`), so colour is never the only carrier.
+- A coloured background must say what it means through the heading text plus a symbol (`○ CFP採択`, `✕ GSoC不採択`), so colour is never the only carrier. Do not add a separate colour legend when the heading, band label or symbol already says it: it duplicates and the author rejected it.
 - State the relation: a **contrast** (A vs B, adopted vs not) uses accent + grey with a legend; a **parallel list** uses the same colour for every item.
 - Conclusion bars (`.claim`) are in the base hue (purple tint), never red and never the accent.
 
