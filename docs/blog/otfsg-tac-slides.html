@@ -1012,8 +1012,8 @@
   .reveal .frame .big-num { font-size: 64px; font-weight: 900; line-height: 1; color: var(--wg);}
   .reveal .frame .big-num small { font-size: 22px; font-weight: 700; color: var(--muted); margin-left: 4px;}
   .reveal .frame .fact p { font-size: 19px;}
-  .reveal .frame .stepper { position: absolute; left: 72px; bottom: 19px; display: flex; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em;}
-  .reveal .frame .stepper span { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--quiet); background: #fff;}
+  .reveal .frame .stepper { position: absolute !important; right: 72px !important; top: 6px !important; bottom: auto !important; left: auto !important; height: auto !important; align-items: flex-start; align-self: flex-start; display: flex; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em;}
+  .reveal .frame .stepper span { height: auto !important; padding: 1px 8px; font-size: 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--quiet); background: #fff;}
   .reveal .frame .stepper span.done { color: var(--muted); background: var(--line-2);}
   .reveal .frame .stepper span.on { color: #fff; background: var(--wg); border-color: var(--wg); font-weight: 600;}
   .reveal .frame .agenda-item.current h3 { font-weight: 900; font-size: 22px;}
