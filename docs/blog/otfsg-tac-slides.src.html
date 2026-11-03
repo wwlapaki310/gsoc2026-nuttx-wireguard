@@ -1897,13 +1897,19 @@ Google Summer of Code、GSoCは、参加者がOSSコミュニティのメンタ�
 
   <section class="slide jp">
     <p class="eyebrow">GSoCへの応募：選んだテーマ</p>
-    <div class="body wide" style="gap:16px">
-      <div class="two" style="gap:24px">
-        <div class="panel" style="min-height:0"><h3>NuttX</h3><p>組込み機器向けのOS。決められた時間内の処理を重視する「リアルタイムOS」。</p></div>
-        <div class="panel" style="min-height:0"><h3>WireGuard</h3><p>ネットワーク越しに、暗号化された通信経路をつくるVPNの仕組み。</p></div>
+    <div class="body wide" style="gap:14px">
+      <p class="hd">講演テーマ：Apache NuttXへのWireGuard移植</p>
+      <div style="display:flex;align-items:center;gap:0">
+        <div class="panel" style="min-height:0;flex:1;text-align:center;padding:16px;margin:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center"><p style="margin:0;font-size:25px;font-weight:800">遠隔の利用者</p></div>
+        <div style="flex:0 0 270px;text-align:center"><div style="height:6px;background:var(--wg)"></div><p style="margin:6px 0 0;font-size:19px;font-weight:800;color:var(--wg);line-height:1.3">WireGuard<br><span style="font-weight:500;color:var(--muted)">暗号化された通信経路</span></p></div>
+        <div class="panel" style="min-height:0;flex:1;text-align:center;padding:16px;margin:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center"><p style="margin:0;font-size:25px;font-weight:800">組込み機器</p><p style="margin:2px 0 0;font-size:19px;color:var(--muted)">Apache NuttXを搭載</p></div>
       </div>
-      <p style="margin:0;font-size:21px;line-height:1.5;color:var(--muted)">エッジAIや組込み機器に関わっているため、遠隔の機器へ安全に接続する機能をNuttXに加えるテーマに関心を持った。</p>
-      <div class="chev"><div class="c1"><b>提案をまとめる</b></div><div class="c2"><b>相談用のIssueを立てる</b></div><div class="c3"><b>方針・計画を議論</b></div></div>
+      <div class="two" style="gap:20px">
+        <div class="panel" style="min-height:0;padding:12px 20px"><h3 style="font-size:26px">NuttX</h3><p style="font-size:21px">組込み機器向けのOS。決められた時間内の処理を重視する「リアルタイムOS」</p></div>
+        <div class="panel" style="min-height:0;padding:12px 20px"><h3 style="font-size:26px">WireGuard</h3><p style="font-size:21px">ネットワーク越しに、暗号化された通信経路をつくるVPNの仕組み</p></div>
+      </div>
+      <div class="claim"><p style="font-size:24px">エッジAIや組込み機器に関わっているため、遠隔の機器へ安全に接続する機能をNuttXに加えるテーマに関心を持った。</p></div>
+      <p class="fine" style="margin:0;font-size:14px">講演タイトル：Implementing WireGuard for Apache NuttX: A GSoC Journey into Secure, High-Performance Edge Connectivity</p>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 2/4</span>13 / 52</div>
@@ -1919,9 +1925,9 @@ NuttXは、マイコンなどの組込み機器で使われるOSです。決め�
   <section class="slide jp">
     <p class="eyebrow">登壇応募のきっかけ</p>
     <div class="body wide" style="gap:20px">
-      <div class="chev"><div class="c1"><b>公開の場で相談</b></div><div class="c2"><b>Alinさんが連絡</b></div><div class="c3"><b>CFPに応募</b></div></div>
-      <div class="chev-t"><p>NuttXのGitHubで、提案に向けた相談・議論を進めていた。</p><p>Sony Lund拠点のAlin Jerpeleaさんが活動を見つけ、会社のチャットで連絡をくれた。</p><p>CFP（Call for Presentations、講演募集）への応募を勧められ、3/18に連絡、翌3/19に応募した。</p></div>
-      <div class="claim"><p>公開の場での相談が、社内のつながりとも重なり、海外で発表する機会になった。</p></div>
+      <div class="chev"><div class="c1"><b>GitHubで相談</b></div><div class="c2"><b>Alinさんが連絡</b></div><div class="c3"><b>CFPに応募</b></div></div>
+      <div class="chev-t"><p>NuttXのGitHub（＋メーリングリスト）で、提案に向けた相談・議論を進めた。</p><p>Sony Lund拠点のAlin Jerpeleaさんが活動を見つけ、会社のチャットで連絡をくれた。</p><p>CFP（Call for Presentations、講演募集）への応募を勧められ、3/18に連絡、翌3/19に応募した。</p></div>
+      <div class="claim"><p>GitHubでの相談が、社内のつながりとも重なり、海外で発表する機会になった。</p></div>
     </div>
 
     <div class="stepper"><span class="done">1 概要</span><span class="on">2 きっかけ</span><span class="">3 TAC</span><span class="">4 日程</span><span class="">5 登壇</span><span class="">6 聴講</span><span class="">7 学び</span></div><div class="num"><span class="part">PART 2 &middot; 3/4</span>14 / 52</div>
@@ -1930,7 +1936,7 @@ NuttXは、マイコンなどの組込み機器で使われるOSです。決め�
 ||
 私はソニーセミコンダクタソリューションズに所属しており、Lundの方々とは仕事でも少し接点がありました。同じSonyグループというつながりもあって、Alinさんが会社のチャットで連絡をくださいました。
 ||
-そこで勧めていただいたのが、Community Over CodeへのCFPへの応募でした。3月18日に声をかけてもらい、翌日の19日に応募しました。OSSの公開の場で進めていた相談が、会社の中でのつながりとも重なり、海外で発表する機会につながりました。
+そこで勧めていただいたのが、Community Over CodeへのCFPへの応募でした。3月18日に声をかけてもらい、翌日の19日に応募しました。GitHubやメーリングリストで進めていた相談が、会社の中でのつながりとも重なり、海外で発表する機会につながりました。
     </div>
   </section>
 
@@ -2292,7 +2298,8 @@ TACは、Travel Assistance Committeeの略で、経済的な理由で参加が�
   <section class="slide jp">
     <p class="eyebrow">NuttX／WireGuardの登壇</p>
     <div class="body" style="gap:14px">
-      <p style="margin:0;font-size:21px;line-height:1.5;color:var(--muted)">10月13日（火）に登壇。タイトルは「Implementing WireGuard for Apache NuttX: A GSoC Journey into Secure, High-Performance Edge Connectivity」。海外のソフトウェアカンファレンスでの登壇は、初めて。</p>
+      <p class="hd" style="font-size:27px">Implementing WireGuard for Apache NuttX: A GSoC Journey into Secure, High-Performance Edge Connectivity</p>
+      <div class="pillrow"><span class="chip">10/13（火）に登壇</span><span class="chip">海外のソフトウェアカンファレンスでは初登壇</span></div>
       <div class="bye">
         <a class="qr-card" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../presentation/assets/slides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK SLIDES</b></a>
         <div>
@@ -2364,7 +2371,7 @@ TACは、Travel Assistance Committeeの略で、経済的な理由で参加が�
   <section class="slide jp">
     <p class="eyebrow">基調講演</p>
     <div class="body" style="gap:14px">
-      <p style="margin:0;font-size:20px;line-height:1.5;color:var(--muted)">自分の発表以外にも、組込みからデータ処理、検索、AI、OSS教育まで、幅広い話に触れた。講演は基本YouTubeで視聴できる。</p>
+      <div class="pillrow"><span class="lb">自分の発表以外にも</span><span class="chip">組込み</span><span class="chip">データ処理</span><span class="chip">検索</span><span class="chip">AI</span><span class="chip">OSS教育</span><span class="lb" style="margin-left:10px">講演は基本YouTubeで視聴可</span></div>
       <p class="dm-label" style="margin:0">KEYNOTES &middot; クリックでYouTube</p>
       <div class="kn">
         <a href="https://www.youtube.com/watch?v=Lbm9-W0rOT0" target="_blank" rel="noopener noreferrer"><img src="talk-Lbm9-W0rOT0.jpg" alt=""><b>Software Engineering Education in an AI Encumbered World</b><span>Stephen Walliさんが、学生が実際のOSSプロジェクトに貢献する授業を紹介</span></a>
@@ -2822,7 +2829,9 @@ Alinさんから声をかけてもらったとき、心理的障壁なく、す�
     <p class="eyebrow">終わりに</p>
     <div class="body" style="gap:16px">
       <p style="margin:0;font-size:22px;line-height:1.55;color:var(--muted)">個人のOSS活動からCommunity Over Codeに登壇し、世界のSWコミュニティに飛び込んだ体験談。</p>
-      <p style="margin:0;font-size:21px;line-height:1.55;color:var(--muted)">海外登壇は、幼い頃からITに触れてきた人だけの世界でもない。技術に興味がある人、世界の人と話してみたい人、コミュニティに関わってみたい人にも、入口がある。（自分が業務でSWを専業にしたのは27歳くらいから。）</p>
+      <p class="hd" style="font-size:28px">海外登壇は、幼い頃からITに触れてきた人だけの世界でもない</p>
+      <div class="pillrow"><span class="chip">技術に興味がある人</span><span class="chip">世界の人と話してみたい人</span><span class="chip">コミュニティに関わってみたい人</span><span class="lb">にも、入口がある</span></div>
+      <p class="fine" style="margin:0">（自分が業務でSWを専業にしたのは27歳くらいから。）</p>
       <div class="claim"><p>国や会社を越えて一緒にものをつくり、顔の見える関係を増やすことが、世界の相互理解や、平和に繋がるとも思っている。</p><small>OSS活動は、SWのエコシステムを支え、世界の営みを支える国際活動。</small></div>
       <div class="claim"><p>次は君の番だ！！（ワンフォーオール！！）</p><small>自分も、まだ参加し始めたばかり。この体験が、誰かが世界のコミュニティへ一歩踏み出すきっかけになればうれしい。</small></div>
     </div>
