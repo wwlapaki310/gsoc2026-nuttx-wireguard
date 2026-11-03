@@ -1436,6 +1436,13 @@
   .stepper { top: 10px !important; right: 72px !important; }
   .stepper span { font-size: 11px; padding: 2px 9px; }
   .quote { border-left-color: var(--quiet) !important; background: #eceff1 !important; }
+  /* application-content cards: header band + larger body */
+  .gr3 .panel { padding: 0 !important; overflow: hidden; }
+  .gr3 > .panel > h3 { margin: 0 0 8px !important; padding: 8px 18px; background: #3a3340; color: #fff !important; font-size: 21px !important; }
+  .gr3 > .panel > ul { padding: 2px 18px 10px 38px !important; font-size: 19px !important; line-height: 1.4; color: var(--ink) !important; }
+  .gr3 > .panel > ul b { color: #3a3340; background: #eceff1; padding: 0 3px; }
+  .gr3.cond > .panel { padding: 12px 26px 14px !important; }
+  .gr3.cond > .panel > h3 { background: none; color: #3a3340 !important; padding: 0; font-size: 30px !important; }
   .quote small { display: block; margin-top: 4px; font-size: 15px; color: var(--quiet); }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2093,12 +2100,12 @@ TACは、Travel Assistance Committeeの略で、経済的な理由で参加が�
     <div class="body" style="gap:12px">
       <p class="hd" style="font-size:30px">5/8に申請、6/7に採択</p>
       <div class="gr3">
-        <div class="panel"><h3>参加目的</h3><ul><li>採択された講演でWireGuard移植を発表し、開発者からフィードバックを得たい</li><li>衛星やエッジAIカメラとの接点。NuttXの開発・保守・活用を学びたい</li></ul></div>
+        <div class="panel"><h3>参加目的</h3><ul><li>採択された講演でWireGuard移植を発表し、開発者から<b>フィードバック</b>を得たい</li><li>衛星やエッジAIカメラとの接点。NuttXの開発・保守・活用を学びたい</li></ul></div>
         <div class="panel"><h3>これまでのOSS活動</h3><ul><li>大規模OSSへの直接の貢献はまだ少ない</li><li>個人のロボット関連プロジェクト</li><li>業務のエッジAIカメラ向けサンプル・開発支援ツールの公開・保守</li></ul></div>
-        <div class="panel"><h3>今後の開発</h3><ul><li>GSoC不採択でも、WireGuard移植の提案と開発を継続</li><li>今回の発表を節目に、NuttXへ継続的に貢献したい</li></ul></div>
-        <div class="panel"><h3>支援が必要な理由</h3><ul><li>個人のOSS活動で、勤務先の渡航支援はない</li><li>収入から税金・社会保険・生活費・養育費を引くと、使えるお金は月200ドル程度</li></ul></div>
+        <div class="panel"><h3>今後の開発</h3><ul><li>GSoC不採択でも、WireGuard移植の提案と開発を継続</li><li>今回の発表を節目に、NuttXへ<b>継続的に貢献</b>したい</li></ul></div>
+        <div class="panel"><h3>支援が必要な理由</h3><ul><li>個人のOSS活動で、勤務先の渡航支援はない</li><li>収入から税金・社会保険・生活費・養育費を引くと、使えるお金は<b>月200ドル程度</b></li></ul></div>
         <div class="panel"><h3>会場での協力</h3><ul><li>ハッカソンへの参加・協力、TACの運営業務</li><li>SecHack365のチューター、OSSJ・SRE NEXTのボランティア経験</li></ul></div>
-        <div class="panel"><h3>参加後の共有</h3><ul><li>学んだ内容を日本の開発者へ共有</li><li>ApacheコミュニティやASFのイベントを紹介</li></ul></div>
+        <div class="panel"><h3>参加後の共有</h3><ul><li>学んだ内容を<b>日本の開発者へ共有</b></li><li>ApacheコミュニティやASFのイベントを紹介</li></ul></div>
       </div>
       <p style="margin:0;font-size:17px;line-height:1.5;color:var(--quiet)">リンク（GitHubプロフィール、リポジトリなど）を添付。貢献経験の少なさも、そのまま書いた。</p>
     </div>
