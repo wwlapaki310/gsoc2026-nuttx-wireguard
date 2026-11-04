@@ -35,14 +35,14 @@ gb.FOOTER = (  # this event, not the Glasgow dates
     '<div class="coc-footer">'
     '<span>2026/11/04 &middot; Tokyo</span>'
     '<img src="img/footer.png" alt="Community Over Code">'
-    '<span>LINEヤフー オフィス</span>'
+    '<span>LY Corporation Office</span>'
     '</div>'
 )
 
 gb.TITLE = """\
 <div class="frame coc-dark">
   <div class="coc-dark-body">
-    <p class="kicker">OTFSG Tokyo &middot; 2026/11/04 &middot; LINEヤフー オフィス</p>
+    <p class="kicker">OTFSG Tokyo &middot; 2026/11/04 &middot; LY Corporation Office</p>
     <div class="title-core">
       <h1>個人のOSS活動から、<br>世界のコミュニティに飛び込む</h1>
       <p class="subtitle">渡航支援制度（TAC）を利用して登壇した<br>Community Over Code Glasgow 2026 体験記</p>
