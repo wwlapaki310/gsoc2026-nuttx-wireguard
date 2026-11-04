@@ -27,6 +27,7 @@ gb = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gb)
 
 SLIDES_URL = gb.URL  # the Glasgow talk slides, used by the QR codes
+DECK_URL = "https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/blog/otfsg-tac-slides.html"  # this deck, title QR
 GITHUB = "https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard"
 LINK = 'target="_blank" rel="noopener noreferrer"'
 
@@ -40,9 +41,9 @@ gb.TITLE = """\
     </div>
     <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
   </div>
-  <a class="qr-card title-qr" href="%s" %s><img src="%sslides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK</b></a>
+  <a class="qr-card title-qr" href="%s" %s><img src="otfsg-slides-qr.svg" alt="QR code for these slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
-</div>""" % (SLIDES_URL, LINK, ASSETS)
+</div>""" % (DECK_URL, LINK)
 
 gb.CLOSING = """\
 <div class="frame coc-dark">
