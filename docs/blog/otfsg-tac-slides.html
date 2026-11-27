@@ -510,6 +510,8 @@
   .reveal .frame .about-who { display: flex; align-items: center; gap: 24px;}
   .reveal .frame .about-who .lead { flex: 1; margin: 0; font-size: 23px;}
   .reveal .frame .about-who .intro-avatar { width: 100px; height: 100px;}
+  .reveal .frame .about-list { margin: 6px 0 0; padding-left: 24px; font-size: 21px; line-height: 1.45; font-weight: 400;}
+  .reveal .frame .about-list li { margin: 2px 0;}
   .reveal .frame .about-fox { flex: none; margin: 0; text-align: center;}
   .reveal .frame .about-fox .intro-avatar { width: 76px; height: 76px; border-color: var(--gold); display: block; margin: 0 auto;}
   .reveal .frame .about-fox figcaption { margin-top: 5px; font-family: var(--mono); font-size: 14px; color: var(--quiet);}
@@ -1337,7 +1339,7 @@
     <div class="body about">
       <div class="about-who">
         <img class="intro-avatar" src="../presentation/assets/profile-avatar.jpg" alt="Satoru Akita">
-        <p class="lead">Satoru Akita &mdash; edge AI engineer, working with Apache NuttX from the application side.</p>
+        <div class="lead"><b>Satoru Akita</b><ul class="about-list"><li>Edge AI engineer</li><li>Works with Apache NuttX from the application side</li><li>This is a personal open-source project, not a company one</li></ul></div>
         <figure class="about-fox"><img class="intro-avatar" src="../presentation/assets/aki310-avatar.png" alt="Fox icon"><figcaption><a class="xx" href="https://x.com/fox_aki310ooooo" target="_blank" rel="noopener noreferrer" aria-label="X: @fox_aki310ooooo">@fox_aki310ooooo</a></figcaption></figure>
       </div>
       <div class="about-mid">
