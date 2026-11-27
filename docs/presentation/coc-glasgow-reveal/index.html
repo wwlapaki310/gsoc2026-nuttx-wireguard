@@ -1018,13 +1018,13 @@
       <h1>WireGuard for Apache NuttX</h1>
       <p class="subtitle">Bringing Secure Remote Access to Embedded Devices</p>
     </div>
-    <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
+    <p class="speaker-block"><b>Satoru Akita</b></p>
   </div>
   <a class="qr-card title-qr" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
 </div>
     <aside class="notes">
-      <p>Hello everyone. I'm Satoru Akita from Sony Semiconductor Solutions in Japan.</p>
+      <p>Hello everyone. I'm Satoru Akita, from Japan.</p>
       <p>Today, I'll share my experience bringing WireGuard, a lightweight VPN, to Apache NuttX.</p>
       <p>The goal was simple: secure remote access to embedded devices.</p>
       <p>I'll talk about why I started this project, how I built it, the challenges I faced, and what I learned along the way.</p>
@@ -1037,7 +1037,7 @@
     <div class="body about">
       <div class="about-who">
         <img class="intro-avatar" src="../assets/profile-avatar.jpg" alt="Satoru Akita">
-        <p class="lead">Satoru Akita &mdash; edge AI engineer at Sony Semiconductor Solutions, working with Apache NuttX from the application side.</p>
+        <p class="lead">Satoru Akita &mdash; edge AI engineer, working with Apache NuttX from the application side. A personal open-source project, not a company one.</p>
         <figure class="about-fox"><img class="intro-avatar" src="../assets/aki310-avatar.png" alt="Fox icon"><figcaption>my icon on social media</figcaption></figure>
       </div>
       <div class="about-mid">
@@ -1125,7 +1125,7 @@
   </div>
     <aside class="notes">
       <p>First, a little about me.</p>
-      <p>I am an edge AI engineer at Sony Semiconductor Solutions. I use Apache NuttX from the application side. I was born in Nagoya, I studied in Sendai, and now I live in Kawasaki.</p>
+      <p>I am an edge AI engineer. I use Apache NuttX from the application side. I was born in Nagoya, I studied in Sendai, and now I live in Kawasaki. This is my personal open-source project, done on my own time. It is not a company project.</p>
       <p>My background is wide. At university, I studied mechanical and aerospace engineering, including rockets. My undergraduate research was DNA nanorobotics, and my master's research was on semiconductors. I also build robots, and I volunteer at open-source conferences.</p>
       <p>This project is the latest stop on that road. Let me show you the project.</p>
       <p>OPTIONAL: The conferences are Open Source Summit Japan and KubeCon. I also build robots at hackathons.</p>
@@ -1295,7 +1295,7 @@
     <p class="eyebrow">How it started</p>
     <div class="body" style="gap:10px">
       <div class="ptl">
-        <div class="ptl-ev l4 " style="left:5.19%"><b>MID FEB</b><span>Read the GSoC idea list. Started to study.</span></div><div class="ptl-ev l3 " style="left:12.59%;padding-bottom:137px"><b>EARLY MAR</b><span>Proposed the plan.</span></div><div class="ptl-ev l2 " style="left:18.15%"><b>MAR 20</b><span>Alan told me about this conference. Submitted a CfP.</span></div><div class="ptl-ev l1 narrow" style="left:23.70%"><b>EARLY APR</b><span>Sent the GSoC proposal.</span></div><div class="ptl-ev l3 key" style="left:34.81%"><b>EARLY MAY</b><span>CfP accepted. GSoC proposal not selected. Kept going anyway.</span></div><div class="ptl-ev l1 right key" style="left:92.59%"><b>OCT 11&ndash;14</b><span>Glasgow &mdash; this talk.</span></div>
+        <div class="ptl-ev l4 " style="left:5.19%"><b>MID FEB</b><span>Read the GSoC idea list. Started to study.</span></div><div class="ptl-ev l3 " style="left:12.59%;padding-bottom:137px"><b>EARLY MAR</b><span>Proposed the plan.</span></div><div class="ptl-ev l2 " style="left:18.15%"><b>MAR 20</b><span>Alin Jerpelea, a NuttX developer at a group company, told me about this conference. Submitted a CfP.</span></div><div class="ptl-ev l1 narrow" style="left:23.70%"><b>EARLY APR</b><span>Sent the GSoC proposal.</span></div><div class="ptl-ev l3 key" style="left:34.81%"><b>EARLY MAY</b><span>CfP accepted. GSoC proposal not selected. Kept going anyway.</span></div><div class="ptl-ev l1 right key" style="left:92.59%"><b>OCT 11&ndash;14</b><span>Glasgow &mdash; this talk.</span></div>
         <div class="ptl-axis"></div>
         <div class="ptl-month" style="left:0.000%">FEB</div><div class="ptl-month" style="left:11.111%">MAR</div><div class="ptl-month" style="left:22.222%">APR</div><div class="ptl-month" style="left:33.333%">MAY</div><div class="ptl-month" style="left:44.444%">JUN</div><div class="ptl-month" style="left:55.556%">JUL</div><div class="ptl-month" style="left:66.667%">AUG</div><div class="ptl-month" style="left:77.778%">SEP</div><div class="ptl-month" style="left:88.889%">OCT</div>
         <div class="ptl-bar light chev" style="left:33.33%;width:calc(33.34% - 4px)"><b>MAY &ndash; JUL</b>Studied NuttX and WireGuard, explored approaches</div><div class="ptl-bar main chev notch" style="left:66.67%;margin-left:-12px;width:calc(11.11% + 8px)"><b>AUG</b>V1</div><div class="ptl-bar kernel chev notch" style="left:77.78%;margin-left:-12px;width:calc(13.70% + 8px)"><b>SEP &ndash;</b>V2</div>
@@ -1310,7 +1310,7 @@
   </div>
     <aside class="notes">
       <p>Here is the timeline.</p>
-      <p>In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alin Jerpelea, from Sony's NuttX community, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.</p>
+      <p>In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alin Jerpelea, a NuttX developer at a group company, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.</p>
       <p>In early May, I got two answers. The CfP was accepted, but my GSoC proposal was not selected. I decided to keep going anyway.</p>
       <p>From May to July, I studied NuttX and WireGuard. In August, I focused on hardware testing and finished Version 1. Then I built Version 2, the kernel driver.</p>
       <p>So this work started with GSoC, and it grew step by step. First, what is NuttX?</p>
@@ -2508,7 +2508,7 @@
       <div><b><a href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer">wwlapaki310.github.io/gsoc2026-nuttx-wireguard/&hellip;/coc-glasgow-reveal/</a></b><span>SLIDES &amp; RESOURCES</span></div>
       <div><b><a href="https://github.com/wwlapaki310/gsoc2026-nuttx-wireguard" target="_blank" rel="noopener noreferrer">github.com/wwlapaki310/gsoc2026-nuttx-wireguard</a></b><span>CODE &amp; RECORDS</span></div>
     </div>
-    <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
+    <p class="speaker">Satoru Akita</p>
   </div>
   <a class="qr-card closing-qr" href="https://wwlapaki310.github.io/gsoc2026-nuttx-wireguard/docs/presentation/coc-glasgow-reveal/index.html" target="_blank" rel="noopener noreferrer"><img src="../assets/slides-qr.svg" alt="QR code for the slides"><b>SCAN TO VIEW THE SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">

@@ -16,7 +16,7 @@ work and the debugging war stories from `slides.html`.
 > (d) of the two bugs, only the chachapoly nonce is a pre-existing NuttX
 > bug; the stack overflow is in the new driver.
 
-- Author line: **Satoru Akita / Sony Semiconductor Solutions**
+- Author line: **Satoru Akita**
 - Spine of the talk: **"shallow tests pass, deep tests fail."** Every hard
   bug in this project had that same shape — including two found by pushing
   the port into the kernel, one of them a bug in NuttX's own tree.
@@ -33,7 +33,7 @@ to say / why the slide exists. `[reuse]` = adapt from short/slides.html,
 ### 1. Title + proof up front `[reuse+update]`
 - **WireGuard for Apache NuttX**
 - A WireGuard VPN implemented as a `wg0` network device.
-- Satoru Akita / Sony Semiconductor Solutions · Community Over Code, Glasgow
+- Satoru Akita · Community Over Code, Glasgow
 - Badges: **ESP32-S3 tunnel up over real Wi-Fi** · **Spresense (GS2200M) up over real Wi-Fi** · peers = **Linux kernel + Windows client** · **NuttX 13.0.1 / master / 12.7.0, one source** · **also runs in a real kernel build (rv-virt knetnsh64)**
 - *note:* one line of who/what, then evidence. Keep it clean.
 

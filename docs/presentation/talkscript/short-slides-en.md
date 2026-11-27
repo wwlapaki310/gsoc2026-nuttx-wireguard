@@ -103,7 +103,7 @@ Community Over Code is the ASF's official conference. In 2026 it runs in Glasgow
 **[SAY]**
 Why this topic. I did not pick it off a list — it came out of my own work.
 
-I am an edge AI engineer at Sony Semiconductor Solutions, and I use NuttX from the application side. One setting is AITRIOS, an edge AI platform. The AI camera we use there runs on an ESP32, and its OS is NuttX. The other is a bottom-up activity: a satellite project built around SPRESENSE. SPRESENSE is Sony's small, low-power board, with a track record in satellites and ocean monitoring.
+I am an edge AI engineer, and I use NuttX from the application side. One setting is AITRIOS, an edge AI platform. The AI camera we use there runs on an ESP32, and its OS is NuttX. The other is a bottom-up activity: a satellite project built around SPRESENSE. SPRESENSE is Sony's small, low-power board, with a track record in satellites and ocean monitoring.
 
 **[BEAT]** — one beat.
 

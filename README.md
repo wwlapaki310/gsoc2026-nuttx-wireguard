@@ -335,7 +335,7 @@ OS-specific details tend to need attention.
 
 ## About
 
-I work as an edge AI engineer at Sony Semiconductor Solutions, using NuttX from the
+This is my personal open-source project, not a company project. I work as an edge AI engineer, using NuttX from the
 application side — mostly SPRESENSE and ESP32-based edge AI camera systems. Being able to
 reach a NuttX board securely for debugging and maintenance is something I wanted myself.
 

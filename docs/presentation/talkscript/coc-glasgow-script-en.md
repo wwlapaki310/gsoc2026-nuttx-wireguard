@@ -75,10 +75,10 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 ## 1 — Title (0:00 → 0:27)
 
-**On slide:** "WireGuard for Apache NuttX", large, with the subtitle "Bringing Secure Remote Access to Embedded Devices". Community Over Code Glasgow 2026 on top; Satoru Akita, Sony Semiconductor Solutions below. A QR code of the slides ("Slides") at the bottom right. No technical details on this slide.
+**On slide:** "WireGuard for Apache NuttX", large, with the subtitle "Bringing Secure Remote Access to Embedded Devices". Community Over Code Glasgow 2026 on top; Satoru Akita below. A QR code of the slides ("Slides") at the bottom right. No technical details on this slide.
 
 **Say — Essential:**
-- Hello everyone. I'm Satoru Akita from Sony Semiconductor Solutions in Japan.
+- Hello everyone. I'm Satoru Akita, from Japan.
 - Today, I'll share my experience bringing WireGuard, a lightweight VPN, to Apache NuttX.
 - The goal was simple: secure remote access to embedded devices.
 - I'll talk about why I started this project, how I built it, the challenges I faced, and what I learned along the way.
@@ -89,7 +89,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Say — Essential:**
 - First, a little about me.
-- I am an edge AI engineer at Sony Semiconductor Solutions. I use Apache NuttX from the application side. I was born in Nagoya, I studied in Sendai, and now I live in Kawasaki.
+- I am an edge AI engineer. I use Apache NuttX from the application side. I was born in Nagoya, I studied in Sendai, and now I live in Kawasaki. This is my personal open-source project, done on my own time. It is not a company project.
 - My background is wide. At university, I studied mechanical and aerospace engineering, including rockets. My undergraduate research was DNA nanorobotics, and my master's research was on semiconductors. I also build robots, and I volunteer at open-source conferences.
 - This project is the latest stop on that road. Let me show you the project.
 
@@ -128,7 +128,7 @@ highlighted line and say the one sentence. If you have no time at all, skip them
 
 **Say — Essential:**
 - Here is the timeline.
-- In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alin Jerpelea, from Sony's NuttX community, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.
+- In mid-February, I read the GSoC idea list and started to study. In March, I proposed my plan. On March 20, Alin Jerpelea, a NuttX developer at a group company, told me about this conference, so I submitted a CfP, a call for proposals. In early April, I sent my GSoC proposal. These were two separate applications.
 - In early May, I got two answers. The CfP was accepted, but my GSoC proposal was not selected. I decided to keep going anyway.
 - From May to July, I studied NuttX and WireGuard. In August, I focused on hardware testing and finished Version 1. Then I built Version 2, the kernel driver.
 - So this work started with GSoC, and it grew step by step. First, what is NuttX?

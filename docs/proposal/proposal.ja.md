@@ -157,13 +157,12 @@ Timezone: UTC+9 (Japan Standard Time) / 10:00 ~ 18:00
 |---|---|
 | 📄 **CV** | [Google Drive](https://drive.google.com/file/d/1WaaCUJOFb_DxdXQ1hG7ZQF_cu7Jbm_pr/view) |
 | 💼 **LinkedIn** | [satoru-akita-6070a4145](https://www.linkedin.com/in/satoru-akita-6070a4145/) |
-| 🏢 **勤務先** | [ソニーセミコンダクタソリューションズ株式会社](https://www.sony-semicon.com/ja/index.html) |
 | 🎓 **学歴** | M.S. in Robotics, [東北大学](http://www.mems.mech.tohoku.ac.jp/index_e.html) |
 | 📝 **ブログ** | [wwlapaki310.github.io](https://wwlapaki310.github.io/) |
 
 ### 5.1 応募動機
 
-私はソニーセミコンダクタソリューションズにて、NuttX が実際に使われている2つのプロダクト領域に携わっている。
+私は NuttX が実際に使われている2つのプロダクト領域に携わっている。
 
 **AITRIOS（エッジ AI カメラプラットフォーム）**
 
@@ -202,7 +201,7 @@ Apache の公式リポジトリへの取り込みを通じて、OSS貢献の経�
 
 ### 5.4 Community Over Code Glasgow への応募について
 
-ソニーグループ内のチャットにて Jerpelea Alin さんと会話する機会があり、背中を押していただいて本応募を進めることができた。
+チャットにて Jerpelea Alin さんと会話する機会があり、背中を押していただいて本応募を進めることができた。
 
 本プロジェクトの成果発表として、Community Over Code Glasgow（2026年10月11〜14日）の NuttX International Workshop に CFP を提出済みである。
 

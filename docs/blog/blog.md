@@ -73,7 +73,7 @@ NuttXは、マイコンなどの組込み機器で使われるOS（機器の動�
 
 その活動を見つけて声をかけてくださったのが、Sonyのスウェーデン・Lund拠点にいるAlin Jerpeleaさんです。
 
-私はソニーセミコンダクタソリューションズに所属しており、Lundの方々とは仕事でも少し接点がありました。同じSonyグループというつながりもあって、Alinさんが会社のチャットで連絡をくださいました。
+同じグループ会社という縁もあって、Alinさんが連絡をくださいました。
 
 そこで勧めていただいたのが、Community Over CodeへのCFP（Call for Presentations、講演募集）への応募でした。
 
@@ -172,7 +172,7 @@ Apache NuttX上でWireGuardを動かし、組込み機器へ安全にアクセ�
 
 発表時間は約30分で、次の7章構成にしました。
 
-自己紹介（Sony Semiconductor Solutions、エッジAI・カメラ）
+自己紹介（エッジAI・カメラ）
 開発の動機
 NuttXとWireGuard、GSoCの経緯
 設計

@@ -41,7 +41,7 @@ SLIDES = [
     ("Title", "",
         '"WireGuard for Apache NuttX", large, with the subtitle "Bringing '
         'Secure Remote Access to Embedded Devices". Community Over Code '
-        "Glasgow 2026 on top; Satoru Akita, Sony Semiconductor Solutions "
+        "Glasgow 2026 on top; Satoru Akita "
         "below. A QR code of the slides (\"Slides\") at the bottom right. "
         "No technical details on this slide.", []),
     ("About Me", "",

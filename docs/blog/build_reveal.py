@@ -47,7 +47,7 @@ gb.TITLE = """\
       <h1>個人のOSS活動から、<br>世界のコミュニティに飛び込む</h1>
       <p class="subtitle">渡航支援制度（TAC）を利用して登壇した<br>Community Over Code Glasgow 2026 体験記</p>
     </div>
-    <p class="speaker-block"><b>Satoru Akita</b><span>Sony Semiconductor Solutions</span></p>
+    <p class="speaker-block"><b>Satoru Akita</b></p>
   </div>
   <a class="qr-card title-qr" href="%s" %s><img src="otfsg-slides-qr.svg" alt="QR code for these slides"><b>SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">
@@ -64,7 +64,7 @@ gb.CLOSING = """\
       <div><b><a href="%s" %s>wwlapaki310.github.io/&hellip;/coc-glasgow-reveal/</a></b><span>GLASGOW TALK SLIDES</span></div>
     </div>
     <p class="thanks">Alin Jerpeleaさん／Apache NuttXコミュニティ／TAC／Community Over Codeの運営・スポンサー・現地で交流してくださった皆さん／OTFSG Tokyoの皆さん</p>
-    <p class="speaker">Satoru Akita &middot; Sony Semiconductor Solutions</p>
+    <p class="speaker">Satoru Akita</p>
   </div>
   <a class="qr-card closing-qr" href="%s" %s><img src="%sslides-qr.svg" alt="QR code for the Glasgow talk slides"><b>GLASGOW TALK SLIDES</b></a>
   <img class="skyline" src="img/front.png" alt="">

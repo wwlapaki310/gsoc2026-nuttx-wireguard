@@ -152,13 +152,12 @@ English is my second language, but text-based communication (chat, email, code r
 |---|---|
 | 📄 **CV** | [Google Drive](https://drive.google.com/file/d/1WaaCUJOFb_DxdXQ1hG7ZQF_cu7Jbm_pr/view) |
 | 💼 **LinkedIn** | [satoru-akita-6070a4145](https://www.linkedin.com/in/satoru-akita-6070a4145/) |
-| 🏢 **Employer** | [Sony Semiconductor Solutions Corporation](https://www.sony-semicon.com/en/index.html) |
 | 🎓 **Education** | M.S. in Robotics, [Tohoku University](http://www.mems.mech.tohoku.ac.jp/index_e.html) |
 | 📝 **Blog** | [wwlapaki310.github.io](https://wwlapaki310.github.io/) |
 
 ### 5.1 Motivation
 
-I work at Sony Semiconductor Solutions on two product areas where NuttX is deployed in production.
+I work on two product areas where NuttX is deployed in production.
 
 **AITRIOS (Edge AI Camera Platform)**
 
@@ -210,7 +209,7 @@ I grew up fascinated by space and spent my student years building rockets and au
 
 ### 5.4 About the Community Over Code Glasgow Submission
 
-I had the opportunity to speak with Jerpelea Alin through the Sony Group internal chat, and his encouragement helped me move forward with this application.
+I had the opportunity to speak with Jerpelea Alin in a chat, and his encouragement helped me move forward with this application.
 
 As a planned venue for sharing the results of this project, I have submitted a CFP to the NuttX International Workshop at Community Over Code Glasgow (October 11–14, 2026).
 

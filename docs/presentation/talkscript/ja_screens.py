@@ -41,7 +41,7 @@ TITLES = {'1': 'タイトル',
  'A2': '付録: 設計判断: タイムスタンプ問題には楽な答えがない'}
 
 SCREENS = {'1': '「WireGuard for Apache NuttX」を大きく。その下にサブタイトル「Bringing Secure Remote Access to Embedded Devices」。\n'
-      '上に Community Over Code Glasgow 2026、下に Satoru Akita / Sony Semiconductor Solutions。右下に小さな QR コード\n'
+      '上に Community Over Code Glasgow 2026、下に Satoru Akita。右下に小さな QR コード\n'
       '(「Slides」、最後のスライドと同じ URL)。技術的な情報(wg0、QEMU、ビルドモード、検証環境、バージョン)は載せない。',
  '2': '見出し「About Me」。上: 本人写真・名前の1行・SNS の狐アイコン。下の左: 日本地図\n'
       '(① 名古屋 生まれ → ② 仙台 大学 → ③ 川崎 現在)と、その下に「Japan」のラベル。\n'

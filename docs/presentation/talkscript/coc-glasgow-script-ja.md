@@ -63,11 +63,11 @@ KERNEL と PROTECTED は QEMU のみ、KERNEL と PROTECTED の実機はまだ�
 ## 1 — タイトル (0:00 → 0:27)
 
 **画面:** 「WireGuard for Apache NuttX」を大きく。その下にサブタイトル「Bringing Secure Remote Access to Embedded Devices」。
-上に Community Over Code Glasgow 2026、下に Satoru Akita / Sony Semiconductor Solutions。右下に小さな QR コード
+上に Community Over Code Glasgow 2026、下に Satoru Akita。右下に小さな QR コード
 (「Slides」、最後のスライドと同じ URL)。技術的な情報(wg0、QEMU、ビルドモード、検証環境、バージョン)は載せない。
 
 **話す — Essential(必ず話す):**
-- 皆さん、こんにちは。日本の Sony Semiconductor Solutions から来ました、Satoru Akita です。
+- 皆さん、こんにちは。日本から来ました、Satoru Akita です。
 - 今日は、軽量な VPN の WireGuard を Apache NuttX に持ち込んだ経験を話します。
 - 目的はシンプルでした: 組み込み機器への、安全な遠隔アクセス。
 - なぜこのプロジェクトを始めたか、どう作ったか、直面した難しさ、そして学んだことを話します。
@@ -83,7 +83,7 @@ Robots: ハッカソンのヒューマノイド / Open-Source Conference Volunte
 
 **話す — Essential(必ず話す):**
 - まず、簡単に自己紹介をします。
-- 私は Sony Semiconductor Solutions の edge AI エンジニアで、application 側から Apache NuttX を使っています。名古屋生まれ、仙台で学び、今は川崎に住んでいます。
+- 私は edge AI エンジニアで、application 側から Apache NuttX を使っています。名古屋生まれ、仙台で学び、今は川崎に住んでいます。これは会社の仕事ではなく、私個人のオープンソースの活動です。
 - 経歴は幅広いです。大学では機械・航空宇宙工学を学び、ロケットにも取り組みました。学部の研究は DNA ナノロボティクス、修士の研究は半導体でした。ロボットも作りますし、オープンソースのカンファレンスにもボランティアとして参加しています。
 - このプロジェクトは、その道のりの最新の到達点です。プロジェクトをお見せします。
 
@@ -128,14 +128,14 @@ Summary & Reflections: Achievements · personal reflections · community(~4分)�
 ## 6 — 経緯: 2月の思いつきから10月の本番まで (2:14 → 3:14)
 
 **画面:** 2月〜10月の月の横軸。上に出来事 — 2月中旬 GSoC のテーマ一覧を見て調べ始める /
-3月上旬 計画を提案 / 3月20日 Alin さんからこのカンファレンスを聞き、CfP を提出 /
+3月上旬 計画を提案 / 3月20日 グループ会社の Alin さんからこのカンファレンスを聞き、CfP を提出 /
 4月上旬 GSoC に応募 / 5月上旬 CfP は採択、GSoC は不採択 — それでも続ける / 10月 グラスゴー。
 下に、矢印の形をした3本の帯 — 5〜7月 NuttX と WireGuard を調べ、作り方を探る →
 8月 Version 1(アプリ・FLAT・実機検証)→ 9月〜 Version 2(カーネルドライバ)。
 
 **話す — Essential(必ず話す):**
 - 経緯です。
-- 2月中旬に、GSoC のテーマ一覧を見て、調べ始めました。3月に計画を提案しました。3月20日に、NuttX コミュニティの Alin さんがこのカンファレンスのことを教えてくれたので、CfP、つまり発表の募集に応募しました。4月の初めに GSoC に応募しました。この2つは別々の応募です。
+- 2月中旬に、GSoC のテーマ一覧を見て、調べ始めました。3月に計画を提案しました。3月20日に、同じグループ会社で NuttX を開発している Alin さんがこのカンファレンスのことを教えてくれたので、CfP、つまり発表の募集に応募しました。4月の初めに GSoC に応募しました。この2つは別々の応募です。
 - 5月の初めに、2つの返事が来ました。CfP は採択、でも GSoC は不採択でした。それでも続けることにしました。
 - 5月から7月は、NuttX と WireGuard を調べました。8月は実機での検証を中心に、Version 1 を完成させました。その後、Version 2、カーネルドライバを作りました。
 - つまりこの取り組みは GSoC から始まり、一歩ずつ育ちました。まず、NuttX とは何でしょうか。
